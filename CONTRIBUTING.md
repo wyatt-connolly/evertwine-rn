@@ -5,6 +5,7 @@ Thank you for your interest in contributing to Evertwine! This document provides
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js (v18 or higher)
 - npm or yarn
 - Expo CLI
@@ -14,17 +15,20 @@ Thank you for your interest in contributing to Evertwine! This document provides
 ### Development Setup
 
 1. **Fork and clone the repository:**
+
    ```bash
    git clone https://github.com/your-username/evertwine-rn.git
    cd evertwine-rn
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Set up Firebase:**
+
    - Create a Firebase project
    - Copy the configuration to `firebase.config.ts`
    - Enable Authentication, Firestore, and Storage
@@ -44,6 +48,7 @@ We use a Git Flow branching model:
 - **`hotfix/*`** - Critical bug fixes
 
 ### Branch Naming Convention
+
 - Features: `feature/description-of-feature`
 - Bug fixes: `bugfix/description-of-bug`
 - Hotfixes: `hotfix/description-of-hotfix`
@@ -51,6 +56,7 @@ We use a Git Flow branching model:
 ## 🔄 Development Workflow
 
 ### 1. Create a Feature Branch
+
 ```bash
 git checkout develop
 git pull origin develop
@@ -58,18 +64,21 @@ git checkout -b feature/your-feature-name
 ```
 
 ### 2. Make Your Changes
+
 - Write clean, readable code
 - Follow the existing code style
 - Add tests for new functionality
 - Update documentation as needed
 
 ### 3. Commit Your Changes
+
 ```bash
 git add .
 git commit -m "feat: add new feature description"
 ```
 
 **Commit Message Format:**
+
 - `feat:` - New features
 - `fix:` - Bug fixes
 - `docs:` - Documentation changes
@@ -79,6 +88,7 @@ git commit -m "feat: add new feature description"
 - `chore:` - Maintenance tasks
 
 ### 4. Push and Create Pull Request
+
 ```bash
 git push origin feature/your-feature-name
 ```
@@ -88,24 +98,28 @@ Then create a pull request to the `develop` branch.
 ## 📝 Code Style Guidelines
 
 ### TypeScript
+
 - Use TypeScript for all new code
 - Define proper interfaces and types
 - Avoid `any` type when possible
 - Use meaningful variable and function names
 
 ### React Native
+
 - Use functional components with hooks
 - Follow React Native best practices
 - Use proper prop types and interfaces
 - Implement proper error handling
 
 ### File Organization
+
 - Keep components small and focused
 - Use proper folder structure
 - Export components from index files
 - Follow naming conventions
 
 ### Styling
+
 - Use StyleSheet for styles
 - Follow the theme system
 - Use consistent spacing and colors
@@ -114,12 +128,14 @@ Then create a pull request to the `develop` branch.
 ## 🧪 Testing
 
 ### Manual Testing
+
 - Test on both iOS and Android
 - Test in both light and dark themes
 - Test with different screen sizes
 - Test offline functionality
 
 ### Firebase Testing
+
 - Test authentication flows
 - Test Firestore operations
 - Test image uploads
@@ -128,6 +144,7 @@ Then create a pull request to the `develop` branch.
 ## 📋 Pull Request Guidelines
 
 ### Before Submitting
+
 - [ ] Code follows the style guidelines
 - [ ] All tests pass
 - [ ] Documentation is updated
@@ -135,26 +152,32 @@ Then create a pull request to the `develop` branch.
 - [ ] Proper error handling is implemented
 
 ### Pull Request Template
+
 ```markdown
 ## Description
+
 Brief description of changes
 
 ## Type of Change
+
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Breaking change
 - [ ] Documentation update
 
 ## Testing
+
 - [ ] Tested on iOS
 - [ ] Tested on Android
 - [ ] Tested in both themes
 - [ ] Firebase functionality tested
 
 ## Screenshots (if applicable)
+
 Add screenshots here
 
 ## Checklist
+
 - [ ] Code follows style guidelines
 - [ ] Self-review completed
 - [ ] Documentation updated
@@ -166,12 +189,14 @@ Add screenshots here
 When reporting bugs, please include:
 
 1. **Environment:**
+
    - OS version
    - React Native version
    - Expo version
    - Device/emulator details
 
 2. **Steps to Reproduce:**
+
    - Clear, numbered steps
    - Expected vs actual behavior
 
@@ -185,10 +210,12 @@ When reporting bugs, please include:
 When suggesting features:
 
 1. **Problem Description:**
+
    - What problem does this solve?
    - Who would benefit from this feature?
 
 2. **Proposed Solution:**
+
    - How should this feature work?
    - Any design considerations?
 
@@ -214,6 +241,7 @@ If you discover a security vulnerability:
 ## 🎉 Recognition
 
 Contributors will be recognized in:
+
 - README.md contributors section
 - Release notes
 - Project documentation
