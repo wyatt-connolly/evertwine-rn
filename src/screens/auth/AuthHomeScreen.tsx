@@ -147,7 +147,7 @@ export default function AuthHomeScreen({ navigation }: Props) {
                 ]}
               >
                 <Image
-                  source={require("../../assets/app_launcher_icon.png")}
+                  source={require("../../assets/icon.png")}
                   style={styles.logoImage}
                   resizeMode="contain"
                 />
