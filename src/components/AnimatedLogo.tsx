@@ -29,9 +29,7 @@ export default function AnimatedLogo({ size = 80 }: AnimatedLogoProps) {
           {
             width: size,
             height: size,
-            transform: [
-              { scale: scaleAnim },
-            ],
+            transform: [{ scale: scaleAnim }],
           },
         ]}
       >

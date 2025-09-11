@@ -180,11 +180,16 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
           <View style={styles.content}>
             <AnimatedCard delay={200} direction="up">
               <View style={styles.header}>
-                <View style={[styles.iconContainer, { backgroundColor: colors.primary + '20' }]}>
-                  <Ionicons 
-                    name={isCodeSent ? "shield-checkmark" : "call"} 
-                    size={32} 
-                    color={colors.primary} 
+                <View
+                  style={[
+                    styles.iconContainer,
+                    { backgroundColor: colors.primary + "20" },
+                  ]}
+                >
+                  <Ionicons
+                    name={isCodeSent ? "shield-checkmark" : "call"}
+                    size={32}
+                    color={colors.primary}
                   />
                 </View>
                 <Text style={[styles.title, { color: colors.text }]}>

@@ -7,13 +7,13 @@ import {
   Alert,
   SafeAreaView,
   Dimensions,
+  Image,
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
 import { AuthService } from "../../services/firebase";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
-import AnimatedLogo from "../../components/AnimatedLogo";
 import GradientBackground from "../../components/GradientBackground";
 import AnimatedButton from "../../components/AnimatedButton";
 import AnimatedCard from "../../components/AnimatedCard";
@@ -140,14 +140,24 @@ export default function AuthHomeScreen({ navigation }: Props) {
           {/* Header Section */}
           <AnimatedCard delay={200} direction="up">
             <View style={styles.logoContainer}>
-              <View style={[styles.logoWrapper, { backgroundColor: colors.surface }]}>
-                <AnimatedLogo size={80} />
-              </View>
+                <View
+                  style={[
+                    styles.logoWrapper,
+                    { backgroundColor: colors.surface },
+                  ]}
+                >
+                  <Image
+                    source={require("../../assets/app_launcher_icon.png")}
+                    style={styles.logoImage}
+                    resizeMode="contain"
+                  />
+                </View>
               <Text style={[styles.title, { color: colors.text }]}>
                 Welcome to Evertwine
               </Text>
               <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                Connect with people who share your interests through amazing meetups
+                Connect with people who share your interests through amazing
+                meetups
               </Text>
             </View>
           </AnimatedCard>
@@ -156,25 +166,40 @@ export default function AuthHomeScreen({ navigation }: Props) {
           <AnimatedCard delay={400} direction="up">
             <View style={styles.featuresContainer}>
               <View style={styles.featureItem}>
-                <View style={[styles.featureIcon, { backgroundColor: colors.primary + '20' }]}>
+                <View
+                  style={[
+                    styles.featureIcon,
+                    { backgroundColor: colors.primary + "20" },
+                  ]}
+                >
                   <Ionicons name="people" size={24} color={colors.primary} />
                 </View>
                 <Text style={[styles.featureText, { color: colors.text }]}>
                   Meet New People
                 </Text>
               </View>
-              
+
               <View style={styles.featureItem}>
-                <View style={[styles.featureIcon, { backgroundColor: colors.primary + '20' }]}>
+                <View
+                  style={[
+                    styles.featureIcon,
+                    { backgroundColor: colors.primary + "20" },
+                  ]}
+                >
                   <Ionicons name="location" size={24} color={colors.primary} />
                 </View>
                 <Text style={[styles.featureText, { color: colors.text }]}>
                   Local Events
                 </Text>
               </View>
-              
+
               <View style={styles.featureItem}>
-                <View style={[styles.featureIcon, { backgroundColor: colors.primary + '20' }]}>
+                <View
+                  style={[
+                    styles.featureIcon,
+                    { backgroundColor: colors.primary + "20" },
+                  ]}
+                >
                   <Ionicons name="heart" size={24} color={colors.primary} />
                 </View>
                 <Text style={[styles.featureText, { color: colors.text }]}>
@@ -235,7 +260,7 @@ export default function AuthHomeScreen({ navigation }: Props) {
   );
 }
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
@@ -268,6 +293,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
+  },
+  logoImage: {
+    width: 80,
+    height: 80,
   },
   title: {
     fontSize: 28,
