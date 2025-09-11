@@ -39,7 +39,7 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
     try {
       // Load preferences
       await loadPreferences();
-      
+
       // Update local state
       setOnboardingComplete(true);
       updateUserProfile({ onboardingComplete: true });
@@ -68,7 +68,7 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
     try {
       // Load preferences
       await loadPreferences();
-      
+
       // Update local state
       setOnboardingComplete(true);
       updateUserProfile({ onboardingComplete: true });
@@ -152,7 +152,7 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
               loading={loading}
               style={styles.primaryButton}
             />
-            
+
             <AnimatedButton
               title="Skip for Now"
               onPress={handleGetStarted}

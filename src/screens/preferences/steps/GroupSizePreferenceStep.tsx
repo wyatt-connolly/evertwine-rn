@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useThemeStore } from '../../../hooks/useThemeStore';
-import { usePreferenceStore } from '../../../hooks/usePreferenceStore';
-import { PREFERENCE_OPTIONS } from '../../../constants/preferences';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useThemeStore } from "../../../hooks/useThemeStore";
+import { usePreferenceStore } from "../../../hooks/usePreferenceStore";
+import { PREFERENCE_OPTIONS } from "../../../constants/preferences";
 
 interface GroupSizePreferenceStepProps {
   onNext: () => void;
@@ -28,7 +28,7 @@ export default function GroupSizePreferenceStep({
 }: GroupSizePreferenceStepProps) {
   const { colors } = useThemeStore();
   const { preferences, updateGroupSizePreference } = usePreferenceStore();
-  
+
   const [selectedSizes, setSelectedSizes] = useState<string[]>(
     preferences.groupSizePreference.preferredSizes || []
   );
@@ -55,10 +55,10 @@ export default function GroupSizePreferenceStep({
     if (hasNoPreference) {
       setHasNoPreference(false);
     }
-    
-    setSelectedSizes(prev => {
+
+    setSelectedSizes((prev) => {
       if (prev.includes(sizeValue)) {
-        return prev.filter(s => s !== sizeValue);
+        return prev.filter((s) => s !== sizeValue);
       } else {
         return [...prev, sizeValue];
       }
@@ -71,31 +71,31 @@ export default function GroupSizePreferenceStep({
 
   const getGroupSizeIcon = (sizeValue: string) => {
     switch (sizeValue) {
-      case 'one-on-one':
-        return 'person';
-      case 'small-group':
-        return 'people';
-      case 'medium-group':
-        return 'people-outline';
-      case 'large-group':
-        return 'people-circle';
+      case "one-on-one":
+        return "person";
+      case "small-group":
+        return "people";
+      case "medium-group":
+        return "people-outline";
+      case "large-group":
+        return "people-circle";
       default:
-        return 'people';
+        return "people";
     }
   };
 
   const getGroupSizeDescription = (sizeValue: string) => {
     switch (sizeValue) {
-      case 'one-on-one':
-        return 'Intimate conversations and deep connections';
-      case 'small-group':
-        return 'Close-knit gatherings with friends';
-      case 'medium-group':
-        return 'Social events with moderate crowds';
-      case 'large-group':
-        return 'Big events and networking opportunities';
+      case "one-on-one":
+        return "Intimate conversations and deep connections";
+      case "small-group":
+        return "Close-knit gatherings with friends";
+      case "medium-group":
+        return "Social events with moderate crowds";
+      case "large-group":
+        return "Big events and networking opportunities";
       default:
-        return '';
+        return "";
     }
   };
 
@@ -114,41 +114,53 @@ export default function GroupSizePreferenceStep({
       <TouchableOpacity
         style={[
           styles.noPreferenceOption,
-          { 
+          {
             backgroundColor: hasNoPreference ? colors.primary : colors.surface,
             borderColor: colors.border,
-          }
+          },
         ]}
         onPress={handleNoPreferenceToggle}
       >
         <View style={styles.noPreferenceContent}>
-          <Ionicons 
-            name="people" 
-            size={24} 
-            color={hasNoPreference ? colors.onPrimary : colors.textSecondary} 
+          <Ionicons
+            name="people"
+            size={24}
+            color={hasNoPreference ? colors.onPrimary : colors.textSecondary}
           />
           <View style={styles.noPreferenceTextContainer}>
-            <Text style={[
-              styles.noPreferenceText,
-              { color: hasNoPreference ? colors.onPrimary : colors.text }
-            ]}>
+            <Text
+              style={[
+                styles.noPreferenceText,
+                { color: hasNoPreference ? colors.onPrimary : colors.text },
+              ]}
+            >
               Any group size
             </Text>
-            <Text style={[
-              styles.noPreferenceSubtext,
-              { color: hasNoPreference ? colors.onPrimary : colors.textSecondary }
-            ]}>
+            <Text
+              style={[
+                styles.noPreferenceSubtext,
+                {
+                  color: hasNoPreference
+                    ? colors.onPrimary
+                    : colors.textSecondary,
+                },
+              ]}
+            >
               No group size preference
             </Text>
           </View>
         </View>
-        <View style={[
-          styles.checkbox,
-          { 
-            backgroundColor: hasNoPreference ? colors.onPrimary : 'transparent',
-            borderColor: hasNoPreference ? colors.onPrimary : colors.border,
-          }
-        ]}>
+        <View
+          style={[
+            styles.checkbox,
+            {
+              backgroundColor: hasNoPreference
+                ? colors.onPrimary
+                : "transparent",
+              borderColor: hasNoPreference ? colors.onPrimary : colors.border,
+            },
+          ]}
+        >
           {hasNoPreference && (
             <Text style={[styles.checkmark, { color: colors.primary }]}>✓</Text>
           )}
@@ -161,50 +173,73 @@ export default function GroupSizePreferenceStep({
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Select preferred group sizes:
           </Text>
-          
+
           {PREFERENCE_OPTIONS.groupSizes.map((groupSize) => {
             const isSelected = selectedSizes.includes(groupSize.value);
-            
+
             return (
               <TouchableOpacity
                 key={groupSize.value}
                 style={[
                   styles.groupSizeOption,
-                  { 
-                    backgroundColor: isSelected ? colors.primary : colors.surface,
+                  {
+                    backgroundColor: isSelected
+                      ? colors.primary
+                      : colors.surface,
                     borderColor: isSelected ? colors.primary : colors.border,
-                  }
+                  },
                 ]}
                 onPress={() => handleSizeToggle(groupSize.value)}
               >
-                <Ionicons 
-                  name={getGroupSizeIcon(groupSize.value)} 
-                  size={24} 
-                  color={isSelected ? colors.onPrimary : colors.textSecondary} 
+                <Ionicons
+                  name={getGroupSizeIcon(groupSize.value)}
+                  size={24}
+                  color={isSelected ? colors.onPrimary : colors.textSecondary}
                 />
                 <View style={styles.groupSizeOptionContent}>
-                  <Text style={[
-                    styles.groupSizeOptionText,
-                    { color: isSelected ? colors.onPrimary : colors.text }
-                  ]}>
+                  <Text
+                    style={[
+                      styles.groupSizeOptionText,
+                      { color: isSelected ? colors.onPrimary : colors.text },
+                    ]}
+                  >
                     {groupSize.label}
                   </Text>
-                  <Text style={[
-                    styles.groupSizeOptionDescription,
-                    { color: isSelected ? colors.onPrimary : colors.textSecondary }
-                  ]}>
+                  <Text
+                    style={[
+                      styles.groupSizeOptionDescription,
+                      {
+                        color: isSelected
+                          ? colors.onPrimary
+                          : colors.textSecondary,
+                      },
+                    ]}
+                  >
                     {getGroupSizeDescription(groupSize.value)}
                   </Text>
                 </View>
-                <View style={[
-                  styles.optionCheckbox,
-                  { 
-                    backgroundColor: isSelected ? colors.onPrimary : 'transparent',
-                    borderColor: isSelected ? colors.onPrimary : colors.border,
-                  }
-                ]}>
+                <View
+                  style={[
+                    styles.optionCheckbox,
+                    {
+                      backgroundColor: isSelected
+                        ? colors.onPrimary
+                        : "transparent",
+                      borderColor: isSelected
+                        ? colors.onPrimary
+                        : colors.border,
+                    },
+                  ]}
+                >
                   {isSelected && (
-                    <Text style={[styles.optionCheckmark, { color: colors.primary }]}>✓</Text>
+                    <Text
+                      style={[
+                        styles.optionCheckmark,
+                        { color: colors.primary },
+                      ]}
+                    >
+                      ✓
+                    </Text>
                   )}
                 </View>
               </TouchableOpacity>
@@ -215,14 +250,20 @@ export default function GroupSizePreferenceStep({
 
       {/* Selection Summary */}
       {!hasNoPreference && selectedSizes.length > 0 && (
-        <View style={[styles.summaryContainer, { backgroundColor: colors.surface }]}>
+        <View
+          style={[styles.summaryContainer, { backgroundColor: colors.surface }]}
+        >
           <Text style={[styles.summaryTitle, { color: colors.text }]}>
             Selected group sizes:
           </Text>
           <Text style={[styles.summaryText, { color: colors.textSecondary }]}>
-            {selectedSizes.map(value => 
-              PREFERENCE_OPTIONS.groupSizes.find(g => g.value === value)?.label
-            ).join(', ')}
+            {selectedSizes
+              .map(
+                (value) =>
+                  PREFERENCE_OPTIONS.groupSizes.find((g) => g.value === value)
+                    ?.label
+              )
+              .join(", ")}
           </Text>
         </View>
       )}
@@ -230,14 +271,11 @@ export default function GroupSizePreferenceStep({
       {/* Action Buttons */}
       <View style={styles.actionButtons}>
         <TouchableOpacity
-          style={[
-            styles.nextButton,
-            { backgroundColor: colors.primary }
-          ]}
+          style={[styles.nextButton, { backgroundColor: colors.primary }]}
           onPress={handleNext}
         >
           <Text style={[styles.nextButtonText, { color: colors.onPrimary }]}>
-            {isLastStep ? 'Complete' : 'Next'}
+            {isLastStep ? "Complete" : "Next"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -257,18 +295,18 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
-    textAlign: 'center',
+    fontWeight: "700",
+    textAlign: "center",
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 22,
   },
   noPreferenceOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 20,
     borderRadius: 12,
     borderWidth: 2,
@@ -276,8 +314,8 @@ const styles = StyleSheet.create({
   },
   noPreferenceContent: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   noPreferenceTextContainer: {
     marginLeft: 16,
@@ -285,7 +323,7 @@ const styles = StyleSheet.create({
   },
   noPreferenceText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 4,
   },
   noPreferenceSubtext: {
@@ -296,24 +334,24 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   checkmark: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   groupSizeOptions: {
     marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 16,
   },
   groupSizeOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
     borderRadius: 12,
     borderWidth: 2,
@@ -325,7 +363,7 @@ const styles = StyleSheet.create({
   },
   groupSizeOptionText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 4,
   },
   groupSizeOptionDescription: {
@@ -336,12 +374,12 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   optionCheckmark: {
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   summaryContainer: {
     padding: 16,
@@ -350,23 +388,23 @@ const styles = StyleSheet.create({
   },
   summaryTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 4,
   },
   summaryText: {
     fontSize: 14,
   },
   actionButtons: {
-    marginTop: 'auto',
+    marginTop: "auto",
     paddingTop: 20,
   },
   nextButton: {
     paddingVertical: 16,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   nextButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

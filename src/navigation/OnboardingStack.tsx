@@ -46,10 +46,7 @@ export default function OnboardingStack() {
         name="OnboardingComplete"
         component={OnboardingCompleteScreen}
       />
-      <Stack.Screen
-        name="PreferenceSetup"
-        component={PreferenceSetupScreen}
-      />
+      <Stack.Screen name="PreferenceSetup" component={PreferenceSetupScreen} />
     </Stack.Navigator>
   );
 }

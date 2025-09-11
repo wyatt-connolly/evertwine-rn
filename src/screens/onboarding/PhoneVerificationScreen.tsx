@@ -18,6 +18,7 @@ import { useThemeStore } from "../../hooks/useThemeStore";
 import GradientBackground from "../../components/GradientBackground";
 import AnimatedButton from "../../components/AnimatedButton";
 import AnimatedCard from "../../components/AnimatedCard";
+import { Ionicons } from "@expo/vector-icons";
 
 type PhoneVerificationScreenNavigationProp = StackNavigationProp<
   OnboardingStackParamList,
@@ -179,6 +180,13 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
           <View style={styles.content}>
             <AnimatedCard delay={200} direction="up">
               <View style={styles.header}>
+                <View style={[styles.iconContainer, { backgroundColor: colors.primary + '20' }]}>
+                  <Ionicons 
+                    name={isCodeSent ? "shield-checkmark" : "call"} 
+                    size={32} 
+                    color={colors.primary} 
+                  />
+                </View>
                 <Text style={[styles.title, { color: colors.text }]}>
                   {isCodeSent
                     ? "Enter Verification Code"
@@ -188,8 +196,8 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
                   style={[styles.subtitle, { color: colors.textSecondary }]}
                 >
                   {isCodeSent
-                    ? `We sent a code to ${phoneNumber}`
-                    : "We'll send you a verification code"}
+                    ? `We sent a 6-digit code to ${phoneNumber}`
+                    : "We'll send you a verification code to confirm your number"}
                 </Text>
               </View>
             </AnimatedCard>
@@ -307,6 +315,14 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 20,
     alignItems: "center",
+  },
+  iconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
   },
   title: {
     fontSize: 32,

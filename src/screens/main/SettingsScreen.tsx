@@ -168,12 +168,21 @@ export default function SettingsScreen({ navigation }: any) {
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
             onPress={handlePreferences}
           >
-            <Ionicons name="settings-outline" size={24} color={colors.primary} />
+            <Ionicons
+              name="settings-outline"
+              size={24}
+              color={colors.primary}
+            />
             <View style={styles.preferenceContent}>
               <Text style={[styles.menuText, { color: colors.text }]}>
                 Manage Preferences
               </Text>
-              <Text style={[styles.preferenceSubtext, { color: colors.textSecondary }]}>
+              <Text
+                style={[
+                  styles.preferenceSubtext,
+                  { color: colors.textSecondary },
+                ]}
+              >
                 {completionPercentage}% complete
               </Text>
             </View>

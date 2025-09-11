@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Alert,
   SafeAreaView,
+  Dimensions,
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
@@ -16,6 +17,7 @@ import AnimatedLogo from "../../components/AnimatedLogo";
 import GradientBackground from "../../components/GradientBackground";
 import AnimatedButton from "../../components/AnimatedButton";
 import AnimatedCard from "../../components/AnimatedCard";
+import { Ionicons } from "@expo/vector-icons";
 
 type AuthHomeScreenNavigationProp = StackNavigationProp<
   OnboardingStackParamList,
@@ -135,18 +137,54 @@ export default function AuthHomeScreen({ navigation }: Props) {
         style={[styles.container, { backgroundColor: colors.background }]}
       >
         <View style={styles.content}>
+          {/* Header Section */}
           <AnimatedCard delay={200} direction="up">
             <View style={styles.logoContainer}>
-              <AnimatedLogo size={80} />
+              <View style={[styles.logoWrapper, { backgroundColor: colors.surface }]}>
+                <AnimatedLogo size={80} />
+              </View>
               <Text style={[styles.title, { color: colors.text }]}>
                 Welcome to Evertwine
               </Text>
               <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                Connect with people who share your interests
+                Connect with people who share your interests through amazing meetups
               </Text>
             </View>
           </AnimatedCard>
 
+          {/* Features Section */}
+          <AnimatedCard delay={400} direction="up">
+            <View style={styles.featuresContainer}>
+              <View style={styles.featureItem}>
+                <View style={[styles.featureIcon, { backgroundColor: colors.primary + '20' }]}>
+                  <Ionicons name="people" size={24} color={colors.primary} />
+                </View>
+                <Text style={[styles.featureText, { color: colors.text }]}>
+                  Meet New People
+                </Text>
+              </View>
+              
+              <View style={styles.featureItem}>
+                <View style={[styles.featureIcon, { backgroundColor: colors.primary + '20' }]}>
+                  <Ionicons name="location" size={24} color={colors.primary} />
+                </View>
+                <Text style={[styles.featureText, { color: colors.text }]}>
+                  Local Events
+                </Text>
+              </View>
+              
+              <View style={styles.featureItem}>
+                <View style={[styles.featureIcon, { backgroundColor: colors.primary + '20' }]}>
+                  <Ionicons name="heart" size={24} color={colors.primary} />
+                </View>
+                <Text style={[styles.featureText, { color: colors.text }]}>
+                  Shared Interests
+                </Text>
+              </View>
+            </View>
+          </AnimatedCard>
+
+          {/* Sign In Buttons */}
           <View style={styles.buttonContainer}>
             <AnimatedButton
               title="Continue with Phone"
@@ -154,6 +192,7 @@ export default function AuthHomeScreen({ navigation }: Props) {
               variant="primary"
               disabled={loading}
               style={styles.button}
+              icon="call"
             />
 
             <AnimatedButton
@@ -162,6 +201,7 @@ export default function AuthHomeScreen({ navigation }: Props) {
               variant="secondary"
               disabled={loading}
               style={styles.button}
+              icon="logo-apple"
             />
 
             <AnimatedButton
@@ -170,14 +210,22 @@ export default function AuthHomeScreen({ navigation }: Props) {
               variant="secondary"
               disabled={loading}
               style={styles.button}
+              icon="logo-google"
             />
           </View>
 
+          {/* Footer */}
           <AnimatedCard delay={800} direction="up">
             <View style={styles.footer}>
               <Text style={[styles.footerText, { color: colors.textTertiary }]}>
-                By continuing, you agree to our Terms of Service and Privacy
-                Policy
+                By continuing, you agree to our{" "}
+                <Text style={[styles.linkText, { color: colors.primary }]}>
+                  Terms of Service
+                </Text>{" "}
+                and{" "}
+                <Text style={[styles.linkText, { color: colors.primary }]}>
+                  Privacy Policy
+                </Text>
               </Text>
             </View>
           </AnimatedCard>
@@ -187,6 +235,8 @@ export default function AuthHomeScreen({ navigation }: Props) {
   );
 }
 
+const { width } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -195,35 +245,83 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
     justifyContent: "space-between",
+    paddingTop: 20,
+    paddingBottom: 20,
   },
   logoContainer: {
     alignItems: "center",
-    paddingVertical: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
+  },
+  logoWrapper: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    marginTop: 24,
+    fontSize: 28,
+    fontWeight: "700",
+    marginBottom: 8,
     textAlign: "center",
   },
   subtitle: {
-    fontSize: 16,
-    marginTop: 8,
+    fontSize: 14,
     textAlign: "center",
-    lineHeight: 22,
+    lineHeight: 20,
+    paddingHorizontal: 20,
+  },
+  featuresContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingVertical: 12,
+    marginBottom: 12,
+  },
+  featureItem: {
+    alignItems: "center",
+    flex: 1,
+  },
+  featureIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 6,
+  },
+  featureText: {
+    fontSize: 12,
+    fontWeight: "500",
+    textAlign: "center",
   },
   buttonContainer: {
-    paddingBottom: 40,
+    gap: 12,
+    paddingBottom: 10,
   },
   button: {
-    marginBottom: 16,
+    marginBottom: 0,
   },
   footer: {
-    paddingBottom: 20,
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingBottom: 10,
   },
   footerText: {
     fontSize: 12,
     textAlign: "center",
-    lineHeight: 16,
+    lineHeight: 18,
+  },
+  linkText: {
+    fontWeight: "500",
   },
 });

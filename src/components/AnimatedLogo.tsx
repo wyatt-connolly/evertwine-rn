@@ -10,56 +10,16 @@ interface AnimatedLogoProps {
 export default function AnimatedLogo({ size = 80 }: AnimatedLogoProps) {
   const { colors } = useThemeStore();
   const scaleAnim = useRef(new Animated.Value(0)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // Initial scale animation
+    // Initial scale animation only
     Animated.spring(scaleAnim, {
       toValue: 1,
       useNativeDriver: true,
       tension: 100,
       friction: 8,
     }).start();
-
-    // Continuous rotation animation
-    const rotateAnimation = Animated.loop(
-      Animated.timing(rotateAnim, {
-        toValue: 1,
-        duration: 20000, // 20 seconds for full rotation
-        useNativeDriver: true,
-      })
-    );
-
-    // Pulse animation
-    const pulseAnimation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-
-    rotateAnimation.start();
-    pulseAnimation.start();
-
-    return () => {
-      rotateAnimation.stop();
-      pulseAnimation.stop();
-    };
-  }, [scaleAnim, rotateAnim, pulseAnim]);
-
-  const rotateInterpolate = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"],
-  });
+  }, [scaleAnim]);
 
   return (
     <View style={styles.container}>
@@ -71,8 +31,6 @@ export default function AnimatedLogo({ size = 80 }: AnimatedLogoProps) {
             height: size,
             transform: [
               { scale: scaleAnim },
-              { scale: pulseAnim },
-              { rotate: rotateInterpolate },
             ],
           },
         ]}

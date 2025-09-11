@@ -1,15 +1,18 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useThemeStore } from '../../../hooks/useThemeStore';
-import { usePreferenceStore } from '../../../hooks/usePreferenceStore';
-import { getDisplayText, getPreferenceCompletionPercentage } from '../../../constants/preferences';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useThemeStore } from "../../../hooks/useThemeStore";
+import { usePreferenceStore } from "../../../hooks/usePreferenceStore";
+import {
+  getDisplayText,
+  getPreferenceCompletionPercentage,
+} from "../../../constants/preferences";
 
 interface PreferenceCompleteStepProps {
   onNext: () => void;
@@ -44,32 +47,42 @@ export default function PreferenceCompleteStep({
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <View style={[styles.successIcon, { backgroundColor: colors.success + '20' }]}>
+        <View
+          style={[
+            styles.successIcon,
+            { backgroundColor: colors.success + "20" },
+          ]}
+        >
           <Ionicons name="checkmark-circle" size={64} color={colors.success} />
         </View>
-        
+
         <Text style={[styles.title, { color: colors.text }]}>
           Preferences Complete!
         </Text>
-        
+
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          We've saved your preferences and will use them to find the perfect meetups for you.
+          We've saved your preferences and will use them to find the perfect
+          meetups for you.
         </Text>
       </View>
 
       {/* Completion Summary */}
-      <View style={[styles.summaryContainer, { backgroundColor: colors.surface }]}>
+      <View
+        style={[styles.summaryContainer, { backgroundColor: colors.surface }]}
+      >
         <Text style={[styles.summaryTitle, { color: colors.text }]}>
           Your Preferences Summary
         </Text>
-        
+
         <View style={styles.preferenceItem}>
           <Ionicons name="calendar" size={20} color={colors.textSecondary} />
           <View style={styles.preferenceContent}>
             <Text style={[styles.preferenceLabel, { color: colors.text }]}>
               Age Range
             </Text>
-            <Text style={[styles.preferenceValue, { color: colors.textSecondary }]}>
+            <Text
+              style={[styles.preferenceValue, { color: colors.textSecondary }]}
+            >
               {getDisplayText.ageRange(preferences.ageRange)}
             </Text>
           </View>
@@ -81,7 +94,9 @@ export default function PreferenceCompleteStep({
             <Text style={[styles.preferenceLabel, { color: colors.text }]}>
               Gender Preference
             </Text>
-            <Text style={[styles.preferenceValue, { color: colors.textSecondary }]}>
+            <Text
+              style={[styles.preferenceValue, { color: colors.textSecondary }]}
+            >
               {getDisplayText.genderPreference(preferences.genderPreference)}
             </Text>
           </View>
@@ -93,7 +108,9 @@ export default function PreferenceCompleteStep({
             <Text style={[styles.preferenceLabel, { color: colors.text }]}>
               Available Times
             </Text>
-            <Text style={[styles.preferenceValue, { color: colors.textSecondary }]}>
+            <Text
+              style={[styles.preferenceValue, { color: colors.textSecondary }]}
+            >
               {getDisplayText.timePreference(preferences.timePreference)}
             </Text>
           </View>
@@ -105,8 +122,12 @@ export default function PreferenceCompleteStep({
             <Text style={[styles.preferenceLabel, { color: colors.text }]}>
               Travel Distance
             </Text>
-            <Text style={[styles.preferenceValue, { color: colors.textSecondary }]}>
-              {getDisplayText.locationPreference(preferences.locationPreference)}
+            <Text
+              style={[styles.preferenceValue, { color: colors.textSecondary }]}
+            >
+              {getDisplayText.locationPreference(
+                preferences.locationPreference
+              )}
             </Text>
           </View>
         </View>
@@ -117,34 +138,50 @@ export default function PreferenceCompleteStep({
             <Text style={[styles.preferenceLabel, { color: colors.text }]}>
               Activity Interests
             </Text>
-            <Text style={[styles.preferenceValue, { color: colors.textSecondary }]}>
-              {getDisplayText.activityPreference(preferences.activityPreference)}
+            <Text
+              style={[styles.preferenceValue, { color: colors.textSecondary }]}
+            >
+              {getDisplayText.activityPreference(
+                preferences.activityPreference
+              )}
             </Text>
           </View>
         </View>
 
         <View style={styles.preferenceItem}>
-          <Ionicons name="people-circle" size={20} color={colors.textSecondary} />
+          <Ionicons
+            name="people-circle"
+            size={20}
+            color={colors.textSecondary}
+          />
           <View style={styles.preferenceContent}>
             <Text style={[styles.preferenceLabel, { color: colors.text }]}>
               Group Size
             </Text>
-            <Text style={[styles.preferenceValue, { color: colors.textSecondary }]}>
-              {getDisplayText.groupSizePreference(preferences.groupSizePreference)}
+            <Text
+              style={[styles.preferenceValue, { color: colors.textSecondary }]}
+            >
+              {getDisplayText.groupSizePreference(
+                preferences.groupSizePreference
+              )}
             </Text>
           </View>
         </View>
       </View>
 
       {/* Completion Stats */}
-      <View style={[styles.statsContainer, { backgroundColor: colors.surface }]}>
+      <View
+        style={[styles.statsContainer, { backgroundColor: colors.surface }]}
+      >
         <Text style={[styles.statsTitle, { color: colors.text }]}>
           Setup Complete
         </Text>
         <Text style={[styles.statsPercentage, { color: colors.primary }]}>
           {completionPercentage}%
         </Text>
-        <Text style={[styles.statsDescription, { color: colors.textSecondary }]}>
+        <Text
+          style={[styles.statsDescription, { color: colors.textSecondary }]}
+        >
           You're all set to start discovering amazing meetups!
         </Text>
       </View>
@@ -152,23 +189,19 @@ export default function PreferenceCompleteStep({
       {/* Action Buttons */}
       <View style={styles.actionButtons}>
         <TouchableOpacity
-          style={[
-            styles.completeButton,
-            { backgroundColor: colors.primary }
-          ]}
+          style={[styles.completeButton, { backgroundColor: colors.primary }]}
           onPress={handleComplete}
         >
           <Ionicons name="rocket" size={20} color={colors.onPrimary} />
-          <Text style={[styles.completeButtonText, { color: colors.onPrimary }]}>
+          <Text
+            style={[styles.completeButtonText, { color: colors.onPrimary }]}
+          >
             Start Exploring
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.editButton,
-            { borderColor: colors.border }
-          ]}
+          style={[styles.editButton, { borderColor: colors.border }]}
           onPress={handleEditPreferences}
         >
           <Ionicons name="create" size={20} color={colors.text} />
@@ -189,26 +222,26 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 32,
   },
   successIcon: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 24,
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
-    textAlign: 'center',
+    fontWeight: "700",
+    textAlign: "center",
     marginBottom: 12,
   },
   subtitle: {
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 22,
   },
   summaryContainer: {
@@ -218,13 +251,13 @@ const styles = StyleSheet.create({
   },
   summaryTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   preferenceItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
   preferenceContent: {
@@ -233,7 +266,7 @@ const styles = StyleSheet.create({
   },
   preferenceLabel: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 2,
   },
   preferenceValue: {
@@ -242,42 +275,42 @@ const styles = StyleSheet.create({
   statsContainer: {
     padding: 20,
     borderRadius: 16,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 32,
   },
   statsTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 8,
   },
   statsPercentage: {
     fontSize: 48,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 8,
   },
   statsDescription: {
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center",
   },
   actionButtons: {
     gap: 12,
   },
   completeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 16,
     borderRadius: 12,
     gap: 8,
   },
   completeButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   editButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 16,
     borderRadius: 12,
     borderWidth: 1,
@@ -285,6 +318,6 @@ const styles = StyleSheet.create({
   },
   editButtonText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });

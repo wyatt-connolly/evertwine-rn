@@ -38,7 +38,10 @@ function ProfileStackNavigator() {
       <ProfileStack.Screen name="ProfileMain" component={ProfileScreen} />
       <ProfileStack.Screen name="EditProfile" component={EditProfileScreen} />
       <ProfileStack.Screen name="Settings" component={SettingsScreen} />
-      <ProfileStack.Screen name="PreferenceSetup" component={PreferenceSetupScreen} />
+      <ProfileStack.Screen
+        name="PreferenceSetup"
+        component={PreferenceSetupScreen}
+      />
     </ProfileStack.Navigator>
   );
 }
