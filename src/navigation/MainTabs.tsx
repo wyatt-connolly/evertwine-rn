@@ -9,6 +9,7 @@ import MessagesScreen from "../screens/main/MessagesScreen";
 import ProfileScreen from "../screens/main/ProfileScreen";
 import EditProfileScreen from "../screens/main/EditProfileScreen";
 import SettingsScreen from "../screens/main/SettingsScreen";
+import PreferenceSetupScreen from "../screens/preferences/PreferenceSetupScreen";
 
 export type MainTabParamList = {
   Home: undefined;
@@ -21,6 +22,7 @@ export type ProfileStackParamList = {
   ProfileMain: undefined;
   EditProfile: undefined;
   Settings: undefined;
+  PreferenceSetup: undefined;
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -36,6 +38,7 @@ function ProfileStackNavigator() {
       <ProfileStack.Screen name="ProfileMain" component={ProfileScreen} />
       <ProfileStack.Screen name="EditProfile" component={EditProfileScreen} />
       <ProfileStack.Screen name="Settings" component={SettingsScreen} />
+      <ProfileStack.Screen name="PreferenceSetup" component={PreferenceSetupScreen} />
     </ProfileStack.Navigator>
   );
 }

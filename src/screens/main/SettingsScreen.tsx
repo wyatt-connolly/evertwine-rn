@@ -12,10 +12,13 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { usePreferenceStore } from "../../hooks/usePreferenceStore";
+import { getPreferenceCompletionPercentage } from "../../constants/preferences";
 
 export default function SettingsScreen({ navigation }: any) {
   const { user, logout } = useAuthStore();
   const { isDarkMode, toggleTheme, colors } = useThemeStore();
+  const { preferences, getCompletionPercentage } = usePreferenceStore();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [locationEnabled, setLocationEnabled] = useState(true);
 
@@ -79,6 +82,12 @@ export default function SettingsScreen({ navigation }: any) {
     );
   };
 
+  const handlePreferences = () => {
+    navigation.navigate("PreferenceSetup");
+  };
+
+  const completionPercentage = getCompletionPercentage();
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -141,6 +150,33 @@ export default function SettingsScreen({ navigation }: any) {
             <Text style={[styles.menuText, { color: colors.text }]}>
               Export Data
             </Text>
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={colors.textTertiary}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Preferences Section */}
+        <View style={[styles.section, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Meetup Preferences
+          </Text>
+
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={handlePreferences}
+          >
+            <Ionicons name="settings-outline" size={24} color={colors.primary} />
+            <View style={styles.preferenceContent}>
+              <Text style={[styles.menuText, { color: colors.text }]}>
+                Manage Preferences
+              </Text>
+              <Text style={[styles.preferenceSubtext, { color: colors.textSecondary }]}>
+                {completionPercentage}% complete
+              </Text>
+            </View>
             <Ionicons
               name="chevron-forward"
               size={20}
@@ -398,6 +434,14 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     marginLeft: 16,
+  },
+  preferenceContent: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  preferenceSubtext: {
+    fontSize: 14,
+    marginTop: 2,
   },
   dangerItem: {
     flexDirection: "row",

@@ -11,6 +11,7 @@ import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
 import { FirestoreService } from "../../services/firebase";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { usePreferenceStore } from "../../hooks/usePreferenceStore";
 import GradientBackground from "../../components/GradientBackground";
 import AnimatedButton from "../../components/AnimatedButton";
 import AnimatedCard from "../../components/AnimatedCard";
@@ -30,11 +31,15 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
 
   const { user, setOnboardingComplete, updateUserProfile } = useAuthStore();
   const { colors } = useThemeStore();
+  const { loadPreferences } = usePreferenceStore();
 
   const handleGetStarted = async () => {
     setLoading(true);
 
     try {
+      // Load preferences
+      await loadPreferences();
+      
       // Update local state
       setOnboardingComplete(true);
       updateUserProfile({ onboardingComplete: true });
@@ -50,6 +55,38 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
           console.log("✅ Onboarding completed successfully!");
         }
       }
+    } catch (error) {
+      console.error("Error completing onboarding:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSetupPreferences = async () => {
+    setLoading(true);
+
+    try {
+      // Load preferences
+      await loadPreferences();
+      
+      // Update local state
+      setOnboardingComplete(true);
+      updateUserProfile({ onboardingComplete: true });
+
+      if (user?.uid) {
+        const result = await FirestoreService.updateUser(user.uid, {
+          onboardingComplete: true,
+        });
+
+        if (result.error) {
+          console.error("Failed to update onboarding status:", result.error);
+        } else {
+          console.log("✅ Onboarding completed successfully!");
+        }
+      }
+
+      // Navigate to preference setup
+      navigation.navigate("PreferenceSetup");
     } catch (error) {
       console.error("Error completing onboarding:", error);
     } finally {
@@ -106,14 +143,24 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
             </View>
           </AnimatedCard>
 
-          <AnimatedButton
-            title={loading ? "Getting Started..." : "Get Started"}
-            onPress={handleGetStarted}
-            variant="primary"
-            disabled={loading}
-            loading={loading}
-            style={styles.button}
-          />
+          <View style={styles.buttonContainer}>
+            <AnimatedButton
+              title={loading ? "Getting Started..." : "Setup Preferences"}
+              onPress={handleSetupPreferences}
+              variant="primary"
+              disabled={loading}
+              loading={loading}
+              style={styles.primaryButton}
+            />
+            
+            <AnimatedButton
+              title="Skip for Now"
+              onPress={handleGetStarted}
+              variant="outline"
+              disabled={loading}
+              style={styles.secondaryButton}
+            />
+          </View>
         </View>
       </SafeAreaView>
     </GradientBackground>
@@ -164,7 +211,13 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     fontWeight: "500",
   },
-  button: {
+  buttonContainer: {
+    gap: 12,
+  },
+  primaryButton: {
     marginTop: 20,
+  },
+  secondaryButton: {
+    marginTop: 0,
   },
 });

@@ -6,6 +6,7 @@ import ProfileSetupScreen from "../screens/onboarding/ProfileSetupScreen";
 import InterestSelectionScreen from "../screens/onboarding/InterestSelectionScreen";
 import LocationPermissionScreen from "../screens/onboarding/LocationPermissionScreen";
 import OnboardingCompleteScreen from "../screens/onboarding/OnboardingCompleteScreen";
+import PreferenceSetupScreen from "../screens/preferences/PreferenceSetupScreen";
 
 export type OnboardingStackParamList = {
   AuthHome: undefined;
@@ -14,6 +15,7 @@ export type OnboardingStackParamList = {
   InterestSelection: undefined;
   LocationPermission: undefined;
   OnboardingComplete: undefined;
+  PreferenceSetup: undefined;
 };
 
 const Stack = createStackNavigator<OnboardingStackParamList>();
@@ -43,6 +45,10 @@ export default function OnboardingStack() {
       <Stack.Screen
         name="OnboardingComplete"
         component={OnboardingCompleteScreen}
+      />
+      <Stack.Screen
+        name="PreferenceSetup"
+        component={PreferenceSetupScreen}
       />
     </Stack.Navigator>
   );
