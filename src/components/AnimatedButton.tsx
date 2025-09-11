@@ -6,7 +6,9 @@ import {
   Animated,
   ViewStyle,
   TextStyle,
+  View,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../hooks/useThemeStore";
 
 interface AnimatedButtonProps {
@@ -17,6 +19,7 @@ interface AnimatedButtonProps {
   variant?: "primary" | "secondary" | "outline";
   disabled?: boolean;
   loading?: boolean;
+  icon?: keyof typeof Ionicons.glyphMap;
 }
 
 export default function AnimatedButton({
@@ -27,6 +30,7 @@ export default function AnimatedButton({
   variant = "primary",
   disabled = false,
   loading = false,
+  icon,
 }: AnimatedButtonProps) {
   const { colors } = useThemeStore();
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -125,9 +129,19 @@ export default function AnimatedButton({
         disabled={disabled || loading}
         activeOpacity={0.8}
       >
-        <Text style={[...getTextStyle(), textStyle]}>
-          {loading ? "Loading..." : title}
-        </Text>
+        <View style={styles.buttonContent}>
+          {icon && (
+            <Ionicons
+              name={icon}
+              size={20}
+              color={variant === "primary" ? colors.onPrimary : colors.primary}
+              style={styles.icon}
+            />
+          )}
+          <Text style={[...getTextStyle(), textStyle]}>
+            {loading ? "Loading..." : title}
+          </Text>
+        </View>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -141,6 +155,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     minHeight: 50,
+  },
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  icon: {
+    marginRight: 8,
   },
   text: {
     fontSize: 16,

@@ -16,7 +16,7 @@ export default function GradientBackground({
 }: GradientBackgroundProps) {
   const { colors } = useThemeStore();
 
-  const getGradientColors = () => {
+  const getGradientColors = (): [string, string] => {
     switch (variant) {
       case "primary":
         return [colors.gradientStart, colors.gradientEnd];

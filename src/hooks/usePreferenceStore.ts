@@ -190,14 +190,11 @@ export const usePreferenceStore = create<PreferenceState & PreferenceActions>((s
 }));
 
 // Auto-save preferences when they change
-usePreferenceStore.subscribe(
-  (state) => state.preferences,
-  (preferences) => {
-    // Debounce the save operation
-    const timeoutId = setTimeout(() => {
-      usePreferenceStore.getState().savePreferences();
-    }, 1000);
-    
-    return () => clearTimeout(timeoutId);
-  }
-);
+usePreferenceStore.subscribe((state) => {
+  // Debounce the save operation
+  const timeoutId = setTimeout(() => {
+    usePreferenceStore.getState().savePreferences();
+  }, 1000);
+  
+  return () => clearTimeout(timeoutId);
+});

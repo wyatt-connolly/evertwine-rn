@@ -248,7 +248,6 @@ export class AuthService {
 
                 await updateProfile(userCredential.user, {
                   displayName: "New User",
-                  phoneNumber: phoneNumber,
                 });
 
                 const user = {
@@ -317,7 +316,7 @@ export class AuthService {
         if (profileResult.user) {
           console.log("✅ Profile data loaded:", {
             uid: profileResult.user.uid,
-            hasCompletedOnboarding: profileResult.user.hasCompletedOnboarding,
+            onboardingComplete: profileResult.user.onboardingComplete,
             displayName: profileResult.user.displayName,
             phoneNumber: profileResult.user.phoneNumber,
             timestamp: new Date().toISOString(),
@@ -353,7 +352,7 @@ export class AuthService {
   // Google Authentication
   static async signInWithGoogle() {
     try {
-      if (isSimulator()) {
+      if (__DEV__) {
         // Simulator mode: Create a mock Google user
         const mockUser = {
           uid: `google_simulator_${Date.now()}`,
@@ -421,7 +420,7 @@ export class AuthService {
   // Apple Authentication
   static async signInWithApple() {
     try {
-      if (isSimulator()) {
+      if (__DEV__) {
         // Simulator mode: Create a mock Apple user
         const mockUser = {
           uid: `apple_simulator_${Date.now()}`,
@@ -540,7 +539,7 @@ export class FirestoreService {
     }
   }
 
-  static async updateUser(uid: string, updates: Partial<User>) {
+  static async updateUser(uid: string, updates: any) {
     try {
       console.log("📝 UPDATING USER IN FIRESTORE:", {
         uid: uid,

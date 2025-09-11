@@ -1,4 +1,20 @@
-// Core User Types
+// Auth User Types (simplified for authentication)
+export interface AuthUser {
+  uid: string;
+  email?: string;
+  phoneNumber?: string;
+  displayName?: string;
+  photoURL?: string;
+  onboardingComplete?: boolean;
+  interests?: string[];
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
+  bio?: string;
+}
+
+// Core User Types (full profile)
 export interface User {
   // Core Identity
   uid: string;

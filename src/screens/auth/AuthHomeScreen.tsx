@@ -48,15 +48,15 @@ export default function AuthHomeScreen({ navigation }: Props) {
       }
 
       const user = {
-        uid: result.user.uid,
-        phoneNumber: result.user.phoneNumber || undefined,
-        displayName: result.user.displayName || undefined,
-        email: result.user.email || undefined,
-        photoURL: result.user.photoURL || undefined,
-        onboardingComplete: result.user.onboardingComplete || false,
-        interests: result.user.interests || undefined,
-        location: result.user.location || undefined,
-        bio: result.user.bio || undefined,
+        uid: result.user?.uid || "",
+        phoneNumber: (result.user as any)?.phoneNumber || undefined,
+        displayName: (result.user as any)?.displayName || undefined,
+        email: (result.user as any)?.email || undefined,
+        photoURL: (result.user as any)?.photoURL || undefined,
+        onboardingComplete: (result.user as any)?.onboardingComplete || false,
+        interests: (result.user as any)?.interests || undefined,
+        location: (result.user as any)?.location || undefined,
+        bio: (result.user as any)?.bio || undefined,
       };
 
       setUser(user);
@@ -95,15 +95,15 @@ export default function AuthHomeScreen({ navigation }: Props) {
       }
 
       const user = {
-        uid: result.user.uid,
-        phoneNumber: result.user.phoneNumber || undefined,
-        displayName: result.user.displayName || undefined,
-        email: result.user.email || undefined,
-        photoURL: result.user.photoURL || undefined,
-        onboardingComplete: result.user.onboardingComplete || false,
-        interests: result.user.interests || undefined,
-        location: result.user.location || undefined,
-        bio: result.user.bio || undefined,
+        uid: result.user?.uid || "",
+        phoneNumber: (result.user as any)?.phoneNumber || undefined,
+        displayName: (result.user as any)?.displayName || undefined,
+        email: (result.user as any)?.email || undefined,
+        photoURL: (result.user as any)?.photoURL || undefined,
+        onboardingComplete: (result.user as any)?.onboardingComplete || false,
+        interests: (result.user as any)?.interests || undefined,
+        location: (result.user as any)?.location || undefined,
+        bio: (result.user as any)?.bio || undefined,
       };
 
       setUser(user);
@@ -140,18 +140,18 @@ export default function AuthHomeScreen({ navigation }: Props) {
           {/* Header Section */}
           <AnimatedCard delay={200} direction="up">
             <View style={styles.logoContainer}>
-                <View
-                  style={[
-                    styles.logoWrapper,
-                    { backgroundColor: colors.surface },
-                  ]}
-                >
-                  <Image
-                    source={require("../../assets/app_launcher_icon.png")}
-                    style={styles.logoImage}
-                    resizeMode="contain"
-                  />
-                </View>
+              <View
+                style={[
+                  styles.logoWrapper,
+                  { backgroundColor: colors.surface },
+                ]}
+              >
+                <Image
+                  source={require("../../assets/app_launcher_icon.png")}
+                  style={styles.logoImage}
+                  resizeMode="contain"
+                />
+              </View>
               <Text style={[styles.title, { color: colors.text }]}>
                 Welcome to Evertwine
               </Text>
