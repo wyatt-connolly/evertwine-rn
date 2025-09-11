@@ -5,24 +5,28 @@ A beautiful, modern social meetup app built with React Native, Expo, and Firebas
 ## ✨ Features
 
 ### 🔐 Authentication
+
 - **Phone Number Verification** - Secure SMS-based authentication
 - **Apple Sign-In** - Native iOS authentication
 - **Google Sign-In** - Google OAuth integration
 - **Firebase Authentication** - Secure user management
 
 ### 🎨 User Experience
+
 - **Dark/Light Theme** - Beautiful theming with user preference
 - **Animated Onboarding** - Smooth, engaging user introduction
 - **Gradient Backgrounds** - Modern visual design
 - **Responsive Design** - Optimized for all screen sizes
 
 ### 👤 Profile Management
+
 - **Profile Creation** - Display name, bio, and photo upload
 - **Interest Selection** - Choose from curated interest categories
 - **Location Services** - Enable location-based meetups
 - **Profile Editing** - Update your information anytime
 
 ### 🏠 Main App
+
 - **Home Feed** - Discover nearby meetups and events
 - **Explore** - Browse events by category and location
 - **Messages** - Connect with other users
@@ -31,6 +35,7 @@ A beautiful, modern social meetup app built with React Native, Expo, and Firebas
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js (v18 or higher)
 - npm or yarn
 - Expo CLI
@@ -40,17 +45,20 @@ A beautiful, modern social meetup app built with React Native, Expo, and Firebas
 ### Installation
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/wyatt-connolly/evertwine-rn.git
    cd evertwine-rn
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Start the development server:**
+
    ```bash
    npm start
    ```
@@ -65,6 +73,7 @@ A beautiful, modern social meetup app built with React Native, Expo, and Firebas
 ## 🔧 Configuration
 
 ### Firebase Setup
+
 The app uses Firebase for authentication, database, and storage:
 
 - **Project ID:** `evertwine-qm8y7p`
@@ -72,7 +81,9 @@ The app uses Firebase for authentication, database, and storage:
 - **Storage Bucket:** `evertwine-qm8y7p.appspot.com`
 
 ### Environment Variables
+
 Create a `.env` file in the root directory:
+
 ```env
 EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key
 EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=evertwine-qm8y7p.firebaseapp.com
@@ -113,12 +124,14 @@ src/
 ## 🎨 Design System
 
 ### Theme Colors
+
 - **Light Mode:** Clean, modern light theme
 - **Dark Mode:** Beautiful dark theme with proper contrast
 - **Gradients:** Blue gradient system for onboarding
 - **Animations:** Smooth transitions and micro-interactions
 
 ### Components
+
 - **AnimatedButton** - Interactive buttons with press feedback
 - **AnimatedCard** - Cards with slide-in animations
 - **GradientBackground** - Beautiful gradient backgrounds
@@ -127,10 +140,12 @@ src/
 ## 🔄 Development Workflow
 
 ### Branch Strategy
+
 - **main** - Production-ready code
 - **develop** - Integration branch for features
 
 ### Getting Started with Development
+
 1. Create a feature branch from `develop`
 2. Make your changes
 3. Test thoroughly
@@ -141,20 +156,25 @@ src/
 ## 🧪 Testing
 
 ### Firebase Testing
+
 The app includes a comprehensive Firebase test screen:
+
 - Connection status verification
 - Authentication testing
 - Firestore operations
 - Storage functionality
 
 ### Manual Testing
+
 1. **Onboarding Flow:**
+
    - Phone verification (use any 6-digit code in development)
    - Profile setup with photo upload
    - Interest selection
    - Location permission
 
 2. **Authentication:**
+
    - Phone number sign-in
    - Apple/Google sign-in (simulated in Expo Go)
    - Profile persistence
@@ -167,6 +187,7 @@ The app includes a comprehensive Firebase test screen:
 ## 🚀 Deployment
 
 ### Expo Build
+
 ```bash
 # Build for iOS
 expo build:ios
@@ -176,6 +197,7 @@ expo build:android
 ```
 
 ### App Store Deployment
+
 1. Build production version
 2. Submit to App Store Connect
 3. Configure app metadata
@@ -204,6 +226,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 If you have any questions or need help:
+
 - Create an issue on GitHub
 - Check the documentation
 - Review the troubleshooting section
