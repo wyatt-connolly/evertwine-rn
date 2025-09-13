@@ -12,6 +12,7 @@ import { FirestoreService } from "../../services/firebase";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { usePreferenceStore } from "../../hooks/usePreferenceStore";
+import { DEFAULT_PREFERENCES } from "../../constants/preferences";
 import GradientBackground from "../../components/GradientBackground";
 import AnimatedButton from "../../components/AnimatedButton";
 import AnimatedCard from "../../components/AnimatedCard";
@@ -45,14 +46,16 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
       updateUserProfile({ onboardingComplete: true });
 
       if (user?.uid) {
+        // Write default preferences to Firebase
         const result = await FirestoreService.updateUser(user.uid, {
           onboardingComplete: true,
+          preferences: DEFAULT_PREFERENCES,
         });
 
         if (result.error) {
           console.error("Failed to update onboarding status:", result.error);
         } else {
-          console.log("✅ Onboarding completed successfully!");
+          console.log("✅ Onboarding completed with default preferences!");
         }
       }
     } catch (error) {
@@ -63,6 +66,7 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
   };
 
   const handleSetupPreferences = async () => {
+    console.log("🎯 Setup Preferences button pressed");
     setLoading(true);
 
     try {
@@ -86,6 +90,7 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
       }
 
       // Navigate to preference setup
+      console.log("🔄 Navigating to PreferenceSetup...");
       navigation.navigate("PreferenceSetup");
     } catch (error) {
       console.error("Error completing onboarding:", error);

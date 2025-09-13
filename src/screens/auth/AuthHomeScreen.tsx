@@ -7,7 +7,6 @@ import {
   Alert,
   SafeAreaView,
   Dimensions,
-  Image,
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
@@ -146,10 +145,10 @@ export default function AuthHomeScreen({ navigation }: Props) {
                   { backgroundColor: colors.surface },
                 ]}
               >
-                <Image
-                  source={require("../../assets/icon.png")}
-                  style={styles.logoImage}
-                  resizeMode="contain"
+                <Ionicons
+                  name="people-circle"
+                  size={80}
+                  color={colors.primary}
                 />
               </View>
               <Text style={[styles.title, { color: colors.text }]}>
@@ -293,10 +292,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
-  },
-  logoImage: {
-    width: 80,
-    height: 80,
   },
   title: {
     fontSize: 28,

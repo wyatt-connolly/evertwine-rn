@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,20 +6,25 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Alert,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useThemeStore } from '../../hooks/useThemeStore';
-import { usePreferenceStore } from '../../hooks/usePreferenceStore';
-import { getPreferenceCompletionPercentage } from '../../constants/preferences';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useThemeStore } from "../../hooks/useThemeStore";
+import { usePreferenceStore } from "../../hooks/usePreferenceStore";
+import {
+  getPreferenceCompletionPercentage,
+  DEFAULT_PREFERENCES,
+} from "../../constants/preferences";
+import { useAuthStore } from "../../hooks/useAuthStore";
+import { FirestoreService } from "../../services/firebase";
 
 // Import preference step components
-import AgeRangeStep from './steps/AgeRangeStep';
-import GenderPreferenceStep from './steps/GenderPreferenceStep';
-import TimePreferenceStep from './steps/TimePreferenceStep';
-import LocationPreferenceStep from './steps/LocationPreferenceStep';
-import ActivityPreferenceStep from './steps/ActivityPreferenceStep';
-import GroupSizePreferenceStep from './steps/GroupSizePreferenceStep';
-import PreferenceCompleteStep from './steps/PreferenceCompleteStep';
+import AgeRangeStep from "./steps/AgeRangeStep";
+import GenderPreferenceStep from "./steps/GenderPreferenceStep";
+import TimePreferenceStep from "./steps/TimePreferenceStep";
+import LocationPreferenceStep from "./steps/LocationPreferenceStep";
+import ActivityPreferenceStep from "./steps/ActivityPreferenceStep";
+import GroupSizePreferenceStep from "./steps/GroupSizePreferenceStep";
+import PreferenceCompleteStep from "./steps/PreferenceCompleteStep";
 
 interface PreferenceSetupScreenProps {
   navigation: any;
@@ -28,28 +33,45 @@ interface PreferenceSetupScreenProps {
 }
 
 const PREFERENCE_STEPS = [
-  { id: 'ageRange', title: 'Age Range', component: AgeRangeStep },
-  { id: 'genderPreference', title: 'Gender Preference', component: GenderPreferenceStep },
-  { id: 'timePreference', title: 'Time Preferences', component: TimePreferenceStep },
-  { id: 'locationPreference', title: 'Location Distance', component: LocationPreferenceStep },
-  { id: 'activityPreference', title: 'Activity Interests', component: ActivityPreferenceStep },
-  { id: 'groupSizePreference', title: 'Group Size', component: GroupSizePreferenceStep },
-  { id: 'complete', title: 'Complete', component: PreferenceCompleteStep },
+  { id: "ageRange", title: "Age Range", component: AgeRangeStep },
+  {
+    id: "genderPreference",
+    title: "Gender Preference",
+    component: GenderPreferenceStep,
+  },
+  {
+    id: "timePreference",
+    title: "Time Preferences",
+    component: TimePreferenceStep,
+  },
+  {
+    id: "locationPreference",
+    title: "Location Distance",
+    component: LocationPreferenceStep,
+  },
+  {
+    id: "activityPreference",
+    title: "Activity Interests",
+    component: ActivityPreferenceStep,
+  },
+  {
+    id: "groupSizePreference",
+    title: "Group Size",
+    component: GroupSizePreferenceStep,
+  },
+  { id: "complete", title: "Complete", component: PreferenceCompleteStep },
 ];
 
-export default function PreferenceSetupScreen({ 
-  navigation, 
-  onComplete, 
-  onSkip 
+export default function PreferenceSetupScreen({
+  navigation,
+  onComplete,
+  onSkip,
 }: PreferenceSetupScreenProps) {
   const { colors } = useThemeStore();
-  const { 
-    preferences, 
-    markPreferencesComplete, 
-    savePreferences,
-    isLoading 
-  } = usePreferenceStore();
-  
+  const { user } = useAuthStore();
+  const { preferences, markPreferencesComplete, savePreferences, isLoading } =
+    usePreferenceStore();
+
   const [currentStep, setCurrentStep] = useState(0);
   const [canGoBack, setCanGoBack] = useState(false);
 
@@ -73,20 +95,48 @@ export default function PreferenceSetupScreen({
 
   const handleSkip = () => {
     Alert.alert(
-      'Skip Preferences',
-      'You can always set your preferences later in Settings. Are you sure you want to skip?',
+      "Skip Preferences",
+      "You can always set your preferences later in Settings. Are you sure you want to skip?",
       [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Skip', 
-          style: 'destructive',
-          onPress: () => {
-            if (onSkip) {
-              onSkip();
-            } else {
-              navigation.goBack();
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Skip",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // Save default preferences to Firebase
+              if (user?.uid) {
+                const result = await FirestoreService.updateUser(user.uid, {
+                  preferences: DEFAULT_PREFERENCES,
+                });
+
+                if (result.error) {
+                  console.error(
+                    "Failed to save default preferences to Firebase:",
+                    result.error
+                  );
+                } else {
+                  console.log("✅ Default preferences saved to Firebase!");
+                }
+              }
+
+              if (onSkip) {
+                onSkip();
+              } else {
+                // Navigate to main app
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: "MainTabs" }],
+                });
+              }
+            } catch (error) {
+              console.error("Error saving default preferences:", error);
+              Alert.alert(
+                "Error",
+                "Failed to save preferences. Please try again."
+              );
             }
-          }
+          },
         },
       ]
     );
@@ -96,21 +146,42 @@ export default function PreferenceSetupScreen({
     try {
       await markPreferencesComplete();
       await savePreferences();
-      
+
+      // Save preferences to Firebase
+      if (user?.uid) {
+        const result = await FirestoreService.updateUser(user.uid, {
+          preferences: preferences,
+        });
+
+        if (result.error) {
+          console.error(
+            "Failed to save preferences to Firebase:",
+            result.error
+          );
+        } else {
+          console.log("✅ Preferences saved to Firebase successfully!");
+        }
+      }
+
       if (onComplete) {
         onComplete();
       } else {
-        navigation.goBack();
+        // Navigate to main app
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "MainTabs" }],
+        });
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to save preferences. Please try again.');
+      console.error("Error saving preferences:", error);
+      Alert.alert("Error", "Failed to save preferences. Please try again.");
     }
   };
 
   const renderStep = () => {
     const step = PREFERENCE_STEPS[currentStep];
     const StepComponent = step.component;
-    
+
     return (
       <StepComponent
         onNext={handleNext}
@@ -132,7 +203,9 @@ export default function PreferenceSetupScreen({
   const completionPercentage = getPreferenceCompletionPercentage(preferences);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <View style={styles.headerLeft}>
@@ -142,7 +215,7 @@ export default function PreferenceSetupScreen({
             </TouchableOpacity>
           )}
         </View>
-        
+
         <View style={styles.headerCenter}>
           <Text style={[styles.title, { color: colors.text }]}>
             {PREFERENCE_STEPS[currentStep].title}
@@ -151,10 +224,12 @@ export default function PreferenceSetupScreen({
             Step {currentStep + 1} of {PREFERENCE_STEPS.length}
           </Text>
         </View>
-        
+
         <View style={styles.headerRight}>
           <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
-            <Text style={[styles.skipButtonText, { color: colors.textSecondary }]}>
+            <Text
+              style={[styles.skipButtonText, { color: colors.textSecondary }]}
+            >
               Skip
             </Text>
           </TouchableOpacity>
@@ -162,14 +237,16 @@ export default function PreferenceSetupScreen({
       </View>
 
       {/* Progress Bar */}
-      <View style={[styles.progressContainer, { backgroundColor: colors.surface }]}>
+      <View
+        style={[styles.progressContainer, { backgroundColor: colors.surface }]}
+      >
         <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
           <View
             style={[
               styles.progressFill,
-              { 
+              {
                 backgroundColor: colors.primary,
-                width: `${getProgressPercentage()}%` 
+                width: `${getProgressPercentage()}%`,
               },
             ]}
           />
@@ -180,14 +257,19 @@ export default function PreferenceSetupScreen({
       </View>
 
       {/* Step Content */}
-      <View style={styles.content}>
-        {renderStep()}
-      </View>
+      <View style={styles.content}>{renderStep()}</View>
 
       {/* Loading Overlay */}
       {isLoading && (
-        <View style={[styles.loadingOverlay, { backgroundColor: colors.overlay }]}>
-          <View style={[styles.loadingContainer, { backgroundColor: colors.surface }]}>
+        <View
+          style={[styles.loadingOverlay, { backgroundColor: colors.overlay }]}
+        >
+          <View
+            style={[
+              styles.loadingContainer,
+              { backgroundColor: colors.surface },
+            ]}
+          >
             <Text style={[styles.loadingText, { color: colors.text }]}>
               Saving preferences...
             </Text>
@@ -203,31 +285,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
   },
   headerLeft: {
     width: 60,
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
   },
   headerCenter: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   headerRight: {
     width: 60,
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   backButton: {
     padding: 8,
   },
   title: {
     fontSize: 18,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 14,
@@ -238,7 +320,7 @@ const styles = StyleSheet.create({
   },
   skipButtonText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   progressContainer: {
     paddingHorizontal: 20,
@@ -247,33 +329,33 @@ const styles = StyleSheet.create({
   progressBar: {
     height: 4,
     borderRadius: 2,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   progressFill: {
-    height: '100%',
+    height: "100%",
     borderRadius: 2,
   },
   progressText: {
     fontSize: 12,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 8,
   },
   content: {
     flex: 1,
   },
   loadingOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingContainer: {
     padding: 20,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   loadingText: {
     fontSize: 16,
