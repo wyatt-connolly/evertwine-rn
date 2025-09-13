@@ -147,20 +147,65 @@ export default function ProfileScreen({ navigation }: any) {
             <Text style={[styles.name, { color: colors.text }]}>
               {user?.displayName || "User"}
             </Text>
-            {user?.email && (
-              <Text style={[styles.email, { color: colors.textSecondary }]}>
-                {user.email}
-              </Text>
-            )}
-            {user?.phoneNumber && (
-              <Text style={[styles.phone, { color: colors.textSecondary }]}>
-                {user.phoneNumber}
-              </Text>
-            )}
             {user?.bio && (
               <Text style={[styles.bio, { color: colors.textSecondary }]}>
                 {user.bio}
               </Text>
+            )}
+            {user?.interests && user.interests.length > 0 && (
+              <View style={styles.interestsContainer}>
+                <Text
+                  style={[
+                    styles.interestsLabel,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Interests
+                </Text>
+                <View style={styles.interestsList}>
+                  {user.interests.slice(0, 6).map((interest, index) => (
+                    <View
+                      key={index}
+                      style={[
+                        styles.interestTag,
+                        {
+                          backgroundColor: colors.primary + "20",
+                          borderColor: colors.primary + "40",
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.interestTagText,
+                          { color: colors.primary },
+                        ]}
+                      >
+                        {interest}
+                      </Text>
+                    </View>
+                  ))}
+                  {user.interests.length > 6 && (
+                    <View
+                      style={[
+                        styles.interestTag,
+                        {
+                          backgroundColor: colors.surfaceVariant,
+                          borderColor: colors.border,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.interestTagText,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
+                        +{user.interests.length - 6} more
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
             )}
           </View>
         </View>
@@ -375,6 +420,35 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
     lineHeight: 20,
+    marginBottom: 12,
+  },
+  interestsContainer: {
+    alignItems: "center",
+    marginTop: 8,
+  },
+  interestsLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    marginBottom: 8,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  interestsList: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    maxWidth: 280,
+  },
+  interestTag: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    margin: 2,
+  },
+  interestTagText: {
+    fontSize: 12,
+    fontWeight: "500",
   },
   statsContainer: {
     flexDirection: "row",

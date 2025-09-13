@@ -16,6 +16,33 @@ import { useThemeStore } from "../../hooks/useThemeStore";
 import { FirestoreService } from "../../services/firebase";
 import * as ImagePicker from "expo-image-picker";
 
+const INTERESTS = [
+  "Technology",
+  "Sports",
+  "Music",
+  "Art",
+  "Travel",
+  "Food",
+  "Fitness",
+  "Photography",
+  "Reading",
+  "Gaming",
+  "Movies",
+  "Dancing",
+  "Cooking",
+  "Hiking",
+  "Yoga",
+  "Fashion",
+  "Business",
+  "Science",
+  "Nature",
+  "Volunteering",
+  "Learning",
+  "Socializing",
+  "Creativity",
+  "Adventure",
+];
+
 export default function EditProfileScreen({ navigation }: any) {
   const { user, updateUserProfile } = useAuthStore();
   const { colors } = useThemeStore();
@@ -24,7 +51,20 @@ export default function EditProfileScreen({ navigation }: any) {
   const [profileImage, setProfileImage] = useState<string | null>(
     user?.photoURL || null
   );
+  const [selectedInterests, setSelectedInterests] = useState<string[]>(
+    user?.interests || []
+  );
   const [loading, setLoading] = useState(false);
+
+  const toggleInterest = (interest: string) => {
+    setSelectedInterests((prev) => {
+      if (prev.includes(interest)) {
+        return prev.filter((item) => item !== interest);
+      } else {
+        return [...prev, interest];
+      }
+    });
+  };
 
   const pickImage = async () => {
     try {
@@ -61,6 +101,14 @@ export default function EditProfileScreen({ navigation }: any) {
       return;
     }
 
+    if (selectedInterests.length < 3) {
+      Alert.alert(
+        "Select More Interests",
+        "Please select at least 3 interests to help us find better meetups for you."
+      );
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -69,6 +117,7 @@ export default function EditProfileScreen({ navigation }: any) {
         displayName: displayName.trim(),
         bio: bio.trim() || undefined,
         photoURL: profileImage || undefined,
+        interests: selectedInterests,
       });
 
       // Update in Firestore
@@ -77,6 +126,7 @@ export default function EditProfileScreen({ navigation }: any) {
           displayName: displayName.trim(),
           ...(bio.trim() && { bio: bio.trim() }),
           ...(profileImage && { photoURL: profileImage }),
+          interests: selectedInterests,
         };
 
         const result = await FirestoreService.updateUser(user.uid, userData);
@@ -213,43 +263,45 @@ export default function EditProfileScreen({ navigation }: any) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: colors.text }]}>Email</Text>
-            <TextInput
-              style={[
-                styles.input,
-                styles.disabledInput,
-                {
-                  backgroundColor: colors.surfaceVariant,
-                  borderColor: colors.border,
-                  color: colors.textSecondary,
-                },
-              ]}
-              value={user?.email || ""}
-              editable={false}
-              placeholder="Email cannot be changed"
-              placeholderTextColor={colors.textTertiary}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: colors.text }]}>
-              Phone Number
+              Interests *
             </Text>
-            <TextInput
-              style={[
-                styles.input,
-                styles.disabledInput,
-                {
-                  backgroundColor: colors.surfaceVariant,
-                  borderColor: colors.border,
-                  color: colors.textSecondary,
-                },
-              ]}
-              value={user?.phoneNumber || ""}
-              editable={false}
-              placeholder="Phone number cannot be changed"
-              placeholderTextColor={colors.textTertiary}
-            />
+            <Text
+              style={[styles.interestSubtext, { color: colors.textSecondary }]}
+            >
+              Select at least 3 interests ({selectedInterests.length} selected)
+            </Text>
+            <View style={styles.interestsGrid}>
+              {INTERESTS.map((interest) => (
+                <TouchableOpacity
+                  key={interest}
+                  style={[
+                    styles.interestButton,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                    },
+                    selectedInterests.includes(interest) && {
+                      backgroundColor: colors.primary,
+                      borderColor: colors.primary,
+                    },
+                  ]}
+                  onPress={() => toggleInterest(interest)}
+                >
+                  <Text
+                    style={[
+                      styles.interestText,
+                      { color: colors.text },
+                      selectedInterests.includes(interest) && {
+                        color: colors.onPrimary,
+                      },
+                    ]}
+                  >
+                    {interest}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -356,5 +408,27 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: "right",
     marginTop: 4,
+  },
+  interestSubtext: {
+    fontSize: 14,
+    marginBottom: 12,
+  },
+  interestsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  interestButton: {
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginBottom: 8,
+    width: "48%",
+    alignItems: "center",
+  },
+  interestText: {
+    fontSize: 14,
+    fontWeight: "500",
   },
 });
