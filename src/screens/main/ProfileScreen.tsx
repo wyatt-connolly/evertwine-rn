@@ -15,7 +15,7 @@ import { useThemeStore } from "../../hooks/useThemeStore";
 import { Ionicons } from "@expo/vector-icons";
 import { FirestoreService } from "../../services/firebase";
 import * as ImagePicker from "expo-image-picker";
-import { getMockUserStats, getMockBadges } from "../../data/mockData";
+import { getMockUserStats, mockBadges } from "../../data/mockData";
 import { UserStats, Badge } from "../../types";
 
 const { width } = Dimensions.get("window");
@@ -24,10 +24,12 @@ export default function ProfileScreen({ navigation }: any) {
   const { user, logout, updateUserProfile } = useAuthStore();
   const { colors } = useThemeStore();
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"profile" | "stats" | "badges">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "stats" | "badges">(
+    "profile"
+  );
 
   const userStats = getMockUserStats("user1");
-  const badges = getMockBadges();
+  const badges = mockBadges;
 
   const handleEditProfile = () => {
     navigation.navigate("EditProfile");
@@ -115,14 +117,17 @@ export default function ProfileScreen({ navigation }: any) {
             key={tab}
             style={[
               styles.tab,
-              activeTab === tab && { backgroundColor: colors.primary }
+              activeTab === tab && { backgroundColor: colors.primary },
             ]}
             onPress={() => setActiveTab(tab)}
           >
             <Text
               style={[
                 styles.tabText,
-                { color: activeTab === tab ? colors.onPrimary : colors.textSecondary }
+                {
+                  color:
+                    activeTab === tab ? colors.onPrimary : colors.textSecondary,
+                },
               ]}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -139,7 +144,10 @@ export default function ProfileScreen({ navigation }: any) {
           <>
             {/* Profile Header */}
             <View
-              style={[styles.profileHeader, { backgroundColor: colors.surface }]}
+              style={[
+                styles.profileHeader,
+                { backgroundColor: colors.surface },
+              ]}
             >
               <TouchableOpacity
                 onPress={handleChangePhoto}
@@ -175,10 +183,19 @@ export default function ProfileScreen({ navigation }: any) {
                 >
                   <Ionicons name="camera" size={16} color={colors.onPrimary} />
                 </View>
-                
+
                 {/* Verification Badge */}
-                <View style={[styles.verificationBadge, { backgroundColor: colors.primary }]}>
-                  <Ionicons name="checkmark" size={16} color={colors.onPrimary} />
+                <View
+                  style={[
+                    styles.verificationBadge,
+                    { backgroundColor: colors.primary },
+                  ]}
+                >
+                  <Ionicons
+                    name="checkmark"
+                    size={16}
+                    color={colors.onPrimary}
+                  />
                 </View>
               </TouchableOpacity>
 
@@ -191,21 +208,33 @@ export default function ProfileScreen({ navigation }: any) {
                     {user.bio}
                   </Text>
                 )}
-                
+
                 {/* Level and Points */}
                 {userStats && (
                   <View style={styles.levelContainer}>
-                    <View style={[styles.levelBadge, { backgroundColor: colors.primary }]}>
-                      <Text style={[styles.levelText, { color: colors.onPrimary }]}>
+                    <View
+                      style={[
+                        styles.levelBadge,
+                        { backgroundColor: colors.primary },
+                      ]}
+                    >
+                      <Text
+                        style={[styles.levelText, { color: colors.onPrimary }]}
+                      >
                         Level {userStats.level}
                       </Text>
                     </View>
-                    <Text style={[styles.pointsText, { color: colors.textSecondary }]}>
+                    <Text
+                      style={[
+                        styles.pointsText,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
                       {userStats.points.toLocaleString()} points
                     </Text>
                   </View>
                 )}
-                
+
                 {user?.interests && user.interests.length > 0 && (
                   <View style={styles.interestsContainer}>
                     <Text
@@ -268,52 +297,82 @@ export default function ProfileScreen({ navigation }: any) {
 
         {activeTab === "stats" && userStats && (
           <View style={[styles.statsCard, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.statsTitle, { color: colors.text }]}>Your Stats</Text>
-            
+            <Text style={[styles.statsTitle, { color: colors.text }]}>
+              Your Stats
+            </Text>
+
             <View style={styles.statsGrid}>
               <View style={styles.statItem}>
                 <Text style={[styles.statNumber, { color: colors.primary }]}>
                   {userStats.level}
                 </Text>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Level</Text>
+                <Text
+                  style={[styles.statLabel, { color: colors.textSecondary }]}
+                >
+                  Level
+                </Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={[styles.statNumber, { color: colors.primary }]}>
                   {userStats.points.toLocaleString()}
                 </Text>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Points</Text>
+                <Text
+                  style={[styles.statLabel, { color: colors.textSecondary }]}
+                >
+                  Points
+                </Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={[styles.statNumber, { color: colors.primary }]}>
                   {userStats.streak}
                 </Text>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Day Streak</Text>
+                <Text
+                  style={[styles.statLabel, { color: colors.textSecondary }]}
+                >
+                  Day Streak
+                </Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={[styles.statNumber, { color: colors.primary }]}>
                   {userStats.badges.length}
                 </Text>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Badges</Text>
+                <Text
+                  style={[styles.statLabel, { color: colors.textSecondary }]}
+                >
+                  Badges
+                </Text>
               </View>
             </View>
 
             {/* Experience Bar */}
             <View style={styles.experienceContainer}>
-              <Text style={[styles.experienceLabel, { color: colors.textSecondary }]}>
+              <Text
+                style={[
+                  styles.experienceLabel,
+                  { color: colors.textSecondary },
+                ]}
+              >
                 Experience to Next Level
               </Text>
-              <View style={[styles.experienceBar, { backgroundColor: colors.surfaceVariant }]}>
-                <View 
+              <View
+                style={[
+                  styles.experienceBar,
+                  { backgroundColor: colors.surfaceVariant },
+                ]}
+              >
+                <View
                   style={[
-                    styles.experienceProgress, 
-                    { 
+                    styles.experienceProgress,
+                    {
                       backgroundColor: colors.primary,
-                      width: `${(userStats.experience % 1000) / 10}%`
-                    }
-                  ]} 
+                      width: `${(userStats.experience % 1000) / 10}%`,
+                    },
+                  ]}
                 />
               </View>
-              <Text style={[styles.experienceText, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.experienceText, { color: colors.textSecondary }]}
+              >
                 {userStats.experience % 1000}/1000 XP
               </Text>
             </View>
@@ -325,14 +384,29 @@ export default function ProfileScreen({ navigation }: any) {
             <Text style={[styles.badgesTitle, { color: colors.text }]}>
               Your Badges ({badges.length})
             </Text>
-            {badges.map((badge) => (
-              <View key={badge.id} style={[styles.badgeItem, { backgroundColor: colors.surface }]}>
-                <View style={[styles.badgeIcon, { backgroundColor: colors.primary + "20" }]}>
+            {badges.map((badge: Badge) => (
+              <View
+                key={badge.id}
+                style={[styles.badgeItem, { backgroundColor: colors.surface }]}
+              >
+                <View
+                  style={[
+                    styles.badgeIcon,
+                    { backgroundColor: colors.primary + "20" },
+                  ]}
+                >
                   <Text style={styles.badgeEmoji}>{badge.icon}</Text>
                 </View>
                 <View style={styles.badgeInfo}>
-                  <Text style={[styles.badgeName, { color: colors.text }]}>{badge.name}</Text>
-                  <Text style={[styles.badgeDescription, { color: colors.textSecondary }]}>
+                  <Text style={[styles.badgeName, { color: colors.text }]}>
+                    {badge.name}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.badgeDescription,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
                     {badge.description}
                   </Text>
                   <Text style={[styles.badgeRarity, { color: colors.primary }]}>

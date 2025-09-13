@@ -177,6 +177,7 @@ export interface MessageRoom {
     senderRef: string;
     timestamp: Date;
     messageType: string;
+    isRead: boolean;
   };
 
   // Settings

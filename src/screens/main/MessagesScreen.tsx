@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  Image, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
   TextInput,
-  FlatList
+  FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,20 +22,22 @@ const mockMessageRooms: MessageRoom[] = [
     participants: ["user1", "user2"],
     admins: [],
     name: "Maya Rodriguez",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
+    avatar:
+      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
     lastMessage: {
       text: "Thanks for the great yoga session today!",
       senderRef: "users/user2",
       timestamp: new Date("2024-09-13T15:30:00"),
-      messageType: "text"
+      messageType: "text",
+      isRead: false,
     },
     settings: {
       allowInvites: true,
       allowMedia: true,
-      allowReactions: true
+      allowReactions: true,
     },
     createdTime: new Date("2024-09-10"),
-    updatedTime: new Date("2024-09-13T15:30:00")
+    updatedTime: new Date("2024-09-13T15:30:00"),
   },
   {
     id: "room2",
@@ -43,21 +45,23 @@ const mockMessageRooms: MessageRoom[] = [
     participants: ["user1", "user3", "user4", "user5"],
     admins: ["user3"],
     name: "Tech Networking Happy Hour",
-    avatar: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400",
+    avatar:
+      "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400",
     meetupRef: "meetups/meetup2",
     lastMessage: {
       text: "Looking forward to meeting everyone tomorrow!",
       senderRef: "users/user4",
       timestamp: new Date("2024-09-13T14:15:00"),
-      messageType: "text"
+      messageType: "text",
+      isRead: true,
     },
     settings: {
       allowInvites: true,
       allowMedia: true,
-      allowReactions: true
+      allowReactions: true,
     },
     createdTime: new Date("2024-09-12"),
-    updatedTime: new Date("2024-09-13T14:15:00")
+    updatedTime: new Date("2024-09-13T14:15:00"),
   },
   {
     id: "room3",
@@ -65,33 +69,38 @@ const mockMessageRooms: MessageRoom[] = [
     participants: ["user1", "user6", "user7", "user8"],
     admins: ["user1"],
     name: "Photography Enthusiasts",
-    avatar: "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400",
+    avatar:
+      "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400",
     description: "Share your best shots and photography tips",
     lastMessage: {
       text: "Check out this amazing sunset shot from yesterday!",
       senderRef: "users/user6",
       timestamp: new Date("2024-09-13T12:45:00"),
-      messageType: "image"
+      messageType: "image",
+      isRead: false,
     },
     settings: {
       allowInvites: true,
       allowMedia: true,
-      allowReactions: true
+      allowReactions: true,
     },
     createdTime: new Date("2024-09-01"),
-    updatedTime: new Date("2024-09-13T12:45:00")
-  }
+    updatedTime: new Date("2024-09-13T12:45:00"),
+  },
 ];
 
 export default function MessagesScreen() {
   const { colors } = useThemeStore();
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"all" | "unread" | "groups">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "unread" | "groups">(
+    "all"
+  );
 
-  const filteredRooms = mockMessageRooms.filter(room => {
-    const matchesSearch = room.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         room.lastMessage?.text.toLowerCase().includes(searchQuery.toLowerCase());
-    
+  const filteredRooms = mockMessageRooms.filter((room) => {
+    const matchesSearch =
+      room.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      room.lastMessage?.text.toLowerCase().includes(searchQuery.toLowerCase());
+
     if (activeTab === "unread") {
       return matchesSearch && room.lastMessage && !room.lastMessage.isRead;
     }
@@ -118,23 +127,30 @@ export default function MessagesScreen() {
   };
 
   const renderMessageRoom = ({ item: room }: { item: MessageRoom }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={[styles.messageRoom, { backgroundColor: colors.surface }]}
     >
       <View style={styles.avatarContainer}>
         <Image source={{ uri: room.avatar }} style={styles.avatar} />
         {room.type === "group" && (
-          <View style={[styles.groupIndicator, { backgroundColor: colors.primary }]}>
+          <View
+            style={[styles.groupIndicator, { backgroundColor: colors.primary }]}
+          >
             <Ionicons name="people" size={12} color={colors.onPrimary} />
           </View>
         )}
         {room.type === "meetup" && (
-          <View style={[styles.meetupIndicator, { backgroundColor: colors.secondary }]}>
+          <View
+            style={[
+              styles.meetupIndicator,
+              { backgroundColor: colors.secondary },
+            ]}
+          >
             <Ionicons name="calendar" size={12} color={colors.onSecondary} />
           </View>
         )}
       </View>
-      
+
       <View style={styles.messageContent}>
         <View style={styles.messageHeader}>
           <Text style={[styles.roomName, { color: colors.text }]}>
@@ -144,30 +160,35 @@ export default function MessagesScreen() {
             {room.lastMessage && formatTime(room.lastMessage.timestamp)}
           </Text>
         </View>
-        
+
         <View style={styles.messagePreview}>
           {room.lastMessage?.messageType === "image" && (
             <Ionicons name="image" size={16} color={colors.textSecondary} />
           )}
-          <Text 
+          <Text
             style={[
-              styles.lastMessage, 
+              styles.lastMessage,
               { color: colors.textSecondary },
-              !room.lastMessage?.isRead && { color: colors.text, fontWeight: "600" }
+              !room.lastMessage?.isRead && {
+                color: colors.text,
+                fontWeight: "600",
+              },
             ]}
             numberOfLines={1}
           >
             {room.lastMessage?.text || "No messages yet"}
           </Text>
         </View>
-        
+
         {room.participants.length > 2 && (
-          <Text style={[styles.participantCount, { color: colors.textTertiary }]}>
+          <Text
+            style={[styles.participantCount, { color: colors.textTertiary }]}
+          >
             {room.participants.length} participants
           </Text>
         )}
       </View>
-      
+
       {room.lastMessage && !room.lastMessage.isRead && (
         <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />
       )}
@@ -175,7 +196,9 @@ export default function MessagesScreen() {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <Text style={[styles.title, { color: colors.text }]}>Messages</Text>
         <TouchableOpacity style={styles.newMessageButton}>
@@ -184,8 +207,14 @@ export default function MessagesScreen() {
       </View>
 
       {/* Search Bar */}
-      <View style={[styles.searchContainer, { backgroundColor: colors.surface }]}>
-        <Ionicons name="search-outline" size={20} color={colors.textSecondary} />
+      <View
+        style={[styles.searchContainer, { backgroundColor: colors.surface }]}
+      >
+        <Ionicons
+          name="search-outline"
+          size={20}
+          color={colors.textSecondary}
+        />
         <TextInput
           style={[styles.searchInput, { color: colors.text }]}
           placeholder="Search conversations..."
@@ -195,7 +224,11 @@ export default function MessagesScreen() {
         />
         {searchQuery.length > 0 && (
           <TouchableOpacity onPress={() => setSearchQuery("")}>
-            <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+            <Ionicons
+              name="close-circle"
+              size={20}
+              color={colors.textSecondary}
+            />
           </TouchableOpacity>
         )}
       </View>
@@ -207,14 +240,17 @@ export default function MessagesScreen() {
             key={tab}
             style={[
               styles.tab,
-              activeTab === tab && { backgroundColor: colors.primary }
+              activeTab === tab && { backgroundColor: colors.primary },
             ]}
             onPress={() => setActiveTab(tab)}
           >
             <Text
               style={[
                 styles.tabText,
-                { color: activeTab === tab ? colors.onPrimary : colors.textSecondary }
+                {
+                  color:
+                    activeTab === tab ? colors.onPrimary : colors.textSecondary,
+                },
               ]}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -232,12 +268,19 @@ export default function MessagesScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Ionicons name="chatbubbles-outline" size={64} color={colors.textTertiary} />
+            <Ionicons
+              name="chatbubbles-outline"
+              size={64}
+              color={colors.textTertiary}
+            />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
               No conversations yet
             </Text>
-            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-              Start a conversation by joining a meetup or connecting with someone
+            <Text
+              style={[styles.emptySubtitle, { color: colors.textSecondary }]}
+            >
+              Start a conversation by joining a meetup or connecting with
+              someone
             </Text>
           </View>
         }
