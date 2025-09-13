@@ -297,6 +297,216 @@ export interface AIRecommendation {
   expiresAt: Date;
 }
 
+// Event Types
+export interface Event {
+  id: string;
+  title: string;
+  description: string;
+  organizerId: string;
+  organizerName: string;
+  organizerAvatar?: string;
+  
+  // Location & Time
+  location: {
+    latitude: number;
+    longitude: number;
+  };
+  locationName: string;
+  address: string;
+  venue?: string;
+  startTime: Date;
+  endTime: Date;
+  timezone: string;
+  
+  // Event Details
+  category: string;
+  subcategory: string;
+  tags: string[];
+  price: number;
+  currency: string;
+  maxAttendees: number;
+  currentAttendees: number;
+  
+  // Media
+  coverImage: string;
+  images: string[];
+  videoUrl?: string;
+  
+  // Status
+  status: "draft" | "published" | "cancelled" | "completed";
+  isRecurring: boolean;
+  recurringPattern?: {
+    frequency: "daily" | "weekly" | "monthly" | "yearly";
+    daysOfWeek?: number[];
+    endDate?: Date;
+  };
+  
+  // Features
+  features: {
+    hasQRCode: boolean;
+    hasTickets: boolean;
+    hasCoupons: boolean;
+    allowsSharing: boolean;
+    requiresVerification: boolean;
+  };
+  
+  // Analytics
+  views: number;
+  shares: number;
+  likes: number;
+  attendees: string[];
+  waitlist: string[];
+  
+  // Timestamps
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Place/Review Types
+export interface Place {
+  id: string;
+  name: string;
+  category: string;
+  address: string;
+  location: {
+    latitude: number;
+    longitude: number;
+  };
+  rating: number;
+  reviewCount: number;
+  priceLevel: number;
+  photos: string[];
+  hours: {
+    [key: string]: { open: string; close: string; closed?: boolean };
+  };
+  features: string[];
+  description: string;
+}
+
+export interface PlaceReview {
+  id: string;
+  placeId: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  rating: number;
+  review: string;
+  photos: string[];
+  visitDate: Date;
+  helpful: number;
+  verified: boolean;
+  createdAt: Date;
+}
+
+// Verification Types
+export interface Verification {
+  id: string;
+  userId: string;
+  status: "pending" | "approved" | "rejected";
+  type: "id" | "selfie" | "profile_photos";
+  
+  // ID Verification
+  idDocument?: {
+    type: "drivers_license" | "passport" | "state_id";
+    frontImage: string;
+    backImage?: string;
+    extractedData: {
+      name: string;
+      dateOfBirth: string;
+      documentNumber: string;
+    };
+  };
+  
+  // Selfie Verification
+  selfieImage?: string;
+  selfieWithId?: string;
+  
+  // Profile Photos
+  profilePhotos?: string[];
+  
+  // Verification Results
+  verificationResults?: {
+    faceMatch: boolean;
+    documentValid: boolean;
+    ageVerified: boolean;
+    confidence: number;
+  };
+  
+  // Timestamps
+  submittedAt: Date;
+  reviewedAt?: Date;
+  expiresAt: Date;
+}
+
+// Subscription Types
+export interface Subscription {
+  id: string;
+  userId: string;
+  plan: "free" | "plus" | "premium";
+  status: "active" | "cancelled" | "expired" | "trial";
+  startDate: Date;
+  endDate: Date;
+  autoRenew: boolean;
+  features: string[];
+  price: number;
+  currency: string;
+}
+
+// Gamification Types
+export interface UserStats {
+  userId: string;
+  level: number;
+  experience: number;
+  points: number;
+  badges: Badge[];
+  achievements: Achievement[];
+  streak: number;
+  lastActive: Date;
+}
+
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: string;
+  rarity: "common" | "rare" | "epic" | "legendary";
+  unlockedAt: Date;
+}
+
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  progress: number;
+  maxProgress: number;
+  unlockedAt?: Date;
+}
+
+// Tutorial Types
+export interface Tutorial {
+  id: string;
+  title: string;
+  description: string;
+  screens: TutorialScreen[];
+  targetAudience: "new_user" | "returning_user" | "all";
+  required: boolean;
+  completed: boolean;
+}
+
+export interface TutorialScreen {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  action?: {
+    type: "navigate" | "tap" | "swipe";
+    target: string;
+    text: string;
+  };
+}
+
 // Navigation Types
 export type RootStackParamList = {
   Onboarding: undefined;
@@ -305,13 +515,18 @@ export type RootStackParamList = {
   Register: undefined;
   Profile: { userId?: string };
   MeetupDetails: { meetupId: string };
+  EventDetails: { eventId: string };
   Chat: { roomId: string };
+  PlaceDetails: { placeId: string };
+  Verification: undefined;
+  Tutorial: { tutorialId: string };
+  Share: { type: "meetup" | "event" | "profile"; id: string };
 };
 
 export type MainTabParamList = {
   Home: undefined;
+  Explore: undefined;
   Create: undefined;
   Messages: undefined;
-  Notifications: undefined;
-  Settings: undefined;
+  Profile: undefined;
 };

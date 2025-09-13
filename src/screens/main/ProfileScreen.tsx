@@ -7,6 +7,7 @@ import {
   ScrollView,
   Image,
   Alert,
+  Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "../../hooks/useAuthStore";
@@ -14,11 +15,19 @@ import { useThemeStore } from "../../hooks/useThemeStore";
 import { Ionicons } from "@expo/vector-icons";
 import { FirestoreService } from "../../services/firebase";
 import * as ImagePicker from "expo-image-picker";
+import { getMockUserStats, getMockBadges } from "../../data/mockData";
+import { UserStats, Badge } from "../../types";
+
+const { width } = Dimensions.get("window");
 
 export default function ProfileScreen({ navigation }: any) {
   const { user, logout, updateUserProfile } = useAuthStore();
   const { colors } = useThemeStore();
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"profile" | "stats" | "badges">("profile");
+
+  const userStats = getMockUserStats("user1");
+  const badges = getMockBadges();
 
   const handleEditProfile = () => {
     navigation.navigate("EditProfile");
@@ -99,116 +108,241 @@ export default function ProfileScreen({ navigation }: any) {
         </TouchableOpacity>
       </View>
 
+      {/* Tab Navigation */}
+      <View style={[styles.tabContainer, { backgroundColor: colors.surface }]}>
+        {(["profile", "stats", "badges"] as const).map((tab) => (
+          <TouchableOpacity
+            key={tab}
+            style={[
+              styles.tab,
+              activeTab === tab && { backgroundColor: colors.primary }
+            ]}
+            onPress={() => setActiveTab(tab)}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                { color: activeTab === tab ? colors.onPrimary : colors.textSecondary }
+              ]}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
       >
-        {/* Profile Header */}
-        <View
-          style={[styles.profileHeader, { backgroundColor: colors.surface }]}
-        >
-          <TouchableOpacity
-            onPress={handleChangePhoto}
-            style={styles.photoContainer}
-          >
-            {user?.photoURL ? (
-              <Image
-                source={{ uri: user.photoURL }}
-                style={styles.profilePhoto}
-              />
-            ) : (
-              <View
-                style={[
-                  styles.profilePhotoPlaceholder,
-                  { backgroundColor: colors.surfaceVariant },
-                ]}
-              >
-                <Ionicons
-                  name="person"
-                  size={40}
-                  color={colors.textSecondary}
-                />
-              </View>
-            )}
+        {activeTab === "profile" && (
+          <>
+            {/* Profile Header */}
             <View
-              style={[
-                styles.photoEditBadge,
-                {
-                  backgroundColor: colors.primary,
-                  borderColor: colors.surface,
-                },
-              ]}
+              style={[styles.profileHeader, { backgroundColor: colors.surface }]}
             >
-              <Ionicons name="camera" size={16} color={colors.onPrimary} />
-            </View>
-          </TouchableOpacity>
-
-          <View style={styles.profileInfo}>
-            <Text style={[styles.name, { color: colors.text }]}>
-              {user?.displayName || "User"}
-            </Text>
-            {user?.bio && (
-              <Text style={[styles.bio, { color: colors.textSecondary }]}>
-                {user.bio}
-              </Text>
-            )}
-            {user?.interests && user.interests.length > 0 && (
-              <View style={styles.interestsContainer}>
-                <Text
+              <TouchableOpacity
+                onPress={handleChangePhoto}
+                style={styles.photoContainer}
+              >
+                {user?.photoURL ? (
+                  <Image
+                    source={{ uri: user.photoURL }}
+                    style={styles.profilePhoto}
+                  />
+                ) : (
+                  <View
+                    style={[
+                      styles.profilePhotoPlaceholder,
+                      { backgroundColor: colors.surfaceVariant },
+                    ]}
+                  >
+                    <Ionicons
+                      name="person"
+                      size={40}
+                      color={colors.textSecondary}
+                    />
+                  </View>
+                )}
+                <View
                   style={[
-                    styles.interestsLabel,
-                    { color: colors.textSecondary },
+                    styles.photoEditBadge,
+                    {
+                      backgroundColor: colors.primary,
+                      borderColor: colors.surface,
+                    },
                   ]}
                 >
-                  Interests
+                  <Ionicons name="camera" size={16} color={colors.onPrimary} />
+                </View>
+                
+                {/* Verification Badge */}
+                <View style={[styles.verificationBadge, { backgroundColor: colors.primary }]}>
+                  <Ionicons name="checkmark" size={16} color={colors.onPrimary} />
+                </View>
+              </TouchableOpacity>
+
+              <View style={styles.profileInfo}>
+                <Text style={[styles.name, { color: colors.text }]}>
+                  {user?.displayName || "User"}
                 </Text>
-                <View style={styles.interestsList}>
-                  {user.interests.slice(0, 6).map((interest, index) => (
-                    <View
-                      key={index}
-                      style={[
-                        styles.interestTag,
-                        {
-                          backgroundColor: colors.primary + "20",
-                          borderColor: colors.primary + "40",
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.interestTagText,
-                          { color: colors.primary },
-                        ]}
-                      >
-                        {interest}
+                {user?.bio && (
+                  <Text style={[styles.bio, { color: colors.textSecondary }]}>
+                    {user.bio}
+                  </Text>
+                )}
+                
+                {/* Level and Points */}
+                {userStats && (
+                  <View style={styles.levelContainer}>
+                    <View style={[styles.levelBadge, { backgroundColor: colors.primary }]}>
+                      <Text style={[styles.levelText, { color: colors.onPrimary }]}>
+                        Level {userStats.level}
                       </Text>
                     </View>
-                  ))}
-                  {user.interests.length > 6 && (
-                    <View
+                    <Text style={[styles.pointsText, { color: colors.textSecondary }]}>
+                      {userStats.points.toLocaleString()} points
+                    </Text>
+                  </View>
+                )}
+                
+                {user?.interests && user.interests.length > 0 && (
+                  <View style={styles.interestsContainer}>
+                    <Text
                       style={[
-                        styles.interestTag,
-                        {
-                          backgroundColor: colors.surfaceVariant,
-                          borderColor: colors.border,
-                        },
+                        styles.interestsLabel,
+                        { color: colors.textSecondary },
                       ]}
                     >
-                      <Text
-                        style={[
-                          styles.interestTagText,
-                          { color: colors.textSecondary },
-                        ]}
-                      >
-                        +{user.interests.length - 6} more
-                      </Text>
+                      Interests
+                    </Text>
+                    <View style={styles.interestsList}>
+                      {user.interests.slice(0, 6).map((interest, index) => (
+                        <View
+                          key={index}
+                          style={[
+                            styles.interestTag,
+                            {
+                              backgroundColor: colors.primary + "20",
+                              borderColor: colors.primary + "40",
+                            },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.interestTagText,
+                              { color: colors.primary },
+                            ]}
+                          >
+                            {interest}
+                          </Text>
+                        </View>
+                      ))}
+                      {user.interests.length > 6 && (
+                        <View
+                          style={[
+                            styles.interestTag,
+                            {
+                              backgroundColor: colors.surfaceVariant,
+                              borderColor: colors.border,
+                            },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.interestTagText,
+                              { color: colors.textSecondary },
+                            ]}
+                          >
+                            +{user.interests.length - 6} more
+                          </Text>
+                        </View>
+                      )}
                     </View>
-                  )}
+                  </View>
+                )}
+              </View>
+            </View>
+          </>
+        )}
+
+        {activeTab === "stats" && userStats && (
+          <View style={[styles.statsCard, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.statsTitle, { color: colors.text }]}>Your Stats</Text>
+            
+            <View style={styles.statsGrid}>
+              <View style={styles.statItem}>
+                <Text style={[styles.statNumber, { color: colors.primary }]}>
+                  {userStats.level}
+                </Text>
+                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Level</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={[styles.statNumber, { color: colors.primary }]}>
+                  {userStats.points.toLocaleString()}
+                </Text>
+                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Points</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={[styles.statNumber, { color: colors.primary }]}>
+                  {userStats.streak}
+                </Text>
+                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Day Streak</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={[styles.statNumber, { color: colors.primary }]}>
+                  {userStats.badges.length}
+                </Text>
+                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Badges</Text>
+              </View>
+            </View>
+
+            {/* Experience Bar */}
+            <View style={styles.experienceContainer}>
+              <Text style={[styles.experienceLabel, { color: colors.textSecondary }]}>
+                Experience to Next Level
+              </Text>
+              <View style={[styles.experienceBar, { backgroundColor: colors.surfaceVariant }]}>
+                <View 
+                  style={[
+                    styles.experienceProgress, 
+                    { 
+                      backgroundColor: colors.primary,
+                      width: `${(userStats.experience % 1000) / 10}%`
+                    }
+                  ]} 
+                />
+              </View>
+              <Text style={[styles.experienceText, { color: colors.textSecondary }]}>
+                {userStats.experience % 1000}/1000 XP
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {activeTab === "badges" && (
+          <View style={styles.badgesContainer}>
+            <Text style={[styles.badgesTitle, { color: colors.text }]}>
+              Your Badges ({badges.length})
+            </Text>
+            {badges.map((badge) => (
+              <View key={badge.id} style={[styles.badgeItem, { backgroundColor: colors.surface }]}>
+                <View style={[styles.badgeIcon, { backgroundColor: colors.primary + "20" }]}>
+                  <Text style={styles.badgeEmoji}>{badge.icon}</Text>
+                </View>
+                <View style={styles.badgeInfo}>
+                  <Text style={[styles.badgeName, { color: colors.text }]}>{badge.name}</Text>
+                  <Text style={[styles.badgeDescription, { color: colors.textSecondary }]}>
+                    {badge.description}
+                  </Text>
+                  <Text style={[styles.badgeRarity, { color: colors.primary }]}>
+                    {badge.rarity.toUpperCase()}
+                  </Text>
                 </View>
               </View>
-            )}
+            ))}
           </View>
-        </View>
+        )}
 
         {/* Profile Stats */}
         <View
@@ -360,6 +494,24 @@ const styles = StyleSheet.create({
   settingsButton: {
     padding: 8,
   },
+  tabContainer: {
+    flexDirection: "row",
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 12,
+    padding: 4,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
   scrollView: {
     flex: 1,
   },
@@ -495,5 +647,113 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     marginLeft: 8,
+  },
+  // Gamification Styles
+  verificationBadge: {
+    position: "absolute",
+    top: -5,
+    right: -5,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "white",
+  },
+  levelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+  },
+  levelBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 8,
+  },
+  levelText: {
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  pointsText: {
+    fontSize: 14,
+  },
+  statsCard: {
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  statsTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 16,
+  },
+  statsGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  experienceContainer: {
+    marginTop: 16,
+  },
+  experienceLabel: {
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  experienceBar: {
+    height: 8,
+    borderRadius: 4,
+    marginBottom: 4,
+  },
+  experienceProgress: {
+    height: "100%",
+    borderRadius: 4,
+  },
+  experienceText: {
+    fontSize: 12,
+    textAlign: "right",
+  },
+  badgesContainer: {
+    marginBottom: 20,
+  },
+  badgesTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 16,
+  },
+  badgeItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  badgeIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 16,
+  },
+  badgeEmoji: {
+    fontSize: 24,
+  },
+  badgeInfo: {
+    flex: 1,
+  },
+  badgeName: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  badgeDescription: {
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  badgeRarity: {
+    fontSize: 12,
+    fontWeight: "600",
   },
 });
