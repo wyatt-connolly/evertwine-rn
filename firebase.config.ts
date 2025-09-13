@@ -1,8 +1,5 @@
 import { initializeApp } from "firebase/app";
-import {
-  getAuth,
-  initializeAuth,
-} from "firebase/auth";
+import { getAuth, initializeAuth } from "firebase/auth";
 // Note: getReactNativePersistence might not be available in this Firebase version
 // We'll use a simpler approach without persistence for now
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";

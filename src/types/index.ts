@@ -306,7 +306,7 @@ export interface Event {
   organizerId: string;
   organizerName: string;
   organizerAvatar?: string;
-  
+
   // Location & Time
   location: {
     latitude: number;
@@ -318,7 +318,7 @@ export interface Event {
   startTime: Date;
   endTime: Date;
   timezone: string;
-  
+
   // Event Details
   category: string;
   subcategory: string;
@@ -327,12 +327,12 @@ export interface Event {
   currency: string;
   maxAttendees: number;
   currentAttendees: number;
-  
+
   // Media
   coverImage: string;
   images: string[];
   videoUrl?: string;
-  
+
   // Status
   status: "draft" | "published" | "cancelled" | "completed";
   isRecurring: boolean;
@@ -341,7 +341,7 @@ export interface Event {
     daysOfWeek?: number[];
     endDate?: Date;
   };
-  
+
   // Features
   features: {
     hasQRCode: boolean;
@@ -350,14 +350,14 @@ export interface Event {
     allowsSharing: boolean;
     requiresVerification: boolean;
   };
-  
+
   // Analytics
   views: number;
   shares: number;
   likes: number;
   attendees: string[];
   waitlist: string[];
-  
+
   // Timestamps
   createdAt: Date;
   updatedAt: Date;
@@ -405,7 +405,7 @@ export interface Verification {
   userId: string;
   status: "pending" | "approved" | "rejected";
   type: "id" | "selfie" | "profile_photos";
-  
+
   // ID Verification
   idDocument?: {
     type: "drivers_license" | "passport" | "state_id";
@@ -417,14 +417,14 @@ export interface Verification {
       documentNumber: string;
     };
   };
-  
+
   // Selfie Verification
   selfieImage?: string;
   selfieWithId?: string;
-  
+
   // Profile Photos
   profilePhotos?: string[];
-  
+
   // Verification Results
   verificationResults?: {
     faceMatch: boolean;
@@ -432,7 +432,7 @@ export interface Verification {
     ageVerified: boolean;
     confidence: number;
   };
-  
+
   // Timestamps
   submittedAt: Date;
   reviewedAt?: Date;
@@ -522,6 +522,11 @@ export type RootStackParamList = {
   Verification: undefined;
   Tutorial: { tutorialId: string };
   Share: { type: "meetup" | "event" | "profile"; id: string };
+  ActivityFeed: undefined;
+  Map: undefined;
+  MessageDetails: { roomId: string };
+  ComposeMessage: undefined;
+  Favorites: undefined;
 };
 
 export type MainTabParamList = {

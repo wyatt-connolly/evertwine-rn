@@ -12,12 +12,12 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
-import { getMockPlaces, getMockPlaceReviews, getMockEvents } from "../../data/mockData";
-import { Place, PlaceReview, Event } from "../../types";
+import { getMockPlaces, getMockPlaceReviews, getMockEvents, getMockMeetups } from "../../data/mockData";
+import { Place, PlaceReview, Event, Meetup } from "../../types";
 
 const { width } = Dimensions.get("window");
 
-export default function ExploreScreen() {
+export default function ExploreScreen({ navigation }: any) {
   const { colors } = useThemeStore();
   const [activeTab, setActiveTab] = useState<"places" | "events" | "reviews">("places");
   const [searchQuery, setSearchQuery] = useState("");
@@ -25,6 +25,7 @@ export default function ExploreScreen() {
   const mockPlaces = getMockPlaces();
   const mockEvents = getMockEvents();
   const mockReviews = getMockPlaceReviews("place1");
+  const mockMeetups = getMockMeetups();
 
   const renderPlaceCard = (place: Place) => (
     <TouchableOpacity 
@@ -170,11 +171,51 @@ export default function ExploreScreen() {
     </View>
   );
 
+  const renderMeetupCard = (meetup: Meetup) => (
+    <TouchableOpacity 
+      key={meetup.id}
+      style={[styles.meetupCard, { backgroundColor: colors.surface }]}
+      onPress={() => navigation.navigate("MeetupDetails", { meetupId: meetup.id })}
+    >
+      <View style={styles.meetupHeader}>
+        <Text style={[styles.meetupTitle, { color: colors.text }]}>
+          {meetup.title}
+        </Text>
+        <View style={[styles.liveBadge, { backgroundColor: colors.primary }]}>
+          <Ionicons name="radio" size={12} color={colors.onPrimary} />
+          <Text style={[styles.liveText, { color: colors.onPrimary }]}>Live</Text>
+        </View>
+      </View>
+      
+      <Text style={[styles.meetupDescription, { color: colors.textSecondary }]}>
+        {meetup.description}
+      </Text>
+      
+      <View style={styles.meetupFooter}>
+        <View style={styles.meetupInfo}>
+          <Ionicons name="location-outline" size={14} color={colors.primary} />
+          <Text style={[styles.meetupLocation, { color: colors.textSecondary }]}>
+            {meetup.locationName}
+          </Text>
+        </View>
+        <View style={styles.meetupStats}>
+          <Ionicons name="people-outline" size={14} color={colors.textSecondary} />
+          <Text style={[styles.meetupStatsText, { color: colors.textSecondary }]}>
+            {meetup.currentParticipants}/{meetup.maxParticipants}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <Text style={[styles.title, { color: colors.text }]}>Explore</Text>
-        <TouchableOpacity style={styles.mapButton}>
+        <TouchableOpacity 
+          style={styles.mapButton}
+          onPress={() => navigation.navigate("Map")}
+        >
           <Ionicons name="map-outline" size={24} color={colors.primary} />
         </TouchableOpacity>
       </View>
@@ -224,9 +265,27 @@ export default function ExploreScreen() {
           {activeTab === "places" && (
             <>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Popular Places
+                {searchQuery ? `Search Results` : "Popular Places"}
               </Text>
-              {mockPlaces.map(renderPlaceCard)}
+              {searchQuery ? 
+                mockPlaces.filter(place =>
+                  place.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  place.description.toLowerCase().includes(searchQuery.toLowerCase())
+                ).map(renderPlaceCard) :
+                mockPlaces.map(renderPlaceCard)
+              }
+              {searchQuery && (
+                <View style={styles.searchResults}>
+                  <Text style={[styles.searchResultsTitle, { color: colors.text }]}>
+                    Meetups matching "{searchQuery}"
+                  </Text>
+                  {mockMeetups.filter(meetup =>
+                    meetup.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    meetup.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    meetup.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+                  ).map(renderMeetupCard)}
+                </View>
+              )}
             </>
           )}
 
@@ -529,5 +588,72 @@ const styles = StyleSheet.create({
   helpfulText: {
     fontSize: 12,
     marginLeft: 4,
+  },
+  meetupCard: {
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  meetupHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  meetupTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    flex: 1,
+  },
+  liveBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  liveText: {
+    fontSize: 10,
+    fontWeight: "600",
+    marginLeft: 4,
+  },
+  meetupDescription: {
+    fontSize: 14,
+    marginBottom: 12,
+  },
+  meetupFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  meetupInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  meetupLocation: {
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  meetupStats: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  meetupStatsText: {
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  searchResults: {
+    marginTop: 20,
+  },
+  searchResultsTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 12,
   },
 });

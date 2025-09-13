@@ -89,7 +89,7 @@ const mockMessageRooms: MessageRoom[] = [
   },
 ];
 
-export default function MessagesScreen() {
+export default function MessagesScreen({ navigation }: any) {
   const { colors } = useThemeStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "unread" | "groups">(
@@ -129,6 +129,7 @@ export default function MessagesScreen() {
   const renderMessageRoom = ({ item: room }: { item: MessageRoom }) => (
     <TouchableOpacity
       style={[styles.messageRoom, { backgroundColor: colors.surface }]}
+      onPress={() => navigation.navigate("MessageDetails", { roomId: room.id })}
     >
       <View style={styles.avatarContainer}>
         <Image source={{ uri: room.avatar }} style={styles.avatar} />
@@ -201,7 +202,10 @@ export default function MessagesScreen() {
     >
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <Text style={[styles.title, { color: colors.text }]}>Messages</Text>
-        <TouchableOpacity style={styles.newMessageButton}>
+        <TouchableOpacity 
+          style={styles.newMessageButton}
+          onPress={() => navigation.navigate("ComposeMessage")}
+        >
           <Ionicons name="create-outline" size={24} color={colors.primary} />
         </TouchableOpacity>
       </View>

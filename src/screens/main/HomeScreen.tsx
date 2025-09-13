@@ -13,12 +13,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
-import { getMockMeetups, getMockEvents, getMockNotifications } from "../../data/mockData";
-import { Meetup, Event, Notification } from "../../types";
+import { getMockMeetups, getMockEvents, getMockNotifications, getMockUsers } from "../../data/mockData";
+import { Meetup, Event, Notification, User } from "../../types";
 
 const { width } = Dimensions.get("window");
 
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }: any) {
   const { user, logout } = useAuthStore();
   const { colors } = useThemeStore();
   const [refreshing, setRefreshing] = useState(false);
@@ -27,6 +27,7 @@ export default function HomeScreen() {
   const mockMeetups = getMockMeetups();
   const mockEvents = getMockEvents();
   const mockNotifications = getMockNotifications();
+  const currentUser = getMockUsers().find(u => u.uid === user?.uid) || getMockUsers()[0];
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -46,6 +47,7 @@ export default function HomeScreen() {
     <TouchableOpacity 
       key={meetup.id}
       style={[styles.meetupCard, { backgroundColor: colors.surface }]}
+      onPress={() => navigation.navigate("MeetupDetails", { meetupId: meetup.id })}
     >
       <View style={styles.meetupHeader}>
         <View style={styles.meetupInfo}>
@@ -158,15 +160,26 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <View>
-          <Text style={[styles.greeting, { color: colors.textSecondary }]}>Good morning</Text>
-          <Text style={[styles.title, { color: colors.text }]}>
-            {user?.displayName || "User"}
-          </Text>
+        <View style={styles.headerLeft}>
+          <Image source={{ uri: currentUser.profilePictures[0] }} style={styles.profilePicture} />
+          <View style={styles.welcomeContainer}>
+            <Text style={[styles.greeting, { color: colors.textSecondary }]}>Good morning</Text>
+            <Text style={[styles.title, { color: colors.text }]}>
+              {currentUser.displayName}
+            </Text>
+          </View>
         </View>
-        <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-          <Ionicons name="log-out-outline" size={24} color={colors.primary} />
-        </TouchableOpacity>
+        <View style={styles.headerRight}>
+          <TouchableOpacity 
+            style={styles.activityButton}
+            onPress={() => navigation.navigate("ActivityFeed")}
+          >
+            <Ionicons name="notifications-outline" size={24} color={colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+            <Ionicons name="log-out-outline" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView 
@@ -266,6 +279,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  profilePicture: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  welcomeContainer: {
+    flex: 1,
+  },
+  activityButton: {
+    padding: 8,
+    marginRight: 8,
   },
   greeting: {
     fontSize: 14,
