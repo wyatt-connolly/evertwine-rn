@@ -142,6 +142,10 @@ export interface Meetup {
     skillLevel?: string;
   };
 
+  // Media
+  coverImage?: string;
+  images?: string[];
+
   // Analytics
   views: number;
   joinRequests: number;
@@ -270,11 +274,15 @@ export enum NotificationType {
   newFollower = "new_follower",
   mutualConnection = "mutual_connection",
   friendSuggestion = "friend_suggestion",
+  friendRequest = "friend_request",
 
   // Engagement
   meetupLiked = "meetup_liked",
   meetupShared = "meetup_shared",
   meetupCommented = "meetup_commented",
+
+  // Messages
+  message = "message",
 
   // System
   verificationComplete = "verification_complete",

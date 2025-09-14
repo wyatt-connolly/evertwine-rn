@@ -173,8 +173,8 @@ export default function SettingsScreen({ navigation }: any) {
               size={24}
               color={colors.primary}
             />
-            <View style={styles.preferenceContent}>
-              <Text style={[styles.menuText, { color: colors.text }]}>
+            <View style={styles.preferenceTextContainer}>
+              <Text style={[styles.preferenceMainText, { color: colors.text }]}>
                 Manage Preferences
               </Text>
               <Text
@@ -444,13 +444,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 16,
   },
-  preferenceContent: {
+  preferenceTextContainer: {
     flex: 1,
     marginLeft: 16,
+    justifyContent: "center",
+  },
+  preferenceMainText: {
+    fontSize: 16,
   },
   preferenceSubtext: {
-    fontSize: 14,
+    fontSize: 12,
     marginTop: 2,
+    opacity: 0.7,
   },
   dangerItem: {
     flexDirection: "row",

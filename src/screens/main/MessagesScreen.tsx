@@ -202,7 +202,7 @@ export default function MessagesScreen({ navigation }: any) {
     >
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <Text style={[styles.title, { color: colors.text }]}>Messages</Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.newMessageButton}
           onPress={() => navigation.navigate("ComposeMessage")}
         >
@@ -350,7 +350,8 @@ const styles = StyleSheet.create({
   messageRoom: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
     borderRadius: 12,
     marginBottom: 8,
     shadowColor: "#000",

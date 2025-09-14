@@ -1,6 +1,7 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../hooks/useThemeStore";
 import HomeScreen from "../screens/main/HomeScreen";
@@ -16,19 +17,26 @@ import MapScreen from "../screens/main/MapScreen";
 import MessageDetailsScreen from "../screens/main/MessageDetailsScreen";
 import ComposeMessageScreen from "../screens/main/ComposeMessageScreen";
 import FavoritesScreen from "../screens/main/FavoritesScreen";
+import CreateMeetupScreen from "../screens/main/CreateMeetupScreen";
+import EditMeetupScreen from "../screens/main/EditMeetupScreen";
+import BadgeDetailsScreen from "../screens/main/BadgeDetailsScreen";
+import GroupDetailsScreen from "../screens/main/GroupDetailsScreen";
+import UserProfileScreen from "../screens/main/UserProfileScreen";
 
 export type MainTabParamList = {
   Home: undefined;
   Explore: undefined;
+  Create: undefined;
   Messages: undefined;
   Profile: undefined;
 };
 
 export type ProfileStackParamList = {
-  ProfileMain: undefined;
+  ProfileMain: { userId?: string; userData?: any } | undefined;
   EditProfile: undefined;
   Settings: undefined;
   PreferenceSetup: undefined;
+  ActivityFeed: undefined;
 };
 
 export type HomeStackParamList = {
@@ -50,7 +58,11 @@ export type MessagesStackParamList = {
 export type MainStackParamList = {
   MainTabs: undefined;
   MeetupDetails: { meetupId: string };
+  EditMeetup: { meetupId: string };
+  BadgeDetails: { badge: any };
   Favorites: undefined;
+  GroupDetails: { groupId: string; groupData?: any };
+  UserProfile: { userId: string; userData?: any };
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -68,12 +80,20 @@ function ProfileStackNavigator() {
       }}
     >
       <ProfileStack.Screen name="ProfileMain" component={ProfileScreen} />
-      <ProfileStack.Screen name="EditProfile" component={EditProfileScreen} />
+      <ProfileStack.Screen
+        name="EditProfile"
+        component={EditProfileScreen}
+        options={{
+          presentation: "modal",
+          gestureEnabled: true,
+        }}
+      />
       <ProfileStack.Screen name="Settings" component={SettingsScreen} />
       <ProfileStack.Screen
         name="PreferenceSetup"
         component={PreferenceSetupScreen}
       />
+      <ProfileStack.Screen name="ActivityFeed" component={ActivityFeedScreen} />
     </ProfileStack.Navigator>
   );
 }
@@ -137,6 +157,8 @@ function MainTabsNavigator() {
             iconName = focused ? "home" : "home-outline";
           } else if (route.name === "Explore") {
             iconName = focused ? "compass" : "compass-outline";
+          } else if (route.name === "Create") {
+            iconName = focused ? "add-circle" : "add-circle-outline";
           } else if (route.name === "Messages") {
             iconName = focused ? "chatbubbles" : "chatbubbles-outline";
           } else if (route.name === "Profile") {
@@ -149,17 +171,84 @@ function MainTabsNavigator() {
         },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textTertiary,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-        },
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Home" component={HomeStackNavigator} />
-      <Tab.Screen name="Explore" component={ExploreStackNavigator} />
-      <Tab.Screen name="Messages" component={MessagesStackNavigator} />
-      <Tab.Screen name="Profile" component={ProfileStackNavigator} />
+      <Tab.Screen
+        name="Home"
+        component={HomeStackNavigator}
+        options={({ route }) => {
+          const routeName = getFocusedRouteNameFromRoute(route) ?? "HomeMain";
+          const shouldShowTabBar = ["HomeMain"].includes(routeName);
+          return {
+            tabBarStyle: shouldShowTabBar
+              ? {
+                  backgroundColor: colors.surface,
+                  borderTopColor: colors.border,
+                }
+              : { display: "none" },
+          };
+        }}
+      />
+      <Tab.Screen
+        name="Explore"
+        component={ExploreStackNavigator}
+        options={({ route }) => {
+          const routeName =
+            getFocusedRouteNameFromRoute(route) ?? "ExploreMain";
+          const shouldShowTabBar = ["ExploreMain"].includes(routeName);
+          return {
+            tabBarStyle: shouldShowTabBar
+              ? {
+                  backgroundColor: colors.surface,
+                  borderTopColor: colors.border,
+                }
+              : { display: "none" },
+          };
+        }}
+      />
+      <Tab.Screen
+        name="Create"
+        component={CreateMeetupScreen}
+        options={{
+          title: "Create",
+          tabBarStyle: { display: "none" },
+        }}
+      />
+      <Tab.Screen
+        name="Messages"
+        component={MessagesStackNavigator}
+        options={({ route }) => {
+          const routeName =
+            getFocusedRouteNameFromRoute(route) ?? "MessagesMain";
+          const shouldShowTabBar = ["MessagesMain"].includes(routeName);
+          return {
+            tabBarStyle: shouldShowTabBar
+              ? {
+                  backgroundColor: colors.surface,
+                  borderTopColor: colors.border,
+                }
+              : { display: "none" },
+          };
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileStackNavigator}
+        options={({ route }) => {
+          const routeName =
+            getFocusedRouteNameFromRoute(route) ?? "ProfileMain";
+          const shouldShowTabBar = ["ProfileMain"].includes(routeName);
+          return {
+            tabBarStyle: shouldShowTabBar
+              ? {
+                  backgroundColor: colors.surface,
+                  borderTopColor: colors.border,
+                }
+              : { display: "none" },
+          };
+        }}
+      />
     </Tab.Navigator>
   );
 }
@@ -173,7 +262,11 @@ export default function MainTabs() {
     >
       <MainStack.Screen name="MainTabs" component={MainTabsNavigator} />
       <MainStack.Screen name="MeetupDetails" component={MeetupDetailsScreen} />
+      <MainStack.Screen name="EditMeetup" component={EditMeetupScreen} />
+      <MainStack.Screen name="BadgeDetails" component={BadgeDetailsScreen} />
       <MainStack.Screen name="Favorites" component={FavoritesScreen} />
+      <MainStack.Screen name="GroupDetails" component={GroupDetailsScreen} />
+      <MainStack.Screen name="UserProfile" component={UserProfileScreen} />
     </MainStack.Navigator>
   );
 }

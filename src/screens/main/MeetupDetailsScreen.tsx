@@ -23,6 +23,7 @@ interface MeetupDetailsScreenProps {
   route: {
     params: {
       meetupId: string;
+      meetupData?: any;
     };
   };
   navigation: any;
@@ -39,16 +40,24 @@ export default function MeetupDetailsScreen({
     removeMeetupFromFavorites,
     isMeetupFavorite,
   } = useFavoritesStore();
-  const { meetupId } = route.params;
+  const { meetupId, meetupData } = route.params;
   const [isJoined, setIsJoined] = useState(false);
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
-  const meetup = getMockMeetups().find((m) => m.id === meetupId);
-  const creator = getMockUsers().find((u) => u.uid === meetup?.creatorId);
-  const participants = getMockUsers().filter((u) =>
-    meetup?.participants.includes(u.uid)
-  );
+  console.log("📅 MeetupDetailsScreen loaded:", {
+    meetupId,
+    meetupData: meetupData?.title || "No data",
+  });
+
+  // Use meetupData from navigation params if available, otherwise find from mock data
+  const meetup = meetupData || getMockMeetups().find((m) => m.id === meetupId);
+  const creator =
+    meetupData?.organizer ||
+    getMockUsers().find((u) => u.uid === meetup?.creatorId);
+  const participants =
+    meetupData?.participants ||
+    getMockUsers().filter((u) => meetup?.participants.includes(u.uid));
 
   if (!meetup) {
     return (
@@ -288,7 +297,7 @@ export default function MeetupDetailsScreen({
               </Text>
             </View>
             <View style={styles.participantsList}>
-              {participants.map((participant) => (
+              {participants.map((participant: any) => (
                 <View key={participant.uid} style={styles.participantItem}>
                   <Image
                     source={{ uri: participant.profilePictures[0] }}
@@ -316,7 +325,7 @@ export default function MeetupDetailsScreen({
             <Text style={[styles.infoTitle, { color: colors.text }]}>Tags</Text>
           </View>
           <View style={styles.tagsContainer}>
-            {meetup.tags.map((tag, index) => (
+            {meetup.tags.map((tag: string, index: number) => (
               <View
                 key={index}
                 style={[styles.tag, { backgroundColor: colors.primary + "20" }]}

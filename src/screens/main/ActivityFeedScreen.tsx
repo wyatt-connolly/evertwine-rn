@@ -16,7 +16,12 @@ import { User, Meetup } from "../../types";
 
 interface ActivityItem {
   id: string;
-  type: "meetup_created" | "meetup_joined" | "meetup_liked" | "profile_viewed" | "friend_added";
+  type:
+    | "meetup_created"
+    | "meetup_joined"
+    | "meetup_liked"
+    | "profile_viewed"
+    | "friend_added";
   user: User;
   meetup?: Meetup;
   timestamp: Date;
@@ -30,7 +35,7 @@ const mockActivities: ActivityItem[] = [
     user: getMockUsers()[1], // Maya
     meetup: getMockMeetups()[0],
     timestamp: new Date("2024-09-13T10:30:00"),
-    description: "created a new meetup"
+    description: "created a new meetup",
   },
   {
     id: "2",
@@ -38,7 +43,7 @@ const mockActivities: ActivityItem[] = [
     user: getMockUsers()[2], // James
     meetup: getMockMeetups()[1],
     timestamp: new Date("2024-09-13T09:15:00"),
-    description: "joined a meetup"
+    description: "joined a meetup",
   },
   {
     id: "3",
@@ -46,21 +51,21 @@ const mockActivities: ActivityItem[] = [
     user: getMockUsers()[0], // Alex
     meetup: getMockMeetups()[2],
     timestamp: new Date("2024-09-13T08:45:00"),
-    description: "liked a meetup"
+    description: "liked a meetup",
   },
   {
     id: "4",
     type: "profile_viewed",
     user: getMockUsers()[1], // Maya
     timestamp: new Date("2024-09-13T07:20:00"),
-    description: "viewed your profile"
+    description: "viewed your profile",
   },
   {
     id: "5",
     type: "friend_added",
     user: getMockUsers()[2], // James
     timestamp: new Date("2024-09-12T16:30:00"),
-    description: "added you as a friend"
+    description: "added you as a friend",
   },
   {
     id: "6",
@@ -68,14 +73,30 @@ const mockActivities: ActivityItem[] = [
     user: getMockUsers()[0], // Alex
     meetup: getMockMeetups()[2],
     timestamp: new Date("2024-09-12T14:15:00"),
-    description: "created a new meetup"
-  }
+    description: "created a new meetup",
+  },
 ];
 
 export default function ActivityFeedScreen({ navigation }: any) {
   const { colors } = useThemeStore();
   const [refreshing, setRefreshing] = useState(false);
   const [activities] = useState<ActivityItem[]>(mockActivities);
+  const [selectedFilter, setSelectedFilter] = useState<string>("all");
+  const [showFilters, setShowFilters] = useState(false);
+
+  const filterOptions = [
+    { key: "all", label: "All Activity", icon: "apps" },
+    { key: "meetup_created", label: "Meetup Created", icon: "add-circle" },
+    { key: "meetup_joined", label: "Meetup Joined", icon: "people" },
+    { key: "meetup_liked", label: "Meetup Liked", icon: "heart" },
+    { key: "profile_viewed", label: "Profile Viewed", icon: "eye" },
+    { key: "friend_added", label: "Friend Added", icon: "person-add" },
+  ];
+
+  const filteredActivities =
+    selectedFilter === "all"
+      ? activities
+      : activities.filter((activity) => activity.type === selectedFilter);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -133,22 +154,52 @@ export default function ActivityFeedScreen({ navigation }: any) {
     }
   };
 
+  const handleActivityPress = (activity: ActivityItem) => {
+    switch (activity.type) {
+      case "meetup_created":
+      case "meetup_joined":
+      case "meetup_liked":
+        if (activity.meetup) {
+          navigation.navigate("MeetupDetails", {
+            meetupId: activity.meetup.id,
+          });
+        }
+        break;
+      case "profile_viewed":
+        // Navigate to user profile - for now just show alert
+        navigation.navigate("Profile");
+        break;
+      case "friend_added":
+        // Navigate to friends/connections screen - for now just show alert
+        navigation.navigate("Profile");
+        break;
+      default:
+        break;
+    }
+  };
+
   const renderActivityItem = (activity: ActivityItem) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       key={activity.id}
       style={[styles.activityItem, { backgroundColor: colors.surface }]}
+      onPress={() => handleActivityPress(activity)}
     >
       <View style={styles.activityContent}>
         <View style={styles.activityHeader}>
-          <Image 
-            source={{ uri: activity.user.profilePictures[0] }} 
-            style={styles.userAvatar} 
+          <Image
+            source={{ uri: activity.user.profilePictures[0] }}
+            style={styles.userAvatar}
           />
           <View style={styles.activityInfo}>
             <Text style={[styles.userName, { color: colors.text }]}>
               {activity.user.displayName}
             </Text>
-            <Text style={[styles.activityDescription, { color: colors.textSecondary }]}>
+            <Text
+              style={[
+                styles.activityDescription,
+                { color: colors.textSecondary },
+              ]}
+            >
               {activity.description}
             </Text>
             {activity.meetup && (
@@ -158,10 +209,10 @@ export default function ActivityFeedScreen({ navigation }: any) {
             )}
           </View>
           <View style={styles.activityMeta}>
-            <Ionicons 
-              name={getActivityIcon(activity.type)} 
-              size={20} 
-              color={getActivityColor(activity.type)} 
+            <Ionicons
+              name={getActivityIcon(activity.type)}
+              size={20}
+              color={getActivityColor(activity.type)}
             />
             <Text style={[styles.timestamp, { color: colors.textTertiary }]}>
               {formatTime(activity.timestamp)}
@@ -173,18 +224,76 @@ export default function ActivityFeedScreen({ navigation }: any) {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Activity Feed</Text>
-        <TouchableOpacity style={styles.filterButton}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>
+          Activity Feed
+        </Text>
+        <TouchableOpacity
+          style={styles.filterButton}
+          onPress={() => setShowFilters(!showFilters)}
+        >
           <Ionicons name="filter-outline" size={24} color={colors.primary} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView 
+      {/* Filter Dropdown */}
+      {showFilters && (
+        <View
+          style={[styles.filterDropdown, { backgroundColor: colors.surface }]}
+        >
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {filterOptions.map((filter) => (
+              <TouchableOpacity
+                key={filter.key}
+                style={[
+                  styles.filterOption,
+                  selectedFilter === filter.key && {
+                    backgroundColor: colors.primary,
+                  },
+                ]}
+                onPress={() => {
+                  setSelectedFilter(filter.key);
+                  setShowFilters(false);
+                }}
+              >
+                <Ionicons
+                  name={filter.icon as any}
+                  size={16}
+                  color={
+                    selectedFilter === filter.key
+                      ? colors.onPrimary
+                      : colors.textSecondary
+                  }
+                />
+                <Text
+                  style={[
+                    styles.filterOptionText,
+                    {
+                      color:
+                        selectedFilter === filter.key
+                          ? colors.onPrimary
+                          : colors.textSecondary,
+                    },
+                  ]}
+                >
+                  {filter.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      <ScrollView
         style={styles.scrollView}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -194,11 +303,16 @@ export default function ActivityFeedScreen({ navigation }: any) {
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Recent Activity
           </Text>
-          
-          {activities.map(renderActivityItem)}
-          
+
+          {filteredActivities.map(renderActivityItem)}
+
           <View style={styles.loadMoreContainer}>
-            <TouchableOpacity style={[styles.loadMoreButton, { backgroundColor: colors.primary }]}>
+            <TouchableOpacity
+              style={[
+                styles.loadMoreButton,
+                { backgroundColor: colors.primary },
+              ]}
+            >
               <Text style={[styles.loadMoreText, { color: colors.onPrimary }]}>
                 Load More Activity
               </Text>
@@ -306,5 +420,26 @@ const styles = StyleSheet.create({
   loadMoreText: {
     fontSize: 14,
     fontWeight: "600",
+  },
+  filterDropdown: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+  },
+  filterOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+  },
+  filterOptionText: {
+    fontSize: 12,
+    fontWeight: "500",
+    marginLeft: 6,
   },
 });
