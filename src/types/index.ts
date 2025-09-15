@@ -25,6 +25,7 @@ export interface User {
   pronouns: string;
   bio: string;
   profilePictures: string[];
+  standoutPhotoIndex?: number; // Index of the standout photo (0-5)
 
   // Location & Contact
   location: {

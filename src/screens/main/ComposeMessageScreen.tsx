@@ -22,33 +22,39 @@ export default function ComposeMessageScreen({ navigation }: any) {
   const [messageText, setMessageText] = useState("");
 
   const allUsers = getMockUsers();
-  const filteredUsers = allUsers.filter(user => 
-    user.displayName.toLowerCase().includes(searchQuery.toLowerCase()) &&
-    !selectedUsers.find(selected => selected.uid === user.uid)
+  const filteredUsers = allUsers.filter(
+    (user) =>
+      user.displayName.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !selectedUsers.find((selected) => selected.uid === user.uid)
   );
 
   const handleUserSelect = (user: User) => {
-    setSelectedUsers(prev => [...prev, user]);
+    setSelectedUsers((prev) => [...prev, user]);
   };
 
   const handleUserRemove = (userId: string) => {
-    setSelectedUsers(prev => prev.filter(user => user.uid !== userId));
+    setSelectedUsers((prev) => prev.filter((user) => user.uid !== userId));
   };
 
   const handleSendMessage = () => {
     if (selectedUsers.length === 0) {
-      Alert.alert("No Recipients", "Please select at least one person to message.");
+      Alert.alert(
+        "No Recipients",
+        "Please select at least one person to message."
+      );
       return;
     }
-    
+
     if (!messageText.trim()) {
       Alert.alert("Empty Message", "Please enter a message.");
       return;
     }
 
     Alert.alert(
-      "Message Sent", 
-      `Message sent to ${selectedUsers.length} recipient${selectedUsers.length > 1 ? 's' : ''}!`,
+      "Message Sent",
+      `Message sent to ${selectedUsers.length} recipient${
+        selectedUsers.length > 1 ? "s" : ""
+      }!`,
       [{ text: "OK", onPress: () => navigation.goBack() }]
     );
   };
@@ -58,7 +64,14 @@ export default function ComposeMessageScreen({ navigation }: any) {
       style={[styles.userItem, { backgroundColor: colors.surface }]}
       onPress={() => handleUserSelect(item)}
     >
-      <Image source={{ uri: item.profilePictures[0] }} style={styles.userAvatar} />
+      <Image
+        source={{
+          uri: item.profilePictures[
+            item.standoutPhotoIndex !== undefined ? item.standoutPhotoIndex : 0
+          ],
+        }}
+        style={styles.userAvatar}
+      />
       <View style={styles.userInfo}>
         <Text style={[styles.userName, { color: colors.text }]}>
           {item.displayName}
@@ -72,8 +85,18 @@ export default function ComposeMessageScreen({ navigation }: any) {
   );
 
   const renderSelectedUser = (user: User) => (
-    <View key={user.uid} style={[styles.selectedUserChip, { backgroundColor: colors.primary }]}>
-      <Image source={{ uri: user.profilePictures[0] }} style={styles.selectedUserAvatar} />
+    <View
+      key={user.uid}
+      style={[styles.selectedUserChip, { backgroundColor: colors.primary }]}
+    >
+      <Image
+        source={{
+          uri: user.profilePictures[
+            user.standoutPhotoIndex !== undefined ? user.standoutPhotoIndex : 0
+          ],
+        }}
+        style={styles.selectedUserAvatar}
+      />
       <Text style={[styles.selectedUserName, { color: colors.onPrimary }]}>
         {user.displayName}
       </Text>
@@ -84,13 +107,20 @@ export default function ComposeMessageScreen({ navigation }: any) {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>New Message</Text>
-        <TouchableOpacity 
+        <Text style={[styles.headerTitle, { color: colors.text }]}>
+          New Message
+        </Text>
+        <TouchableOpacity
           style={[styles.sendButton, { backgroundColor: colors.primary }]}
           onPress={handleSendMessage}
         >
@@ -100,8 +130,15 @@ export default function ComposeMessageScreen({ navigation }: any) {
 
       {/* Selected Users */}
       {selectedUsers.length > 0 && (
-        <View style={[styles.selectedUsersContainer, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.selectedUsersLabel, { color: colors.textSecondary }]}>
+        <View
+          style={[
+            styles.selectedUsersContainer,
+            { backgroundColor: colors.surface },
+          ]}
+        >
+          <Text
+            style={[styles.selectedUsersLabel, { color: colors.textSecondary }]}
+          >
             To:
           </Text>
           <View style={styles.selectedUsersList}>
@@ -111,7 +148,12 @@ export default function ComposeMessageScreen({ navigation }: any) {
       )}
 
       {/* Message Input */}
-      <View style={[styles.messageInputContainer, { backgroundColor: colors.surface }]}>
+      <View
+        style={[
+          styles.messageInputContainer,
+          { backgroundColor: colors.surface },
+        ]}
+      >
         <TextInput
           style={[styles.messageInput, { color: colors.text }]}
           placeholder="Type your message..."
@@ -135,8 +177,14 @@ export default function ComposeMessageScreen({ navigation }: any) {
       </View>
 
       {/* Search */}
-      <View style={[styles.searchContainer, { backgroundColor: colors.surface }]}>
-        <Ionicons name="search-outline" size={20} color={colors.textSecondary} />
+      <View
+        style={[styles.searchContainer, { backgroundColor: colors.surface }]}
+      >
+        <Ionicons
+          name="search-outline"
+          size={20}
+          color={colors.textSecondary}
+        />
         <TextInput
           style={[styles.searchInput, { color: colors.text }]}
           placeholder="Search people..."
@@ -155,11 +203,17 @@ export default function ComposeMessageScreen({ navigation }: any) {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Ionicons name="people-outline" size={64} color={colors.textTertiary} />
+            <Ionicons
+              name="people-outline"
+              size={64}
+              color={colors.textTertiary}
+            />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
               No users found
             </Text>
-            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+            <Text
+              style={[styles.emptySubtitle, { color: colors.textSecondary }]}
+            >
               Try adjusting your search
             </Text>
           </View>

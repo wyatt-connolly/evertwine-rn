@@ -180,7 +180,13 @@ export default function HomeScreen({ navigation }: any) {
     >
       <View style={styles.activityContent}>
         <Image
-          source={{ uri: activity.user.profilePictures[0] }}
+          source={{
+            uri: activity.user.profilePictures[
+              activity.user.standoutPhotoIndex !== undefined
+                ? activity.user.standoutPhotoIndex
+                : 0
+            ],
+          }}
           style={styles.activityAvatar}
         />
         <View style={styles.activityInfo}>
@@ -233,7 +239,13 @@ export default function HomeScreen({ navigation }: any) {
     >
       <View style={styles.recentActivityContent}>
         <Image
-          source={{ uri: activity.user.profilePictures[0] }}
+          source={{
+            uri: activity.user.profilePictures[
+              activity.user.standoutPhotoIndex !== undefined
+                ? activity.user.standoutPhotoIndex
+                : 0
+            ],
+          }}
           style={styles.recentActivityAvatar}
         />
         <View style={styles.recentActivityInfo}>
@@ -377,7 +389,13 @@ export default function HomeScreen({ navigation }: any) {
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <View style={styles.headerLeft}>
           <Image
-            source={{ uri: currentUser.profilePictures[0] }}
+            source={{
+              uri: currentUser.profilePictures[
+                currentUser.standoutPhotoIndex !== undefined
+                  ? currentUser.standoutPhotoIndex
+                  : 0
+              ],
+            }}
             style={styles.profilePicture}
           />
           <View style={styles.welcomeContainer}>

@@ -164,6 +164,13 @@ export default function EditProfileScreen({ navigation }: any) {
     ]);
   };
 
+  const handleSetStandoutPhoto = (index: number) => {
+    setProfileData((prev) => ({
+      ...prev,
+      standoutPhotoIndex: prev.standoutPhotoIndex === index ? undefined : index,
+    }));
+  };
+
   const handleSaveEdit = () => {
     if (!editingSection) return;
 
@@ -328,11 +335,11 @@ export default function EditProfileScreen({ navigation }: any) {
                             color={colors.error}
                           />
                         </TouchableOpacity>
-                        {/* Primary photo badge */}
-                        {index === 0 && (
+                        {/* Standout photo indicator */}
+                        {profileData.standoutPhotoIndex === index && (
                           <View
                             style={[
-                              styles.primaryPhotoBadge,
+                              styles.standoutBadge,
                               { backgroundColor: colors.primary },
                             ]}
                           >
@@ -343,6 +350,30 @@ export default function EditProfileScreen({ navigation }: any) {
                             />
                           </View>
                         )}
+
+                        {/* Standout photo toggle button */}
+                        <TouchableOpacity
+                          style={[
+                            styles.standoutButton,
+                            {
+                              backgroundColor:
+                                profileData.standoutPhotoIndex === index
+                                  ? colors.primary
+                                  : colors.surface + "80",
+                            },
+                          ]}
+                          onPress={() => handleSetStandoutPhoto(index)}
+                        >
+                          <Ionicons
+                            name="star"
+                            size={12}
+                            color={
+                              profileData.standoutPhotoIndex === index
+                                ? colors.onPrimary
+                                : colors.textSecondary
+                            }
+                          />
+                        </TouchableOpacity>
                       </View>
                     )}
                   </View>
@@ -1303,7 +1334,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "white",
   },
-  primaryPhotoBadge: {
+  standoutBadge: {
     position: "absolute",
     top: -6,
     left: -6,
@@ -1314,6 +1345,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 2,
     borderColor: "white",
+  },
+  standoutButton: {
+    position: "absolute",
+    bottom: 4,
+    right: 4,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
   },
   uploadButton: {
     flexDirection: "row",

@@ -89,10 +89,24 @@ export default function StandoutsScreen({ navigation }: any) {
           <View style={styles.avatarContainer}>
             <Image
               source={{
-                uri: item.userData?.profilePictures?.[0],
+                uri: item.userData?.profilePictures?.[
+                  item.userData?.standoutPhotoIndex !== undefined
+                    ? item.userData.standoutPhotoIndex
+                    : 0
+                ],
               }}
               style={styles.userAvatar}
             />
+            {item.userData?.standoutPhotoIndex !== undefined && (
+              <View
+                style={[
+                  styles.standoutIndicator,
+                  { backgroundColor: colors.primary },
+                ]}
+              >
+                <Ionicons name="star" size={12} color={colors.onPrimary} />
+              </View>
+            )}
             <View
               style={[styles.cardBadge, { backgroundColor: colors.primary }]}
             >
@@ -263,6 +277,18 @@ const styles = StyleSheet.create({
     width: 100,
     height: 133, // 3:4 aspect ratio
     borderRadius: 16,
+  },
+  standoutIndicator: {
+    position: "absolute",
+    top: -4,
+    left: -4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "white",
   },
   cardBadge: {
     position: "absolute",

@@ -274,7 +274,13 @@ export default function MeetupDetailsScreen({
             </View>
             <View style={styles.organizerInfo}>
               <Image
-                source={{ uri: creator.profilePictures[0] }}
+                source={{
+                  uri: creator.profilePictures[
+                    creator.standoutPhotoIndex !== undefined
+                      ? creator.standoutPhotoIndex
+                      : 0
+                  ],
+                }}
                 style={styles.organizerAvatar}
               />
               <View style={styles.organizerDetails}>
@@ -308,7 +314,13 @@ export default function MeetupDetailsScreen({
               {participants.map((participant: any) => (
                 <View key={participant.uid} style={styles.participantItem}>
                   <Image
-                    source={{ uri: participant.profilePictures[0] }}
+                    source={{
+                      uri: participant.profilePictures[
+                        participant.standoutPhotoIndex !== undefined
+                          ? participant.standoutPhotoIndex
+                          : 0
+                      ],
+                    }}
                     style={styles.participantAvatar}
                   />
                   <Text

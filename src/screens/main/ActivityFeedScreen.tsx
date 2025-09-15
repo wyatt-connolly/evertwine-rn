@@ -187,7 +187,13 @@ export default function ActivityFeedScreen({ navigation }: any) {
       <View style={styles.activityContent}>
         <View style={styles.activityHeader}>
           <Image
-            source={{ uri: activity.user.profilePictures[0] }}
+            source={{
+              uri: activity.user.profilePictures[
+                activity.user.standoutPhotoIndex !== undefined
+                  ? activity.user.standoutPhotoIndex
+                  : 0
+              ],
+            }}
             style={styles.userAvatar}
           />
           <View style={styles.activityInfo}>
