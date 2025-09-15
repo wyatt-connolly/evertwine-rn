@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,17 +6,16 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  Animated,
   Dimensions,
   FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { Ionicons } from "@expo/vector-icons";
+import { getMeetupsByCreator } from "../../data/mockData";
 
 const { width, height } = Dimensions.get("window");
-const HEADER_HEIGHT = 100;
-const PHOTO_HEIGHT = height * 0.6;
+const PHOTO_HEIGHT = height * 0.3;
 
 interface UserProfileScreenProps {
   route: {
@@ -35,25 +34,7 @@ export default function UserProfileScreen({
 }: UserProfileScreenProps) {
   const { colors } = useThemeStore();
   const { userData } = route.params;
-  const scrollY = useRef(new Animated.Value(0)).current;
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
-  const [headerVisible, setHeaderVisible] = useState(false);
-
-  const headerOpacity = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: [0, 1],
-    extrapolate: "clamp",
-  });
-
-  const onScroll = Animated.event(
-    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-    { useNativeDriver: false }
-  );
-
-  const handleScroll = (event: any) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    setHeaderVisible(offsetY > 50);
-  };
 
   const handlePhotoScroll = (event: any) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
@@ -68,7 +49,7 @@ export default function UserProfileScreen({
         <View
           style={[styles.standoutBadge, { backgroundColor: colors.primary }]}
         >
-          <Ionicons name="star" size={20} color={colors.onPrimary} />
+          <Ionicons name="star" size={16} color={colors.onPrimary} />
           <Text style={[styles.standoutText, { color: colors.onPrimary }]}>
             Standout
           </Text>
@@ -78,146 +59,129 @@ export default function UserProfileScreen({
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Fixed Header */}
-      <Animated.View
-        style={[
-          styles.fixedHeader,
-          {
-            backgroundColor: colors.background + "95",
-            opacity: headerOpacity,
-          },
-        ]}
-      >
-        <SafeAreaView style={styles.headerSafeArea}>
-          <View style={styles.headerContent}>
-            <TouchableOpacity
-              style={styles.headerBackButton}
-              onPress={() => navigation.goBack()}
-            >
-              <Ionicons name="arrow-back" size={24} color={colors.text} />
-            </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: colors.text }]}>
-              {userData?.displayName || "User Profile"}
-            </Text>
-            <TouchableOpacity style={styles.headerMoreButton}>
-              <Ionicons
-                name="ellipsis-horizontal"
-                size={24}
-                color={colors.text}
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      {/* Header */}
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>
+          {userData?.displayName || "User Profile"}
+        </Text>
+        <TouchableOpacity>
+          <Ionicons name="ellipsis-horizontal" size={24} color={colors.text} />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Hero Section */}
+        <View style={[styles.heroSection, { backgroundColor: colors.surface }]}>
+          {/* Photo Gallery */}
+          {userData?.profilePictures && userData.profilePictures.length > 0 && (
+            <View style={styles.photoGalleryContainer}>
+              <FlatList
+                data={userData.profilePictures.filter((photo: string) => photo)}
+                renderItem={renderPhoto}
+                keyExtractor={(item, index) => index.toString()}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onScroll={handlePhotoScroll}
+                scrollEventThrottle={16}
+                style={styles.photoGallery}
               />
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      </Animated.View>
 
-      {/* Scrollable Content */}
-      <Animated.ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        onScroll={onScroll}
-        onMomentumScrollEnd={handleScroll}
-        scrollEventThrottle={16}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Photo Gallery */}
-        {userData?.profilePictures && userData.profilePictures.length > 0 && (
-          <View style={styles.photoGalleryContainer}>
-            <FlatList
-              data={userData.profilePictures}
-              renderItem={renderPhoto}
-              keyExtractor={(item, index) => index.toString()}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              onScroll={handlePhotoScroll}
-              scrollEventThrottle={16}
-              style={styles.photoGallery}
-            />
+              {/* Photo Indicators */}
+              <View style={styles.photoIndicators}>
+                {userData.profilePictures
+                  .filter((photo: string) => photo)
+                  .map((_: string, index: number) => (
+                    <View
+                      key={index}
+                      style={[
+                        styles.indicator,
+                        {
+                          backgroundColor:
+                            index === currentPhotoIndex
+                              ? colors.primary
+                              : colors.textSecondary + "40",
+                        },
+                      ]}
+                    />
+                  ))}
+              </View>
 
-            {/* Photo Indicators */}
-            <View style={styles.photoIndicators}>
-              {userData.profilePictures.map((_: string, index: number) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.indicator,
-                    {
-                      backgroundColor:
-                        index === currentPhotoIndex
-                          ? colors.primary
-                          : colors.textSecondary + "40",
-                    },
-                  ]}
-                />
-              ))}
+              {/* Photo Counter */}
+              <View
+                style={[
+                  styles.photoCounter,
+                  { backgroundColor: colors.surface + "90" },
+                ]}
+              >
+                <Text style={[styles.photoCounterText, { color: colors.text }]}>
+                  {currentPhotoIndex + 1} /{" "}
+                  {
+                    userData.profilePictures.filter((photo: string) => photo)
+                      .length
+                  }
+                </Text>
+              </View>
             </View>
+          )}
 
-            {/* Photo Counter */}
-            <View
-              style={[
-                styles.photoCounter,
-                { backgroundColor: colors.surface + "90" },
-              ]}
-            >
-              <Text style={[styles.photoCounterText, { color: colors.text }]}>
-                {currentPhotoIndex + 1} / {userData.profilePictures.length}
+          {/* Profile Info */}
+          <View style={styles.profileInfo}>
+            <View style={styles.nameContainer}>
+              <Text style={[styles.name, { color: colors.text }]}>
+                {userData?.displayName || "User"}
               </Text>
             </View>
-          </View>
-        )}
 
-        {/* Profile Info Section */}
-        <View
-          style={[
-            styles.profileInfoSection,
-            { backgroundColor: colors.surface },
-          ]}
-        >
-          <View style={styles.nameSection}>
-            <Text style={[styles.name, { color: colors.text }]}>
-              {userData?.displayName || "User"}
-            </Text>
             <Text style={[styles.agePronouns, { color: colors.textSecondary }]}>
               {userData?.age} • {userData?.pronouns}
             </Text>
-            <Text style={[styles.location, { color: colors.textSecondary }]}>
-              📍 {userData?.locationName || "Location not set"}
-            </Text>
-          </View>
 
-          <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={[
-                styles.primaryButton,
-                { backgroundColor: colors.primary },
-              ]}
-            >
-              <Ionicons name="chatbubble" size={20} color={colors.onPrimary} />
-              <Text
-                style={[styles.primaryButtonText, { color: colors.onPrimary }]}
-              >
-                Message
+            <View style={styles.locationContainer}>
+              <Ionicons
+                name="location-outline"
+                size={16}
+                color={colors.textSecondary}
+              />
+              <Text style={[styles.location, { color: colors.textSecondary }]}>
+                {userData?.locationName || "Location not set"}
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.secondaryButton,
-                { borderColor: colors.primary, borderWidth: 1 },
-              ]}
-            >
-              <Ionicons name="heart" size={20} color={colors.primary} />
-              <Text
-                style={[styles.secondaryButtonText, { color: colors.primary }]}
+            </View>
+
+            {/* Action Buttons */}
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                style={[
+                  styles.primaryButton,
+                  { backgroundColor: colors.primary },
+                ]}
               >
-                Like
-              </Text>
-            </TouchableOpacity>
+                <Ionicons
+                  name="chatbubble"
+                  size={20}
+                  color={colors.onPrimary}
+                />
+                <Text
+                  style={[
+                    styles.primaryButtonText,
+                    { color: colors.onPrimary },
+                  ]}
+                >
+                  Message
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
         {/* Bio Section */}
-        <View style={[styles.bioSection, { backgroundColor: colors.surface }]}>
+        <View style={[styles.section, { backgroundColor: colors.surface }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             About
           </Text>
@@ -226,45 +190,8 @@ export default function UserProfileScreen({
           </Text>
         </View>
 
-        {/* Stats Section */}
-        <View
-          style={[styles.statsSection, { backgroundColor: colors.surface }]}
-        >
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Stats
-          </Text>
-          <View style={styles.statsGrid}>
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: colors.text }]}>
-                {userData?.hobbies?.length || 0}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-                Interests
-              </Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: colors.text }]}>
-                {userData?.locationName ? "📍" : "❓"}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-                Location
-              </Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: colors.text }]}>
-                {userData?.professionalLevel || "N/A"}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-                Level
-              </Text>
-            </View>
-          </View>
-        </View>
-
         {/* Interests Section */}
-        <View
-          style={[styles.interestsSection, { backgroundColor: colors.surface }]}
-        >
+        <View style={[styles.section, { backgroundColor: colors.surface }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Interests
           </Text>
@@ -286,50 +213,283 @@ export default function UserProfileScreen({
         </View>
 
         {/* Professional Section */}
-        <View
-          style={[
-            styles.professionalSection,
-            { backgroundColor: colors.surface },
-          ]}
-        >
+        <View style={[styles.section, { backgroundColor: colors.surface }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Professional
           </Text>
           <View style={styles.professionalInfo}>
             <View style={styles.professionalItem}>
-              <Ionicons
-                name="school-outline"
-                size={20}
-                color={colors.primary}
-              />
-              <Text style={[styles.professionalText, { color: colors.text }]}>
-                {userData?.school || "Not specified"}
-              </Text>
+              <View
+                style={[
+                  styles.professionalIcon,
+                  { backgroundColor: colors.primary + "20" },
+                ]}
+              >
+                <Ionicons
+                  name="school-outline"
+                  size={18}
+                  color={colors.primary}
+                />
+              </View>
+              <View style={styles.professionalTextContainer}>
+                <Text
+                  style={[
+                    styles.professionalLabel,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Education
+                </Text>
+                <Text style={[styles.professionalText, { color: colors.text }]}>
+                  {userData?.school || "Not specified"}
+                </Text>
+              </View>
             </View>
             <View style={styles.professionalItem}>
-              <Ionicons
-                name="briefcase-outline"
-                size={20}
-                color={colors.primary}
-              />
-              <Text style={[styles.professionalText, { color: colors.text }]}>
-                {userData?.jobTitle || "Not specified"}
-              </Text>
+              <View
+                style={[
+                  styles.professionalIcon,
+                  { backgroundColor: colors.primary + "20" },
+                ]}
+              >
+                <Ionicons
+                  name="briefcase-outline"
+                  size={18}
+                  color={colors.primary}
+                />
+              </View>
+              <View style={styles.professionalTextContainer}>
+                <Text
+                  style={[
+                    styles.professionalLabel,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Job Title
+                </Text>
+                <Text style={[styles.professionalText, { color: colors.text }]}>
+                  {userData?.jobTitle || "Not specified"}
+                </Text>
+              </View>
             </View>
             <View style={styles.professionalItem}>
-              <Ionicons
-                name="business-outline"
-                size={20}
-                color={colors.primary}
-              />
-              <Text style={[styles.professionalText, { color: colors.text }]}>
-                {userData?.jobCompany || "Not specified"}
-              </Text>
+              <View
+                style={[
+                  styles.professionalIcon,
+                  { backgroundColor: colors.primary + "20" },
+                ]}
+              >
+                <Ionicons
+                  name="business-outline"
+                  size={18}
+                  color={colors.primary}
+                />
+              </View>
+              <View style={styles.professionalTextContainer}>
+                <Text
+                  style={[
+                    styles.professionalLabel,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Company
+                </Text>
+                <Text style={[styles.professionalText, { color: colors.text }]}>
+                  {userData?.jobCompany || "Not specified"}
+                </Text>
+              </View>
             </View>
           </View>
         </View>
-      </Animated.ScrollView>
-    </View>
+
+        {/* Current Meetups Section */}
+        <View style={[styles.section, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Current Meetups
+          </Text>
+          {(() => {
+            const currentMeetups = getMeetupsByCreator(userData?.uid || "")
+              .filter((meetup) => meetup.status === "active")
+              .slice(0, 3);
+            return currentMeetups.length > 0 ? (
+              <View style={styles.meetupsList}>
+                {currentMeetups.map((meetup) => (
+                  <View
+                    key={meetup.id}
+                    style={[styles.meetupCard, { borderColor: colors.border }]}
+                  >
+                    <View style={styles.meetupHeader}>
+                      <Text
+                        style={[styles.meetupTitle, { color: colors.text }]}
+                      >
+                        {meetup.title}
+                      </Text>
+                      <View style={styles.meetupStatusContainer}>
+                        <View
+                          style={[
+                            styles.activeStatusBadge,
+                            { backgroundColor: colors.primary + "20" },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.activeStatusText,
+                              { color: colors.primary },
+                            ]}
+                          >
+                            Active
+                          </Text>
+                        </View>
+                        <Text
+                          style={[
+                            styles.meetupDate,
+                            { color: colors.textSecondary },
+                          ]}
+                        >
+                          {meetup.time.toLocaleDateString()}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text
+                      style={[
+                        styles.meetupDescription,
+                        { color: colors.textSecondary },
+                      ]}
+                      numberOfLines={2}
+                    >
+                      {meetup.description}
+                    </Text>
+                    <View style={styles.meetupFooter}>
+                      <View style={styles.meetupLocation}>
+                        <Ionicons
+                          name="location-outline"
+                          size={14}
+                          color={colors.textSecondary}
+                        />
+                        <Text
+                          style={[
+                            styles.meetupLocationText,
+                            { color: colors.textSecondary },
+                          ]}
+                        >
+                          {meetup.locationName}
+                        </Text>
+                      </View>
+                      <View style={styles.meetupStats}>
+                        <Ionicons
+                          name="people-outline"
+                          size={14}
+                          color={colors.textSecondary}
+                        />
+                        <Text
+                          style={[
+                            styles.meetupStatsText,
+                            { color: colors.textSecondary },
+                          ]}
+                        >
+                          {meetup.currentParticipants}/{meetup.maxParticipants}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text
+                style={[styles.noMeetupsText, { color: colors.textSecondary }]}
+              >
+                No current meetups to show
+              </Text>
+            );
+          })()}
+        </View>
+
+        {/* Past Meetups Section */}
+        <View style={[styles.section, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Past Meetups
+          </Text>
+          {(() => {
+            const pastMeetups = getMeetupsByCreator(userData?.uid || "")
+              .filter((meetup) => meetup.status !== "active")
+              .slice(0, 3);
+            return pastMeetups.length > 0 ? (
+              <View style={styles.meetupsList}>
+                {pastMeetups.map((meetup) => (
+                  <View
+                    key={meetup.id}
+                    style={[styles.meetupCard, { borderColor: colors.border }]}
+                  >
+                    <View style={styles.meetupHeader}>
+                      <Text
+                        style={[styles.meetupTitle, { color: colors.text }]}
+                      >
+                        {meetup.title}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.meetupDate,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
+                        {meetup.time.toLocaleDateString()}
+                      </Text>
+                    </View>
+                    <Text
+                      style={[
+                        styles.meetupDescription,
+                        { color: colors.textSecondary },
+                      ]}
+                      numberOfLines={2}
+                    >
+                      {meetup.description}
+                    </Text>
+                    <View style={styles.meetupFooter}>
+                      <View style={styles.meetupLocation}>
+                        <Ionicons
+                          name="location-outline"
+                          size={14}
+                          color={colors.textSecondary}
+                        />
+                        <Text
+                          style={[
+                            styles.meetupLocationText,
+                            { color: colors.textSecondary },
+                          ]}
+                        >
+                          {meetup.locationName}
+                        </Text>
+                      </View>
+                      <View style={styles.meetupStats}>
+                        <Ionicons
+                          name="people-outline"
+                          size={14}
+                          color={colors.textSecondary}
+                        />
+                        <Text
+                          style={[
+                            styles.meetupStatsText,
+                            { color: colors.textSecondary },
+                          ]}
+                        >
+                          {meetup.currentParticipants}/{meetup.maxParticipants}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text
+                style={[styles.noMeetupsText, { color: colors.textSecondary }]}
+              >
+                No past meetups to show
+              </Text>
+            );
+          })()}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -343,7 +503,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: HEADER_HEIGHT,
+    height: 100,
     zIndex: 2,
     borderBottomWidth: 1,
     borderBottomColor: "rgba(255, 255, 255, 0.1)",
@@ -390,14 +550,22 @@ const styles = StyleSheet.create({
   photoGalleryContainer: {
     height: PHOTO_HEIGHT,
     position: "relative",
+    marginBottom: 24,
   },
   photoGallery: {
     flex: 1,
   },
   photoContainer: {
-    width: width,
+    width: width - 80, // Account for container padding
     height: PHOTO_HEIGHT,
     position: "relative",
+    borderRadius: 20,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
   photo: {
     width: "100%",
@@ -406,43 +574,43 @@ const styles = StyleSheet.create({
   },
   standoutBadge: {
     position: "absolute",
-    top: 20,
-    right: 20,
+    top: 12,
+    right: 12,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
     gap: 4,
   },
   standoutText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "600",
   },
   photoIndicators: {
     position: "absolute",
-    bottom: 20,
+    bottom: 12,
     left: 0,
     right: 0,
     flexDirection: "row",
     justifyContent: "center",
-    gap: 8,
+    gap: 6,
   },
   indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   photoCounter: {
     position: "absolute",
-    top: 20,
-    left: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    top: 12,
+    left: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   photoCounterText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "600",
   },
   // Profile Info Section
@@ -473,16 +641,17 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     flexDirection: "row",
-    gap: 12,
+    justifyContent: "center",
   },
   primaryButton: {
-    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 12,
+    paddingHorizontal: 32,
     borderRadius: 12,
     gap: 8,
+    minWidth: 140,
   },
   primaryButtonText: {
     fontSize: 16,
@@ -577,5 +746,145 @@ const styles = StyleSheet.create({
   professionalText: {
     fontSize: 16,
     flex: 1,
+  },
+  // New styles to match EditProfileScreen
+  heroSection: {
+    margin: 16,
+    borderRadius: 24,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  section: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  professionalIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  professionalTextContainer: {
+    flex: 1,
+  },
+  professionalLabel: {
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  // Additional missing styles
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  content: {
+    flex: 1,
+  },
+  profileInfo: {
+    alignItems: "center",
+  },
+  nameContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 8,
+  },
+  locationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 24,
+  },
+  // Past Meetups Styles
+  meetupsList: {
+    gap: 12,
+  },
+  meetupCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    backgroundColor: "transparent",
+  },
+  meetupHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
+  meetupStatusContainer: {
+    alignItems: "flex-end",
+    gap: 4,
+  },
+  activeStatusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  activeStatusText: {
+    fontSize: 10,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  meetupTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    flex: 1,
+    marginRight: 8,
+  },
+  meetupDate: {
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  meetupDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  meetupFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  meetupLocation: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  meetupLocationText: {
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  meetupStats: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  meetupStatsText: {
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  noMeetupsText: {
+    fontSize: 14,
+    textAlign: "center",
+    fontStyle: "italic",
+    paddingVertical: 20,
   },
 });

@@ -91,23 +91,18 @@ const mockMessageRooms: MessageRoom[] = [
 
 export default function MessagesScreen({ navigation }: any) {
   const { colors } = useThemeStore();
-  const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "unread" | "groups">(
     "all"
   );
 
   const filteredRooms = mockMessageRooms.filter((room) => {
-    const matchesSearch =
-      room.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      room.lastMessage?.text.toLowerCase().includes(searchQuery.toLowerCase());
-
     if (activeTab === "unread") {
-      return matchesSearch && room.lastMessage && !room.lastMessage.isRead;
+      return room.lastMessage && !room.lastMessage.isRead;
     }
     if (activeTab === "groups") {
-      return matchesSearch && room.type === "group";
+      return room.type === "group";
     }
-    return matchesSearch;
+    return true;
   });
 
   const formatTime = (date: Date) => {
@@ -131,6 +126,11 @@ export default function MessagesScreen({ navigation }: any) {
       style={[styles.messageRoom, { backgroundColor: colors.surface }]}
       onPress={() => navigation.navigate("MessageDetails", { roomId: room.id })}
     >
+      {/* Unread dot on the left */}
+      {room.lastMessage && !room.lastMessage.isRead && (
+        <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />
+      )}
+
       <View style={styles.avatarContainer}>
         <Image source={{ uri: room.avatar }} style={styles.avatar} />
         {room.type === "group" && (
@@ -189,10 +189,6 @@ export default function MessagesScreen({ navigation }: any) {
           </Text>
         )}
       </View>
-
-      {room.lastMessage && !room.lastMessage.isRead && (
-        <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />
-      )}
     </TouchableOpacity>
   );
 
@@ -202,40 +198,8 @@ export default function MessagesScreen({ navigation }: any) {
     >
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <Text style={[styles.title, { color: colors.text }]}>Messages</Text>
-        <TouchableOpacity
-          style={styles.newMessageButton}
-          onPress={() => navigation.navigate("ComposeMessage")}
-        >
-          <Ionicons name="create-outline" size={24} color={colors.primary} />
-        </TouchableOpacity>
       </View>
 
-      {/* Search Bar */}
-      <View
-        style={[styles.searchContainer, { backgroundColor: colors.surface }]}
-      >
-        <Ionicons
-          name="search-outline"
-          size={20}
-          color={colors.textSecondary}
-        />
-        <TextInput
-          style={[styles.searchInput, { color: colors.text }]}
-          placeholder="Search conversations..."
-          placeholderTextColor={colors.textTertiary}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery("")}>
-            <Ionicons
-              name="close-circle"
-              size={20}
-              color={colors.textSecondary}
-            />
-          </TouchableOpacity>
-        )}
-      </View>
 
       {/* Tab Navigation */}
       <View style={[styles.tabContainer, { backgroundColor: colors.surface }]}>
@@ -308,22 +272,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-  },
-  newMessageButton: {
-    padding: 8,
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    margin: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: 12,
-    fontSize: 16,
   },
   tabContainer: {
     flexDirection: "row",
@@ -423,7 +371,8 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginLeft: 8,
+    marginRight: 8,
+    alignSelf: "center",
   },
   emptyState: {
     flex: 1,
