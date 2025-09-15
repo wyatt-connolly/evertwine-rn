@@ -18,6 +18,7 @@ import {
   getMockPlaces,
 } from "../../data/mockData";
 import { Meetup, Event, Place } from "../../types";
+import EventCard from "../../components/EventCard";
 
 export default function FavoritesScreen({ navigation }: any) {
   const { colors } = useThemeStore();
@@ -104,41 +105,14 @@ export default function FavoritesScreen({ navigation }: any) {
   );
 
   const renderEventCard = (event: Event) => (
-    <TouchableOpacity
+    <EventCard
       key={event.id}
-      style={[styles.card, { backgroundColor: colors.surface }]}
-    >
-      <View style={styles.cardHeader}>
-        <Text style={[styles.cardTitle, { color: colors.text }]}>
-          {event.title}
-        </Text>
-        <TouchableOpacity
-          onPress={() => removeEventFromFavorites(event.id)}
-          style={styles.favoriteButton}
-        >
-          <Ionicons name="heart" size={20} color={colors.error} />
-        </TouchableOpacity>
-      </View>
-
-      <Text style={[styles.cardDescription, { color: colors.textSecondary }]}>
-        {event.description}
-      </Text>
-
-      <View style={styles.cardFooter}>
-        <View style={styles.cardInfo}>
-          <Ionicons name="location-outline" size={14} color={colors.primary} />
-          <Text style={[styles.cardLocation, { color: colors.textSecondary }]}>
-            {event.locationName}
-          </Text>
-        </View>
-        <View style={styles.cardInfo}>
-          <Ionicons name="time-outline" size={14} color={colors.primary} />
-          <Text style={[styles.cardTime, { color: colors.textSecondary }]}>
-            {formatDate(event.startTime)} • {formatTime(event.startTime)}
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
+      event={event}
+      style={{ backgroundColor: colors.surface }}
+      onPress={() => {
+        navigation.navigate("EventDetails", { eventId: event.id, event });
+      }}
+    />
   );
 
   const renderPlaceCard = (place: Place) => (

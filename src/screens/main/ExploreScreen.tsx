@@ -48,8 +48,7 @@ export default function ExploreScreen({ navigation }: any) {
       place={place}
       style={{ backgroundColor: colors.surface }}
       onPress={() => {
-        // Navigate to place details
-        console.log("Navigate to place:", place.id);
+        navigation.navigate("PlaceDetails", { placeId: place.id, place });
       }}
     />
   );
@@ -60,8 +59,7 @@ export default function ExploreScreen({ navigation }: any) {
       event={event}
       style={{ backgroundColor: colors.surface }}
       onPress={() => {
-        // Navigate to event details
-        console.log("Navigate to event:", event.id);
+        navigation.navigate("EventDetails", { eventId: event.id, event });
       }}
     />
   );

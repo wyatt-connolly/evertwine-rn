@@ -93,12 +93,12 @@ export default function ProfileSetupScreen({ navigation }: Props) {
 
       const userData = {
         displayName: displayName.trim(),
-        phoneNumber: user?.phoneNumber,
+        ...(user?.phoneNumber && { phoneNumber: user.phoneNumber }),
         ...(bio.trim() && { bio: bio.trim() }),
         ...(profileImage && { photoURL: profileImage }),
       };
 
-      const result = await FirestoreService.createUser(userData);
+      const result = await FirestoreService.createUser(userData, user?.uid);
 
       if (result.error) {
         Alert.alert("Error", "Failed to save profile. Please try again.");

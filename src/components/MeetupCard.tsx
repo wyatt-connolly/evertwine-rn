@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Meetup } from "../types";
+import { useThemeStore } from "../hooks/useThemeStore";
 
 interface MeetupCardProps {
   meetup: Meetup;
@@ -18,6 +19,7 @@ export default function MeetupCard({
   showEditButton = false,
   style,
 }: MeetupCardProps) {
+  const { colors } = useThemeStore();
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
@@ -27,7 +29,10 @@ export default function MeetupCard({
   };
 
   return (
-    <TouchableOpacity style={[styles.meetupCard, style]} onPress={onPress}>
+    <TouchableOpacity
+      style={[styles.meetupCard, { backgroundColor: colors.surface }, style]}
+      onPress={onPress}
+    >
       {meetup.coverImage && (
         <Image source={{ uri: meetup.coverImage }} style={styles.meetupImage} />
       )}
@@ -35,9 +40,17 @@ export default function MeetupCard({
       <View style={styles.meetupContent}>
         <View style={styles.meetupHeader}>
           <View style={styles.meetupInfo}>
-            <Text style={styles.meetupTitle}>{meetup.title}</Text>
-            <Text style={styles.meetupLocation}>
-              <Ionicons name="location-outline" size={12} color="#666" />
+            <Text style={[styles.meetupTitle, { color: colors.text }]}>
+              {meetup.title}
+            </Text>
+            <Text
+              style={[styles.meetupLocation, { color: colors.textSecondary }]}
+            >
+              <Ionicons
+                name="location-outline"
+                size={12}
+                color={colors.textSecondary}
+              />
               {meetup.locationName}
             </Text>
           </View>
@@ -50,7 +63,11 @@ export default function MeetupCard({
                   onEdit?.();
                 }}
               >
-                <Ionicons name="create-outline" size={16} color="#007AFF" />
+                <Ionicons
+                  name="create-outline"
+                  size={16}
+                  color={colors.primary}
+                />
               </TouchableOpacity>
             )}
             <View style={styles.liveIndicator}>
@@ -60,18 +77,26 @@ export default function MeetupCard({
           </View>
         </View>
 
-        <Text style={styles.meetupDescription}>{meetup.description}</Text>
+        <Text
+          style={[styles.meetupDescription, { color: colors.textSecondary }]}
+        >
+          {meetup.description}
+        </Text>
 
         <View style={styles.meetupFooter}>
           <View style={styles.meetupTime}>
-            <Ionicons name="time-outline" size={14} color="#007AFF" />
-            <Text style={styles.timeText}>
+            <Ionicons name="time-outline" size={14} color={colors.primary} />
+            <Text style={[styles.timeText, { color: colors.primary }]}>
               {formatTime(meetup.time)} • {formatDate(meetup.time)}
             </Text>
           </View>
           <View style={styles.meetupStats}>
-            <Ionicons name="people-outline" size={14} color="#666" />
-            <Text style={styles.statsText}>
+            <Ionicons
+              name="people-outline"
+              size={14}
+              color={colors.textSecondary}
+            />
+            <Text style={[styles.statsText, { color: colors.textSecondary }]}>
               {meetup.currentParticipants}/{meetup.maxParticipants}
             </Text>
           </View>
@@ -79,8 +104,13 @@ export default function MeetupCard({
 
         <View style={styles.meetupTags}>
           {meetup.tags.slice(0, 3).map((tag, index) => (
-            <View key={index} style={styles.tag}>
-              <Text style={styles.tagText}>{tag}</Text>
+            <View
+              key={index}
+              style={[styles.tag, { backgroundColor: colors.primary + "20" }]}
+            >
+              <Text style={[styles.tagText, { color: colors.primary }]}>
+                {tag}
+              </Text>
             </View>
           ))}
         </View>
@@ -128,13 +158,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 4,
-    color: "#333",
   },
   meetupLocation: {
     fontSize: 12,
     flexDirection: "row",
     alignItems: "center",
-    color: "#666",
   },
   liveIndicator: {
     flexDirection: "row",
@@ -160,7 +188,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 12,
-    color: "#666",
   },
   meetupFooter: {
     flexDirection: "row",
@@ -176,7 +203,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
     marginLeft: 4,
-    color: "#007AFF",
   },
   meetupStats: {
     flexDirection: "row",
@@ -185,7 +211,6 @@ const styles = StyleSheet.create({
   statsText: {
     fontSize: 12,
     marginLeft: 4,
-    color: "#666",
   },
   meetupTags: {
     flexDirection: "row",
@@ -197,11 +222,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginRight: 6,
     marginBottom: 4,
-    backgroundColor: "#007AFF20",
   },
   tagText: {
     fontSize: 10,
     fontWeight: "500",
-    color: "#007AFF",
   },
 });

@@ -161,6 +161,14 @@ export default function MeetupDetailsScreen({
       </View>
 
       <ScrollView style={styles.scrollView}>
+        {/* Cover Image */}
+        {meetup.coverImage && (
+          <Image
+            source={{ uri: meetup.coverImage }}
+            style={styles.coverImage}
+          />
+        )}
+
         {/* Meetup Header */}
         <View
           style={[styles.meetupHeader, { backgroundColor: colors.surface }]}
@@ -632,5 +640,10 @@ const styles = StyleSheet.create({
   joinButtonText: {
     fontSize: 16,
     fontWeight: "600",
+  },
+  coverImage: {
+    width: "100%",
+    height: 200,
+    resizeMode: "cover",
   },
 });

@@ -466,7 +466,7 @@ export default function MessageDetailsScreen({
   navigation,
 }: MessageDetailsScreenProps) {
   const { colors } = useThemeStore();
-  const { roomId } = route.params;
+  const roomId = route.params?.roomId || "room1";
 
   // Get the current room data based on roomId
   const currentRoom = mockRooms[roomId] || mockRooms.room1;

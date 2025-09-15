@@ -177,11 +177,6 @@ export default function ProfileScreen({ navigation, route }: any) {
             <Text style={[styles.name, { color: colors.text }]}>
               {profileUserData?.name || profileUserData?.displayName || "User"}
             </Text>
-            {profileUserData?.bio && (
-              <Text style={[styles.bio, { color: colors.textSecondary }]}>
-                {profileUserData.bio}
-              </Text>
-            )}
             {profileUserData?.locationName && (
               <Text style={[styles.location, { color: colors.textSecondary }]}>
                 📍 {profileUserData.locationName}
@@ -416,12 +411,6 @@ const styles = StyleSheet.create({
   },
   phone: {
     fontSize: 16,
-    marginBottom: 8,
-  },
-  bio: {
-    fontSize: 14,
-    textAlign: "center",
-    lineHeight: 20,
     marginBottom: 8,
   },
   location: {

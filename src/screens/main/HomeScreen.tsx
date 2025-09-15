@@ -15,6 +15,7 @@ import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useMeetupStore } from "../../hooks/useMeetupStore";
 import MeetupCard from "../../components/MeetupCard";
+import EventCard from "../../components/EventCard";
 import {
   getMockMeetups,
   getMockEvents,
@@ -44,6 +45,7 @@ export default function HomeScreen({ navigation }: any) {
   const [activityFeedPage, setActivityFeedPage] = useState(0);
   const [activityFeedData, setActivityFeedData] = useState<any[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
 
   const mockMeetups = getMockMeetups();
   const mockEvents = getMockEvents();
@@ -59,6 +61,29 @@ export default function HomeScreen({ navigation }: any) {
   useEffect(() => {
     const initialData = getActivityFeed(0, 3); // Load first 3 items
     setActivityFeedData(initialData);
+  }, []);
+
+  // Recent activity timer - add new activity every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const allActivity = getActivityFeed(0, 50); // Get more data to choose from
+      const randomActivity =
+        allActivity[Math.floor(Math.random() * allActivity.length)];
+
+      if (randomActivity) {
+        setRecentActivity((prev) => {
+          const newActivity = {
+            ...randomActivity,
+            id: `recent_${Date.now()}`,
+            timestamp: new Date(),
+          };
+          // Keep only last 5 activities
+          return [newActivity, ...prev.slice(0, 4)];
+        });
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const onRefresh = () => {
@@ -192,6 +217,64 @@ export default function HomeScreen({ navigation }: any) {
     </TouchableOpacity>
   );
 
+  const renderRecentActivityItem = (activity: any, index: number) => (
+    <TouchableOpacity
+      key={activity.id}
+      style={[styles.recentActivityItem, { backgroundColor: colors.surface }]}
+      onPress={() => {
+        if (activity.meetup) {
+          navigation.navigate("MeetupDetails", {
+            meetupId: activity.meetup.id,
+          });
+        } else {
+          navigation.navigate("Profile");
+        }
+      }}
+    >
+      <View style={styles.recentActivityContent}>
+        <Image
+          source={{ uri: activity.user.profilePictures[0] }}
+          style={styles.recentActivityAvatar}
+        />
+        <View style={styles.recentActivityInfo}>
+          <Text style={[styles.recentActivityUserName, { color: colors.text }]}>
+            {activity.user.displayName}
+          </Text>
+          <Text
+            style={[
+              styles.recentActivityDescription,
+              { color: colors.textSecondary },
+            ]}
+          >
+            {activity.description}
+          </Text>
+          {activity.meetup && (
+            <Text
+              style={[
+                styles.recentActivityMeetupTitle,
+                { color: colors.primary },
+              ]}
+            >
+              "{activity.meetup.title}"
+            </Text>
+          )}
+        </View>
+        <View style={styles.recentActivityMeta}>
+          <Ionicons
+            name={getActivityIcon(activity.type)}
+            size={20}
+            color={getActivityColor(activity.type)}
+          />
+          <Text
+            style={[styles.recentActivityTime, { color: colors.textTertiary }]}
+          >
+            {formatActivityTime(activity.timestamp)}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
   const renderMeetupCard = (meetup: Meetup) => {
     const isUserMeetup = meetup.creatorId === "current_user";
 
@@ -212,56 +295,14 @@ export default function HomeScreen({ navigation }: any) {
   };
 
   const renderEventCard = (event: Event) => (
-    <TouchableOpacity
+    <EventCard
       key={event.id}
-      style={[styles.eventCard, { backgroundColor: colors.surface }]}
-    >
-      <Image source={{ uri: event.coverImage }} style={styles.eventImage} />
-      <View style={styles.eventContent}>
-        <View style={styles.eventHeader}>
-          <Text style={[styles.eventTitle, { color: colors.text }]}>
-            {event.title}
-          </Text>
-          <View style={[styles.priceTag, { backgroundColor: colors.primary }]}>
-            <Text style={[styles.priceText, { color: colors.onPrimary }]}>
-              ${event.price}
-            </Text>
-          </View>
-        </View>
-
-        <Text style={[styles.eventLocation, { color: colors.textSecondary }]}>
-          <Ionicons
-            name="location-outline"
-            size={12}
-            color={colors.textSecondary}
-          />
-          {event.locationName}
-        </Text>
-
-        <View style={styles.eventFooter}>
-          <View style={styles.eventTime}>
-            <Ionicons
-              name="calendar-outline"
-              size={14}
-              color={colors.primary}
-            />
-            <Text style={[styles.timeText, { color: colors.primary }]}>
-              {formatDate(event.startTime)} • {formatTime(event.startTime)}
-            </Text>
-          </View>
-          <View style={styles.eventStats}>
-            <Ionicons
-              name="people-outline"
-              size={14}
-              color={colors.textSecondary}
-            />
-            <Text style={[styles.statsText, { color: colors.textSecondary }]}>
-              {event.currentAttendees} going
-            </Text>
-          </View>
-        </View>
-      </View>
-    </TouchableOpacity>
+      event={event}
+      style={{ backgroundColor: colors.surface }}
+      onPress={() => {
+        navigation.navigate("EventDetails", { eventId: event.id, event });
+      }}
+    />
   );
 
   const handleNotificationPress = (notification: Notification) => {
@@ -350,17 +391,40 @@ export default function HomeScreen({ navigation }: any) {
         </View>
         <View style={styles.headerRight}>
           <TouchableOpacity
+            style={styles.mapButton}
+            onPress={() => navigation.navigate("Map")}
+          >
+            <Ionicons name="map-outline" size={24} color={colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity
             style={styles.notificationsButton}
-            onPress={() => navigation.navigate("ActivityFeed")}
+            onPress={() => {
+              // Show notifications modal or navigate to notifications screen
+              console.log("Show notifications");
+            }}
           >
             <Ionicons
               name="notifications-outline"
               size={24}
               color={colors.primary}
             />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-            <Ionicons name="log-out-outline" size={24} color={colors.primary} />
+            {mockNotifications.filter((n) => !n.isRead).length > 0 && (
+              <View
+                style={[
+                  styles.notificationBadge,
+                  { backgroundColor: colors.error },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.notificationBadgeText,
+                    { color: colors.onPrimary },
+                  ]}
+                >
+                  {mockNotifications.filter((n) => !n.isRead).length}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -485,26 +549,28 @@ export default function HomeScreen({ navigation }: any) {
           )}
         </View>
 
-        {/* Activity Feed Section */}
+        {/* Recent Activity Section */}
         <View style={styles.content}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Activity Feed
+            Recent Activity
           </Text>
-          {activityFeedData.map(renderActivityItem)}
-
-          {activityFeedData.length < getActivityFeedTotal() && (
-            <TouchableOpacity
-              style={[
-                styles.loadMoreButton,
-                { backgroundColor: colors.primary },
-              ]}
-              onPress={loadMoreActivityFeed}
-              disabled={loadingMore}
+          {recentActivity.length > 0 ? (
+            recentActivity.map(renderRecentActivityItem)
+          ) : (
+            <View
+              style={[styles.emptyState, { backgroundColor: colors.surface }]}
             >
-              <Text style={[styles.loadMoreText, { color: colors.onPrimary }]}>
-                {loadingMore ? "Loading..." : "Load More Activity"}
+              <Ionicons
+                name="time-outline"
+                size={48}
+                color={colors.textTertiary}
+              />
+              <Text
+                style={[styles.emptyStateText, { color: colors.textTertiary }]}
+              >
+                Recent activity will appear here
               </Text>
-            </TouchableOpacity>
+            </View>
           )}
         </View>
       </ScrollView>
@@ -542,9 +608,29 @@ const styles = StyleSheet.create({
   welcomeContainer: {
     flex: 1,
   },
+  mapButton: {
+    padding: 8,
+    marginRight: 8,
+  },
   notificationsButton: {
     padding: 8,
     marginRight: 8,
+    position: "relative",
+  },
+  notificationBadge: {
+    position: "absolute",
+    top: 2,
+    right: 2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+  },
+  notificationBadgeText: {
+    fontSize: 10,
+    fontWeight: "bold",
   },
   greeting: {
     fontSize: 14,
@@ -779,5 +865,52 @@ const styles = StyleSheet.create({
   statsText: {
     fontSize: 12,
     marginLeft: 4,
+  },
+  // Recent Activity Styles
+  recentActivityItem: {
+    borderRadius: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  recentActivityContent: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    padding: 20,
+  },
+  recentActivityAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 16,
+  },
+  recentActivityInfo: {
+    flex: 1,
+  },
+  recentActivityUserName: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  recentActivityDescription: {
+    fontSize: 14,
+    marginBottom: 4,
+    lineHeight: 20,
+  },
+  recentActivityMeetupTitle: {
+    fontSize: 13,
+    fontWeight: "500",
+    fontStyle: "italic",
+  },
+  recentActivityMeta: {
+    alignItems: "center",
+    marginLeft: 12,
+  },
+  recentActivityTime: {
+    fontSize: 12,
+    marginTop: 4,
   },
 });

@@ -45,6 +45,9 @@ export interface User {
   starSign: string;
   hobbies: string[];
 
+  // Meetup Intent
+  lookingFor: string[]; // ["Friends", "Business", "Dating"]
+
   // Status & Verification
   onboardingComplete: boolean;
   isVerified: "pending" | "verified" | "rejected";
@@ -467,20 +470,9 @@ export interface UserStats {
   level: number;
   experience: number;
   points: number;
-  badges: Badge[];
   achievements: Achievement[];
   streak: number;
   lastActive: Date;
-}
-
-export interface Badge {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  category: string;
-  rarity: "common" | "rare" | "epic" | "legendary";
-  unlockedAt: Date;
 }
 
 export interface Achievement {
@@ -491,6 +483,36 @@ export interface Achievement {
   progress: number;
   maxProgress: number;
   unlockedAt?: Date;
+}
+
+export interface StandoutItem {
+  id: string;
+  type: "user" | "meetup";
+  title: string;
+  description: string;
+  image: string;
+  badge: string;
+  stats: {
+    followers?: number;
+    participants?: number;
+    rating: number;
+  };
+  userData?: User & {
+    // Additional standout-specific user details
+    achievements?: string[];
+    specialties?: string[];
+    languages?: string[];
+    availability?: string;
+    certifications?: string[];
+    socialMedia?: {
+      instagram?: string;
+      twitter?: string;
+      linkedin?: string;
+      website?: string;
+    };
+  };
+  location?: string;
+  time?: string;
 }
 
 // Tutorial Types

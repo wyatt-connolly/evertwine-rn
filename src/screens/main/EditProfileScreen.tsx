@@ -56,6 +56,7 @@ export default function EditProfileScreen({ navigation }: any) {
   });
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [tempData, setTempData] = useState<any>({});
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
 
   const userStats = getMockUserStats("user1");
 
@@ -85,6 +86,82 @@ export default function EditProfileScreen({ navigation }: any) {
         setTempData({ hobbies: [...profileData.hobbies] });
         break;
     }
+  };
+
+  const handlePhotoUpload = async () => {
+    try {
+      // Request permissions
+      const permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (permissionResult.granted === false) {
+        Alert.alert(
+          "Permission Required",
+          "Permission to access camera roll is required!"
+        );
+        return;
+      }
+
+      // Check if user already has 6 photos
+      const currentPhotoCount = profileData.profilePictures?.length || 0;
+      if (currentPhotoCount >= 6) {
+        Alert.alert(
+          "Maximum Photos",
+          "You can only have 6 photos. Remove one to add a new one."
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+        allowsMultipleSelection: true,
+        selectionLimit: 6 - currentPhotoCount,
+      });
+
+      if (!result.canceled && result.assets.length > 0) {
+        setUploadingPhotos(true);
+
+        // Simulate upload delay
+        setTimeout(() => {
+          const newPhotos = result.assets.map((asset) => asset.uri);
+          setProfileData((prev) => ({
+            ...prev,
+            profilePictures: [
+              ...(prev.profilePictures || []),
+              ...newPhotos,
+            ].slice(0, 6),
+          }));
+          setUploadingPhotos(false);
+          Alert.alert(
+            "Success",
+            `${newPhotos.length} photo(s) uploaded successfully!`
+          );
+        }, 1000);
+      }
+    } catch (error) {
+      console.error("Error picking images:", error);
+      Alert.alert("Error", "Failed to upload photos. Please try again.");
+      setUploadingPhotos(false);
+    }
+  };
+
+  const handleRemovePhoto = (index: number) => {
+    Alert.alert("Remove Photo", "Are you sure you want to remove this photo?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Remove",
+        style: "destructive",
+        onPress: () => {
+          setProfileData((prev) => ({
+            ...prev,
+            profilePictures: prev.profilePictures.filter((_, i) => i !== index),
+          }));
+        },
+      },
+    ]);
   };
 
   const handleSaveEdit = () => {
@@ -189,107 +266,224 @@ export default function EditProfileScreen({ navigation }: any) {
         <View
           style={[styles.profileHeader, { backgroundColor: colors.surface }]}
         >
-          {/* Photo Section with Edit */}
+          {/* Photo Gallery Section */}
           <View style={styles.photoSection}>
-            <View style={styles.photoContainer}>
-              {profileData.profilePictures[0] ? (
-                <Image
-                  source={{ uri: profileData.profilePictures[0] }}
-                  style={styles.profilePhoto}
-                />
-              ) : (
-                <View
-                  style={[
-                    styles.profilePhotoPlaceholder,
-                    { backgroundColor: colors.surfaceVariant },
-                  ]}
-                >
-                  <Ionicons
-                    name="person"
-                    size={40}
-                    color={colors.textSecondary}
-                  />
-                </View>
-              )}
-              <View
+            <View style={styles.photoGalleryHeader}>
+              <Text style={[styles.photoGalleryTitle, { color: colors.text }]}>
+                Profile Photos
+              </Text>
+              <Text
                 style={[
-                  styles.verificationBadge,
-                  { backgroundColor: colors.primary },
+                  styles.photoGallerySubtitle,
+                  { color: colors.textSecondary },
                 ]}
               >
-                <Ionicons name="checkmark" size={16} color={colors.onPrimary} />
-              </View>
-              {/* Edit Button Overlay */}
-              <TouchableOpacity
-                style={[
-                  styles.photoEditBadge,
-                  {
-                    backgroundColor: colors.primary,
-                    borderColor: colors.surface,
-                  },
-                ]}
-                onPress={() => handleEditSection("Photo")}
-              >
-                <Ionicons name="camera" size={16} color={colors.onPrimary} />
-              </TouchableOpacity>
+                {profileData.profilePictures?.length || 0}/6 photos
+              </Text>
             </View>
+
+            <View style={styles.photoGrid}>
+              {/* Render existing photos */}
+              {Array.from({ length: 6 }).map((_, index) => {
+                const photo = profileData.profilePictures?.[index];
+                const isEmpty = !photo;
+
+                return (
+                  <View key={index} style={styles.photoGridItem}>
+                    {isEmpty ? (
+                      <TouchableOpacity
+                        style={[
+                          styles.photoPlaceholder,
+                          {
+                            backgroundColor: colors.surfaceVariant,
+                            borderColor: colors.border,
+                          },
+                        ]}
+                        onPress={handlePhotoUpload}
+                        disabled={uploadingPhotos}
+                      >
+                        <Ionicons
+                          name="add"
+                          size={24}
+                          color={colors.textSecondary}
+                        />
+                      </TouchableOpacity>
+                    ) : (
+                      <View style={styles.photoItemContainer}>
+                        <Image
+                          source={{ uri: photo }}
+                          style={styles.gridPhoto}
+                        />
+                        {/* Remove button */}
+                        <TouchableOpacity
+                          style={[
+                            styles.removePhotoButton,
+                            { backgroundColor: colors.error },
+                          ]}
+                          onPress={() => handleRemovePhoto(index)}
+                        >
+                          <Ionicons
+                            name="close"
+                            size={14}
+                            color={colors.error}
+                          />
+                        </TouchableOpacity>
+                        {/* Primary photo badge */}
+                        {index === 0 && (
+                          <View
+                            style={[
+                              styles.primaryPhotoBadge,
+                              { backgroundColor: colors.primary },
+                            ]}
+                          >
+                            <Ionicons
+                              name="star"
+                              size={12}
+                              color={colors.onPrimary}
+                            />
+                          </View>
+                        )}
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+
+            {/* Upload button */}
+            <TouchableOpacity
+              style={[styles.uploadButton, { backgroundColor: colors.primary }]}
+              onPress={handlePhotoUpload}
+              disabled={uploadingPhotos}
+            >
+              <Ionicons
+                name={uploadingPhotos ? "hourglass" : "cloud-upload"}
+                size={20}
+                color={colors.onPrimary}
+              />
+              <Text
+                style={[styles.uploadButtonText, { color: colors.onPrimary }]}
+              >
+                {uploadingPhotos ? "Uploading..." : "Add Photos"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Basic Information Section */}
+        <View style={[styles.section, { backgroundColor: colors.surface }]}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Basic Information
+            </Text>
+            <TouchableOpacity
+              style={styles.editIconButton}
+              onPress={() => handleEditSection("Basic Info")}
+            >
+              <Ionicons
+                name="create-outline"
+                size={20}
+                color={colors.primary}
+              />
+            </TouchableOpacity>
           </View>
 
-          {/* Basic Info Section with Edit */}
-          <View style={styles.infoSection}>
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Basic Information
-              </Text>
-              <TouchableOpacity
-                style={styles.editIconButton}
-                onPress={() => handleEditSection("Basic Info")}
-              >
+          <View style={styles.basicInfoGrid}>
+            <View style={styles.basicInfoItem}>
+              <Ionicons
+                name="person-outline"
+                size={20}
+                color={colors.primary}
+              />
+              <View style={styles.basicInfoItemContent}>
+                <Text
+                  style={[
+                    styles.basicInfoItemLabel,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Display Name
+                </Text>
+                <Text
+                  style={[styles.basicInfoItemValue, { color: colors.text }]}
+                >
+                  {profileData.displayName}
+                </Text>
+              </View>
+            </View>
+
+            {profileData.bio && (
+              <View style={styles.basicInfoItem}>
                 <Ionicons
-                  name="create-outline"
+                  name="chatbubble-outline"
                   size={20}
                   color={colors.primary}
                 />
-              </TouchableOpacity>
-            </View>
-
-            <Text style={[styles.name, { color: colors.text }]}>
-              {profileData.displayName}
-            </Text>
-            {profileData.bio && (
-              <Text style={[styles.bio, { color: colors.textSecondary }]}>
-                {profileData.bio}
-              </Text>
-            )}
-            {profileData.locationName && (
-              <Text style={[styles.location, { color: colors.textSecondary }]}>
-                📍 {profileData.locationName}
-              </Text>
-            )}
-
-            {/* Level and Points */}
-            {userStats && (
-              <View style={styles.levelContainer}>
-                <View
-                  style={[
-                    styles.levelBadge,
-                    { backgroundColor: colors.primary },
-                  ]}
-                >
-                  <Text style={[styles.levelText, { color: colors.onPrimary }]}>
-                    Level {userStats.level}
+                <View style={styles.basicInfoItemContent}>
+                  <Text
+                    style={[
+                      styles.basicInfoItemLabel,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Bio
+                  </Text>
+                  <Text
+                    style={[styles.basicInfoItemValue, { color: colors.text }]}
+                  >
+                    {profileData.bio}
                   </Text>
                 </View>
-                <View style={styles.statsTextContainer}>
+              </View>
+            )}
+
+            {profileData.locationName && (
+              <View style={styles.basicInfoItem}>
+                <Ionicons
+                  name="location-outline"
+                  size={20}
+                  color={colors.primary}
+                />
+                <View style={styles.basicInfoItemContent}>
                   <Text
-                    style={[styles.pointsText, { color: colors.textSecondary }]}
+                    style={[
+                      styles.basicInfoItemLabel,
+                      { color: colors.textSecondary },
+                    ]}
                   >
-                    {userStats.points.toLocaleString()} points
+                    Location
                   </Text>
                   <Text
-                    style={[styles.streakText, { color: colors.textSecondary }]}
+                    style={[styles.basicInfoItemValue, { color: colors.text }]}
                   >
-                    {userStats.streak} day streak
+                    {profileData.locationName}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {userStats && (
+              <View style={styles.basicInfoItem}>
+                <Ionicons
+                  name="trophy-outline"
+                  size={20}
+                  color={colors.primary}
+                />
+                <View style={styles.basicInfoItemContent}>
+                  <Text
+                    style={[
+                      styles.basicInfoItemLabel,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Level & Stats
+                  </Text>
+                  <Text
+                    style={[styles.basicInfoItemValue, { color: colors.text }]}
+                  >
+                    Level {userStats.level} •{" "}
+                    {userStats.points.toLocaleString()} XP • {userStats.streak}{" "}
+                    day streak
                   </Text>
                 </View>
               </View>
@@ -568,47 +762,50 @@ export default function EditProfileScreen({ navigation }: any) {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text
-                  style={[styles.inputLabel, { color: colors.textSecondary }]}
-                >
-                  Bio
-                </Text>
+                <View style={styles.bioHeader}>
+                  <Text style={[styles.inputLabel, { color: colors.text }]}>
+                    About You
+                  </Text>
+                  <Text
+                    style={[
+                      styles.characterCount,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    {tempData.bio?.length || 0}/150
+                  </Text>
+                </View>
                 <Text
                   style={[
                     styles.inputDescription,
-                    { color: colors.textTertiary },
+                    { color: colors.textSecondary },
                   ]}
                 >
-                  Tell others about yourself (max 150 characters)
+                  Share what makes you unique and what you're passionate about
                 </Text>
-                <TextInput
+                <View
                   style={[
-                    styles.modalInput,
-                    styles.modalTextArea,
+                    styles.inputContainer,
                     {
                       backgroundColor: colors.background,
                       borderColor: colors.border,
-                      color: colors.text,
                     },
                   ]}
-                  value={tempData.bio}
-                  onChangeText={(text) =>
-                    setTempData((prev: any) => ({ ...prev, bio: text }))
-                  }
-                  placeholder="Share something about yourself..."
-                  placeholderTextColor={colors.textTertiary}
-                  multiline
-                  numberOfLines={3}
-                  maxLength={150}
-                />
-                <Text
-                  style={[
-                    styles.characterCount,
-                    { color: colors.textTertiary },
-                  ]}
                 >
-                  {tempData.bio?.length || 0}/150
-                </Text>
+                  <TextInput
+                    style={[styles.bioTextInput, { color: colors.text }]}
+                    value={tempData.bio}
+                    onChangeText={(text) =>
+                      setTempData((prev: any) => ({ ...prev, bio: text }))
+                    }
+                    placeholder="I'm passionate about..."
+                    placeholderTextColor={colors.textTertiary}
+                    multiline
+                    numberOfLines={4}
+                    maxLength={150}
+                    textAlignVertical="top"
+                  />
+                </View>
               </View>
 
               <View style={styles.inputGroup}>
@@ -1033,18 +1230,121 @@ const styles = StyleSheet.create({
   },
   // Profile Header Styles
   profileHeader: {
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 20,
+    padding: 24,
+    borderRadius: 20,
+    marginBottom: 24,
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
   photoSection: {
     alignItems: "center",
+    marginBottom: 20,
+  },
+  photoGalleryHeader: {
+    alignItems: "center",
     marginBottom: 16,
+  },
+  photoGalleryTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  photoGallerySubtitle: {
+    fontSize: 14,
+    opacity: 0.7,
+  },
+  photoGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    width: "100%",
+    marginBottom: 16,
+  },
+  photoGridItem: {
+    width: "30%",
+    aspectRatio: 1,
+    marginBottom: 12,
+  },
+  photoPlaceholder: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 12,
+    borderWidth: 2,
+    borderStyle: "dashed",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  photoItemContainer: {
+    position: "relative",
+    width: "100%",
+    height: "100%",
+  },
+  gridPhoto: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 12,
+  },
+  removePhotoButton: {
+    position: "absolute",
+    top: -6,
+    right: -6,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "white",
+  },
+  primaryPhotoBadge: {
+    position: "absolute",
+    top: -6,
+    left: -6,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "white",
+  },
+  uploadButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+    gap: 8,
+  },
+  uploadButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
   },
   photoContainer: {
     position: "relative",
     marginBottom: 8,
+    alignItems: "center",
+  },
+  profilePhotosScroll: {
+    maxWidth: 320, // Allow for 3 photos side by side
+  },
+  profilePhotosContainer: {
+    paddingHorizontal: 10,
+    gap: 12,
+  },
+  profilePhotoItem: {
+    position: "relative",
+  },
+  singlePhotoContainer: {
+    position: "relative",
   },
   profilePhoto: {
     width: 100,
@@ -1084,74 +1384,94 @@ const styles = StyleSheet.create({
   infoSection: {
     alignItems: "center",
     width: "100%",
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 16,
   },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     width: "100%",
-    marginBottom: 12,
+    marginBottom: 20,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  editIconButton: {
-    padding: 4,
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 4,
-    textAlign: "center",
-  },
-  bio: {
-    fontSize: 14,
-    textAlign: "center",
-    lineHeight: 20,
-    marginBottom: 8,
-  },
-  location: {
-    fontSize: 14,
-    textAlign: "center",
-    marginBottom: 12,
-  },
-  levelContainer: {
+  sectionTitleContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 8,
   },
-  levelBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+  sectionIcon: {
     marginRight: 8,
   },
-  levelText: {
-    fontSize: 12,
-    fontWeight: "bold",
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    letterSpacing: 0.5,
   },
-  statsTextContainer: {
-    flexDirection: "column",
+  editIconButton: {
+    padding: 8,
+    borderRadius: 8,
+  },
+  basicInfoGrid: {
+    gap: 16,
     alignItems: "flex-start",
   },
-  pointsText: {
-    fontSize: 14,
-    marginBottom: 2,
+  basicInfoItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
   },
-  streakText: {
+  basicInfoItemContent: {
+    flex: 1,
+    marginLeft: 8,
+  },
+  basicInfoItemLabel: {
     fontSize: 12,
+    fontWeight: "500",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  basicInfoItemValue: {
+    fontSize: 15,
+    fontWeight: "500",
+    lineHeight: 20,
+  },
+  inputContainer: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  bioHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  bioTextInput: {
+    fontSize: 16,
+    lineHeight: 22,
+    minHeight: 80,
+    textAlignVertical: "top",
   },
   // Section Styles
   section: {
     padding: 20,
-    borderRadius: 12,
+    borderRadius: 16,
     marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   // Professional Information Styles
   professionalGrid: {
     flexDirection: "row",
     marginBottom: 16,
+    alignItems: "flex-start",
   },
   professionalItem: {
     flex: 1,
@@ -1161,19 +1481,21 @@ const styles = StyleSheet.create({
   },
   professionalItemContent: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 8,
   },
   professionalItemLabel: {
-    fontSize: 12,
-    fontWeight: "500",
+    fontSize: 13,
+    fontWeight: "600",
     textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 4,
+    letterSpacing: 0.8,
+    marginBottom: 6,
+    opacity: 0.8,
   },
   professionalItemValue: {
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: 15,
+    fontWeight: "700",
     marginBottom: 2,
+    lineHeight: 20,
   },
   professionalItemSubtext: {
     fontSize: 12,
@@ -1182,8 +1504,6 @@ const styles = StyleSheet.create({
   interestsList: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "center",
-    maxWidth: 280,
   },
   interestTag: {
     borderWidth: 1,

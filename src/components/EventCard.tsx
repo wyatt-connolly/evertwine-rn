@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Event } from "../types";
+import { useThemeStore } from "../hooks/useThemeStore";
 
 interface EventCardProps {
   event: Event;
@@ -10,6 +11,7 @@ interface EventCardProps {
 }
 
 export default function EventCard({ event, onPress, style }: EventCardProps) {
+  const { colors } = useThemeStore();
   const formatDate = (date: Date) => {
     return date.toLocaleDateString([], { month: "short", day: "numeric" });
   };
@@ -19,38 +21,67 @@ export default function EventCard({ event, onPress, style }: EventCardProps) {
   };
 
   return (
-    <TouchableOpacity style={[styles.eventCard, style]} onPress={onPress}>
+    <TouchableOpacity
+      style={[styles.eventCard, { backgroundColor: colors.surface }, style]}
+      onPress={onPress}
+    >
       <Image source={{ uri: event.coverImage }} style={styles.eventImage} />
       <View style={styles.eventContent}>
         <View style={styles.eventHeader}>
-          <Text style={styles.eventTitle}>{event.title}</Text>
-          <View style={styles.priceTag}>
-            <Text style={styles.priceText}>${event.price}</Text>
+          <Text style={[styles.eventTitle, { color: colors.text }]}>
+            {event.title}
+          </Text>
+          <View style={[styles.priceTag, { backgroundColor: colors.primary }]}>
+            <Text style={[styles.priceText, { color: colors.onPrimary }]}>
+              ${event.price}
+            </Text>
           </View>
         </View>
 
-        <Text style={styles.eventLocation}>
-          <Ionicons name="location-outline" size={12} color="#666" />
+        <Text style={[styles.eventLocation, { color: colors.textSecondary }]}>
+          <Ionicons
+            name="location-outline"
+            size={12}
+            color={colors.textSecondary}
+          />
           {event.locationName}
         </Text>
 
         <View style={styles.eventFooter}>
           <View style={styles.eventTime}>
-            <Ionicons name="calendar-outline" size={14} color="#007AFF" />
-            <Text style={styles.timeText}>
+            <Ionicons
+              name="calendar-outline"
+              size={14}
+              color={colors.primary}
+            />
+            <Text style={[styles.timeText, { color: colors.primary }]}>
               {formatDate(event.startTime)} • {formatTime(event.startTime)}
             </Text>
           </View>
           <View style={styles.eventStats}>
-            <Ionicons name="people-outline" size={14} color="#666" />
-            <Text style={styles.statsText}>{event.currentAttendees} going</Text>
+            <Ionicons
+              name="people-outline"
+              size={14}
+              color={colors.textSecondary}
+            />
+            <Text style={[styles.statsText, { color: colors.textSecondary }]}>
+              {event.currentAttendees} going
+            </Text>
           </View>
         </View>
 
         <View style={styles.eventTags}>
           {event.tags.slice(0, 3).map((tag, index) => (
-            <View key={index} style={styles.eventTag}>
-              <Text style={styles.eventTagText}>{tag}</Text>
+            <View
+              key={index}
+              style={[
+                styles.eventTag,
+                { backgroundColor: colors.primary + "20" },
+              ]}
+            >
+              <Text style={[styles.eventTagText, { color: colors.primary }]}>
+                {tag}
+              </Text>
             </View>
           ))}
         </View>
@@ -60,7 +91,7 @@ export default function EventCard({ event, onPress, style }: EventCardProps) {
             source={{ uri: event.organizerAvatar }}
             style={styles.organizerAvatar}
           />
-          <Text style={styles.organizerText}>
+          <Text style={[styles.organizerText, { color: colors.textSecondary }]}>
             Organized by {event.organizerName}
           </Text>
         </View>
@@ -98,25 +129,21 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     flex: 1,
     marginRight: 8,
-    color: "#333",
   },
   priceTag: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
-    backgroundColor: "#007AFF",
   },
   priceText: {
     fontSize: 12,
     fontWeight: "bold",
-    color: "#FFF",
   },
   eventLocation: {
     fontSize: 12,
     marginBottom: 8,
     flexDirection: "row",
     alignItems: "center",
-    color: "#666",
   },
   eventFooter: {
     flexDirection: "row",
@@ -132,7 +159,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
     marginLeft: 4,
-    color: "#007AFF",
   },
   eventStats: {
     flexDirection: "row",
@@ -141,7 +167,6 @@ const styles = StyleSheet.create({
   statsText: {
     fontSize: 12,
     marginLeft: 4,
-    color: "#666",
   },
   eventTags: {
     flexDirection: "row",
@@ -154,12 +179,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginRight: 6,
     marginBottom: 4,
-    backgroundColor: "#F0F0F0",
   },
   eventTagText: {
     fontSize: 10,
     fontWeight: "500",
-    color: "#666",
   },
   organizerInfo: {
     flexDirection: "row",
@@ -173,6 +196,5 @@ const styles = StyleSheet.create({
   },
   organizerText: {
     fontSize: 12,
-    color: "#666",
   },
 });

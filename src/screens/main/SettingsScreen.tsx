@@ -14,6 +14,7 @@ import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { usePreferenceStore } from "../../hooks/usePreferenceStore";
 import { getPreferenceCompletionPercentage } from "../../constants/preferences";
+import { FirestoreService, AuthService } from "../../services/firebase";
 
 export default function SettingsScreen({ navigation }: any) {
   const { user, logout } = useAuthStore();
@@ -48,30 +49,84 @@ export default function SettingsScreen({ navigation }: any) {
     );
   };
 
-  const handleAbout = () => {
-    Alert.alert(
-      "About Evertwine",
-      "Version 1.0.0\n\nEvertwine helps you connect with people who share your interests through local meetups and events.\n\n© 2024 Evertwine"
-    );
-  };
-
   const handleDeleteAccount = () => {
     Alert.alert(
       "Delete Account",
-      "Are you sure you want to delete your account? This action cannot be undone.",
+      "Are you sure you want to permanently delete your account? This action cannot be undone and will delete all your data including:\n\n• Your profile and personal information\n• All your meetups and events\n• Your messages and conversations\n• Your favorites and preferences\n• Your activity history",
       [
         { text: "Cancel", style: "cancel" },
         {
-          text: "Delete",
+          text: "Delete Account",
           style: "destructive",
           onPress: () => {
+            // Second confirmation
             Alert.alert(
-              "Delete Account",
-              "Account deletion feature coming soon!"
+              "Final Confirmation",
+              "This is your final warning. Your account and all data will be permanently deleted. Are you absolutely sure?",
+              [
+                { text: "Cancel", style: "cancel" },
+                {
+                  text: "Yes, Delete Forever",
+                  style: "destructive",
+                  onPress: confirmDeleteAccount,
+                },
+              ]
             );
           },
         },
       ]
+    );
+  };
+
+  const confirmDeleteAccount = async () => {
+    if (!user?.uid) {
+      Alert.alert("Error", "Unable to delete account. Please try again.");
+      return;
+    }
+
+    try {
+      // Show loading state
+      Alert.alert(
+        "Deleting Account",
+        "Please wait while we delete your account and all associated data..."
+      );
+
+      // Delete all user data from Firestore
+      const firestoreResult = await FirestoreService.deleteUserAccount(
+        user.uid
+      );
+
+      if (firestoreResult.error) {
+        Alert.alert(
+          "Error",
+          `Failed to delete account data: ${firestoreResult.error}`
+        );
+        return;
+      }
+
+      // Delete the account from Firebase Auth
+      const authResult = await AuthService.deleteAccount();
+
+      if (authResult.error) {
+        Alert.alert("Error", `Failed to delete account: ${authResult.error}`);
+        return;
+      }
+
+      // Logout and navigate to auth screen automatically
+      await logout();
+
+      // The AppNavigator will automatically detect the logout and navigate to the auth screen
+      // No need for additional alerts - the user will see the login screen immediately
+    } catch (error: any) {
+      console.error("Delete account error:", error);
+      Alert.alert("Error", "An unexpected error occurred. Please try again.");
+    }
+  };
+
+  const handleAbout = () => {
+    Alert.alert(
+      "About Evertwine",
+      "Version 1.0.0\n\nEvertwine helps you connect with people who share your interests through local meetups and events.\n\n© 2024 Evertwine"
     );
   };
 

@@ -5,7 +5,7 @@ import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../hooks/useThemeStore";
 import HomeScreen from "../screens/main/HomeScreen";
-import ExploreScreen from "../screens/main/ExploreScreen";
+import StandoutsScreen from "../screens/main/StandoutsScreen";
 import MessagesScreen from "../screens/main/MessagesScreen";
 import ProfileScreen from "../screens/main/ProfileScreen";
 import EditProfileScreen from "../screens/main/EditProfileScreen";
@@ -19,13 +19,14 @@ import ComposeMessageScreen from "../screens/main/ComposeMessageScreen";
 import FavoritesScreen from "../screens/main/FavoritesScreen";
 import CreateMeetupScreen from "../screens/main/CreateMeetupScreen";
 import EditMeetupScreen from "../screens/main/EditMeetupScreen";
-import BadgeDetailsScreen from "../screens/main/BadgeDetailsScreen";
 import GroupDetailsScreen from "../screens/main/GroupDetailsScreen";
 import UserProfileScreen from "../screens/main/UserProfileScreen";
+import EventDetailsScreen from "../screens/main/EventDetailsScreen";
+import PlaceDetailsScreen from "../screens/main/PlaceDetailsScreen";
 
 export type MainTabParamList = {
   Home: undefined;
-  Explore: undefined;
+  Standouts: undefined;
   Create: undefined;
   Messages: undefined;
   Profile: undefined;
@@ -44,8 +45,8 @@ export type HomeStackParamList = {
   ActivityFeed: undefined;
 };
 
-export type ExploreStackParamList = {
-  ExploreMain: undefined;
+export type StandoutsStackParamList = {
+  StandoutsMain: undefined;
   Map: undefined;
 };
 
@@ -59,7 +60,8 @@ export type MainStackParamList = {
   MainTabs: undefined;
   MeetupDetails: { meetupId: string };
   EditMeetup: { meetupId: string };
-  BadgeDetails: { badge: any };
+  EventDetails: { eventId: string; event?: any };
+  PlaceDetails: { placeId: string; place?: any };
   Favorites: undefined;
   GroupDetails: { groupId: string; groupData?: any };
   UserProfile: { userId: string; userData?: any };
@@ -68,7 +70,7 @@ export type MainStackParamList = {
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const ProfileStack = createStackNavigator<ProfileStackParamList>();
 const HomeStack = createStackNavigator<HomeStackParamList>();
-const ExploreStack = createStackNavigator<ExploreStackParamList>();
+const StandoutsStack = createStackNavigator<StandoutsStackParamList>();
 const MessagesStack = createStackNavigator<MessagesStackParamList>();
 const MainStack = createStackNavigator<MainStackParamList>();
 
@@ -111,16 +113,16 @@ function HomeStackNavigator() {
   );
 }
 
-function ExploreStackNavigator() {
+function StandoutsStackNavigator() {
   return (
-    <ExploreStack.Navigator
+    <StandoutsStack.Navigator
       screenOptions={{
         headerShown: false,
       }}
     >
-      <ExploreStack.Screen name="ExploreMain" component={ExploreScreen} />
-      <ExploreStack.Screen name="Map" component={MapScreen} />
-    </ExploreStack.Navigator>
+      <StandoutsStack.Screen name="StandoutsMain" component={StandoutsScreen} />
+      <StandoutsStack.Screen name="Map" component={MapScreen} />
+    </StandoutsStack.Navigator>
   );
 }
 
@@ -155,8 +157,8 @@ function MainTabsNavigator() {
 
           if (route.name === "Home") {
             iconName = focused ? "home" : "home-outline";
-          } else if (route.name === "Explore") {
-            iconName = focused ? "compass" : "compass-outline";
+          } else if (route.name === "Standouts") {
+            iconName = focused ? "star" : "star-outline";
           } else if (route.name === "Create") {
             iconName = focused ? "add-circle" : "add-circle-outline";
           } else if (route.name === "Messages") {
@@ -191,12 +193,12 @@ function MainTabsNavigator() {
         }}
       />
       <Tab.Screen
-        name="Explore"
-        component={ExploreStackNavigator}
+        name="Standouts"
+        component={StandoutsStackNavigator}
         options={({ route }) => {
           const routeName =
-            getFocusedRouteNameFromRoute(route) ?? "ExploreMain";
-          const shouldShowTabBar = ["ExploreMain"].includes(routeName);
+            getFocusedRouteNameFromRoute(route) ?? "StandoutsMain";
+          const shouldShowTabBar = ["StandoutsMain"].includes(routeName);
           return {
             tabBarStyle: shouldShowTabBar
               ? {
@@ -263,7 +265,8 @@ export default function MainTabs() {
       <MainStack.Screen name="MainTabs" component={MainTabsNavigator} />
       <MainStack.Screen name="MeetupDetails" component={MeetupDetailsScreen} />
       <MainStack.Screen name="EditMeetup" component={EditMeetupScreen} />
-      <MainStack.Screen name="BadgeDetails" component={BadgeDetailsScreen} />
+      <MainStack.Screen name="EventDetails" component={EventDetailsScreen} />
+      <MainStack.Screen name="PlaceDetails" component={PlaceDetailsScreen} />
       <MainStack.Screen name="Favorites" component={FavoritesScreen} />
       <MainStack.Screen name="GroupDetails" component={GroupDetailsScreen} />
       <MainStack.Screen name="UserProfile" component={UserProfileScreen} />

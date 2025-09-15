@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Place } from "../types";
+import { useThemeStore } from "../hooks/useThemeStore";
 
 interface PlaceCardProps {
   place: Place;
@@ -10,38 +11,65 @@ interface PlaceCardProps {
 }
 
 export default function PlaceCard({ place, onPress, style }: PlaceCardProps) {
+  const { colors } = useThemeStore();
   return (
-    <TouchableOpacity style={[styles.placeCard, style]} onPress={onPress}>
+    <TouchableOpacity
+      style={[styles.placeCard, { backgroundColor: colors.surface }, style]}
+      onPress={onPress}
+    >
       <Image source={{ uri: place.photos[0] }} style={styles.placeImage} />
       <View style={styles.placeContent}>
         <View style={styles.placeHeader}>
-          <Text style={styles.placeName}>{place.name}</Text>
+          <Text style={[styles.placeName, { color: colors.text }]}>
+            {place.name}
+          </Text>
           <View style={styles.ratingContainer}>
             <Ionicons name="star" size={14} color="#FFD700" />
-            <Text style={styles.rating}>{place.rating}</Text>
+            <Text style={[styles.rating, { color: colors.text }]}>
+              {place.rating}
+            </Text>
           </View>
         </View>
 
-        <Text style={styles.placeCategory}>{place.category}</Text>
+        <Text style={[styles.placeCategory, { color: colors.textSecondary }]}>
+          {place.category}
+        </Text>
 
-        <Text style={styles.placeAddress}>
-          <Ionicons name="location-outline" size={12} color="#666" />
+        <Text style={[styles.placeAddress, { color: colors.textSecondary }]}>
+          <Ionicons
+            name="location-outline"
+            size={12}
+            color={colors.textSecondary}
+          />
           {place.address}
         </Text>
 
         <View style={styles.placeFeatures}>
           {place.features.slice(0, 3).map((feature, index) => (
-            <View key={index} style={styles.featureTag}>
-              <Text style={styles.featureText}>{feature}</Text>
+            <View
+              key={index}
+              style={[
+                styles.featureTag,
+                { backgroundColor: colors.primary + "20" },
+              ]}
+            >
+              <Text style={[styles.featureText, { color: colors.primary }]}>
+                {feature}
+              </Text>
             </View>
           ))}
         </View>
 
         <View style={styles.placeFooter}>
-          <Text style={styles.reviewCount}>{place.reviewCount} reviews</Text>
+          <Text style={[styles.reviewCount, { color: colors.textSecondary }]}>
+            {place.reviewCount} reviews
+          </Text>
           <View style={styles.priceLevel}>
             {Array.from({ length: place.priceLevel }, (_, i) => (
-              <Text key={i} style={styles.dollarSign}>
+              <Text
+                key={i}
+                style={[styles.dollarSign, { color: colors.primary }]}
+              >
                 $
               </Text>
             ))}
@@ -83,7 +111,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     flex: 1,
     marginRight: 8,
-    color: "#333",
   },
   ratingContainer: {
     flexDirection: "row",
@@ -93,19 +120,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     marginLeft: 4,
-    color: "#333",
   },
   placeCategory: {
     fontSize: 12,
     marginBottom: 4,
-    color: "#666",
   },
   placeAddress: {
     fontSize: 12,
     marginBottom: 8,
     flexDirection: "row",
     alignItems: "center",
-    color: "#666",
   },
   placeFeatures: {
     flexDirection: "row",
@@ -118,12 +142,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 4,
     marginBottom: 4,
-    backgroundColor: "#007AFF20",
   },
   featureText: {
     fontSize: 10,
     fontWeight: "500",
-    color: "#007AFF",
   },
   placeFooter: {
     flexDirection: "row",
@@ -132,7 +154,6 @@ const styles = StyleSheet.create({
   },
   reviewCount: {
     fontSize: 12,
-    color: "#666",
   },
   priceLevel: {
     flexDirection: "row",
@@ -140,6 +161,5 @@ const styles = StyleSheet.create({
   dollarSign: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#666",
   },
 });
