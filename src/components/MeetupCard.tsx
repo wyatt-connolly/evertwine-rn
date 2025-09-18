@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Meetup } from "../types";
 import { useThemeStore } from "../hooks/useThemeStore";
+import ShareButton from "./ShareButton";
 
 interface MeetupCardProps {
   meetup: Meetup;
@@ -55,6 +56,13 @@ export default function MeetupCard({
             </Text>
           </View>
           <View style={styles.meetupActions}>
+            <ShareButton
+              type="meetup"
+              data={meetup}
+              variant="icon"
+              size="small"
+              style={styles.shareButton}
+            />
             {showEditButton && (
               <TouchableOpacity
                 style={styles.editButton}
@@ -149,6 +157,9 @@ const styles = StyleSheet.create({
   meetupActions: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  shareButton: {
+    marginRight: 4,
   },
   editButton: {
     padding: 8,

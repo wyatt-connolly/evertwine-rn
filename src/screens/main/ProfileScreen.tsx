@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,9 +14,10 @@ import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { Ionicons } from "@expo/vector-icons";
 import { FirestoreService } from "../../services/firebase";
+import { DataService } from "../../services/DataService";
 import * as ImagePicker from "expo-image-picker";
 import { getMockUserStats, mockUsers } from "../../data/mockData";
-import { UserStats } from "../../types";
+import { UserStats, User } from "../../types";
 
 const { width } = Dimensions.get("window");
 
@@ -24,25 +25,62 @@ export default function ProfileScreen({ navigation, route }: any) {
   const { user, logout, updateUserProfile } = useAuthStore();
   const { colors } = useThemeStore();
   const [loading, setLoading] = useState(false);
+  const [profileUserData, setProfileUserData] = useState<User | null>(null);
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Get user data from navigation params or use current user
-  const profileUserId = route?.params?.userId || "user1";
-  const isViewingOtherProfile = profileUserId !== "user1";
+  const profileUserId = route?.params?.userId || user?.uid || "user1";
+  const isViewingOtherProfile = profileUserId !== user?.uid;
 
-  // Use mock data for own profile to make it look filled, or use passed user data
-  const profileUserData = isViewingOtherProfile
-    ? route?.params?.userData || user
-    : route?.params?.userData || mockUsers[0]; // Use first mock user for own profile
+  // Load profile data using DataService
+  useEffect(() => {
+    const loadProfileData = async () => {
+      try {
+        setIsLoading(true);
+
+        // Load user profile data
+        const userResult = await DataService.getUser(profileUserId);
+        if (userResult.user) {
+          setProfileUserData(userResult.user);
+        } else if (route?.params?.userData) {
+          setProfileUserData(route.params.userData);
+        } else if (user) {
+          setProfileUserData(user);
+        }
+
+        // Load user stats
+        const statsResult = await DataService.getUserStats(profileUserId);
+        if (statsResult.stats) {
+          setUserStats(statsResult.stats);
+        } else {
+          // Fallback to mock stats in developer mode
+          if (DataService.isInDeveloperMode()) {
+            setUserStats(getMockUserStats(profileUserId));
+          }
+        }
+      } catch (error) {
+        console.error("Error loading profile data:", error);
+        // In developer mode, fallback to mock data
+        if (DataService.isInDeveloperMode()) {
+          setProfileUserData(mockUsers[0]);
+          setUserStats(getMockUserStats(profileUserId));
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProfileData();
+  }, [profileUserId, route?.params?.userData, user]);
 
   console.log("👤 ProfileScreen loaded:", {
     routeParams: route?.params,
     profileUserId,
     isViewingOtherProfile,
-    profileUserData: profileUserData?.name || "Unknown",
+    profileUserData: profileUserData?.displayName || "Unknown",
     userData: route?.params?.userData,
   });
-
-  const userStats = getMockUserStats(profileUserId);
 
   const handleEditProfile = () => {
     navigation.navigate("EditProfile");
@@ -104,6 +142,36 @@ export default function ProfileScreen({ navigation, route }: any) {
   const handleHelp = () => {
     Alert.alert("Help & Support", "Help center coming soon!");
   };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
+        <View style={styles.loadingContainer}>
+          <Text style={[styles.loadingText, { color: colors.text }]}>
+            Loading profile...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Show empty state if no profile data
+  if (!profileUserData) {
+    return (
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
+        <View style={styles.loadingContainer}>
+          <Text style={[styles.loadingText, { color: colors.text }]}>
+            Profile not found
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView

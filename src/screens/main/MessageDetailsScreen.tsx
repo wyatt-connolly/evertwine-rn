@@ -601,17 +601,42 @@ export default function MessageDetailsScreen({
         } else if (currentRoom.type === "meetup") {
           // For meetup conversations, navigate to meetup details
           console.log("📅 Menu - Meetup message - Navigating to MeetupDetails");
+          console.log("🔍 DEBUG - Menu action - Current room data:", {
+            roomId: currentRoom.id,
+            roomType: currentRoom.type,
+            roomName: currentRoom.name,
+            meetupRef: currentRoom.meetupRef,
+            participants: currentRoom.participants,
+            admins: currentRoom.admins,
+          });
+          
+          const meetupData = {
+            id: currentRoom.meetupRef || "meetup2",
+            title: currentRoom.name,
+            description: "Tech networking event for professionals",
+            locationName: "The View Lounge",
+            address: "123 Market St, San Francisco, CA",
+            time: new Date("2024-09-14T18:00:00"),
+            duration: 120,
+            currentParticipants: currentRoom.participants.length,
+            maxParticipants: 50,
+            views: 890,
+            engagementScore: 78,
+            tags: ["networking", "tech", "happy-hour", "professional"],
+            requirements: {
+              minAge: 21,
+              verificationRequired: true,
+              skillLevel: "professional",
+            },
+            participants: currentRoom.participants,
+            organizer: mockUsers[currentRoom.admins[0] || "user3"],
+          };
+          
+          console.log("🔍 DEBUG - Menu action - Meetup data being passed:", meetupData);
+          
           navigation.navigate("MeetupDetails", {
             meetupId: currentRoom.meetupRef || "meetup2",
-            meetupData: {
-              id: currentRoom.meetupRef || "meetup2",
-              title: currentRoom.name,
-              description: "Tech networking event for professionals",
-              location: "San Francisco, CA",
-              date: "2024-09-14T18:00:00", // Use string instead of Date object
-              attendees: currentRoom.participants.length,
-              organizer: mockUsers[currentRoom.admins[0] || "user3"],
-            },
+            meetupData: meetupData,
           });
         } else if (currentRoom.type === "group") {
           // For group conversations, navigate to a group details screen
@@ -763,17 +788,42 @@ export default function MessageDetailsScreen({
             } else if (currentRoom.type === "meetup") {
               // For meetup conversations, navigate to meetup details
               console.log("📅 Meetup message - Navigating to MeetupDetails");
+              console.log("🔍 DEBUG - Current room data:", {
+                roomId: currentRoom.id,
+                roomType: currentRoom.type,
+                roomName: currentRoom.name,
+                meetupRef: currentRoom.meetupRef,
+                participants: currentRoom.participants,
+                admins: currentRoom.admins,
+              });
+              
+              const meetupData = {
+                id: currentRoom.meetupRef || "meetup2",
+                title: currentRoom.name,
+                description: "Tech networking event for professionals",
+                locationName: "The View Lounge",
+                address: "123 Market St, San Francisco, CA",
+                time: new Date("2024-09-14T18:00:00"),
+                duration: 120,
+                currentParticipants: currentRoom.participants.length,
+                maxParticipants: 50,
+                views: 890,
+                engagementScore: 78,
+                tags: ["networking", "tech", "happy-hour", "professional"],
+                requirements: {
+                  minAge: 21,
+                  verificationRequired: true,
+                  skillLevel: "professional",
+                },
+                participants: currentRoom.participants,
+                organizer: mockUsers[currentRoom.admins[0] || "user3"],
+              };
+              
+              console.log("🔍 DEBUG - Meetup data being passed:", meetupData);
+              
               navigation.navigate("MeetupDetails", {
                 meetupId: currentRoom.meetupRef || "meetup2",
-                meetupData: {
-                  id: currentRoom.meetupRef || "meetup2",
-                  title: currentRoom.name,
-                  description: "Tech networking event for professionals",
-                  location: "San Francisco, CA",
-                  date: "2024-09-14T18:00:00", // Use string instead of Date object
-                  attendees: currentRoom.participants.length,
-                  organizer: mockUsers[currentRoom.admins[0] || "user3"],
-                },
+                meetupData: meetupData,
               });
             } else if (currentRoom.type === "group") {
               // For group conversations, navigate to a group details screen

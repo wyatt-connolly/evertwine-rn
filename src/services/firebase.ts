@@ -724,7 +724,7 @@ export class FirestoreService {
             console.log(
               "⚠️ Could not delete meetup:",
               meetupDoc.id,
-              error.message
+              (error as Error).message
             );
           }
         }
@@ -749,7 +749,7 @@ export class FirestoreService {
             console.log(
               "⚠️ Could not delete message:",
               messageDoc.id,
-              error.message
+              (error as Error).message
             );
           }
         }
@@ -774,7 +774,7 @@ export class FirestoreService {
             console.log(
               "⚠️ Could not delete favorite:",
               favoriteDoc.id,
-              error.message
+              (error as Error).message
             );
           }
         }
@@ -799,7 +799,7 @@ export class FirestoreService {
             console.log(
               "⚠️ Could not delete preference:",
               preferenceDoc.id,
-              error.message
+              (error as Error).message
             );
           }
         }
@@ -824,7 +824,7 @@ export class FirestoreService {
             console.log(
               "⚠️ Could not delete activity:",
               activityDoc.id,
-              error.message
+              (error as Error).message
             );
           }
         }

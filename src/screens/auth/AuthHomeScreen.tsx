@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
 import { AuthService } from "../../services/firebase";
+import { DataService } from "../../services/DataService";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import GradientBackground from "../../components/GradientBackground";
@@ -39,6 +40,8 @@ export default function AuthHomeScreen({ navigation }: Props) {
   const handleAppleSignIn = async () => {
     setLoading(true);
     try {
+      // Use Firebase authentication (not developer mode)
+      DataService.setDeveloperMode(false);
       const result = await AuthService.signInWithApple();
 
       if (result.error) {
@@ -46,16 +49,25 @@ export default function AuthHomeScreen({ navigation }: Props) {
         return;
       }
 
+      // Load user profile from Firebase
+      const profileResult = await DataService.loadUserProfile(
+        result.user?.uid || ""
+      );
+
       const user = {
         uid: result.user?.uid || "",
         phoneNumber: (result.user as any)?.phoneNumber || undefined,
-        displayName: (result.user as any)?.displayName || undefined,
+        displayName:
+          (result.user as any)?.displayName ||
+          profileResult.user?.displayName ||
+          "User",
         email: (result.user as any)?.email || undefined,
         photoURL: (result.user as any)?.photoURL || undefined,
-        onboardingComplete: (result.user as any)?.onboardingComplete || false,
-        interests: (result.user as any)?.interests || undefined,
-        location: (result.user as any)?.location || undefined,
-        bio: (result.user as any)?.bio || undefined,
+        onboardingComplete: profileResult.user?.onboardingComplete || false,
+        interests: profileResult.user?.interests || undefined,
+        location: profileResult.user?.location || undefined,
+        bio: profileResult.user?.bio || undefined,
+        about: profileResult.user?.about || undefined,
       };
 
       setUser(user);
@@ -86,6 +98,8 @@ export default function AuthHomeScreen({ navigation }: Props) {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
+      // Use Firebase authentication (not developer mode)
+      DataService.setDeveloperMode(false);
       const result = await AuthService.signInWithGoogle();
 
       if (result.error) {
@@ -93,16 +107,25 @@ export default function AuthHomeScreen({ navigation }: Props) {
         return;
       }
 
+      // Load user profile from Firebase
+      const profileResult = await DataService.loadUserProfile(
+        result.user?.uid || ""
+      );
+
       const user = {
         uid: result.user?.uid || "",
         phoneNumber: (result.user as any)?.phoneNumber || undefined,
-        displayName: (result.user as any)?.displayName || undefined,
+        displayName:
+          (result.user as any)?.displayName ||
+          profileResult.user?.displayName ||
+          "User",
         email: (result.user as any)?.email || undefined,
         photoURL: (result.user as any)?.photoURL || undefined,
-        onboardingComplete: (result.user as any)?.onboardingComplete || false,
-        interests: (result.user as any)?.interests || undefined,
-        location: (result.user as any)?.location || undefined,
-        bio: (result.user as any)?.bio || undefined,
+        onboardingComplete: profileResult.user?.onboardingComplete || false,
+        interests: profileResult.user?.interests || undefined,
+        location: profileResult.user?.location || undefined,
+        bio: profileResult.user?.bio || undefined,
+        about: profileResult.user?.about || undefined,
       };
 
       setUser(user);
@@ -126,6 +149,50 @@ export default function AuthHomeScreen({ navigation }: Props) {
       Alert.alert("Error", "Google Sign-In failed. Please try again.");
       console.error("Google Sign-In error:", error);
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeveloperLogin = async () => {
+    setLoading(true);
+
+    try {
+      // Enable developer mode to use mock data
+      DataService.setDeveloperMode(true);
+
+      // Create a developer user with complete data
+      const developerUser = {
+        uid: "developer_demo_user",
+        phoneNumber: "+1234567890",
+        displayName: "Demo User",
+        email: "demo@evertwine.app",
+        photoURL:
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+        onboardingComplete: true,
+        interests: ["Technology", "Business", "Networking", "Coffee"],
+        location: { latitude: 37.7749, longitude: -122.4194 },
+        bio: "Demo user for showcasing Evertwine features",
+        about:
+          "This is a demo user account for showcasing all Evertwine features. Perfect for demonstrations, testing, and development.",
+      };
+
+      // Set user and authentication state
+      setUser(developerUser);
+      setAuthenticated(true);
+      setOnboardingComplete(true);
+
+      console.log("🔧 Developer login successful - using mock data mode");
+      console.log(
+        "📊 DataService is now in developer mode:",
+        DataService.isInDeveloperMode()
+      );
+
+      setTimeout(() => {
+        setLoading(false);
+        // The AppNavigator will handle routing to MainTabs
+      }, 1000);
+    } catch (error) {
+      console.error("Developer login error:", error);
       setLoading(false);
     }
   };
@@ -236,6 +303,21 @@ export default function AuthHomeScreen({ navigation }: Props) {
               style={styles.button}
               icon="logo-google"
             />
+
+            {/* Developer Login Button - Only show in development */}
+            {__DEV__ && (
+              <AnimatedButton
+                title="🔧 Developer Login"
+                onPress={handleDeveloperLogin}
+                variant="outline"
+                disabled={loading}
+                style={StyleSheet.flatten([
+                  styles.button,
+                  styles.developerButton,
+                ])}
+                icon="code-slash"
+              />
+            )}
           </View>
 
           {/* Footer */}
@@ -334,6 +416,10 @@ const styles = StyleSheet.create({
   },
   button: {
     marginBottom: 0,
+  },
+  developerButton: {
+    opacity: 0.8,
+    borderStyle: "dashed",
   },
   footer: {
     alignItems: "center",

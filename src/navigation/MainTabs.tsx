@@ -23,6 +23,7 @@ import GroupDetailsScreen from "../screens/main/GroupDetailsScreen";
 import UserProfileScreen from "../screens/main/UserProfileScreen";
 import EventDetailsScreen from "../screens/main/EventDetailsScreen";
 import PlaceDetailsScreen from "../screens/main/PlaceDetailsScreen";
+import NotificationsScreen from "../screens/main/NotificationsScreen";
 
 export type MainTabParamList = {
   Home: undefined;
@@ -43,6 +44,8 @@ export type ProfileStackParamList = {
 export type HomeStackParamList = {
   HomeMain: undefined;
   ActivityFeed: undefined;
+  Notifications: undefined;
+  Map: undefined;
 };
 
 export type StandoutsStackParamList = {
@@ -109,6 +112,8 @@ function HomeStackNavigator() {
     >
       <HomeStack.Screen name="HomeMain" component={HomeScreen} />
       <HomeStack.Screen name="ActivityFeed" component={ActivityFeedScreen} />
+      <HomeStack.Screen name="Notifications" component={NotificationsScreen} />
+      <HomeStack.Screen name="Map" component={MapScreen} />
     </HomeStack.Navigator>
   );
 }

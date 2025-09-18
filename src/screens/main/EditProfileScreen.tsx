@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,8 +14,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { FirestoreService } from "../../services/firebase";
+import { DataService } from "../../services/DataService";
 import { getMockUserStats, mockUsers } from "../../data/mockData";
-import { UserStats } from "../../types";
+import { UserStats, User } from "../../types";
 import * as ImagePicker from "expo-image-picker";
 
 const INTERESTS = [
@@ -49,16 +50,87 @@ export default function EditProfileScreen({ navigation }: any) {
   const { user, updateUserProfile } = useAuthStore();
   const { colors } = useThemeStore();
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Local state for editable profile data
-  const [profileData, setProfileData] = useState({
-    ...mockUsers[0], // Start with Alex Chen's data
-  });
+  const [profileData, setProfileData] = useState<User | null>(null);
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [tempData, setTempData] = useState<any>({});
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
 
-  const userStats = getMockUserStats("user1");
+  // Load profile data using DataService
+  useEffect(() => {
+    const loadProfileData = async () => {
+      try {
+        setIsLoading(true);
+
+        // Load user profile data
+        const userResult = await DataService.getUser(user?.uid || "");
+        if (userResult.user) {
+          setProfileData(userResult.user);
+        } else if (user) {
+          // Convert AuthUser to User type
+          const userData: User = {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName || "User",
+            age: 25,
+            gender: "Prefer not to say",
+            pronouns: "they/them",
+            bio: "",
+            about: "",
+            profilePictures: [
+              user.photoURL ||
+                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+            ],
+            standoutPhotoIndex: 0,
+            location: { latitude: 0, longitude: 0 },
+            locationName: "",
+            phoneNumber: user.phoneNumber || "",
+            school: "",
+            jobTitle: "",
+            jobCompany: "",
+            professionalLevel: "",
+            hometown: "",
+            starSign: "",
+            hobbies: [],
+            interests: [],
+            lookingFor: [],
+            onboardingComplete: user.onboardingComplete || false,
+            isVerified: "pending",
+            isPaused: false,
+            lastActive: new Date(),
+            verifiedAt: undefined,
+            profileViews: 0,
+            uniqueViewers: 0,
+            viewsThisWeek: 0,
+            averageViewDuration: 0,
+            preferences: undefined,
+            createdTime: new Date(),
+            updatedTime: new Date(),
+          };
+          setProfileData(userData);
+        }
+
+        // Load user stats (fallback to mock for now)
+        if (DataService.isInDeveloperMode()) {
+          setUserStats(getMockUserStats(user?.uid || "user1"));
+        }
+      } catch (error) {
+        console.error("Error loading profile data:", error);
+        // In developer mode, fallback to mock data
+        if (DataService.isInDeveloperMode()) {
+          setProfileData(mockUsers[0]);
+          setUserStats(getMockUserStats("user1"));
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProfileData();
+  }, [user?.uid]);
 
   const handleEditSection = (section: string) => {
     setEditingSection(section);
@@ -221,6 +293,32 @@ export default function EditProfileScreen({ navigation }: any) {
   const handleLinkedInImport = () => {
     Alert.alert("LinkedIn Import", "LinkedIn integration coming soon!");
   };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.loadingContainer}>
+          <Text style={[styles.loadingText, { color: colors.text }]}>
+            Loading profile...
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Show empty state if no profile data
+  if (!profileData) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.loadingContainer}>
+          <Text style={[styles.loadingText, { color: colors.text }]}>
+            Profile not found
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -512,9 +610,13 @@ export default function EditProfileScreen({ navigation }: any) {
                   <Text
                     style={[styles.basicInfoItemValue, { color: colors.text }]}
                   >
-                    Level {userStats.level} •{" "}
-                    {userStats.points.toLocaleString()} XP • {userStats.streak}{" "}
-                    day streak
+                    {userStats
+                      ? `Level ${
+                          userStats.level
+                        } • ${userStats.points.toLocaleString()} XP • ${
+                          userStats.streak
+                        } day streak`
+                      : "Stats loading..."}
                   </Text>
                 </View>
               </View>
@@ -1692,5 +1794,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     marginLeft: 6,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  loadingText: {
+    fontSize: 16,
+    textAlign: "center",
   },
 });

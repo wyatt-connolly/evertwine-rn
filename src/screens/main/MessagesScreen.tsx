@@ -1,18 +1,19 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   Image,
-  TextInput,
   FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
-import { MessageRoom, Message } from "../../types";
+import { MessageRoom } from "../../types";
+import { DataService } from "../../services/DataService";
+import { EmptyMessagesState, LoadingState } from "../../components/EmptyStates";
+import LoadingIndicator from "../../components/LoadingIndicator";
 
 // Mock message rooms data
 const mockMessageRooms: MessageRoom[] = [
@@ -91,11 +92,36 @@ const mockMessageRooms: MessageRoom[] = [
 
 export default function MessagesScreen({ navigation }: any) {
   const { colors } = useThemeStore();
+  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"all" | "unread" | "groups">(
     "all"
   );
+  const [messageRooms, setMessageRooms] = useState<MessageRoom[]>([]);
 
-  const filteredRooms = mockMessageRooms.filter((room) => {
+  // Load message rooms using DataService
+  useEffect(() => {
+    const loadMessageRooms = async () => {
+      try {
+        const result = await DataService.getMessageRooms("user1");
+        if (result.rooms) {
+          setMessageRooms(result.rooms);
+        }
+      } catch (error) {
+        console.error("Error loading message rooms:", error);
+        // In developer mode, fallback to mock data if DataService fails
+        if (DataService.isInDeveloperMode()) {
+          setMessageRooms(mockMessageRooms);
+        }
+        // In Firebase mode, keep empty to show empty state
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadMessageRooms();
+  }, []);
+
+  const filteredRooms = messageRooms.filter((room) => {
     if (activeTab === "unread") {
       return room.lastMessage && !room.lastMessage.isRead;
     }
@@ -121,10 +147,18 @@ export default function MessagesScreen({ navigation }: any) {
     }
   };
 
+  const handleOpenMessage = async (roomId: string) => {
+    setIsLoading(true);
+    // Simulate loading message data
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    navigation.navigate("MessageDetails", { roomId });
+    setIsLoading(false);
+  };
+
   const renderMessageRoom = ({ item: room }: { item: MessageRoom }) => (
     <TouchableOpacity
       style={[styles.messageRoom, { backgroundColor: colors.surface }]}
-      onPress={() => navigation.navigate("MessageDetails", { roomId: room.id })}
+      onPress={() => handleOpenMessage(room.id)}
     >
       {/* Unread dot on the left */}
       {room.lastMessage && !room.lastMessage.isRead && (
@@ -200,7 +234,6 @@ export default function MessagesScreen({ navigation }: any) {
         <Text style={[styles.title, { color: colors.text }]}>Messages</Text>
       </View>
 
-
       {/* Tab Navigation */}
       <View style={[styles.tabContainer, { backgroundColor: colors.surface }]}>
         {(["all", "unread", "groups"] as const).map((tab) => (
@@ -228,31 +261,31 @@ export default function MessagesScreen({ navigation }: any) {
       </View>
 
       {/* Message Rooms List */}
-      <FlatList
-        data={filteredRooms}
-        renderItem={renderMessageRoom}
-        keyExtractor={(item) => item.id}
-        style={styles.messageList}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Ionicons
-              name="chatbubbles-outline"
-              size={64}
-              color={colors.textTertiary}
+      {isLoading ? (
+        <LoadingState style={{ margin: 20 }} />
+      ) : (
+        <FlatList
+          data={filteredRooms}
+          renderItem={renderMessageRoom}
+          keyExtractor={(item) => item.id}
+          style={styles.messageList}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <EmptyMessagesState
+              onActionPress={() => navigation.navigate("Home")}
             />
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>
-              No conversations yet
-            </Text>
-            <Text
-              style={[styles.emptySubtitle, { color: colors.textSecondary }]}
-            >
-              Start a conversation by joining a meetup or connecting with
-              someone
-            </Text>
-          </View>
-        }
-      />
+          }
+        />
+      )}
+
+      {/* Loading Overlay */}
+      {isLoading && (
+        <LoadingIndicator
+          overlay={true}
+          text="Loading messages..."
+          color={colors.primary}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -276,6 +309,7 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: "row",
     marginHorizontal: 16,
+    marginTop: 24,
     marginBottom: 16,
     borderRadius: 12,
     padding: 4,

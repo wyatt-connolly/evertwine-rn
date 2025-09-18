@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,7 +14,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { getMockStandouts } from "../../data/mockData";
+import { DataService } from "../../services/DataService";
+import {
+  EmptyStandoutsState,
+  LoadingState,
+} from "../../components/EmptyStates";
 import { StandoutItem } from "../../types";
+import UserMeetupNavigation from "../../components/UserMeetupNavigation";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.7;
@@ -23,12 +29,37 @@ const CARD_MARGIN = 12;
 export default function StandoutsScreen({ navigation }: any) {
   const { colors } = useThemeStore();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const mockStandouts = getMockStandouts().filter(
-    (item) => item.type === "user"
-  );
+  const [standouts, setStandouts] = useState<StandoutItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
+
+  // Load standouts data
+  useEffect(() => {
+    const loadStandouts = async () => {
+      try {
+        if (DataService.isInDeveloperMode()) {
+          // Use mock data in developer mode
+          const mockStandouts = getMockStandouts().filter(
+            (item) => item.type === "user"
+          );
+          setStandouts(mockStandouts);
+        } else {
+          // In Firebase mode, we don't have standouts data yet
+          // For now, keep empty to show empty state
+          setStandouts([]);
+        }
+      } catch (error) {
+        console.error("Error loading standouts:", error);
+        setStandouts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadStandouts();
+  }, []);
 
   const onScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { x: scrollX } } }],
@@ -164,21 +195,32 @@ export default function StandoutsScreen({ navigation }: any) {
     );
   };
 
-  if (mockStandouts.length === 0) {
+  if (isLoading) {
     return (
       <SafeAreaView
         style={[styles.container, { backgroundColor: colors.background }]}
       >
-        <View style={styles.emptyContainer}>
-          <Ionicons
-            name="person-outline"
-            size={80}
-            color={colors.textTertiary}
-          />
-          <Text style={[styles.emptyTitle, { color: colors.text }]}>
-            No Standouts Available
-          </Text>
+        <LoadingState style={{ margin: 20 }} />
+      </SafeAreaView>
+    );
+  }
+
+  if (standouts.length === 0) {
+    return (
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
+        <View style={[styles.header, { borderBottomColor: colors.border }]}>
+          <View style={styles.headerLeft}>
+            <Text style={[styles.title, { color: colors.text }]}>
+              Standouts
+            </Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+              Discover amazing people in your community
+            </Text>
+          </View>
         </View>
+        <EmptyStandoutsState />
       </SafeAreaView>
     );
   }
@@ -195,9 +237,17 @@ export default function StandoutsScreen({ navigation }: any) {
           </Text>
         </View>
         <Text style={[styles.counter, { color: colors.textSecondary }]}>
-          {currentIndex + 1} of {mockStandouts.length}
+          {currentIndex + 1} of {standouts.length}
         </Text>
       </View>
+
+      {/* User Meetup Navigation */}
+      <UserMeetupNavigation
+        userId="user1"
+        onMeetupPress={(meetupId) => {
+          navigation.navigate("MeetupDetails", { meetupId });
+        }}
+      />
 
       <View style={styles.cardContainer}>
         <ScrollView
@@ -213,7 +263,7 @@ export default function StandoutsScreen({ navigation }: any) {
           snapToAlignment="start"
           contentInsetAdjustmentBehavior="never"
         >
-          {mockStandouts.map((item, index) => renderCard(item, index))}
+          {standouts.map((item, index) => renderCard(item, index))}
         </ScrollView>
       </View>
     </SafeAreaView>

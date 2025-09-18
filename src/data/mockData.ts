@@ -11,6 +11,7 @@ import {
   Tutorial,
   TutorialScreen,
   StandoutItem,
+  ActivityItem,
 } from "../types";
 
 // Mock Users
@@ -22,7 +23,9 @@ export const mockUsers: User[] = [
     age: 28,
     gender: "Non-binary",
     pronouns: "they/them",
-    bio: "Adventure seeker and coffee enthusiast. Love hiking, photography, and meeting new people! Currently working as a Senior Software Engineer at a tech startup, passionate about building meaningful connections through technology and outdoor adventures.",
+    bio: "Adventure seeker ☕️ Hiking & photography 📸 Software Engineer @InnovateTech",
+    about:
+      "Passionate software engineer with 5+ years of experience building scalable applications. I love combining technology with outdoor adventures - you'll often find me coding at a coffee shop or hiking in the mountains. I'm passionate about building meaningful connections through technology and believe in the power of community to drive innovation. When I'm not coding, I'm exploring new trails, capturing moments through photography, or planning my next adventure. I'm always excited to meet fellow tech enthusiasts and outdoor lovers who share my passion for both professional growth and personal exploration.",
     profilePictures: [
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
@@ -51,6 +54,7 @@ export const mockUsers: User[] = [
       "Cooking",
       "Reading",
     ],
+    interests: ["Technology", "Outdoor Activities", "Photography", "Coffee"],
     lookingFor: ["Friends", "Business", "Dating"],
     onboardingComplete: true,
     isVerified: "verified",
@@ -70,7 +74,9 @@ export const mockUsers: User[] = [
     age: 25,
     gender: "Female",
     pronouns: "she/her",
-    bio: "Artist and yoga instructor. Passionate about wellness, creativity, and building community. I believe in the power of mindfulness and self-expression to bring people together. Always excited to share my love for yoga and art with new friends!",
+    bio: "Artist & yoga instructor 🧘‍♀️ Wellness enthusiast ✨ Building community through creativity",
+    about:
+      "Creative soul and certified yoga instructor with a passion for wellness and community building. I've been teaching yoga for 3 years and love helping people find balance through movement and mindfulness. My art focuses on abstract expressionism and I often incorporate wellness themes into my work. I believe in the power of creativity to heal and connect people. I host weekly art workshops and meditation sessions, and I'm always looking to collaborate with fellow artists and wellness enthusiasts. My goal is to create spaces where people can express themselves authentically while building meaningful connections.",
     profilePictures: [
       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400",
@@ -95,6 +101,7 @@ export const mockUsers: User[] = [
       "Gardening",
       "Pottery",
     ],
+    interests: ["Art", "Wellness", "Creative Arts", "Mindfulness"],
     lookingFor: ["Friends", "Business"],
     onboardingComplete: true,
     isVerified: "verified",
@@ -114,7 +121,9 @@ export const mockUsers: User[] = [
     age: 32,
     gender: "Male",
     pronouns: "he/him",
-    bio: "Entrepreneur and fitness enthusiast. Always up for a challenge and love connecting with like-minded people.",
+    bio: "Entrepreneur 💼 Fitness enthusiast 💪 Always up for a challenge",
+    about:
+      "Serial entrepreneur and fitness enthusiast with a passion for building businesses and maintaining peak physical condition. I've founded two successful startups in the health tech space and believe that physical wellness directly correlates with professional success. I'm always up for a challenge, whether it's launching a new venture or pushing my limits in the gym. I love connecting with fellow entrepreneurs and fitness enthusiasts who share my drive for excellence. I believe in the power of networking and community to accelerate both personal and professional growth. When I'm not working on my latest venture, you'll find me at the gym, hiking, or planning my next business idea.",
     profilePictures: [
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
       "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
@@ -130,6 +139,7 @@ export const mockUsers: User[] = [
     hometown: "Boston, MA",
     starSign: "Aries",
     hobbies: ["Fitness", "Entrepreneurship", "Reading", "Networking"],
+    interests: ["Business", "Entrepreneurship", "Technology", "Fitness"],
     lookingFor: ["Business", "Friends"],
     onboardingComplete: true,
     isVerified: "verified",
@@ -618,6 +628,7 @@ export const mockPlaces: Place[] = [
   {
     id: "place1",
     name: "Blue Bottle Coffee",
+    title: "Blue Bottle Coffee",
     category: "Coffee Shop",
     address: "66 Mint St, San Francisco, CA 94103",
     location: { latitude: 37.7749, longitude: -122.4194 },
@@ -639,11 +650,12 @@ export const mockPlaces: Place[] = [
     },
     features: ["WiFi", "Outdoor Seating", "Pet Friendly", "Takeout"],
     description:
-      "Artisanal coffee roastery with minimalist design and exceptional single-origin beans.",
+      "Artisanal coffee roastery with minimalist design and exceptional single-origin beans. Perfect for meetings, studying, or enjoying a perfectly crafted cup of coffee.",
   },
   {
     id: "place2",
     name: "Mission Dolores Park",
+    title: "Mission Dolores Park",
     category: "Park",
     address: "Dolores St & 19th St, San Francisco, CA 94114",
     location: { latitude: 37.7596, longitude: -122.4269 },
@@ -665,7 +677,66 @@ export const mockPlaces: Place[] = [
     },
     features: ["Dog Park", "Playground", "Tennis Courts", "Picnic Areas"],
     description:
-      "Popular neighborhood park with stunning city views, perfect for picnics and outdoor activities.",
+      "Popular neighborhood park with stunning city views, perfect for picnics and outdoor activities. Features tennis courts, playground, and dog-friendly areas.",
+  },
+  {
+    id: "place3",
+    name: "The Castro Theatre",
+    title: "The Castro Theatre",
+    category: "Movie Theater",
+    address: "429 Castro St, San Francisco, CA 94114",
+    location: { latitude: 37.7609, longitude: -122.435 },
+    rating: 4.6,
+    reviewCount: 892,
+    priceLevel: 2,
+    photos: [
+      "https://images.unsplash.com/photo-1489599856088-4f6d1c07e9f1?w=800",
+      "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800",
+    ],
+    hours: {
+      monday: { open: "18:00", close: "23:00" },
+      tuesday: { open: "18:00", close: "23:00" },
+      wednesday: { open: "18:00", close: "23:00" },
+      thursday: { open: "18:00", close: "23:00" },
+      friday: { open: "17:00", close: "24:00" },
+      saturday: { open: "14:00", close: "24:00" },
+      sunday: { open: "14:00", close: "23:00" },
+    },
+    features: [
+      "Historic Theater",
+      "Organ Music",
+      "Classic Films",
+      "Special Events",
+    ],
+    description:
+      "Historic movie palace featuring classic films, sing-alongs, and special events. Famous for its Mighty Wurlitzer organ and stunning Art Deco architecture.",
+  },
+  {
+    id: "place4",
+    name: "Ghirardelli Square",
+    title: "Ghirardelli Square",
+    category: "Shopping Center",
+    address: "900 North Point St, San Francisco, CA 94109",
+    location: { latitude: 37.8058, longitude: -122.4225 },
+    rating: 4.3,
+    reviewCount: 3421,
+    priceLevel: 3,
+    photos: [
+      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800",
+      "https://images.unsplash.com/photo-1520637836862-4d197d17c90a?w=800",
+    ],
+    hours: {
+      monday: { open: "10:00", close: "21:00" },
+      tuesday: { open: "10:00", close: "21:00" },
+      wednesday: { open: "10:00", close: "21:00" },
+      thursday: { open: "10:00", close: "21:00" },
+      friday: { open: "10:00", close: "22:00" },
+      saturday: { open: "10:00", close: "22:00" },
+      sunday: { open: "10:00", close: "21:00" },
+    },
+    features: ["Shopping", "Dining", "Bay Views", "Historic Building"],
+    description:
+      "Historic chocolate factory turned shopping and dining destination with stunning San Francisco Bay views. Features boutique shops, restaurants, and the famous Ghirardelli Ice Cream & Chocolate Shop.",
   },
 ];
 
@@ -913,11 +984,20 @@ export const getActivityFeed = (
 ): ActivityItem[] => {
   const startIndex = page * limit;
   const endIndex = startIndex + limit;
-  return mockActivityFeed.slice(startIndex, endIndex);
+  return mockActivityFeed.slice(startIndex, endIndex).map((item) => ({
+    id: item.id,
+    userId: item.user.uid,
+    type: item.type,
+    description: item.description,
+    timestamp: item.timestamp,
+    meetupId: item.meetup?.id,
+    user: item.user,
+    meetup: item.meetup,
+  }));
 };
 
 // Interface for ActivityItem (needed for mock data)
-interface ActivityItem {
+interface MockActivityItem {
   id: string;
   type:
     | "meetup_created"
@@ -932,7 +1012,7 @@ interface ActivityItem {
 }
 
 // Mock Activity Feed Data with pagination
-export const mockActivityFeed: ActivityItem[] = [
+export const mockActivityFeed: MockActivityItem[] = [
   {
     id: "activity1",
     type: "meetup_created",
@@ -1038,7 +1118,9 @@ export const mockStandouts: StandoutItem[] = [
       age: 29,
       gender: "Female",
       pronouns: "she/her",
-      bio: "Certified yoga instructor and wellness coach with 5+ years experience. Hosts sunrise yoga sessions in Central Park and meditation workshops. Passionate about helping people find balance through movement and mindfulness.",
+      bio: "Yoga instructor 🧘‍♀️ Wellness coach ✨ Central Park sunrise sessions 🌅",
+      about:
+        "Certified yoga instructor and wellness coach with over 5 years of experience helping people find balance and inner peace. I specialize in Vinyasa and restorative yoga, and I'm passionate about making wellness accessible to everyone. My Central Park sunrise sessions have become a beloved community tradition, bringing together people from all walks of life. I believe that wellness is not just about physical health, but about mental clarity, emotional balance, and spiritual growth. I'm always excited to meet fellow wellness enthusiasts and help others on their journey to better health and happiness.",
       profilePictures: [
         "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
@@ -1057,6 +1139,7 @@ export const mockStandouts: StandoutItem[] = [
       hometown: "San Francisco, CA",
       starSign: "Libra",
       hobbies: ["Yoga", "Meditation", "Hiking", "Wellness"],
+      interests: ["Wellness", "Yoga", "Meditation", "Health"],
       lookingFor: ["Friends", "Wellness"],
       onboardingComplete: true,
       isVerified: "verified",
@@ -1112,7 +1195,9 @@ export const mockStandouts: StandoutItem[] = [
       age: 34,
       gender: "Male",
       pronouns: "he/him",
-      bio: "Serial entrepreneur and startup advisor with 3 successful exits. Founder of TechConnect, a networking platform for developers. Hosts weekly pitch nights and career workshops. Loves mentoring the next generation of tech leaders.",
+      bio: "Serial entrepreneur 🚀 3 exits 💼 Founder @TechConnect | Mentoring next-gen leaders",
+      about:
+        "Serial entrepreneur with three successful exits and a passion for mentoring the next generation of tech leaders. As the founder of TechConnect, I've built a platform that connects developers and entrepreneurs worldwide. I believe in the power of technology to solve real-world problems and create meaningful impact. My journey from startup founder to successful exits has taught me valuable lessons about resilience, innovation, and the importance of building strong teams. I'm passionate about giving back to the community through mentorship and helping aspiring entrepreneurs navigate the challenges of building and scaling businesses.",
       profilePictures: [
         "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop",
@@ -1131,6 +1216,7 @@ export const mockStandouts: StandoutItem[] = [
       hometown: "Austin, TX",
       starSign: "Capricorn",
       hobbies: ["Technology", "Networking", "Mentoring", "Startups"],
+      interests: ["Technology", "Entrepreneurship", "Mentoring", "Business"],
       lookingFor: ["Business", "Networking"],
       onboardingComplete: true,
       isVerified: "verified",
@@ -1186,7 +1272,9 @@ export const mockStandouts: StandoutItem[] = [
       age: 31,
       gender: "Female",
       pronouns: "she/her",
-      bio: "Contemporary art curator and gallery owner in SoHo. Specializes in emerging artists and hosts monthly gallery openings. Runs creative workshops for aspiring artists and art enthusiasts. Passionate about making art accessible to everyone.",
+      bio: "Art curator 🎨 Gallery owner in SoHo ✨ Emerging artists | Creative workshops",
+      about:
+        "Contemporary art curator and gallery owner in SoHo with a passion for discovering and promoting emerging artists. I've been in the art world for over 8 years and love the energy of New York's creative scene. My gallery specializes in contemporary works and I'm always on the lookout for fresh talent. I believe art has the power to transform communities and bring people together. I host monthly gallery openings and creative workshops to make art accessible to everyone, regardless of their background or experience. I'm passionate about building bridges between artists and art lovers, and I love connecting with fellow creatives who share my vision of making art a force for positive change.",
       profilePictures: [
         "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop",
@@ -1202,6 +1290,7 @@ export const mockStandouts: StandoutItem[] = [
       hometown: "Boston, MA",
       starSign: "Pisces",
       hobbies: ["Art", "Curating", "Creative Workshops", "Gallery Management"],
+      interests: ["Art", "Creative Arts", "Culture", "Design"],
       lookingFor: ["Friends", "Business"],
       onboardingComplete: true,
       isVerified: "verified",
@@ -1257,7 +1346,9 @@ export const mockStandouts: StandoutItem[] = [
       age: 36,
       gender: "Male",
       pronouns: "he/him",
-      bio: "Michelin-starred chef and culinary instructor. Owner of 'Kim's Kitchen' restaurant in Brooklyn. Hosts weekly cooking masterclasses and food tours through NYC's best neighborhoods. Passionate about fusion cuisine and sustainable cooking.",
+      bio: "Michelin-starred chef 👨‍🍳 @Kim'sKitchen Brooklyn 🍽️ Fusion cuisine | Food tours",
+      about:
+        "Michelin-starred chef and culinary innovator with a passion for fusion cuisine and sustainable cooking practices. I've been in the culinary world for over 15 years, working in kitchens from Tokyo to Paris before opening my own restaurant in Brooklyn. My approach to cooking combines traditional techniques with modern innovation, creating dishes that tell a story. I'm passionate about using locally sourced ingredients and supporting sustainable farming practices. I love sharing my knowledge through cooking masterclasses and food tours, helping people discover the joy of cooking and the stories behind great food. I believe that food has the power to bring people together and create lasting memories.",
       profilePictures: [
         "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
@@ -1278,6 +1369,7 @@ export const mockStandouts: StandoutItem[] = [
         "Fusion Cuisine",
         "Sustainable Cooking",
       ],
+      interests: ["Cooking", "Food", "Culinary Arts", "Sustainability"],
       lookingFor: ["Friends", "Business"],
       onboardingComplete: true,
       isVerified: "verified",
@@ -1333,7 +1425,9 @@ export const mockStandouts: StandoutItem[] = [
       age: 28,
       gender: "Female",
       pronouns: "she/her",
-      bio: "Certified mindfulness coach and meditation teacher with 8+ years experience. Founder of 'Mindful Moments' wellness center. Hosts daily meditation sessions and weekend retreats in the mountains. Specializes in stress reduction and emotional healing.",
+      bio: "Mindfulness coach 🧘‍♀️ @MindfulMoments ✨ Daily sessions | Mountain retreats",
+      about:
+        "Certified mindfulness coach and meditation teacher with over 8 years of experience helping people find inner peace and emotional balance. I founded MindfulMoments wellness center to create a sanctuary for healing and growth. My approach combines ancient wisdom with modern techniques, making mindfulness accessible to everyone. I specialize in stress reduction, emotional healing, and helping people develop sustainable self-care practices. My daily meditation sessions and weekend mountain retreats have helped hundreds of people transform their lives. I believe that mindfulness is not just a practice, but a way of living that can bring profound joy and fulfillment. I'm passionate about creating safe spaces for people to explore their inner world and connect with their authentic selves.",
       profilePictures: [
         "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop",
         "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop",
@@ -1349,6 +1443,7 @@ export const mockStandouts: StandoutItem[] = [
       hometown: "Portland, OR",
       starSign: "Cancer",
       hobbies: ["Meditation", "Mindfulness", "Wellness", "Mountain Retreats"],
+      interests: ["Wellness", "Mindfulness", "Meditation", "Health"],
       lookingFor: ["Friends", "Wellness"],
       onboardingComplete: true,
       isVerified: "verified",
@@ -1395,3 +1490,49 @@ export const getMockStandouts = (limit?: number): StandoutItem[] => {
 export const getMeetupsByCreator = (creatorId: string): Meetup[] => {
   return mockMeetups.filter((meetup) => meetup.creatorId === creatorId);
 };
+
+// Mock Message Rooms
+export const mockMessageRooms = [
+  {
+    id: "room1",
+    type: "direct" as const,
+    participants: ["user1", "user2"],
+    admins: ["user1"],
+    lastMessage: {
+      text: "Hey! Are you still up for coffee tomorrow?",
+      senderRef: "user2",
+      timestamp: new Date("2024-01-15T14:30:00"),
+      messageType: "text",
+      isRead: false,
+    },
+    settings: {
+      allowInvites: true,
+      allowMedia: true,
+      allowReactions: true,
+    },
+    createdTime: new Date("2024-01-10T10:00:00"),
+    updatedTime: new Date("2024-01-15T14:30:00"),
+  },
+  {
+    id: "room2",
+    type: "group" as const,
+    name: "SF Tech Meetup Group",
+    description: "Discussion for our weekly tech meetup",
+    participants: ["user1", "user3", "user4", "user5"],
+    admins: ["user1", "user3"],
+    lastMessage: {
+      text: "Great session today! See you all next week 🚀",
+      senderRef: "user3",
+      timestamp: new Date("2024-01-15T16:45:00"),
+      messageType: "text",
+      isRead: true,
+    },
+    settings: {
+      allowInvites: true,
+      allowMedia: true,
+      allowReactions: true,
+    },
+    createdTime: new Date("2024-01-05T09:00:00"),
+    updatedTime: new Date("2024-01-15T16:45:00"),
+  },
+];

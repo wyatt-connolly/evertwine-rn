@@ -41,23 +41,42 @@ export default function MeetupDetailsScreen({
     isMeetupFavorite,
   } = useFavoritesStore();
   const { meetupId, meetupData } = route.params;
+
+  console.log("🔍 DEBUG - MeetupDetailsScreen received params:", {
+    meetupId,
+    meetupData,
+    routeParams: route.params,
+  });
   const [isJoined, setIsJoined] = useState(false);
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
-  console.log("📅 MeetupDetailsScreen loaded:", {
-    meetupId,
-    meetupData: meetupData?.title || "No data",
-  });
-
   // Use meetupData from navigation params if available, otherwise find from mock data
-  const meetup = meetupData || getMockMeetups().find((m) => m.id === meetupId);
+  // Clean the meetupId to remove "meetups/" prefix if present
+  const cleanMeetupId = meetupId?.replace("meetups/", "") || meetupId;
+  const meetup =
+    meetupData || getMockMeetups().find((m) => m.id === cleanMeetupId);
   const creator =
     meetupData?.organizer ||
-    getMockUsers().find((u) => u.uid === meetup?.creatorId);
+    getMockUsers().find((u) => u.uid === meetup?.creatorId) ||
+    getMockUsers().find(
+      (u) => u.uid === meetup?.creatorRef?.replace("users/", "")
+    );
+
+  console.log("📅 MeetupDetailsScreen loaded:", {
+    meetupId,
+    cleanMeetupId,
+    meetupData: meetupData?.title || "No data",
+    meetup: meetup?.title || "Not found",
+    creator: creator?.displayName || "Not found",
+    hasMeetupData: !!meetupData,
+    hasMeetup: !!meetup,
+    meetupTime: meetup?.time,
+    meetupDuration: meetup?.duration,
+  });
   const participants =
     meetupData?.participants ||
-    getMockUsers().filter((u) => meetup?.participants.includes(u.uid));
+    getMockUsers().filter((u) => meetup?.participants?.includes(u.uid));
 
   if (!meetup) {
     return (
@@ -204,19 +223,19 @@ export default function MeetupDetailsScreen({
             <View style={styles.statItem}>
               <Ionicons name="people" size={16} color={colors.primary} />
               <Text style={[styles.statText, { color: colors.text }]}>
-                {meetup.currentParticipants}/{meetup.maxParticipants}
+                {meetup.currentParticipants || 0}/{meetup.maxParticipants || 0}
               </Text>
             </View>
             <View style={styles.statItem}>
               <Ionicons name="eye" size={16} color={colors.primary} />
               <Text style={[styles.statText, { color: colors.text }]}>
-                {meetup.views} views
+                {meetup.views || 0} views
               </Text>
             </View>
             <View style={styles.statItem}>
               <Ionicons name="star" size={16} color={colors.primary} />
               <Text style={[styles.statText, { color: colors.text }]}>
-                {meetup.engagementScore}% engagement
+                {meetup.engagementScore || 0}% engagement
               </Text>
             </View>
           </View>
@@ -232,10 +251,11 @@ export default function MeetupDetailsScreen({
               </Text>
             </View>
             <Text style={[styles.infoText, { color: colors.textSecondary }]}>
-              {formatDate(meetup.time)}
+              {meetup.time ? formatDate(meetup.time) : "Date not specified"}
             </Text>
             <Text style={[styles.infoSubtext, { color: colors.textSecondary }]}>
-              {formatTime(meetup.time)} • {meetup.duration} minutes
+              {meetup.time ? formatTime(meetup.time) : "Time not specified"} •{" "}
+              {meetup.duration || "Duration not specified"} minutes
             </Text>
           </View>
 
@@ -251,10 +271,10 @@ export default function MeetupDetailsScreen({
               </Text>
             </View>
             <Text style={[styles.infoText, { color: colors.textSecondary }]}>
-              {meetup.locationName}
+              {meetup.locationName || "Location not specified"}
             </Text>
             <Text style={[styles.infoSubtext, { color: colors.textSecondary }]}>
-              {meetup.address}
+              {meetup.address || "Address not specified"}
             </Text>
           </View>
         </View>
@@ -275,22 +295,24 @@ export default function MeetupDetailsScreen({
             <View style={styles.organizerInfo}>
               <Image
                 source={{
-                  uri: creator.profilePictures[
-                    creator.standoutPhotoIndex !== undefined
-                      ? creator.standoutPhotoIndex
-                      : 0
-                  ],
+                  uri:
+                    creator?.profilePictures?.[
+                      creator.standoutPhotoIndex !== undefined
+                        ? creator.standoutPhotoIndex
+                        : 0
+                    ] ||
+                    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
                 }}
                 style={styles.organizerAvatar}
               />
               <View style={styles.organizerDetails}>
                 <Text style={[styles.organizerName, { color: colors.text }]}>
-                  {creator.displayName}
+                  {creator?.displayName || "Organizer"}
                 </Text>
                 <Text
                   style={[styles.organizerBio, { color: colors.textSecondary }]}
                 >
-                  {creator.bio}
+                  {creator?.bio || "No bio available"}
                 </Text>
               </View>
             </View>
@@ -298,7 +320,7 @@ export default function MeetupDetailsScreen({
         )}
 
         {/* Participants */}
-        {participants.length > 0 && (
+        {participants && participants.length > 0 && (
           <View style={[styles.infoCard, { backgroundColor: colors.surface }]}>
             <View style={styles.infoHeader}>
               <Ionicons
@@ -315,18 +337,20 @@ export default function MeetupDetailsScreen({
                 <View key={participant.uid} style={styles.participantItem}>
                   <Image
                     source={{
-                      uri: participant.profilePictures[
-                        participant.standoutPhotoIndex !== undefined
-                          ? participant.standoutPhotoIndex
-                          : 0
-                      ],
+                      uri:
+                        participant?.profilePictures?.[
+                          participant.standoutPhotoIndex !== undefined
+                            ? participant.standoutPhotoIndex
+                            : 0
+                        ] ||
+                        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
                     }}
                     style={styles.participantAvatar}
                   />
                   <Text
                     style={[styles.participantName, { color: colors.text }]}
                   >
-                    {participant.displayName}
+                    {participant?.displayName || "Participant"}
                   </Text>
                 </View>
               ))}
@@ -345,7 +369,7 @@ export default function MeetupDetailsScreen({
             <Text style={[styles.infoTitle, { color: colors.text }]}>Tags</Text>
           </View>
           <View style={styles.tagsContainer}>
-            {meetup.tags.map((tag: string, index: number) => (
+            {meetup.tags?.map((tag: string, index: number) => (
               <View
                 key={index}
                 style={[styles.tag, { backgroundColor: colors.primary + "20" }]}
@@ -371,27 +395,27 @@ export default function MeetupDetailsScreen({
             </Text>
           </View>
           <View style={styles.requirementsList}>
-            {meetup.requirements.minAge && (
+            {meetup.requirements?.minAge && (
               <Text
                 style={[
                   styles.requirementText,
                   { color: colors.textSecondary },
                 ]}
               >
-                • Minimum age: {meetup.requirements.minAge}
+                • Minimum age: {meetup.requirements?.minAge}
               </Text>
             )}
-            {meetup.requirements.maxAge && (
+            {meetup.requirements?.maxAge && (
               <Text
                 style={[
                   styles.requirementText,
                   { color: colors.textSecondary },
                 ]}
               >
-                • Maximum age: {meetup.requirements.maxAge}
+                • Maximum age: {meetup.requirements?.maxAge}
               </Text>
             )}
-            {meetup.requirements.verificationRequired && (
+            {meetup.requirements?.verificationRequired && (
               <Text
                 style={[
                   styles.requirementText,
@@ -401,14 +425,14 @@ export default function MeetupDetailsScreen({
                 • ID verification required
               </Text>
             )}
-            {meetup.requirements.skillLevel && (
+            {meetup.requirements?.skillLevel && (
               <Text
                 style={[
                   styles.requirementText,
                   { color: colors.textSecondary },
                 ]}
               >
-                • Skill level: {meetup.requirements.skillLevel}
+                • Skill level: {meetup.requirements?.skillLevel}
               </Text>
             )}
           </View>

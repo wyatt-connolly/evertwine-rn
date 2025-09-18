@@ -10,6 +10,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
@@ -24,6 +25,19 @@ import {
   getActivityFeed,
   getActivityFeedTotal,
 } from "../../data/mockData";
+import { DataService } from "../../services/DataService";
+import InviteSnackbar from "../../components/InviteSnackbar";
+import ShareButton from "../../components/ShareButton";
+import LoadingIndicator from "../../components/LoadingIndicator";
+import { safeUserMerge } from "../../utils/firebaseDataConverter";
+import { safeGet, safeArrayGet, createSafeUser } from "../../utils/safeAccess";
+import { testComponentData, testFirebaseData } from "../../utils/devTesting";
+import {
+  EmptyMeetupsState,
+  EmptyEventsState,
+  EmptyActivityState,
+  LoadingState,
+} from "../../components/EmptyStates";
 import {
   Meetup,
   Event,
@@ -34,7 +48,8 @@ import {
 
 const { width } = Dimensions.get("window");
 
-export default function HomeScreen({ navigation }: any) {
+export default function HomeScreen() {
+  const navigation = useNavigation();
   const { user, logout } = useAuthStore();
   const { colors } = useThemeStore();
   const { meetups: localMeetups, getUserMeetups } = useMeetupStore();
@@ -46,25 +61,86 @@ export default function HomeScreen({ navigation }: any) {
   const [activityFeedData, setActivityFeedData] = useState<any[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [showInviteSnackbar, setShowInviteSnackbar] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-  const mockMeetups = getMockMeetups();
-  const mockEvents = getMockEvents();
-  const mockNotifications = getUserNotifications(user?.uid || "user1");
-  const currentUser =
-    getMockUsers().find((u) => u.uid === user?.uid) || getMockUsers()[0];
+  // Use DataService to get data (will use Firebase or mock data based on mode)
+  const [mockMeetups, setMockMeetups] = useState<Meetup[]>([]);
+  const [mockEvents, setMockEvents] = useState<Event[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   // Combine mock meetups with locally created meetups
   const allMeetups = [...localMeetups, ...mockMeetups];
   const userMeetups = getUserMeetups("current_user");
 
-  // Load initial activity feed data
+  // Load initial data using DataService
   useEffect(() => {
-    const initialData = getActivityFeed(0, 3); // Load first 3 items
-    setActivityFeedData(initialData);
-  }, []);
+    const loadData = async () => {
+      try {
+        // Load meetups using DataService
+        const meetupsResult = await DataService.getMeetups();
+        if (meetupsResult.meetups) {
+          setMockMeetups(meetupsResult.meetups);
+        }
 
-  // Recent activity timer - add new activity every 3 seconds
+        // Load activity feed using DataService
+        const activityResult = await DataService.getActivityFeed(0, 3);
+        if (activityResult.activities) {
+          setActivityFeedData(activityResult.activities);
+        }
+
+        // Load notifications using DataService
+        const notificationsResult = await DataService.getNotifications(
+          user?.uid || ""
+        );
+        if (notificationsResult.notifications) {
+          setNotifications(notificationsResult.notifications);
+        }
+
+        // Load user data using DataService
+        if (user?.uid) {
+          const userResult = await DataService.getUser(user.uid);
+          if (userResult.user) {
+            // Test the user data in development
+            if (__DEV__) {
+              testFirebaseData(userResult.user, "user");
+            }
+            setCurrentUser(userResult.user);
+          } else if (DataService.isInDeveloperMode()) {
+            // Fallback to mock user in developer mode
+            const mockUser =
+              getMockUsers().find((u) => u.uid === user.uid) ||
+              getMockUsers()[0];
+            if (__DEV__) {
+              testComponentData("HomeScreen", { user: mockUser });
+            }
+            setCurrentUser(mockUser);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading data:", error);
+        // In developer mode, fallback to mock data if DataService fails
+        if (DataService.isInDeveloperMode()) {
+          setMockMeetups(getMockMeetups());
+          setMockEvents(getMockEvents());
+          setActivityFeedData(getActivityFeed(0, 3));
+        }
+        // In Firebase mode, keep empty arrays to show empty states - NEVER use mock data
+      } finally {
+        setIsInitialLoading(false);
+      }
+    };
+
+    loadData();
+  }, [user?.uid]);
+
+  // Recent activity timer - add new activity every 3 seconds (only in developer mode)
   useEffect(() => {
+    if (!DataService.isInDeveloperMode()) {
+      return; // Don't add mock activity in Firebase mode
+    }
+
     const interval = setInterval(() => {
       const allActivity = getActivityFeed(0, 50); // Get more data to choose from
       const randomActivity =
@@ -86,24 +162,103 @@ export default function HomeScreen({ navigation }: any) {
     return () => clearInterval(interval);
   }, []);
 
-  const onRefresh = () => {
+  // Show invite snackbar after user has been active for a while
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (recentActivity.length > 2) {
+        setShowInviteSnackbar(true);
+      }
+    }, 10000); // Show after 10 seconds
+
+    return () => clearTimeout(timer);
+  }, [recentActivity]);
+
+  const onRefresh = async () => {
     setRefreshing(true);
-    // Simulate refresh
-    setTimeout(() => setRefreshing(false), 1000);
+
+    try {
+      // Use DataService to refresh data
+      const meetupsResult = await DataService.getMeetups();
+      if (meetupsResult.meetups) {
+        setMockMeetups(meetupsResult.meetups);
+      }
+
+      const activityResult = await DataService.getActivityFeed(0, 3);
+      if (activityResult.activities) {
+        setActivityFeedData(activityResult.activities);
+        setActivityFeedPage(0);
+      }
+
+      // Add a new random activity to show refresh worked
+      // Only add mock activity in developer mode
+      if (DataService.isInDeveloperMode()) {
+        const allActivity = getActivityFeed(0, 50);
+        const randomActivity =
+          allActivity[Math.floor(Math.random() * allActivity.length)];
+
+        if (randomActivity) {
+          setRecentActivity((prev) => {
+            const newActivity = {
+              ...randomActivity,
+              id: `refresh_${Date.now()}`,
+              timestamp: new Date(),
+            };
+            return [newActivity, ...prev.slice(0, 4)];
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Refresh error:", error);
+      // Fallback to mock data if DataService fails
+      const freshActivityData = getActivityFeed(0, 3);
+      setActivityFeedData(freshActivityData);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
-  const loadMoreActivityFeed = () => {
+  const loadMoreActivityFeed = async () => {
     if (loadingMore) return;
 
     setLoadingMore(true);
-    const nextPage = activityFeedPage + 1;
-    const newData = getActivityFeed(nextPage, 3);
 
-    setTimeout(() => {
+    try {
+      // Use DataService to load more activity
+      const nextPage = activityFeedPage + 1;
+      const activityResult = await DataService.getActivityFeed(nextPage, 3);
+
+      if (activityResult.activities) {
+        setActivityFeedData((prev) => [...prev, ...activityResult.activities]);
+        setActivityFeedPage(nextPage);
+      }
+
+      // Add new activities to recent activity
+      const allActivity = getActivityFeed(0, 50);
+      const newActivities: any[] = [];
+
+      for (let i = 0; i < 2; i++) {
+        const randomActivity =
+          allActivity[Math.floor(Math.random() * allActivity.length)];
+        if (randomActivity) {
+          newActivities.push({
+            ...randomActivity,
+            id: `load_more_${Date.now()}_${i}`,
+            timestamp: new Date(),
+          });
+        }
+      }
+
+      setRecentActivity((prev) => [...prev, ...newActivities]);
+    } catch (error) {
+      console.error("Load more error:", error);
+      // Fallback to mock data if DataService fails
+      const nextPage = activityFeedPage + 1;
+      const newData = getActivityFeed(nextPage, 3);
       setActivityFeedData((prev) => [...prev, ...newData]);
       setActivityFeedPage(nextPage);
+    } finally {
       setLoadingMore(false);
-    }, 1000);
+    }
   };
 
   const formatTime = (date: Date) => {
@@ -128,6 +283,16 @@ export default function HomeScreen({ navigation }: any) {
       const minutes = Math.floor(diff / (1000 * 60));
       return minutes > 0 ? `${minutes}m ago` : "now";
     }
+  };
+
+  const handleInviteFriends = () => {
+    setShowInviteSnackbar(false);
+    // This would normally open a share dialog or invite flow
+    console.log("Opening invite friends flow");
+  };
+
+  const handleDismissInvite = () => {
+    setShowInviteSnackbar(false);
   };
 
   const getActivityIcon = (type: string) => {
@@ -164,128 +329,177 @@ export default function HomeScreen({ navigation }: any) {
     }
   };
 
-  const renderActivityItem = (activity: any) => (
-    <TouchableOpacity
-      key={activity.id}
-      style={[styles.activityItem, { backgroundColor: colors.surface }]}
-      onPress={() => {
-        if (activity.meetup) {
-          navigation.navigate("MeetupDetails", {
-            meetupId: activity.meetup.id,
-          });
-        } else {
-          navigation.navigate("Profile");
-        }
-      }}
-    >
-      <View style={styles.activityContent}>
-        <Image
-          source={{
-            uri: activity.user.profilePictures[
-              activity.user.standoutPhotoIndex !== undefined
-                ? activity.user.standoutPhotoIndex
-                : 0
-            ],
-          }}
-          style={styles.activityAvatar}
-        />
-        <View style={styles.activityInfo}>
-          <Text style={[styles.activityUserName, { color: colors.text }]}>
-            {activity.user.displayName}
-          </Text>
-          <Text
-            style={[
-              styles.activityDescription,
-              { color: colors.textSecondary },
-            ]}
-          >
-            {activity.description}
-          </Text>
-          {activity.meetup && (
-            <Text
-              style={[styles.activityMeetupTitle, { color: colors.primary }]}
-            >
-              "{activity.meetup.title}"
-            </Text>
-          )}
-        </View>
-        <View style={styles.activityMeta}>
-          <Ionicons
-            name={getActivityIcon(activity.type)}
-            size={16}
-            color={getActivityColor(activity.type)}
-          />
-          <Text style={[styles.activityTime, { color: colors.textTertiary }]}>
-            {formatActivityTime(activity.timestamp)}
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+  const renderActivityItem = (activity: any) => {
+    // Safety checks for activity data
+    if (!activity || !activity.user) {
+      return null;
+    }
 
-  const renderRecentActivityItem = (activity: any, index: number) => (
-    <TouchableOpacity
-      key={activity.id}
-      style={[styles.recentActivityItem, { backgroundColor: colors.surface }]}
-      onPress={() => {
-        if (activity.meetup) {
-          navigation.navigate("MeetupDetails", {
-            meetupId: activity.meetup.id,
-          });
-        } else {
-          navigation.navigate("Profile");
-        }
-      }}
-    >
-      <View style={styles.recentActivityContent}>
-        <Image
-          source={{
-            uri: activity.user.profilePictures[
-              activity.user.standoutPhotoIndex !== undefined
-                ? activity.user.standoutPhotoIndex
-                : 0
-            ],
-          }}
-          style={styles.recentActivityAvatar}
-        />
-        <View style={styles.recentActivityInfo}>
-          <Text style={[styles.recentActivityUserName, { color: colors.text }]}>
-            {activity.user.displayName}
-          </Text>
-          <Text
-            style={[
-              styles.recentActivityDescription,
-              { color: colors.textSecondary },
-            ]}
-          >
-            {activity.description}
-          </Text>
-          {activity.meetup && (
+    const safeActivity = {
+      ...activity,
+      user: {
+        ...activity.user,
+        profilePictures: activity.user.profilePictures || [
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+        ],
+        standoutPhotoIndex:
+          activity.user.standoutPhotoIndex !== undefined
+            ? activity.user.standoutPhotoIndex
+            : 0,
+        displayName: activity.user.displayName || "User",
+      },
+      description: activity.description || "No description",
+      timestamp: activity.timestamp || new Date(),
+    };
+
+    return (
+      <TouchableOpacity
+        key={activity.id}
+        style={[styles.activityItem, { backgroundColor: colors.surface }]}
+        onPress={() => {
+          if (activity.meetup) {
+            navigation.navigate("MeetupDetails", {
+              meetupId: activity.meetup.id,
+            });
+          } else {
+            navigation.navigate("Profile");
+          }
+        }}
+      >
+        <View style={styles.activityContent}>
+          <Image
+            source={{
+              uri: safeActivity.user.profilePictures[
+                safeActivity.user.standoutPhotoIndex
+              ],
+            }}
+            style={styles.activityAvatar}
+          />
+          <View style={styles.activityInfo}>
+            <Text style={[styles.activityUserName, { color: colors.text }]}>
+              {safeActivity.user.displayName}
+            </Text>
             <Text
               style={[
-                styles.recentActivityMeetupTitle,
-                { color: colors.primary },
+                styles.activityDescription,
+                { color: colors.textSecondary },
               ]}
             >
-              "{activity.meetup.title}"
+              {safeActivity.description}
             </Text>
-          )}
+            {activity.meetup && (
+              <Text
+                style={[styles.activityMeetupTitle, { color: colors.primary }]}
+              >
+                "{activity.meetup.title || "Meetup"}"
+              </Text>
+            )}
+          </View>
+          <View style={styles.activityMeta}>
+            <Ionicons
+              name={getActivityIcon(activity.type)}
+              size={16}
+              color={getActivityColor(activity.type)}
+            />
+            <Text style={[styles.activityTime, { color: colors.textTertiary }]}>
+              {formatActivityTime(safeActivity.timestamp)}
+            </Text>
+          </View>
         </View>
-        <View style={styles.recentActivityMeta}>
-          <Ionicons
-            name={getActivityIcon(activity.type)}
-            size={20}
-            color={getActivityColor(activity.type)}
+      </TouchableOpacity>
+    );
+  };
+
+  const renderRecentActivityItem = (activity: any, index: number) => {
+    // Safety checks for activity data
+    if (!activity || !activity.user) {
+      return null;
+    }
+
+    const safeActivity = {
+      ...activity,
+      user: {
+        ...activity.user,
+        profilePictures: activity.user.profilePictures || [
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+        ],
+        standoutPhotoIndex:
+          activity.user.standoutPhotoIndex !== undefined
+            ? activity.user.standoutPhotoIndex
+            : 0,
+        displayName: activity.user.displayName || "User",
+      },
+      description: activity.description || "No description",
+      timestamp: activity.timestamp || new Date(),
+    };
+
+    return (
+      <TouchableOpacity
+        key={activity.id}
+        style={[styles.recentActivityItem, { backgroundColor: colors.surface }]}
+        onPress={() => {
+          if (activity.meetup) {
+            navigation.navigate("MeetupDetails", {
+              meetupId: activity.meetup.id,
+            });
+          } else {
+            navigation.navigate("Profile");
+          }
+        }}
+      >
+        <View style={styles.recentActivityContent}>
+          <Image
+            source={{
+              uri: safeActivity.user.profilePictures[
+                safeActivity.user.standoutPhotoIndex
+              ],
+            }}
+            style={styles.recentActivityAvatar}
           />
-          <Text
-            style={[styles.recentActivityTime, { color: colors.textTertiary }]}
-          >
-            {formatActivityTime(activity.timestamp)}
-          </Text>
+          <View style={styles.recentActivityInfo}>
+            <Text
+              style={[styles.recentActivityUserName, { color: colors.text }]}
+            >
+              {safeActivity.user.displayName}
+            </Text>
+            <Text
+              style={[
+                styles.recentActivityDescription,
+                { color: colors.textSecondary },
+              ]}
+            >
+              {safeActivity.description}
+            </Text>
+            {activity.meetup && (
+              <Text
+                style={[
+                  styles.recentActivityMeetupTitle,
+                  { color: colors.primary },
+                ]}
+              >
+                "{activity.meetup.title || "Meetup"}"
+              </Text>
+            )}
+          </View>
+          <View style={styles.recentActivityMeta}>
+            <Ionicons
+              name={getActivityIcon(activity.type)}
+              size={20}
+              color={getActivityColor(activity.type)}
+            />
+            <Text
+              style={[
+                styles.recentActivityTime,
+                { color: colors.textTertiary },
+              ]}
+            >
+              {formatActivityTime(safeActivity.timestamp)}
+            </Text>
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   const renderMeetupCard = (meetup: Meetup) => {
     const isUserMeetup = meetup.creatorId === "current_user";
@@ -390,11 +604,11 @@ export default function HomeScreen({ navigation }: any) {
         <View style={styles.headerLeft}>
           <Image
             source={{
-              uri: currentUser.profilePictures[
-                currentUser.standoutPhotoIndex !== undefined
-                  ? currentUser.standoutPhotoIndex
-                  : 0
-              ],
+              uri: safeArrayGet(
+                currentUser?.profilePictures,
+                currentUser?.standoutPhotoIndex || 0,
+                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop"
+              ),
             }}
             style={styles.profilePicture}
           />
@@ -403,11 +617,12 @@ export default function HomeScreen({ navigation }: any) {
               Good morning
             </Text>
             <Text style={[styles.title, { color: colors.text }]}>
-              {currentUser.displayName}
+              {currentUser?.displayName || "User"}
             </Text>
           </View>
         </View>
         <View style={styles.headerRight}>
+          <ShareButton type="app" variant="icon" style={styles.shareButton} />
           <TouchableOpacity
             style={styles.mapButton}
             onPress={() => navigation.navigate("Map")}
@@ -416,17 +631,14 @@ export default function HomeScreen({ navigation }: any) {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.notificationsButton}
-            onPress={() => {
-              // Show notifications modal or navigate to notifications screen
-              console.log("Show notifications");
-            }}
+            onPress={() => navigation.navigate("Notifications")}
           >
             <Ionicons
               name="notifications-outline"
               size={24}
               color={colors.primary}
             />
-            {mockNotifications.filter((n) => !n.isRead).length > 0 && (
+            {notifications.filter((n) => !n.isRead).length > 0 && (
               <View
                 style={[
                   styles.notificationBadge,
@@ -439,7 +651,7 @@ export default function HomeScreen({ navigation }: any) {
                     { color: colors.onPrimary },
                   ]}
                 >
-                  {mockNotifications.filter((n) => !n.isRead).length}
+                  {notifications.filter((n) => !n.isRead).length}
                 </Text>
               </View>
             )}
@@ -450,7 +662,15 @@ export default function HomeScreen({ navigation }: any) {
       <ScrollView
         style={styles.scrollView}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+            progressBackgroundColor={colors.surface}
+            title="Pull to refresh"
+            titleColor={colors.textSecondary}
+          />
         }
       >
         {/* Quick Stats */}
@@ -514,84 +734,123 @@ export default function HomeScreen({ navigation }: any) {
         </View>
 
         {/* Content based on active tab */}
-        {activeTab === "live" && (
-          <View style={styles.content}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Live Meetups
-            </Text>
-            {allMeetups.map(renderMeetupCard)}
-          </View>
-        )}
+        {isInitialLoading || !currentUser ? (
+          <LoadingState style={{ margin: 20 }} />
+        ) : (
+          <>
+            {activeTab === "live" && (
+              <View style={styles.content}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                  Live Meetups
+                </Text>
+                {allMeetups.length > 0 ? (
+                  allMeetups.map(renderMeetupCard)
+                ) : (
+                  <EmptyMeetupsState
+                    onActionPress={() => navigation.navigate("Create")}
+                  />
+                )}
+              </View>
+            )}
 
-        {activeTab === "upcoming" && (
-          <View style={styles.content}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Upcoming Events
-            </Text>
-            {mockEvents.map(renderEventCard)}
-          </View>
-        )}
+            {activeTab === "upcoming" && (
+              <View style={styles.content}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                  Upcoming Events
+                </Text>
+                {mockEvents.length > 0 ? (
+                  mockEvents.map(renderEventCard)
+                ) : (
+                  <EmptyEventsState
+                    onActionPress={() => navigation.navigate("Explore")}
+                  />
+                )}
+              </View>
+            )}
 
-        {activeTab === "nearby" && (
-          <View style={styles.content}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Nearby Activities
-            </Text>
-            {allMeetups.slice(0, 2).map(renderMeetupCard)}
-            {mockEvents.slice(0, 1).map(renderEventCard)}
-          </View>
+            {activeTab === "nearby" && (
+              <View style={styles.content}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                  Nearby Activities
+                </Text>
+                {allMeetups.length > 0 || mockEvents.length > 0 ? (
+                  <>
+                    {allMeetups.slice(0, 2).map(renderMeetupCard)}
+                    {mockEvents.slice(0, 1).map(renderEventCard)}
+                  </>
+                ) : (
+                  <EmptyMeetupsState
+                    onActionPress={() => navigation.navigate("Create")}
+                  />
+                )}
+              </View>
+            )}
+          </>
         )}
-
-        {/* Recent Notifications */}
-        <View style={styles.content}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Your Notifications
-          </Text>
-          {mockNotifications.length > 0 ? (
-            mockNotifications.map(renderNotificationItem)
-          ) : (
-            <View
-              style={[styles.emptyState, { backgroundColor: colors.surface }]}
-            >
-              <Ionicons
-                name="notifications-outline"
-                size={48}
-                color={colors.textTertiary}
-              />
-              <Text
-                style={[styles.emptyStateText, { color: colors.textTertiary }]}
-              >
-                No notifications yet
-              </Text>
-            </View>
-          )}
-        </View>
 
         {/* Recent Activity Section */}
-        <View style={styles.content}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Recent Activity
-          </Text>
-          {recentActivity.length > 0 ? (
-            recentActivity.map(renderRecentActivityItem)
-          ) : (
-            <View
-              style={[styles.emptyState, { backgroundColor: colors.surface }]}
-            >
-              <Ionicons
-                name="time-outline"
-                size={48}
-                color={colors.textTertiary}
+        {!isInitialLoading && currentUser && (
+          <View style={styles.content}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Recent Activity
+            </Text>
+            {recentActivity.length > 0 ? (
+              <>
+                {recentActivity.map(renderRecentActivityItem)}
+
+                {/* Load More Button */}
+                <TouchableOpacity
+                  style={[
+                    styles.loadMoreButton,
+                    { backgroundColor: colors.surface },
+                  ]}
+                  onPress={loadMoreActivityFeed}
+                  disabled={loadingMore}
+                >
+                  {loadingMore ? (
+                    <>
+                      <LoadingIndicator size="small" color={colors.primary} />
+                      <Text
+                        style={[
+                          styles.loadMoreText,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
+                        Loading more...
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <Ionicons
+                        name="chevron-down"
+                        size={16}
+                        color={colors.primary}
+                      />
+                      <Text
+                        style={[styles.loadMoreText, { color: colors.primary }]}
+                      >
+                        Load More Activity
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </>
+            ) : (
+              <EmptyActivityState
+                onActionPress={() => navigation.navigate("Explore")}
               />
-              <Text
-                style={[styles.emptyStateText, { color: colors.textTertiary }]}
-              >
-                Recent activity will appear here
-              </Text>
-            </View>
-          )}
-        </View>
+            )}
+          </View>
+        )}
       </ScrollView>
+
+      <InviteSnackbar
+        visible={showInviteSnackbar}
+        onDismiss={handleDismissInvite}
+        onInvite={handleInviteFriends}
+        message="Loving the activity? Invite friends to join the fun!"
+        type="invite"
+      />
     </SafeAreaView>
   );
 }
@@ -605,8 +864,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 20,
     borderBottomWidth: 1,
+    paddingTop: 50,
   },
   headerLeft: {
     flexDirection: "row",
@@ -625,6 +885,9 @@ const styles = StyleSheet.create({
   },
   welcomeContainer: {
     flex: 1,
+  },
+  shareButton: {
+    marginRight: 8,
   },
   mapButton: {
     padding: 8,
@@ -686,30 +949,36 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: "row",
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 12,
-    padding: 4,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+    padding: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   tab: {
     flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
     alignItems: "center",
   },
   tabText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
   },
   content: {
-    paddingHorizontal: 16,
-    marginBottom: 20,
+    paddingHorizontal: 20,
+    marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 16,
+    marginBottom: 20,
+    letterSpacing: 0.5,
   },
   eventCard: {
     borderRadius: 12,
@@ -855,11 +1124,16 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   loadMoreButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    flexDirection: "row",
     alignItems: "center",
-    marginTop: 16,
+    justifyContent: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: "transparent",
+    gap: 8,
   },
   loadMoreText: {
     fontSize: 14,

@@ -98,8 +98,8 @@ export default function SettingsScreen({ navigation }: any) {
 
       if (firestoreResult.error) {
         Alert.alert(
-          "Error",
-          `Failed to delete account data: ${firestoreResult.error}`
+          "Delete Failed",
+          `Unable to delete your account data. Please try again later.`
         );
         return;
       }
@@ -108,18 +108,28 @@ export default function SettingsScreen({ navigation }: any) {
       const authResult = await AuthService.deleteAccount();
 
       if (authResult.error) {
-        Alert.alert("Error", `Failed to delete account: ${authResult.error}`);
+        Alert.alert(
+          "Delete Failed",
+          `Unable to delete your account. Please try again later.`
+        );
         return;
       }
 
-      // Logout and navigate to auth screen automatically
+      // Success - logout and navigate to auth screen
       await logout();
 
-      // The AppNavigator will automatically detect the logout and navigate to the auth screen
-      // No need for additional alerts - the user will see the login screen immediately
+      // Show success message
+      Alert.alert(
+        "Account Deleted",
+        "Your account has been successfully deleted. You will now be redirected to the login screen.",
+        [{ text: "OK" }]
+      );
     } catch (error: any) {
       console.error("Delete account error:", error);
-      Alert.alert("Error", "An unexpected error occurred. Please try again.");
+      Alert.alert(
+        "Delete Failed",
+        "We encountered an error while deleting your account. Please try again later or contact support if the problem persists."
+      );
     }
   };
 
@@ -431,17 +441,6 @@ export default function SettingsScreen({ navigation }: any) {
             />
           </TouchableOpacity>
         </View>
-
-        {/* Logout */}
-        <TouchableOpacity
-          style={[styles.logoutButton, { backgroundColor: colors.error }]}
-          onPress={logout}
-        >
-          <Ionicons name="log-out-outline" size={24} color={colors.onPrimary} />
-          <Text style={[styles.logoutButtonText, { color: colors.onPrimary }]}>
-            Logout
-          </Text>
-        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -523,18 +522,5 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     marginLeft: 16,
-  },
-  logoutButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginTop: 20,
-  },
-  logoutButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginLeft: 8,
   },
 });

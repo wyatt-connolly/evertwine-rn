@@ -23,7 +23,8 @@ export interface User {
   age: number;
   gender: string;
   pronouns: string;
-  bio: string;
+  bio: string; // Short bio for standouts/cards
+  about: string; // Longer about section like LinkedIn
   profilePictures: string[];
   standoutPhotoIndex?: number; // Index of the standout photo (0-5)
 
@@ -45,6 +46,7 @@ export interface User {
   hometown: string;
   starSign: string;
   hobbies: string[];
+  interests: string[]; // User interests for matching
 
   // Meetup Intent
   lookingFor: string[]; // ["Friends", "Business", "Dating"]
@@ -54,12 +56,16 @@ export interface User {
   isVerified: "pending" | "verified" | "rejected";
   isPaused: boolean;
   lastActive: Date;
+  verifiedAt?: Date; // When user was verified
 
   // Analytics
   profileViews: number;
   uniqueViewers: number;
   viewsThisWeek: number;
   averageViewDuration: number;
+
+  // User Preferences
+  preferences?: UserPreferences;
 
   // Timestamps
   createdTime: Date;
@@ -379,6 +385,7 @@ export interface Event {
 export interface Place {
   id: string;
   name: string;
+  title: string; // Display title for the place
   category: string;
   address: string;
   location: {
@@ -409,6 +416,18 @@ export interface PlaceReview {
   helpful: number;
   verified: boolean;
   createdAt: Date;
+}
+
+// Activity Feed Types
+export interface ActivityItem {
+  id: string;
+  userId: string;
+  type: string;
+  description: string;
+  timestamp: Date;
+  meetupId?: string;
+  user?: User;
+  meetup?: Meetup;
 }
 
 // Verification Types
