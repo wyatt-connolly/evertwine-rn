@@ -36,38 +36,74 @@ export default function ProfileScreen({ navigation, route }: any) {
   // Load profile data using DataService
   useEffect(() => {
     const loadProfileData = async () => {
+      console.log("🔄 ProfileScreen loading data for:", profileUserId);
       try {
         setIsLoading(true);
 
         // Load user profile data
+        console.log("📊 Loading user profile data...");
         const userResult = await DataService.getUser(profileUserId);
+        console.log("📊 User result:", {
+          success: !!userResult.user,
+          error: userResult.error,
+        });
+
         if (userResult.user) {
           setProfileUserData(userResult.user);
+          console.log("✅ Profile data loaded:", userResult.user.displayName);
         } else if (route?.params?.userData) {
           setProfileUserData(route.params.userData);
+          console.log("✅ Using route params data");
         } else if (user) {
           setProfileUserData(user);
+          console.log("✅ Using current user data");
+        } else {
+          console.log("❌ No profile data available");
         }
 
         // Load user stats
-        const statsResult = await DataService.getUserStats(profileUserId);
-        if (statsResult.stats) {
-          setUserStats(statsResult.stats);
-        } else {
-          // Fallback to mock stats in developer mode
+        console.log("📊 Loading user stats...");
+        try {
+          const statsResult = await DataService.getUserStats(profileUserId);
+          console.log("📊 Stats result:", {
+            success: !!statsResult.stats,
+            error: statsResult.error,
+          });
+
+          if (statsResult.stats) {
+            setUserStats(statsResult.stats);
+            console.log("✅ Stats loaded");
+          } else {
+            // Fallback to mock stats in developer mode
+            if (DataService.isInDeveloperMode()) {
+              setUserStats(getMockUserStats(profileUserId));
+              console.log("✅ Using mock stats");
+            }
+          }
+        } catch (statsError) {
+          console.error("❌ Error loading stats:", statsError);
+          // Don't fail the entire loading process for stats
           if (DataService.isInDeveloperMode()) {
             setUserStats(getMockUserStats(profileUserId));
           }
         }
       } catch (error) {
-        console.error("Error loading profile data:", error);
+        console.error("❌ Error loading profile data:", error);
         // In developer mode, fallback to mock data
         if (DataService.isInDeveloperMode()) {
           setProfileUserData(mockUsers[0]);
           setUserStats(getMockUserStats(profileUserId));
+          console.log("✅ Using fallback mock data");
+        } else {
+          // In production, try to use current user data as fallback
+          if (user) {
+            setProfileUserData(user);
+            console.log("✅ Using current user as fallback");
+          }
         }
       } finally {
         setIsLoading(false);
+        console.log("✅ ProfileScreen loading complete");
       }
     };
 

@@ -30,17 +30,28 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
   const { loadPreferences } = usePreferenceStore();
 
   const handleGetStarted = async () => {
+    console.log("🎯 Starting onboarding completion process...");
     setLoading(true);
 
     try {
+      console.log("📊 Current user state:", {
+        uid: user?.uid,
+        displayName: user?.displayName,
+        onboardingComplete: user?.onboardingComplete,
+        timestamp: new Date().toISOString(),
+      });
+
       // Load preferences
+      console.log("⚙️ Loading preferences...");
       await loadPreferences();
 
       // Update local state
+      console.log("🔄 Updating local onboarding status to true...");
       setOnboardingComplete(true);
       updateUserProfile({ onboardingComplete: true });
 
       if (user?.uid) {
+        console.log("💾 Saving onboarding completion to Firebase...");
         // Write default preferences to Firebase
         const result = await FirestoreService.updateUser(user.uid, {
           onboardingComplete: true,
@@ -48,15 +59,19 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
         });
 
         if (result.error) {
-          console.error("Failed to update onboarding status:", result.error);
+          console.error("❌ Failed to update onboarding status:", result.error);
         } else {
           console.log("✅ Onboarding completed with default preferences!");
+          console.log("🎉 User should now be redirected to main app");
         }
+      } else {
+        console.error("❌ No user UID available for saving onboarding status");
       }
     } catch (error) {
-      console.error("Error completing onboarding:", error);
+      console.error("❌ Error completing onboarding:", error);
     } finally {
       setLoading(false);
+      console.log("🔄 Onboarding completion process finished");
     }
   };
 

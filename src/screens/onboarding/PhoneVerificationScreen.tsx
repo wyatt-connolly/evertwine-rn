@@ -110,35 +110,100 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
       return;
     }
 
+    console.log("🔄 Starting phone verification process...");
     setLoading(true);
     try {
+      // Ensure we're in production mode for phone authentication
+      console.log(
+        "🔧 Setting developer mode to false for phone authentication"
+      );
+      const { DataService } = await import("../../services/DataService");
+      DataService.setDeveloperMode(false);
+      console.log(
+        "📊 DataService developer mode:",
+        DataService.isInDeveloperMode()
+      );
+
+      console.log("📞 Verifying phone code with Firebase Auth...");
       const result = await AuthService.verifyPhoneCode(
         verificationId,
         verificationCode
       );
 
+      console.log("📞 Firebase Auth verification result:", {
+        success: !result.error,
+        error: result.error,
+        userExists: !!result.user,
+        userUid: result.user?.uid,
+        timestamp: new Date().toISOString(),
+      });
+
       if (result.error) {
+        console.error("❌ Phone verification failed:", result.error);
         Alert.alert("Error", result.error);
         return;
       }
 
+      console.log("✅ Phone verification successful, loading user profile...");
+
+      // Try to load user profile from Firebase
+      let userProfile = null;
+      try {
+        console.log("📖 Loading user profile data for:", result.user.uid);
+        const profileResult = await DataService.getUser(result.user.uid);
+
+        console.log("📖 Profile loading result:", {
+          success: !!profileResult.user,
+          error: profileResult.error,
+          hasProfile: !!profileResult.user,
+          timestamp: new Date().toISOString(),
+        });
+
+        if (profileResult.user) {
+          userProfile = profileResult.user;
+          console.log("✅ User profile found:", {
+            displayName: userProfile.displayName,
+            onboardingComplete: userProfile.onboardingComplete,
+            email: userProfile.email,
+            rawOnboardingComplete: userProfile.onboardingComplete,
+            typeOfOnboardingComplete: typeof userProfile.onboardingComplete,
+            timestamp: new Date().toISOString(),
+          });
+        } else {
+          console.log("❌ No profile data found for user:", result.user.uid);
+        }
+      } catch (profileError) {
+        console.error("❌ Error loading user profile:", profileError);
+      }
+
+      // Create user object with available data
       const user = {
         uid: result.user.uid,
         phoneNumber: result.user.phoneNumber || phoneNumber.replace(/\D/g, ""),
-        displayName: result.user.displayName || undefined,
-        email: result.user.email || undefined,
-        photoURL: result.user.photoURL || undefined,
-        onboardingComplete: result.user.onboardingComplete || false,
-        interests: result.user.interests || undefined,
-        location: result.user.location || undefined,
-        bio: result.user.bio || undefined,
+        displayName:
+          userProfile?.displayName || result.user.displayName || "New User",
+        // Only set email if it's not a generated email for phone users
+        email:
+          (userProfile?.email &&
+            !userProfile.email.includes("@evertwine.app")) ||
+          (result.user.email && !result.user.email.includes("@evertwine.app"))
+            ? userProfile?.email || result.user.email
+            : undefined,
+        photoURL: userProfile?.photoURL || result.user.photoURL || undefined,
+        onboardingComplete: userProfile?.onboardingComplete || false,
+        interests: userProfile?.interests || undefined,
+        location: userProfile?.location || undefined,
+        bio: userProfile?.bio || undefined,
       };
 
       console.log("👤 Setting user in PhoneVerificationScreen:", {
         uid: user.uid,
         phoneNumber: user.phoneNumber,
-        onboardingComplete: user.onboardingComplete,
         displayName: user.displayName,
+        onboardingComplete: user.onboardingComplete,
+        hasProfile: !!userProfile,
+        userProfileOnboardingComplete: userProfile?.onboardingComplete,
+        finalOnboardingComplete: user.onboardingComplete,
         timestamp: new Date().toISOString(),
       });
 
@@ -158,13 +223,30 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
         console.log(
           "📝 User needs to complete onboarding, navigating to ProfileSetup"
         );
-        navigation.navigate("ProfileSetup");
+        console.log("🧭 Navigation state:", {
+          canGoBack: navigation.canGoBack(),
+          currentRoute: "PhoneVerification",
+          targetRoute: "ProfileSetup",
+          timestamp: new Date().toISOString(),
+        });
+
+        try {
+          navigation.navigate("ProfileSetup");
+          console.log("✅ Navigation to ProfileSetup successful");
+        } catch (navError) {
+          console.error("❌ Navigation error:", navError);
+          Alert.alert(
+            "Navigation Error",
+            "Unable to navigate to profile setup. Please try again."
+          );
+        }
       }
     } catch (error) {
+      console.error("❌ Phone verification error:", error);
       Alert.alert("Error", "Invalid verification code. Please try again.");
-      console.error("Code verification error:", error);
     } finally {
       setLoading(false);
+      console.log("🔄 Phone verification process complete");
     }
   };
 

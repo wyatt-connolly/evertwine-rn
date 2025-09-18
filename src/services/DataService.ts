@@ -230,4 +230,19 @@ export class DataService {
     // Use Firebase for real data
     return await FirebaseDataService.getNotifications(uid);
   }
+
+  // User Stats Methods
+  static async getUserStats(
+    uid: string
+  ): Promise<{ stats: any | null; error: string | null }> {
+    if (this.isDeveloperMode) {
+      // Return mock stats in developer mode
+      const { getMockUserStats } = await import("../data/mockData");
+      const stats = getMockUserStats(uid);
+      return { stats, error: null };
+    }
+
+    // Use Firebase for real data
+    return await FirebaseDataService.getUserStats(uid);
+  }
 }

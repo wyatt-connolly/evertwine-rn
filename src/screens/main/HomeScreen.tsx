@@ -48,6 +48,18 @@ import {
 
 const { width } = Dimensions.get("window");
 
+// Helper function to get time-based greeting
+const getTimeBasedGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) {
+    return "Good morning";
+  } else if (hour < 17) {
+    return "Good afternoon";
+  } else {
+    return "Good evening";
+  }
+};
+
 export default function HomeScreen() {
   const navigation = useNavigation();
   const { user, logout } = useAuthStore();
@@ -599,6 +611,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["top"]}
     >
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <View style={styles.headerLeft}>
@@ -614,7 +627,7 @@ export default function HomeScreen() {
           />
           <View style={styles.welcomeContainer}>
             <Text style={[styles.greeting, { color: colors.textSecondary }]}>
-              Good morning
+              {getTimeBasedGreeting()}
             </Text>
             <Text style={[styles.title, { color: colors.text }]}>
               {currentUser?.displayName || "User"}
@@ -673,35 +686,41 @@ export default function HomeScreen() {
           />
         }
       >
-        {/* Quick Stats */}
-        <View
-          style={[styles.statsContainer, { backgroundColor: colors.surface }]}
-        >
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: colors.primary }]}>
-              12
-            </Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-              Meetups
-            </Text>
+        {/* Quick Stats - Only show in developer mode or with real data */}
+        {DataService.isInDeveloperMode() && (
+          <View
+            style={[styles.statsContainer, { backgroundColor: colors.surface }]}
+          >
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: colors.primary }]}>
+                {mockMeetups.length}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                Meetups
+              </Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: colors.primary }]}>
+                {mockEvents.length}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                Events
+              </Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: colors.primary }]}>
+                {
+                  notifications.filter(
+                    (n) => n.notificationType === "friendRequest"
+                  ).length
+                }
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                Connections
+              </Text>
+            </View>
           </View>
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: colors.primary }]}>
-              8
-            </Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-              Events
-            </Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: colors.primary }]}>
-              24
-            </Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-              Connections
-            </Text>
-          </View>
-        </View>
+        )}
 
         {/* Tab Navigation */}
         <View

@@ -2,6 +2,8 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthUser } from "../types";
+import { signOut } from "firebase/auth";
+import { auth } from "../../firebase.config";
 
 export type User = AuthUser;
 
@@ -42,13 +44,23 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      logout: () =>
+      logout: async () => {
+        try {
+          // Sign out from Firebase Auth
+          await signOut(auth);
+          console.log("✅ Signed out from Firebase Auth");
+        } catch (error) {
+          console.error("❌ Error signing out from Firebase:", error);
+        }
+
+        // Clear local state
         set({
           user: null,
           isAuthenticated: false,
           onboardingComplete: false,
           isLoading: false,
-        }),
+        });
+      },
     }),
     {
       name: "auth-storage",

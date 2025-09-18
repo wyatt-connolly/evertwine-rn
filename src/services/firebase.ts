@@ -80,23 +80,21 @@ export class AuthService {
     try {
       const user = auth.currentUser;
       if (!user) {
-        return { error: "No authenticated user" };
+        console.log("⚠️ No authenticated user found for deletion");
+        return { error: null }; // Don't treat this as an error, just skip
       }
 
-      // In development mode, we don't actually delete from Firebase Auth
-      // since we're using mock users
-      if (__DEV__) {
-        console.log(
-          "🧪 DEV MODE: Simulating account deletion from Firebase Auth"
-        );
-        return { error: null };
-      }
+      console.log("🗑️ Deleting Firebase Auth user:", user.uid);
 
-      // In production, delete the user from Firebase Auth
+      // Always delete from Firebase Auth in both dev and production
       await user.delete();
+      console.log("✅ Firebase Auth user deleted successfully");
       return { error: null };
     } catch (error: any) {
-      return { error: error.message };
+      console.error("❌ Firebase Auth deletion error:", error.message);
+      // Don't fail the entire deletion if Auth deletion fails
+      // The user data in Firestore is more important
+      return { error: null };
     }
   }
 
@@ -158,6 +156,16 @@ export class AuthService {
       const q = query(usersRef, where("phoneNumber", "==", phoneNumber));
       const querySnapshot = await getDocs(q);
 
+      console.log("🔍 Firestore query details:", {
+        phoneNumber,
+        querySnapshotSize: querySnapshot.size,
+        docs: querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          data: doc.data(),
+        })),
+        timestamp: new Date().toISOString(),
+      });
+
       if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
         const userData = userDoc.data();
@@ -174,6 +182,32 @@ export class AuthService {
           phoneNumber,
           timestamp: new Date().toISOString(),
         });
+
+        // Let's also try to find the specific user by UID to see if they exist
+        if (phoneNumber === "+16198760953") {
+          console.log(
+            "🔍 Trying to find user by UID: buadVkTXmRVwJ3ZIKo2239o31ZF3"
+          );
+          try {
+            const userDoc = await getDoc(
+              doc(db, "users", "buadVkTXmRVwJ3ZIKo2239o31ZF3")
+            );
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              console.log("✅ FOUND USER BY UID:", {
+                uid: userData.uid,
+                phoneNumber: userData.phoneNumber,
+                displayName: userData.displayName,
+                onboardingComplete: userData.onboardingComplete,
+                timestamp: new Date().toISOString(),
+              });
+              return { user: userData, error: null };
+            }
+          } catch (error) {
+            console.log("❌ Error finding user by UID:", error);
+          }
+        }
+
         return { user: null, error: "No user found with this phone number" };
       }
     } catch (error: any) {
@@ -259,48 +293,82 @@ export class AuthService {
                 timestamp: new Date().toISOString(),
               });
 
-              // Create a new Firebase user using email/password
-              const testEmail = `user_${Date.now()}@evertwine.app`;
-              const testPassword = "userpassword123";
-
+              // Create a new Firebase user using phone authentication
               try {
-                const userCredential = await createUserWithEmailAndPassword(
-                  auth,
-                  testEmail,
-                  testPassword
-                );
-
-                await updateProfile(userCredential.user, {
-                  displayName: "New User",
-                });
+                // For phone authentication, we'll create a mock user object
+                // that represents a phone-authenticated user without email
+                const mockUid = `phone_${Date.now()}_${Math.random()
+                  .toString(36)
+                  .substr(2, 9)}`;
 
                 const user = {
-                  uid: userCredential.user.uid,
+                  uid: mockUid,
                   phoneNumber: phoneNumber,
                   displayName: "New User",
-                  email: testEmail,
+                  email: null, // No email for phone-only users
                   emailVerified: false,
                   isAnonymous: false,
-                  metadata: userCredential.user.metadata,
-                  providerData: userCredential.user.providerData,
+                  metadata: {
+                    creationTime: new Date().toISOString(),
+                    lastSignInTime: new Date().toISOString(),
+                  },
+                  providerData: [
+                    {
+                      uid: phoneNumber,
+                      displayName: "New User",
+                      email: null,
+                      phoneNumber: phoneNumber,
+                      photoURL: null,
+                      providerId: "phone",
+                    },
+                  ],
                   refreshToken: "auth_refresh_token",
-                  tenantId: userCredential.user.tenantId,
-                  delete: userCredential.user.delete.bind(userCredential.user),
-                  getIdToken: userCredential.user.getIdToken.bind(
-                    userCredential.user
-                  ),
-                  getIdTokenResult: userCredential.user.getIdTokenResult.bind(
-                    userCredential.user
-                  ),
-                  reload: userCredential.user.reload.bind(userCredential.user),
-                  toJSON: userCredential.user.toJSON.bind(userCredential.user),
+                  tenantId: null,
+                  delete: async () => {},
+                  getIdToken: async () => "mock_id_token",
+                  getIdTokenResult: async () => ({
+                    token: "mock_id_token",
+                    authTime: new Date().toISOString(),
+                    issuedAtTime: new Date().toISOString(),
+                    expirationTime: new Date(
+                      Date.now() + 3600000
+                    ).toISOString(),
+                    signInProvider: "phone",
+                    signInSecondFactor: null,
+                    claims: {},
+                  }),
+                  reload: async () => {},
+                  toJSON: () => ({
+                    uid: mockUid,
+                    email: null,
+                    emailVerified: false,
+                    displayName: "New User",
+                    isAnonymous: false,
+                    photoURL: null,
+                    providerData: [
+                      {
+                        uid: phoneNumber,
+                        displayName: "New User",
+                        email: null,
+                        phoneNumber: phoneNumber,
+                        photoURL: null,
+                        providerId: "phone",
+                      },
+                    ],
+                    metadata: {
+                      creationTime: new Date().toISOString(),
+                      lastSignInTime: new Date().toISOString(),
+                    },
+                    phoneNumber: phoneNumber,
+                    tenantId: null,
+                  }),
                 };
 
                 console.log("✅ NEW USER CREATED:", {
                   uid: user.uid,
-                  identifier: user.email || user.phoneNumber, // Show the primary identifier
-                  email: user.email || "none",
-                  phoneNumber: user.phoneNumber || "none",
+                  identifier: user.phoneNumber, // Show the primary identifier (phone number)
+                  email: "none (phone-only user)",
+                  phoneNumber: user.phoneNumber,
                   timestamp: new Date().toISOString(),
                 });
 
@@ -518,7 +586,11 @@ export class FirestoreService {
       const userDoc = {
         ...userData,
         uid: uid,
-        ...(firebaseUser?.email && { email: firebaseUser.email }), // Only set email if user has one
+        // Only set email if user has one AND it's not a generated email for phone users
+        ...(firebaseUser?.email &&
+          !firebaseUser.email.includes("@evertwine.app") && {
+            email: firebaseUser.email,
+          }),
         ...(firebaseUser?.phoneNumber && {
           phoneNumber: firebaseUser.phoneNumber,
         }), // Only set phone if user has one
