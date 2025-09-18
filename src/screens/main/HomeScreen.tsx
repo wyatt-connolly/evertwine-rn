@@ -74,6 +74,7 @@ export default function HomeScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [showInviteSnackbar, setShowInviteSnackbar] = useState(false);
+  const [showShareSnackbar, setShowShareSnackbar] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   // Use DataService to get data (will use Firebase or mock data based on mode)
@@ -305,6 +306,17 @@ export default function HomeScreen() {
 
   const handleDismissInvite = () => {
     setShowInviteSnackbar(false);
+  };
+
+  const handleDismissShare = () => {
+    setShowShareSnackbar(false);
+  };
+
+  const handleShareApp = () => {
+    // Handle sharing the app
+    console.log("Share app pressed");
+    setShowShareSnackbar(false);
+    // You can add actual sharing logic here
   };
 
   const getActivityIcon = (type: string) => {
@@ -635,7 +647,16 @@ export default function HomeScreen() {
           </View>
         </View>
         <View style={styles.headerRight}>
-          <ShareButton type="app" variant="icon" style={styles.shareButton} />
+          {DataService.isInDeveloperMode() ? (
+            <ShareButton type="app" variant="icon" style={styles.shareButton} />
+          ) : (
+            <TouchableOpacity
+              style={styles.shareButton}
+              onPress={() => setShowShareSnackbar(true)}
+            >
+              <Ionicons name="share-outline" size={24} color={colors.primary} />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={styles.mapButton}
             onPress={() => navigation.navigate("Map")}
@@ -869,6 +890,15 @@ export default function HomeScreen() {
         onInvite={handleInviteFriends}
         message="Loving the activity? Invite friends to join the fun!"
         type="invite"
+      />
+
+      <InviteSnackbar
+        visible={showShareSnackbar}
+        onDismiss={handleDismissShare}
+        onInvite={handleShareApp}
+        message="Share Evertwine with your friends and help them discover amazing meetups!"
+        actionText="Share App"
+        type="share"
       />
     </SafeAreaView>
   );

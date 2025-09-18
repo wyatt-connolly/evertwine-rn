@@ -294,14 +294,12 @@ export default function EditProfileScreen({ navigation }: any) {
     Alert.alert("LinkedIn Import", "LinkedIn integration coming soon!");
   };
 
-  // Show loading state
+  // Show loading state - removed loading text for better UX
   if (isLoading) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.loadingContainer}>
-          <Text style={[styles.loadingText, { color: colors.text }]}>
-            Loading profile...
-          </Text>
+          {/* Loading text removed for smoother UX */}
         </View>
       </View>
     );
