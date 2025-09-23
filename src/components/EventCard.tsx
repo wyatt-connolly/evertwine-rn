@@ -103,7 +103,7 @@ export default function EventCard({ event, onPress, style }: EventCardProps) {
 const styles = StyleSheet.create({
   eventCard: {
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: 16, // Increased spacing for taller cards
     overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   },
   eventImage: {
     width: "100%",
-    height: 120,
+    height: 240, // 3:4 aspect ratio (180 * 4/3 = 240)
   },
   eventContent: {
     padding: 16,

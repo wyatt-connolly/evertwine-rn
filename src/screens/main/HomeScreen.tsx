@@ -27,7 +27,6 @@ import {
 } from "../../data/mockData";
 import { DataService } from "../../services/DataService";
 import InviteSnackbar from "../../components/InviteSnackbar";
-import ShareButton from "../../components/ShareButton";
 import LoadingIndicator from "../../components/LoadingIndicator";
 import { safeUserMerge } from "../../utils/firebaseDataConverter";
 import { safeGet, safeArrayGet, createSafeUser } from "../../utils/safeAccess";
@@ -115,8 +114,8 @@ export default function HomeScreen() {
         if (user?.uid) {
           const userResult = await DataService.getUser(user.uid);
           if (userResult.user) {
-            // Test the user data in development
-            if (__DEV__) {
+            // Test the user data in development (only when not in developer mode)
+            if (__DEV__ && !DataService.isInDeveloperMode()) {
               testFirebaseData(userResult.user, "user");
             }
             setCurrentUser(userResult.user);
@@ -647,16 +646,7 @@ export default function HomeScreen() {
           </View>
         </View>
         <View style={styles.headerRight}>
-          {DataService.isInDeveloperMode() ? (
-            <ShareButton type="app" variant="icon" style={styles.shareButton} />
-          ) : (
-            <TouchableOpacity
-              style={styles.shareButton}
-              onPress={() => setShowShareSnackbar(true)}
-            >
-              <Ionicons name="share-outline" size={24} color={colors.primary} />
-            </TouchableOpacity>
-          )}
+          {/* Removed share button for cleaner interface */}
           <TouchableOpacity
             style={styles.mapButton}
             onPress={() => navigation.navigate("Map")}
@@ -772,6 +762,77 @@ export default function HomeScreen() {
             </TouchableOpacity>
           ))}
         </View>
+
+        {/* Happy Hours Section - Always visible at top */}
+        {!isInitialLoading && currentUser && (
+          <View style={styles.content}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Happy Hours
+            </Text>
+            <View style={styles.happyHoursHorizontal}>
+              <View
+                style={[
+                  styles.happyHourCardHorizontal,
+                  { backgroundColor: colors.surface },
+                ]}
+              >
+                <View style={styles.happyHourHeader}>
+                  <Ionicons name="wine" size={20} color={colors.primary} />
+                  <Text
+                    style={[styles.happyHourTitleSmall, { color: colors.text }]}
+                  >
+                    Tech Networking
+                  </Text>
+                </View>
+                <Text
+                  style={[
+                    styles.happyHourLocationSmall,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  5:00 PM - 7:00 PM
+                </Text>
+                <Text
+                  style={[styles.happyHourStatsText, { color: colors.primary }]}
+                >
+                  32 going
+                </Text>
+              </View>
+
+              <View
+                style={[
+                  styles.happyHourCardHorizontal,
+                  { backgroundColor: colors.surface },
+                ]}
+              >
+                <View style={styles.happyHourHeader}>
+                  <Ionicons name="beer" size={20} color={colors.secondary} />
+                  <Text
+                    style={[styles.happyHourTitleSmall, { color: colors.text }]}
+                  >
+                    Startup Meetup
+                  </Text>
+                </View>
+                <Text
+                  style={[
+                    styles.happyHourLocationSmall,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  6:00 PM - 8:00 PM
+                </Text>
+                <Text
+                  style={[
+                    styles.happyHourStatsText,
+                    { color: colors.secondary },
+                  ]}
+                >
+                  18 going
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
 
         {/* Content based on active tab */}
         {isInitialLoading || !currentUser ? (
@@ -1253,5 +1314,69 @@ const styles = StyleSheet.create({
   recentActivityTime: {
     fontSize: 12,
     marginTop: 4,
+  },
+  happyHoursContainer: {
+    gap: 16,
+  },
+  happyHoursHorizontal: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 16,
+  },
+  happyHourCard: {
+    padding: 20,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  happyHourCardHorizontal: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  happyHourHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  happyHourTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginLeft: 12,
+    flex: 1,
+  },
+  happyHourTitleSmall: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
+    flex: 1,
+  },
+  happyHourLocation: {
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  happyHourLocationSmall: {
+    fontSize: 12,
+    marginBottom: 6,
+  },
+  happyHourDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  happyHourStats: {
+    alignSelf: "flex-start",
+  },
+  happyHourStatsText: {
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

@@ -93,9 +93,7 @@ const mockMessageRooms: MessageRoom[] = [
 export default function MessagesScreen({ navigation }: any) {
   const { colors } = useThemeStore();
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"all" | "unread" | "groups">(
-    "all"
-  );
+  const [activeTab, setActiveTab] = useState<"all" | "groups">("all");
   const [messageRooms, setMessageRooms] = useState<MessageRoom[]>([]);
 
   // Load message rooms using DataService
@@ -122,13 +120,10 @@ export default function MessagesScreen({ navigation }: any) {
   }, []);
 
   const filteredRooms = messageRooms.filter((room) => {
-    if (activeTab === "unread") {
-      return room.lastMessage && !room.lastMessage.isRead;
-    }
     if (activeTab === "groups") {
       return room.type === "group";
     }
-    return true;
+    return true; // "all" tab
   });
 
   const formatTime = (date: Date) => {
@@ -236,7 +231,7 @@ export default function MessagesScreen({ navigation }: any) {
 
       {/* Tab Navigation */}
       <View style={[styles.tabContainer, { backgroundColor: colors.surface }]}>
-        {(["all", "unread", "groups"] as const).map((tab) => (
+        {(["all", "groups"] as const).map((tab) => (
           <TouchableOpacity
             key={tab}
             style={[

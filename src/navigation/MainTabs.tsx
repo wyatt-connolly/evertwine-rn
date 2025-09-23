@@ -5,7 +5,7 @@ import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../hooks/useThemeStore";
 import HomeScreen from "../screens/main/HomeScreen";
-import StandoutsScreen from "../screens/main/StandoutsScreen";
+import AnimatedAvatarScreen from "../screens/main/AnimatedAvatarScreen";
 import MessagesScreen from "../screens/main/MessagesScreen";
 import ProfileScreen from "../screens/main/ProfileScreen";
 import EditProfileScreen from "../screens/main/EditProfileScreen";
@@ -125,7 +125,10 @@ function StandoutsStackNavigator() {
         headerShown: false,
       }}
     >
-      <StandoutsStack.Screen name="StandoutsMain" component={StandoutsScreen} />
+      <StandoutsStack.Screen
+        name="StandoutsMain"
+        component={AnimatedAvatarScreen}
+      />
       <StandoutsStack.Screen name="Map" component={MapScreen} />
     </StandoutsStack.Navigator>
   );
@@ -163,7 +166,7 @@ function MainTabsNavigator() {
           if (route.name === "Home") {
             iconName = focused ? "home" : "home-outline";
           } else if (route.name === "Standouts") {
-            iconName = focused ? "star" : "star-outline";
+            iconName = focused ? "people" : "people-outline";
           } else if (route.name === "Create") {
             iconName = focused ? "add-circle" : "add-circle-outline";
           } else if (route.name === "Messages") {

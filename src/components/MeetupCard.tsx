@@ -130,7 +130,7 @@ export default function MeetupCard({
 const styles = StyleSheet.create({
   meetupCard: {
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: 16, // Increased spacing for taller cards
     overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   },
   meetupImage: {
     width: "100%",
-    height: 140,
+    height: 240, // 3:4 aspect ratio (180 * 4/3 = 240)
   },
   meetupContent: {
     padding: 16,
