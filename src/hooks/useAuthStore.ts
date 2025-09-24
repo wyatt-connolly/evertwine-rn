@@ -48,10 +48,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           // Sign out from Firebase Auth
           await signOut(auth);
-          console.log("✅ Signed out from Firebase Auth");
-        } catch (error) {
-          console.error("❌ Error signing out from Firebase:", error);
-        }
+        } catch (error) {}
 
         // Clear local state
         set({

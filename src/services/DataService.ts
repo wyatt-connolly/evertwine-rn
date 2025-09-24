@@ -41,7 +41,6 @@ export class DataService {
   ): Promise<{ success: boolean; error: string | null }> {
     if (this.isDeveloperMode) {
       // Simulate user creation in developer mode
-      console.log("🧪 DEV MODE: Simulating user creation");
       return { success: true, error: null };
     }
 
@@ -55,7 +54,6 @@ export class DataService {
   ): Promise<{ success: boolean; error: string | null }> {
     if (this.isDeveloperMode) {
       // Simulate user update in developer mode
-      console.log("🧪 DEV MODE: Simulating user update");
       return { success: true, error: null };
     }
 
@@ -83,7 +81,6 @@ export class DataService {
   ): Promise<{ success: boolean; error: string | null }> {
     if (this.isDeveloperMode) {
       // Simulate meetup creation in developer mode
-      console.log("🧪 DEV MODE: Simulating meetup creation");
       return { success: true, error: null };
     }
 
@@ -123,7 +120,6 @@ export class DataService {
   static async signInWithPhone(phoneNumber: string) {
     if (this.isDeveloperMode) {
       // Return mock phone auth for developer mode
-      console.log("🧪 DEV MODE: Simulating phone authentication");
       return {
         confirmationResult: null,
         error: "Use Developer Login for mock data",
@@ -137,7 +133,6 @@ export class DataService {
   static async signInWithGoogle() {
     if (this.isDeveloperMode) {
       // Return mock Google auth for developer mode
-      console.log("🧪 DEV MODE: Simulating Google authentication");
       return { user: null, error: "Use Developer Login for mock data" };
     }
 
@@ -148,7 +143,6 @@ export class DataService {
   static async signInWithApple() {
     if (this.isDeveloperMode) {
       // Return mock Apple auth for developer mode
-      console.log("🧪 DEV MODE: Simulating Apple authentication");
       return { user: null, error: "Use Developer Login for mock data" };
     }
 
@@ -172,7 +166,6 @@ export class DataService {
   static setupUserListener(uid: string, callback: (user: User | null) => void) {
     if (this.isDeveloperMode) {
       // Simulate real-time updates in developer mode
-      console.log("🧪 DEV MODE: Simulating real-time user updates");
       return () => {}; // Return unsubscribe function
     }
 
@@ -183,7 +176,6 @@ export class DataService {
   static setupMeetupsListener(callback: (meetups: Meetup[]) => void) {
     if (this.isDeveloperMode) {
       // Simulate real-time updates in developer mode
-      console.log("🧪 DEV MODE: Simulating real-time meetup updates");
       return () => {}; // Return unsubscribe function
     }
 
@@ -197,7 +189,6 @@ export class DataService {
   ) {
     if (this.isDeveloperMode) {
       // Simulate real-time updates in developer mode
-      console.log("🧪 DEV MODE: Simulating real-time message updates");
       return () => {}; // Return unsubscribe function
     }
 
@@ -208,7 +199,6 @@ export class DataService {
   static setupActivityListener(callback: (activities: ActivityItem[]) => void) {
     if (this.isDeveloperMode) {
       // Simulate real-time updates in developer mode
-      console.log("🧪 DEV MODE: Simulating real-time activity updates");
       return () => {}; // Return unsubscribe function
     }
 

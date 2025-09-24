@@ -18,6 +18,10 @@ import MessageDetailsScreen from "../screens/main/MessageDetailsScreen";
 import ComposeMessageScreen from "../screens/main/ComposeMessageScreen";
 import FavoritesScreen from "../screens/main/FavoritesScreen";
 import CreateMeetupScreen from "../screens/main/CreateMeetupScreen";
+import CreateMeetupStep1Screen from "../screens/main/CreateMeetupStep1Screen";
+import CreateMeetupStep2Screen from "../screens/main/CreateMeetupStep2Screen";
+import CreateMeetupStep3Screen from "../screens/main/CreateMeetupStep3Screen";
+import CreateMeetupStep4Screen from "../screens/main/CreateMeetupStep4Screen";
 import EditMeetupScreen from "../screens/main/EditMeetupScreen";
 import GroupDetailsScreen from "../screens/main/GroupDetailsScreen";
 import UserProfileScreen from "../screens/main/UserProfileScreen";
@@ -70,6 +74,12 @@ export type MainStackParamList = {
   Favorites: undefined;
   GroupDetails: { groupId: string; groupData?: any };
   UserProfile: { userId: string; userData?: any };
+  AllHappyHourEvents: undefined;
+  AllMeetups: undefined;
+  CreateMeetupStep1: { formData?: any; onUpdate: (data: any) => void };
+  CreateMeetupStep2: { formData: any; onUpdate: (data: any) => void };
+  CreateMeetupStep3: { formData: any; onUpdate: (data: any) => void };
+  CreateMeetupStep4: { formData: any; onUpdate: (data: any) => void };
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -285,6 +295,22 @@ export default function MainTabs() {
         component={AllHappyHourEventsScreen}
       />
       <MainStack.Screen name="AllMeetups" component={AllMeetupsScreen} />
+      <MainStack.Screen
+        name="CreateMeetupStep1"
+        component={CreateMeetupStep1Screen}
+      />
+      <MainStack.Screen
+        name="CreateMeetupStep2"
+        component={CreateMeetupStep2Screen}
+      />
+      <MainStack.Screen
+        name="CreateMeetupStep3"
+        component={CreateMeetupStep3Screen}
+      />
+      <MainStack.Screen
+        name="CreateMeetupStep4"
+        component={CreateMeetupStep4Screen}
+      />
     </MainStack.Navigator>
   );
 }

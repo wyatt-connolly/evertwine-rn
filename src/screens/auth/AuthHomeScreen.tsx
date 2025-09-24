@@ -76,20 +76,13 @@ export default function AuthHomeScreen({ navigation }: Props) {
       // Also update the onboarding status in the store to ensure consistency
       if (user.onboardingComplete) {
         setOnboardingComplete(true);
-        console.log(
-          "✅ User has completed onboarding, updating store and navigating to main app"
-        );
         // The AppNavigator will handle routing to MainTabs
       } else {
         setOnboardingComplete(false);
-        console.log(
-          "📝 User needs to complete onboarding, navigating to ProfileSetup"
-        );
         navigation.navigate("ProfileSetup");
       }
     } catch (error) {
       Alert.alert("Error", "Apple Sign-In failed. Please try again.");
-      console.error("Apple Sign-In error:", error);
     } finally {
       setLoading(false);
     }
@@ -134,20 +127,13 @@ export default function AuthHomeScreen({ navigation }: Props) {
       // Also update the onboarding status in the store to ensure consistency
       if (user.onboardingComplete) {
         setOnboardingComplete(true);
-        console.log(
-          "✅ User has completed onboarding, updating store and navigating to main app"
-        );
         // The AppNavigator will handle routing to MainTabs
       } else {
         setOnboardingComplete(false);
-        console.log(
-          "📝 User needs to complete onboarding, navigating to ProfileSetup"
-        );
         navigation.navigate("ProfileSetup");
       }
     } catch (error) {
       Alert.alert("Error", "Google Sign-In failed. Please try again.");
-      console.error("Google Sign-In error:", error);
     } finally {
       setLoading(false);
     }
@@ -181,18 +167,11 @@ export default function AuthHomeScreen({ navigation }: Props) {
       setAuthenticated(true);
       setOnboardingComplete(true);
 
-      console.log("🔧 Developer login successful - using mock data mode");
-      console.log(
-        "📊 DataService is now in developer mode:",
-        DataService.isInDeveloperMode()
-      );
-
       setTimeout(() => {
         setLoading(false);
         // The AppNavigator will handle routing to MainTabs
       }, 1000);
     } catch (error) {
-      console.error("Developer login error:", error);
       setLoading(false);
     }
   };

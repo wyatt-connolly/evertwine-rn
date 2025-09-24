@@ -56,8 +56,6 @@ export default function HomeScreen() {
   const { meetups, fetchMeetups } = useMeetupStore();
 
   // Debug current user data
-  console.log("HomeScreen - currentUser:", currentUser);
-  console.log("HomeScreen - photoURL:", currentUser?.photoURL);
 
   // State
   const [refreshing, setRefreshing] = useState(false);
@@ -101,19 +99,16 @@ export default function HomeScreen() {
         await fetchMeetups();
       }
     } catch (error) {
-      console.error("Error refreshing:", error);
     } finally {
       setRefreshing(false);
     }
   };
 
   const handleInviteFriends = () => {
-    console.log("Invite friends pressed");
     setShowInviteSnackbar(false);
   };
 
   const handleShareApp = () => {
-    console.log("Share app pressed");
     setShowShareSnackbar(false);
   };
 
@@ -159,7 +154,18 @@ export default function HomeScreen() {
             {/* Happy Hour Carousel */}
             <HappyHourCarousel
               onEventPress={(event) => {
-                navigation.navigate("EventDetails", { eventId: event.id });
+                // Serialize the event to avoid non-serializable Date objects
+                const serializedEvent = {
+                  ...event,
+                  startTime: event.startTime?.toISOString(),
+                  endTime: event.endTime?.toISOString(),
+                  createdAt: event.createdAt?.toISOString(),
+                  updatedAt: event.updatedAt?.toISOString(),
+                };
+                navigation.navigate("EventDetails", {
+                  eventId: event.id,
+                  event: serializedEvent,
+                });
               }}
             />
 

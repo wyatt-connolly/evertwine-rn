@@ -1,0 +1,417 @@
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  ScrollView,
+  Platform,
+} from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useThemeStore } from "../../hooks/useThemeStore";
+
+const DURATION_OPTIONS = [
+  { label: "30 minutes", value: "30" },
+  { label: "1 hour", value: "60" },
+  { label: "1.5 hours", value: "90" },
+  { label: "2 hours", value: "120" },
+  { label: "3 hours", value: "180" },
+  { label: "4 hours", value: "240" },
+  { label: "Half day (4+ hours)", value: "300" },
+  { label: "Full day (8+ hours)", value: "480" },
+];
+
+interface CreateMeetupStep2ScreenProps {
+  navigation: any;
+  route: {
+    params: {
+      formData: any;
+      onUpdate: (data: any) => void;
+    };
+  };
+}
+
+export default function CreateMeetupStep2Screen({
+  navigation,
+  route,
+}: CreateMeetupStep2ScreenProps) {
+  const { colors } = useThemeStore();
+  const { formData: initialData, onUpdate } = route.params;
+
+  const [formData, setFormData] = useState({
+    ...initialData,
+    locationName: initialData?.locationName || "",
+    address: initialData?.address || "",
+    time: initialData?.time || "",
+    duration: initialData?.duration || "60",
+  });
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(
+    initialData?.time ? new Date(initialData.time) : new Date()
+  );
+  const [showDurationModal, setShowDurationModal] = useState(false);
+
+  const updateFormData = (field: string, value: string) => {
+    const newData = { ...formData, [field]: value };
+    setFormData(newData);
+    onUpdate(newData);
+  };
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === "ios");
+    if (selectedDate) {
+      setSelectedDate(selectedDate);
+      updateFormData("time", selectedDate.toISOString());
+    }
+  };
+
+  const formatDateTime = (date: Date) => {
+    return (
+      date.toLocaleDateString() +
+      " " +
+      date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    );
+  };
+
+  const formatDuration = (minutes: string) => {
+    const mins = parseInt(minutes);
+    if (mins < 60) {
+      return `${mins} minutes`;
+    } else if (mins === 60) {
+      return "1 hour";
+    } else if (mins < 120) {
+      return `${mins / 60} hours`;
+    } else {
+      const hours = Math.floor(mins / 60);
+      const remainingMinutes = mins % 60;
+      if (remainingMinutes === 0) {
+        return `${hours} hours`;
+      } else {
+        return `${hours}h ${remainingMinutes}m`;
+      }
+    }
+  };
+
+  const handleNext = () => {
+    if (!formData.locationName.trim() || !formData.time) {
+      return;
+    }
+    navigation.navigate("CreateMeetupStep3", { formData, onUpdate });
+  };
+
+  const handleBack = () => {
+    navigation.goBack();
+  };
+
+  const renderInput = (
+    label: string,
+    field: keyof typeof formData,
+    placeholder: string,
+    multiline = false
+  ) => (
+    <View style={styles.inputContainer}>
+      <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
+      <TextInput
+        style={[
+          styles.input,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            color: colors.text,
+          },
+          multiline && styles.multilineInput,
+        ]}
+        placeholder={placeholder}
+        placeholderTextColor={colors.textSecondary}
+        value={formData[field] as string}
+        onChangeText={(text) => updateFormData(field, text)}
+        multiline={multiline}
+        numberOfLines={multiline ? 3 : 1}
+      />
+    </View>
+  );
+
+  const renderDurationModal = () => (
+    <View style={styles.modalOverlay}>
+      <View style={[styles.modal, { backgroundColor: colors.surface }]}>
+        <View
+          style={[styles.modalHeader, { borderBottomColor: colors.border }]}
+        >
+          <Text style={[styles.modalTitle, { color: colors.text }]}>
+            Select Duration
+          </Text>
+          <TouchableOpacity onPress={() => setShowDurationModal(false)}>
+            <Ionicons name="close" size={24} color={colors.text} />
+          </TouchableOpacity>
+        </View>
+        <ScrollView style={styles.durationList}>
+          {DURATION_OPTIONS.map((option) => (
+            <TouchableOpacity
+              key={option.value}
+              style={[
+                styles.durationItem,
+                {
+                  borderBottomColor: colors.border,
+                  backgroundColor:
+                    formData.duration === option.value
+                      ? colors.primary + "20"
+                      : "transparent",
+                },
+              ]}
+              onPress={() => {
+                updateFormData("duration", option.value);
+                setShowDurationModal(false);
+              }}
+            >
+              <Text style={[styles.durationText, { color: colors.text }]}>
+                {option.label}
+              </Text>
+              {formData.duration === option.value && (
+                <Ionicons name="checkmark" size={20} color={colors.primary} />
+              )}
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    </View>
+  );
+
+  return (
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity onPress={handleBack}>
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={[styles.title, { color: colors.text }]}>When & Where</Text>
+        <View style={styles.stepIndicator}>
+          <Text style={[styles.stepText, { color: colors.textSecondary }]}>
+            Step 2 of 4
+          </Text>
+        </View>
+      </View>
+
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.content}>
+          {renderInput(
+            "Location Name *",
+            "locationName",
+            "e.g., Central Park, Starbucks, etc."
+          )}
+          {renderInput("Address", "address", "Full address (optional)", true)}
+
+          {/* Date & Time Selection */}
+          <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: colors.text }]}>
+              Date & Time *
+            </Text>
+            <TouchableOpacity
+              style={[
+                styles.selector,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <Text
+                style={[
+                  styles.selectorText,
+                  { color: formData.time ? colors.text : colors.textSecondary },
+                ]}
+              >
+                {formData.time
+                  ? formatDateTime(selectedDate)
+                  : "Select date and time"}
+              </Text>
+              <Ionicons
+                name="calendar-outline"
+                size={20}
+                color={colors.textSecondary}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Duration Selection */}
+          <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: colors.text }]}>Duration</Text>
+            <TouchableOpacity
+              style={[
+                styles.selector,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+              onPress={() => setShowDurationModal(true)}
+            >
+              <Text style={[styles.selectorText, { color: colors.text }]}>
+                {formatDuration(formData.duration)}
+              </Text>
+              <Ionicons
+                name="chevron-down"
+                size={20}
+                color={colors.textSecondary}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+
+      <View style={[styles.footer, { borderTopColor: colors.border }]}>
+        <TouchableOpacity
+          style={[
+            styles.nextButton,
+            {
+              backgroundColor:
+                formData.locationName.trim() && formData.time
+                  ? colors.primary
+                  : colors.textSecondary,
+            },
+          ]}
+          onPress={handleNext}
+          disabled={!formData.locationName.trim() || !formData.time}
+        >
+          <Text style={[styles.nextButtonText, { color: colors.onPrimary }]}>
+            Next
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {showDatePicker && (
+        <DateTimePicker
+          value={selectedDate}
+          mode="datetime"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={handleDateChange}
+          minimumDate={new Date()}
+        />
+      )}
+
+      {showDurationModal && renderDurationModal()}
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  stepIndicator: {
+    alignItems: "center",
+  },
+  stepText: {
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    padding: 20,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+  },
+  multilineInput: {
+    height: 80,
+    textAlignVertical: "top",
+  },
+  selector: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  selectorText: {
+    fontSize: 16,
+    flex: 1,
+  },
+  footer: {
+    borderTopWidth: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  nextButton: {
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  nextButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  modalOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  modal: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: "60%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  durationList: {
+    maxHeight: 300,
+  },
+  durationItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  durationText: {
+    fontSize: 16,
+  },
+});

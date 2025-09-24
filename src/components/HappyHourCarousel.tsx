@@ -5,6 +5,7 @@ import {
   Dimensions,
   FlatList,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../hooks/useThemeStore";
@@ -41,10 +42,10 @@ const getHappyHourEvents = (): Event[] => [
     maxAttendees: 20,
     currentAttendees: 12,
     coverImage:
-      "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=400&h=300&fit=crop",
     subcategory: "Wine Tasting",
     images: [
-      "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=400&h=300&fit=crop",
     ],
     status: "published",
     isRecurring: false,
@@ -85,10 +86,10 @@ const getHappyHourEvents = (): Event[] => [
     maxAttendees: 50,
     currentAttendees: 28,
     coverImage:
-      "https://images.unsplash.com/photo-1571613316887-6f8d5cbf7ef7?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&h=300&fit=crop",
     subcategory: "Beer Tasting",
     images: [
-      "https://images.unsplash.com/photo-1571613316887-6f8d5cbf7ef7?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&h=300&fit=crop",
     ],
     status: "published",
     isRecurring: false,
@@ -129,10 +130,10 @@ const getHappyHourEvents = (): Event[] => [
     maxAttendees: 15,
     currentAttendees: 8,
     coverImage:
-      "https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop",
     subcategory: "Mocktail Mixing",
     images: [
-      "https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop",
     ],
     status: "published",
     isRecurring: false,
@@ -172,10 +173,10 @@ const getHappyHourEvents = (): Event[] => [
     maxAttendees: 30,
     currentAttendees: 18,
     coverImage:
-      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=300&fit=crop",
     subcategory: "Rooftop Drinks",
     images: [
-      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=300&fit=crop",
     ],
     status: "published",
     isRecurring: false,
@@ -216,10 +217,10 @@ const getHappyHourEvents = (): Event[] => [
     maxAttendees: 25,
     currentAttendees: 15,
     coverImage:
-      "https://images.unsplash.com/photo-1551218808-94e220e084d2?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&h=300&fit=crop",
     subcategory: "Spanish Cuisine",
     images: [
-      "https://images.unsplash.com/photo-1551218808-94e220e084d2?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&h=300&fit=crop",
     ],
     status: "published",
     isRecurring: false,
@@ -264,89 +265,123 @@ export default function HappyHourCarousel({
     return price === 0 ? "Free" : `$${price}`;
   };
 
-  const renderEvent = ({ item }: { item: Event }) => (
-    <TouchableOpacity
-      style={[styles.eventCard, { backgroundColor: colors.surface }]}
-      onPress={() => onEventPress?.(item)}
-      activeOpacity={0.8}
-    >
-      <View style={styles.eventImageContainer}>
-        <View style={[styles.eventImage, { backgroundColor: colors.border }]}>
-          <Ionicons name="wine" size={32} color={colors.primary} />
-        </View>
-        <View style={[styles.priceTag, { backgroundColor: colors.primary }]}>
-          <Text style={[styles.priceText, { color: colors.onPrimary }]}>
-            {formatPrice(item.price)}
-          </Text>
-        </View>
-      </View>
+  const renderEvent = ({ item }: { item: Event }) => {
+    // Debug image data
+    console.log(`🍷 HappyHour Event - ${item.title}:`, {
+      hasCoverImage: !!item.coverImage,
+      coverImageUrl: item.coverImage,
+      hasImages: !!item.images,
+      imagesArray: item.images,
+    });
 
-      <View style={styles.eventContent}>
-        <Text
-          style={[styles.eventTitle, { color: colors.text }]}
-          numberOfLines={2}
-        >
-          {item.title}
-        </Text>
-
-        <View style={styles.eventDetails}>
-          <View style={styles.eventDetail}>
-            <Ionicons
-              name="location-outline"
-              size={14}
-              color={colors.textSecondary}
+    return (
+      <TouchableOpacity
+        style={[styles.eventCard, { backgroundColor: colors.surface }]}
+        onPress={() => onEventPress?.(item)}
+        activeOpacity={0.8}
+      >
+        <View style={styles.eventImageContainer}>
+          {item.coverImage ? (
+            <Image
+              source={{ uri: item.coverImage }}
+              style={styles.eventImage}
+              onError={(error) => {
+                console.log(
+                  `❌ HappyHour image error for ${item.title}:`,
+                  error.nativeEvent.error
+                );
+              }}
+              onLoad={() => {
+                console.log(`✅ HappyHour image loaded for ${item.title}`);
+              }}
             />
-            <Text
-              style={[styles.eventDetailText, { color: colors.textSecondary }]}
-              numberOfLines={1}
+          ) : (
+            <View
+              style={[styles.eventImage, { backgroundColor: colors.border }]}
             >
-              {item.locationName}
-            </Text>
-          </View>
-
-          <View style={styles.eventDetail}>
-            <Ionicons
-              name="time-outline"
-              size={14}
-              color={colors.textSecondary}
-            />
-            <Text
-              style={[styles.eventDetailText, { color: colors.textSecondary }]}
-            >
-              {formatTime(item.startTime)}
+              <Ionicons name="wine" size={32} color={colors.primary} />
+            </View>
+          )}
+          <View style={[styles.priceTag, { backgroundColor: colors.primary }]}>
+            <Text style={[styles.priceText, { color: colors.onPrimary }]}>
+              {formatPrice(item.price)}
             </Text>
           </View>
         </View>
 
-        <View style={styles.eventStats}>
-          <View style={styles.attendeeCount}>
-            <Ionicons
-              name="people-outline"
-              size={14}
-              color={colors.textSecondary}
-            />
-            <Text
-              style={[styles.attendeeText, { color: colors.textSecondary }]}
-            >
-              {item.currentAttendees}/{item.maxAttendees}
-            </Text>
-          </View>
-
-          <View
-            style={[
-              styles.happyHourBadge,
-              { backgroundColor: colors.primary + "20" },
-            ]}
+        <View style={styles.eventContent}>
+          <Text
+            style={[styles.eventTitle, { color: colors.text }]}
+            numberOfLines={2}
           >
-            <Ionicons name="wine" size={12} color={colors.primary} />
-            <Text style={[styles.happyHourText, { color: colors.primary }]}>
-              Happy Hour
-            </Text>
+            {item.title}
+          </Text>
+
+          <View style={styles.eventDetails}>
+            <View style={styles.eventDetail}>
+              <Ionicons
+                name="location-outline"
+                size={14}
+                color={colors.textSecondary}
+              />
+              <Text
+                style={[
+                  styles.eventDetailText,
+                  { color: colors.textSecondary },
+                ]}
+                numberOfLines={1}
+              >
+                {item.locationName}
+              </Text>
+            </View>
+
+            <View style={styles.eventDetail}>
+              <Ionicons
+                name="time-outline"
+                size={14}
+                color={colors.textSecondary}
+              />
+              <Text
+                style={[
+                  styles.eventDetailText,
+                  { color: colors.textSecondary },
+                ]}
+              >
+                {formatTime(item.startTime)}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.eventStats}>
+            <View style={styles.attendeeCount}>
+              <Ionicons
+                name="people-outline"
+                size={14}
+                color={colors.textSecondary}
+              />
+              <Text
+                style={[styles.attendeeText, { color: colors.textSecondary }]}
+              >
+                {item.currentAttendees}/{item.maxAttendees}
+              </Text>
+            </View>
+
+            <View
+              style={[
+                styles.happyHourBadge,
+                { backgroundColor: colors.primary + "20" },
+              ]}
+            >
+              <Ionicons name="wine" size={12} color={colors.primary} />
+              <Text style={[styles.happyHourText, { color: colors.primary }]}>
+                Happy Hour
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>

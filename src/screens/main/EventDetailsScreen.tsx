@@ -40,11 +40,27 @@ export default function EventDetailsScreen({
     isEventFavorite,
   } = useFavoritesStore();
   const eventId = route.params?.eventId;
-  const event = route.params?.event;
+  const rawEvent = route.params?.event;
+
+  // Deserialize the event data (convert ISO strings back to Date objects)
+  const event = rawEvent
+    ? {
+        ...rawEvent,
+        startTime: rawEvent.startTime
+          ? new Date(rawEvent.startTime)
+          : undefined,
+        endTime: rawEvent.endTime ? new Date(rawEvent.endTime) : undefined,
+        createdAt: rawEvent.createdAt
+          ? new Date(rawEvent.createdAt)
+          : undefined,
+        updatedAt: rawEvent.updatedAt
+          ? new Date(rawEvent.updatedAt)
+          : undefined,
+      }
+    : undefined;
 
   // If no event is provided, show error or go back
   if (!event) {
-    console.log("❌ EventDetailsScreen: No event provided in route params");
     return (
       <SafeAreaView
         style={[styles.container, { backgroundColor: colors.background }]}

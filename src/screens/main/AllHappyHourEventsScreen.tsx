@@ -278,7 +278,20 @@ export default function AllHappyHourEventsScreen() {
     <EventCard
       key={item.id}
       event={item}
-      onPress={() => navigation.navigate("EventDetails", { eventId: item.id })}
+      onPress={() => {
+        // Serialize the event to avoid non-serializable Date objects
+        const serializedEvent = {
+          ...item,
+          startTime: item.startTime?.toISOString(),
+          endTime: item.endTime?.toISOString(),
+          createdAt: item.createdAt?.toISOString(),
+          updatedAt: item.updatedAt?.toISOString(),
+        };
+        navigation.navigate("EventDetails", {
+          eventId: item.id,
+          event: serializedEvent,
+        });
+      }}
       style={[styles.eventCard, { backgroundColor: colors.surface }]}
     />
   );

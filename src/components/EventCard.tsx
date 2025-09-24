@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Event } from "../types";
@@ -12,6 +12,8 @@ interface EventCardProps {
 
 export default function EventCard({ event, onPress, style }: EventCardProps) {
   const { colors } = useThemeStore();
+  const [imageError, setImageError] = useState(false);
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString([], { month: "short", day: "numeric" });
   };
@@ -20,12 +22,49 @@ export default function EventCard({ event, onPress, style }: EventCardProps) {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
+  // Image debugging logs
+  console.log(`🖼️ EventCard - ${event.title}:`, {
+    hasCoverImage: !!event.coverImage,
+    coverImageUrl: event.coverImage,
+    imageError: imageError,
+  });
+
   return (
     <TouchableOpacity
       style={[styles.eventCard, { backgroundColor: colors.surface }, style]}
       onPress={onPress}
     >
-      <Image source={{ uri: event.coverImage }} style={styles.eventImage} />
+      {event.coverImage && !imageError ? (
+        <Image
+          source={{ uri: event.coverImage }}
+          style={styles.eventImage}
+          onError={(error) => {
+            console.log(
+              `❌ Image load error for ${event.title}:`,
+              error.nativeEvent.error
+            );
+            setImageError(true);
+          }}
+          onLoad={() => {
+            console.log(`✅ Image loaded successfully for ${event.title}`);
+            setImageError(false);
+          }}
+        />
+      ) : (
+        <View
+          style={[
+            styles.eventImage,
+            styles.placeholderImage,
+            { backgroundColor: colors.surface },
+          ]}
+        >
+          <Ionicons
+            name="wine-outline"
+            size={40}
+            color={colors.textSecondary}
+          />
+        </View>
+      )}
       <View style={styles.eventContent}>
         <View style={styles.eventHeader}>
           <Text style={[styles.eventTitle, { color: colors.text }]}>
@@ -114,6 +153,10 @@ const styles = StyleSheet.create({
   eventImage: {
     width: "100%",
     height: 240, // 3:4 aspect ratio (180 * 4/3 = 240)
+  },
+  placeholderImage: {
+    justifyContent: "center",
+    alignItems: "center",
   },
   eventContent: {
     padding: 16,
