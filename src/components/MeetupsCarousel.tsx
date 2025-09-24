@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Dimensions,
   FlatList,
   TouchableOpacity,
   Modal,
@@ -12,13 +11,14 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../hooks/useThemeStore";
+import { useMeetupFilterStore } from "../hooks/useMeetupFilterStore";
 import { useNavigation } from "@react-navigation/native";
 import MeetupCard from "./MeetupCard";
 import { Meetup } from "../types";
 import { getMockMeetups } from "../data/mockData";
 import { DataService } from "../services/DataService";
 
-const { height: screenHeight } = Dimensions.get("window");
+// Removed unused screenHeight
 
 interface MeetupsCarouselProps {
   onMeetupPress?: (meetup: Meetup) => void;
@@ -26,8 +26,6 @@ interface MeetupsCarouselProps {
   refreshing?: boolean;
   headerComponent?: () => React.ReactElement;
 }
-
-type FilterType = "for-you" | "following";
 
 interface FilterOption {
   id: string;
@@ -42,10 +40,9 @@ export default function MeetupsCarousel({
   headerComponent,
 }: MeetupsCarouselProps) {
   const { colors } = useThemeStore();
+  const { activeFilter, selectedFilters, setActiveFilter, setSelectedFilters } = useMeetupFilterStore();
   const navigation = useNavigation();
-  const [activeFilter, setActiveFilter] = useState<FilterType>("for-you");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const flatListRef = useRef<FlatList>(null);
 
   // Mock data for meetups
@@ -127,11 +124,10 @@ export default function MeetupsCarousel({
   ];
 
   const toggleFilter = (filterId: string) => {
-    setSelectedFilters((prev) =>
-      prev.includes(filterId)
-        ? prev.filter((id) => id !== filterId)
-        : [...prev, filterId]
-    );
+    const newFilters = selectedFilters.includes(filterId)
+      ? selectedFilters.filter((id) => id !== filterId)
+      : [...selectedFilters, filterId];
+    setSelectedFilters(newFilters);
   };
 
   const renderMeetup = ({ item }: { item: Meetup }) => (
@@ -285,6 +281,14 @@ export default function MeetupsCarousel({
                 >
                   For You
                 </Text>
+                {activeFilter === "for-you" && (
+                  <View
+                    style={[
+                      styles.activeIndicator,
+                      { backgroundColor: colors.onPrimary },
+                    ]}
+                  />
+                )}
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -313,6 +317,14 @@ export default function MeetupsCarousel({
                 >
                   Following
                 </Text>
+                {activeFilter === "following" && (
+                  <View
+                    style={[
+                      styles.activeIndicator,
+                      { backgroundColor: colors.onPrimary },
+                    ]}
+                  />
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -347,9 +359,6 @@ export default function MeetupsCarousel({
         renderItem={renderMeetup}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        snapToInterval={screenHeight * 0.6}
-        snapToAlignment="start"
-        decelerationRate="fast"
         style={[
           styles.meetupsList,
           { paddingTop: DataService.isInDeveloperMode() ? 70 : 0 },
@@ -543,5 +552,13 @@ const styles = StyleSheet.create({
   filterChipText: {
     fontSize: 14,
     fontWeight: "500",
+  },
+  activeIndicator: {
+    position: "absolute",
+    top: -2,
+    right: -2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 });
