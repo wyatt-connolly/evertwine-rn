@@ -8,9 +8,13 @@ import {
   TouchableOpacity,
   Modal,
   ScrollView,
+  RefreshControl,
 } from "react-native";
+import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../hooks/useThemeStore";
+import { useAuthStore } from "../hooks/useAuthStore";
+import { useNavigation } from "@react-navigation/native";
 import MeetupCard from "./MeetupCard";
 import { Meetup } from "../types";
 import { getMockMeetups } from "../data/mockData";
@@ -20,6 +24,9 @@ const { height: screenHeight } = Dimensions.get("window");
 
 interface MeetupsCarouselProps {
   onMeetupPress?: (meetup: Meetup) => void;
+  onRefresh?: () => void;
+  refreshing?: boolean;
+  headerComponent?: () => React.ReactElement;
 }
 
 type FilterType = "for-you" | "following";
@@ -32,8 +39,13 @@ interface FilterOption {
 
 export default function MeetupsCarousel({
   onMeetupPress,
+  onRefresh,
+  refreshing = false,
+  headerComponent,
 }: MeetupsCarouselProps) {
   const { colors } = useThemeStore();
+  const { currentUser } = useAuthStore();
+  const navigation = useNavigation();
   const [activeFilter, setActiveFilter] = useState<FilterType>("for-you");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
@@ -242,24 +254,34 @@ export default function MeetupsCarousel({
 
   return (
     <View style={styles.container}>
-      {/* Filter Header - This should be visible */}
-      <View style={[styles.filterHeader, { backgroundColor: colors.surface }]}>
-        <TouchableOpacity
-          style={[styles.filterButton, { backgroundColor: colors.background }]}
-          onPress={() => setShowAdvancedFilters(true)}
-        >
-          <Ionicons name="options-outline" size={20} color={colors.text} />
-        </TouchableOpacity>
+      {/* Sticky App Bar with Filter Tabs */}
+      <View
+        style={[styles.stickyAppBar, { backgroundColor: colors.background }]}
+      >
+        {/* Left: User Avatar */}
+        <View style={styles.appBarLeft}>
+          <Image
+            source={{
+              uri:
+                currentUser?.photoURL ||
+                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+            }}
+            style={styles.appBarAvatar}
+            onError={(error) => console.log("Image load error:", error)}
+            onLoad={() =>
+              console.log("Image loaded successfully:", currentUser?.photoURL)
+            }
+          />
+        </View>
 
+        {/* Center: Filter Tabs */}
         <View style={styles.primaryFilters}>
           <TouchableOpacity
             style={[
               styles.primaryFilter,
               {
                 backgroundColor:
-                  activeFilter === "for-you"
-                    ? colors.primary
-                    : colors.background,
+                  activeFilter === "for-you" ? colors.primary : colors.surface,
                 borderColor: colors.border,
               },
             ]}
@@ -285,7 +307,7 @@ export default function MeetupsCarousel({
                 backgroundColor:
                   activeFilter === "following"
                     ? colors.primary
-                    : colors.background,
+                    : colors.surface,
                 borderColor: colors.border,
               },
             ]}
@@ -307,16 +329,29 @@ export default function MeetupsCarousel({
           </TouchableOpacity>
         </View>
 
-        <View style={styles.filterButton}>
-          <Ionicons
-            name="ellipsis-horizontal"
-            size={20}
-            color={colors.textSecondary}
-          />
+        {/* Right: Actions */}
+        <View style={styles.appBarRight}>
+          <TouchableOpacity
+            style={[styles.appBarButton, { backgroundColor: colors.surface }]}
+            onPress={() => setShowAdvancedFilters(true)}
+          >
+            <Ionicons name="options-outline" size={20} color={colors.text} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.appBarButton, { backgroundColor: colors.surface }]}
+            onPress={() => navigation.navigate("Notifications")}
+          >
+            <Ionicons
+              name="notifications-outline"
+              size={20}
+              color={colors.text}
+            />
+          </TouchableOpacity>
         </View>
       </View>
 
-      {/* Meetups List with proper spacing */}
+      {/* Meetups List */}
       <FlatList
         ref={flatListRef}
         data={filteredMeetups}
@@ -329,6 +364,18 @@ export default function MeetupsCarousel({
         style={styles.meetupsList}
         contentContainerStyle={styles.meetupsContent}
         ItemSeparatorComponent={() => <View style={{ height: 20 }} />}
+        refreshControl={
+          onRefresh ? (
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.primary}
+            />
+          ) : undefined
+        }
+        ListHeaderComponent={() => (
+          <View>{headerComponent && headerComponent()}</View>
+        )}
       />
 
       {renderAdvancedFiltersModal()}
@@ -340,6 +387,61 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  stickyAppBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.1)",
+    zIndex: 1000,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+  },
+  appBarLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  appBarAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+  },
+  appBarRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  appBarButton: {
+    padding: 8,
+    borderRadius: 8,
+  },
+  stickyFilterHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
+    zIndex: 1000,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+  },
   filterHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -350,10 +452,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginHorizontal: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
+    zIndex: 1000,
   },
   filterButton: {
     padding: 8,
@@ -385,6 +488,7 @@ const styles = StyleSheet.create({
   },
   meetupsList: {
     flex: 1,
+    paddingTop: 60, // Account for app bar height
   },
   meetupsContent: {
     paddingHorizontal: 16,

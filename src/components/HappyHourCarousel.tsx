@@ -376,21 +376,24 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 24,
     paddingTop: 20,
+    paddingHorizontal: 0, // Ensure no additional horizontal padding
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
   },
   title: {
     fontSize: 20,
     fontWeight: "600",
+    paddingLeft: 16,
   },
   seeAllText: {
     fontSize: 14,
     fontWeight: "500",
+    paddingRight: 16,
   },
   carouselContent: {
     paddingHorizontal: 16,

@@ -147,80 +147,24 @@ export default function HomeScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      <ScrollView
-        style={styles.scrollView}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor={colors.primary}
-          />
-        }
-      >
-        {/* Header */}
-        <View
-          style={[
-            styles.header,
-            {
-              borderBottomColor: colors.border,
-              backgroundColor: colors.background,
-            },
-          ]}
-        >
-          <View style={styles.headerLeft}>
-            <Image
-              source={{
-                uri:
-                  currentUser?.photoURL ||
-                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+      {/* Meetups Carousel - Now handles all scrolling */}
+      <MeetupsCarousel
+        onMeetupPress={(meetup) => {
+          navigation.navigate("MeetupDetails", { meetupId: meetup.id });
+        }}
+        onRefresh={handleRefresh}
+        refreshing={refreshing}
+        headerComponent={() => (
+          <View>
+            {/* Happy Hour Carousel */}
+            <HappyHourCarousel
+              onEventPress={(event) => {
+                navigation.navigate("EventDetails", { eventId: event.id });
               }}
-              style={styles.profileImage}
-              onError={(error) => console.log("Image load error:", error)}
-              onLoad={() =>
-                console.log("Image loaded successfully:", currentUser?.photoURL)
-              }
             />
-            <View>
-              <Text style={[styles.greeting, { color: colors.text }]}>
-                {currentUser
-                  ? `Hello, ${currentUser.displayName || "User"}!`
-                  : "Welcome!"}
-              </Text>
-              <Text
-                style={[styles.welcomeText, { color: colors.textSecondary }]}
-              >
-                Discover amazing meetups
-              </Text>
-            </View>
           </View>
-          <View style={styles.headerRight}>
-            <TouchableOpacity
-              style={[styles.headerButton, { backgroundColor: colors.surface }]}
-              onPress={() => navigation.navigate("Notifications")}
-            >
-              <Ionicons
-                name="notifications-outline"
-                size={24}
-                color={colors.text}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Happy Hour Carousel */}
-        <HappyHourCarousel
-          onEventPress={(event) => {
-            navigation.navigate("EventDetails", { eventId: event.id });
-          }}
-        />
-
-        {/* Meetups Carousel */}
-        <MeetupsCarousel
-          onMeetupPress={(meetup) => {
-            navigation.navigate("MeetupDetails", { meetupId: meetup.id });
-          }}
-        />
-      </ScrollView>
+        )}
+      />
 
       <InviteSnackbar
         visible={showInviteSnackbar}
