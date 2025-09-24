@@ -6,10 +6,13 @@ import {
   FlatList,
   TouchableOpacity,
   Dimensions,
+  Modal,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { useMeetupFilterStore } from "../../hooks/useMeetupFilterStore";
 import { useNavigation } from "@react-navigation/native";
 import { useMeetupStore } from "../../hooks/useMeetupStore";
 import { Meetup } from "../../types";
@@ -19,13 +22,24 @@ import { DataService } from "../../services/DataService";
 
 const { width } = Dimensions.get("window");
 
+// Filter options to match MeetupsCarousel
+const filterOptions = [
+  { id: "non-alcoholic", label: "Non-alcoholic", type: "alcohol" },
+  { id: "wine", label: "Wine & Cocktails", type: "alcohol" },
+  { id: "outdoor", label: "Outdoor", type: "activity" },
+  { id: "indoor", label: "Indoor", type: "activity" },
+  { id: "downtown", label: "Downtown", type: "location" },
+  { id: "golden-gate", label: "Golden Gate Park", type: "location" },
+  { id: "today", label: "Today", type: "time" },
+  { id: "weekend", label: "This Weekend", type: "time" },
+];
+
 export default function AllMeetupsScreen() {
   const navigation = useNavigation();
   const { colors } = useThemeStore();
+  const { activeFilter, selectedFilters, setActiveFilter, setSelectedFilters } = useMeetupFilterStore();
   const { meetups: localMeetups } = useMeetupStore();
-  const [activeFilter, setActiveFilter] = useState<
-    "all" | "today" | "this-week" | "following"
-  >("all");
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Get meetups from store or mock data
   const allMeetups = DataService.isInDeveloperMode()
@@ -33,35 +47,67 @@ export default function AllMeetupsScreen() {
     : localMeetups;
 
   const getFilteredMeetups = () => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-
     let filtered = [...allMeetups];
 
     // Apply primary filter
     if (activeFilter === "following") {
-      // In a real app, this would filter by followed hosts
       filtered = filtered.filter((meetup) => meetup.creatorId === "user1");
     }
 
-    // Apply time filters
-    switch (activeFilter) {
-      case "today":
-        filtered = filtered.filter((meetup) => {
-          const meetupDate = new Date(meetup.time);
-          return (
-            meetupDate >= today &&
-            meetupDate < new Date(today.getTime() + 24 * 60 * 60 * 1000)
-          );
-        });
-        break;
-      case "this-week":
-        filtered = filtered.filter((meetup) => {
-          const meetupDate = new Date(meetup.time);
-          return meetupDate >= today && meetupDate < weekFromNow;
-        });
-        break;
+    // Apply advanced filters
+    if (selectedFilters.length > 0) {
+      filtered = filtered.filter((meetup) => {
+        try {
+          return selectedFilters.some((filterId) => {
+            const filter = filterOptions.find((opt) => opt.id === filterId);
+            if (!filter) return false;
+
+            switch (filter.type) {
+              case "alcohol":
+                const title = meetup.title?.toLowerCase() || "";
+                return (
+                  title.includes("happy hour") ||
+                  title.includes("wine") ||
+                  title.includes("beer") ||
+                  title.includes("cocktail")
+                );
+              case "activity":
+                const activityTitle = meetup.title?.toLowerCase() || "";
+                return (
+                  activityTitle.includes("outdoor") ||
+                  activityTitle.includes("hiking") ||
+                  activityTitle.includes("park") ||
+                  activityTitle.includes("walk") ||
+                  (meetup.activityCategory && meetup.activityCategory === filter.label)
+                );
+              case "location":
+                const location = meetup.locationName?.toLowerCase() || "";
+                return (
+                  location.includes("downtown") ||
+                  location.includes("golden gate") ||
+                  location.includes("center") ||
+                  location.includes(filter.label.toLowerCase())
+                );
+              case "time":
+                if (!meetup.time) return false;
+                const now = new Date();
+                const meetupTime = new Date(meetup.time);
+                if (filter.label === "Today") {
+                  return meetupTime.toDateString() === now.toDateString();
+                } else if (filter.label === "This Weekend") {
+                  const day = meetupTime.getDay();
+                  return day === 0 || day === 6; // Sunday or Saturday
+                }
+                return true;
+              default:
+                return true;
+            }
+          });
+        } catch (error) {
+          console.warn("Error filtering meetup:", error);
+          return false;
+        }
+      });
     }
 
     return filtered;
@@ -89,8 +135,7 @@ export default function AllMeetupsScreen() {
       style={[
         styles.filterButton,
         {
-          backgroundColor:
-            activeFilter === filter ? colors.primary : colors.surface,
+          backgroundColor: activeFilter === filter ? colors.primary : colors.surface,
           borderColor: colors.border,
         },
       ]}
@@ -109,6 +154,67 @@ export default function AllMeetupsScreen() {
     </TouchableOpacity>
   );
 
+  const renderFilterChip = ({ item }: { item: typeof filterOptions[0] }) => {
+    const isSelected = selectedFilters.includes(item.id);
+    return (
+      <TouchableOpacity
+        style={[
+          styles.filterChip,
+          {
+            backgroundColor: isSelected ? colors.primary : colors.surface,
+            borderColor: colors.border,
+          },
+        ]}
+        onPress={() => {
+          const newFilters = selectedFilters.includes(item.id)
+            ? selectedFilters.filter((id) => id !== item.id)
+            : [...selectedFilters, item.id];
+          setSelectedFilters(newFilters);
+        }}
+      >
+        <Text
+          style={[
+            styles.filterChipText,
+            {
+              color: isSelected ? colors.onPrimary : colors.text,
+            },
+          ]}
+        >
+          {item.label}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderActiveFilterChip = ({ item }: { item: typeof filterOptions[0] }) => (
+    <View
+      key={item.id}
+      style={[
+        styles.activeFilterChip,
+        { backgroundColor: colors.primary + "20", borderColor: colors.primary },
+      ]}
+    >
+      <Text style={[styles.activeFilterText, { color: colors.primary }]}>
+        {item.label}
+      </Text>
+      <TouchableOpacity
+        onPress={() => {
+          const newFilters = selectedFilters.filter((id) => id !== item.id);
+          setSelectedFilters(newFilters);
+        }}
+        style={styles.removeFilterButton}
+      >
+        <Ionicons name="close" size={14} color={colors.primary} />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const getActiveFilters = () => {
+    return filterOptions.filter((filter) => selectedFilters.includes(filter.id));
+  };
+
+  const activeFilters = getActiveFilters();
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -122,18 +228,141 @@ export default function AllMeetupsScreen() {
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>
-          All Meetups
+          All Meetups {selectedFilters.length > 0 && `(${selectedFilters.length} filters)`}
         </Text>
         <View style={styles.headerRight} />
       </View>
 
+      {/* Active Filters Display */}
+      {activeFilters.length > 0 && (
+        <View style={[styles.activeFiltersContainer, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.activeFiltersTitle, { color: colors.text }]}>
+            Active Filters:
+          </Text>
+          <FlatList
+            data={activeFilters}
+            renderItem={renderActiveFilterChip}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.activeFiltersList}
+            ItemSeparatorComponent={() => <View style={{ width: 8 }} />}
+          />
+        </View>
+      )}
+
       {/* Filter Buttons */}
       <View style={styles.filterContainer}>
+        {/* Filter Button */}
+        <TouchableOpacity
+          style={[
+            styles.filterButton,
+            {
+              backgroundColor: showAdvancedFilters ? colors.primary : colors.surface,
+              borderColor: colors.border,
+            },
+          ]}
+          onPress={() => setShowAdvancedFilters(!showAdvancedFilters)}
+        >
+          <Ionicons
+            name="options-outline"
+            size={16}
+            color={showAdvancedFilters ? colors.onPrimary : colors.text}
+          />
+          <Text
+            style={[
+              styles.filterButtonText,
+              {
+                color: showAdvancedFilters ? colors.onPrimary : colors.text,
+              },
+            ]}
+          >
+            Filter
+          </Text>
+        </TouchableOpacity>
+
+        {/* Time Filter Buttons */}
         {renderFilterButton("all", "All")}
         {renderFilterButton("today", "Today")}
         {renderFilterButton("this-week", "This Week")}
         {renderFilterButton("following", "Following")}
       </View>
+
+      {/* Advanced Filters Modal */}
+      {showAdvancedFilters && (
+        <Modal
+          visible={showAdvancedFilters}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowAdvancedFilters(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.advancedFiltersModal, { backgroundColor: colors.surface }]}>
+              <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>
+                  Advanced Filters
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowAdvancedFilters(false)}
+                  style={styles.closeButton}
+                >
+                  <Ionicons name="close" size={24} color={colors.text} />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView style={styles.advancedFiltersContent}>
+                <Text style={[styles.filterSectionTitle, { color: colors.text }]}>
+                  Alcohol Preference
+                </Text>
+                <FlatList
+                  data={filterOptions.filter((opt) => opt.type === "alcohol")}
+                  renderItem={renderFilterChip}
+                  keyExtractor={(item) => item.id}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.filterRow}
+                />
+
+                <Text style={[styles.filterSectionTitle, { color: colors.text }]}>
+                  Activity Type
+                </Text>
+                <FlatList
+                  data={filterOptions.filter((opt) => opt.type === "activity")}
+                  renderItem={renderFilterChip}
+                  keyExtractor={(item) => item.id}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.filterRow}
+                />
+
+                <Text style={[styles.filterSectionTitle, { color: colors.text }]}>
+                  Location
+                </Text>
+                <FlatList
+                  data={filterOptions.filter((opt) => opt.type === "location")}
+                  renderItem={renderFilterChip}
+                  keyExtractor={(item) => item.id}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.filterRow}
+                />
+
+                <Text style={[styles.filterSectionTitle, { color: colors.text }]}>
+                  Time
+                </Text>
+                <FlatList
+                  data={filterOptions.filter((opt) => opt.type === "time")}
+                  renderItem={renderFilterChip}
+                  keyExtractor={(item) => item.id}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.filterRow}
+                />
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+      )}
 
       {/* Meetups List */}
       <FlatList
@@ -202,6 +431,36 @@ const styles = StyleSheet.create({
   headerRight: {
     width: 40,
   },
+  activeFiltersContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.1)",
+  },
+  activeFiltersTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  activeFiltersList: {
+    flexDirection: "row",
+  },
+  activeFilterChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 6,
+  },
+  activeFilterText: {
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  removeFilterButton: {
+    padding: 2,
+  },
   filterContainer: {
     flexDirection: "row",
     paddingHorizontal: 20,
@@ -209,12 +468,66 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   filterButton: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
+    gap: 6,
   },
   filterButtonText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  advancedFiltersModal: {
+    maxHeight: "80%",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  closeButton: {
+    padding: 8,
+    borderRadius: 8,
+  },
+  advancedFiltersContent: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  filterSectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 12,
+    marginTop: 20,
+  },
+  filterRow: {
+    marginBottom: 16,
+  },
+  filterChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 8,
+    borderWidth: 1,
+  },
+  filterChipText: {
     fontSize: 14,
     fontWeight: "500",
   },
