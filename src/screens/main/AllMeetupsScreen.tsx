@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Dimensions,
   Modal,
   ScrollView,
+  Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -20,7 +21,7 @@ import MeetupCard from "../../components/MeetupCard";
 import { getMockMeetups } from "../../data/mockData";
 import { DataService } from "../../services/DataService";
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
 // Filter options to match MeetupsCarousel
 const filterOptions = [
@@ -41,6 +42,23 @@ export default function AllMeetupsScreen() {
     useMeetupFilterStore();
   const { meetups: localMeetups } = useMeetupStore();
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const slideAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (showAdvancedFilters) {
+      Animated.timing(slideAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showAdvancedFilters, slideAnim]);
 
   // Get meetups from store or mock data
   const allMeetups = DataService.isInDeveloperMode()
@@ -304,98 +322,118 @@ export default function AllMeetupsScreen() {
       </View>
 
       {/* Advanced Filters Modal */}
-      {showAdvancedFilters && (
-        <Modal
-          visible={showAdvancedFilters}
-          transparent={true}
-          animationType="slide"
-          onRequestClose={() => setShowAdvancedFilters(false)}
-        >
-          <View style={styles.modalOverlay}>
+      <Modal
+        visible={showAdvancedFilters}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowAdvancedFilters(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View
+            style={[
+              styles.advancedFiltersModal,
+              {
+                backgroundColor: colors.surface,
+                transform: [
+                  {
+                    translateY: slideAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [height * 0.7, 0],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
             <View
-              style={[
-                styles.advancedFiltersModal,
-                { backgroundColor: colors.surface },
-              ]}
+              style={[styles.modalHeader, { borderBottomColor: colors.border }]}
             >
-              <View
-                style={[
-                  styles.modalHeader,
-                  { borderBottomColor: colors.border },
-                ]}
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
+                Advanced Filters
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowAdvancedFilters(false)}
+                style={styles.closeButton}
               >
-                <Text style={[styles.modalTitle, { color: colors.text }]}>
-                  Advanced Filters
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setShowAdvancedFilters(false)}
-                  style={styles.closeButton}
-                >
-                  <Ionicons name="close" size={24} color={colors.text} />
-                </TouchableOpacity>
-              </View>
+                <Ionicons name="close" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
 
-              <ScrollView style={styles.advancedFiltersContent}>
+            <ScrollView
+              style={styles.advancedFiltersContent}
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.filterSection}>
                 <Text
                   style={[styles.filterSectionTitle, { color: colors.text }]}
                 >
                   Alcohol Preference
                 </Text>
-                <FlatList
-                  data={filterOptions.filter((opt) => opt.type === "alcohol")}
-                  renderItem={renderFilterChip}
-                  keyExtractor={(item) => item.id}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={styles.filterRow}
-                />
+                <View style={styles.filterChipsContainer}>
+                  {filterOptions
+                    .filter((opt) => opt.type === "alcohol")
+                    .map((item) => (
+                      <View key={item.id} style={styles.filterChipWrapper}>
+                        {renderFilterChip({ item })}
+                      </View>
+                    ))}
+                </View>
+              </View>
 
+              <View style={styles.filterSection}>
                 <Text
                   style={[styles.filterSectionTitle, { color: colors.text }]}
                 >
                   Activity Type
                 </Text>
-                <FlatList
-                  data={filterOptions.filter((opt) => opt.type === "activity")}
-                  renderItem={renderFilterChip}
-                  keyExtractor={(item) => item.id}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={styles.filterRow}
-                />
+                <View style={styles.filterChipsContainer}>
+                  {filterOptions
+                    .filter((opt) => opt.type === "activity")
+                    .map((item) => (
+                      <View key={item.id} style={styles.filterChipWrapper}>
+                        {renderFilterChip({ item })}
+                      </View>
+                    ))}
+                </View>
+              </View>
 
+              <View style={styles.filterSection}>
                 <Text
                   style={[styles.filterSectionTitle, { color: colors.text }]}
                 >
                   Location
                 </Text>
-                <FlatList
-                  data={filterOptions.filter((opt) => opt.type === "location")}
-                  renderItem={renderFilterChip}
-                  keyExtractor={(item) => item.id}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={styles.filterRow}
-                />
+                <View style={styles.filterChipsContainer}>
+                  {filterOptions
+                    .filter((opt) => opt.type === "location")
+                    .map((item) => (
+                      <View key={item.id} style={styles.filterChipWrapper}>
+                        {renderFilterChip({ item })}
+                      </View>
+                    ))}
+                </View>
+              </View>
 
+              <View style={styles.filterSection}>
                 <Text
                   style={[styles.filterSectionTitle, { color: colors.text }]}
                 >
                   Time
                 </Text>
-                <FlatList
-                  data={filterOptions.filter((opt) => opt.type === "time")}
-                  renderItem={renderFilterChip}
-                  keyExtractor={(item) => item.id}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={styles.filterRow}
-                />
-              </ScrollView>
-            </View>
-          </View>
-        </Modal>
-      )}
+                <View style={styles.filterChipsContainer}>
+                  {filterOptions
+                    .filter((opt) => opt.type === "time")
+                    .map((item) => (
+                      <View key={item.id} style={styles.filterChipWrapper}>
+                        {renderFilterChip({ item })}
+                      </View>
+                    ))}
+                </View>
+              </View>
+            </ScrollView>
+          </Animated.View>
+        </View>
+      </Modal>
 
       {/* Meetups List */}
       <FlatList
@@ -515,11 +553,11 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0,0,0,0.7)",
     justifyContent: "flex-end",
   },
   advancedFiltersModal: {
-    maxHeight: "80%",
+    height: height * 0.7,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
@@ -542,22 +580,28 @@ const styles = StyleSheet.create({
   advancedFiltersContent: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingTop: 20,
+  },
+  filterSection: {
+    marginBottom: 24,
   },
   filterSectionTitle: {
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 12,
-    marginTop: 20,
   },
-  filterRow: {
-    marginBottom: 16,
+  filterChipsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  filterChipWrapper: {
+    marginBottom: 8,
   },
   filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    marginRight: 8,
     borderWidth: 1,
   },
   filterChipText: {
