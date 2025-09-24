@@ -242,8 +242,10 @@ const getHappyHourEvents = (): Event[] => [
 export default function AllHappyHourEventsScreen() {
   const navigation = useNavigation();
   const { colors } = useThemeStore();
-  const [activeFilter, setActiveFilter] = useState<"all" | "today" | "this-week">("all");
-  
+  const [activeFilter, setActiveFilter] = useState<
+    "all" | "today" | "this-week"
+  >("all");
+
   const happyHourEvents = getHappyHourEvents();
 
   const getFilteredEvents = () => {
@@ -253,12 +255,15 @@ export default function AllHappyHourEventsScreen() {
 
     switch (activeFilter) {
       case "today":
-        return happyHourEvents.filter(event => {
+        return happyHourEvents.filter((event) => {
           const eventDate = new Date(event.startTime);
-          return eventDate >= today && eventDate < new Date(today.getTime() + 24 * 60 * 60 * 1000);
+          return (
+            eventDate >= today &&
+            eventDate < new Date(today.getTime() + 24 * 60 * 60 * 1000)
+          );
         });
       case "this-week":
-        return happyHourEvents.filter(event => {
+        return happyHourEvents.filter((event) => {
           const eventDate = new Date(event.startTime);
           return eventDate >= today && eventDate < weekFromNow;
         });
@@ -278,13 +283,17 @@ export default function AllHappyHourEventsScreen() {
     />
   );
 
-  const renderFilterButton = (filter: "all" | "today" | "this-week", label: string) => (
+  const renderFilterButton = (
+    filter: "all" | "today" | "this-week",
+    label: string
+  ) => (
     <TouchableOpacity
       key={filter}
       style={[
         styles.filterButton,
         {
-          backgroundColor: activeFilter === filter ? colors.primary : colors.surface,
+          backgroundColor:
+            activeFilter === filter ? colors.primary : colors.surface,
           borderColor: colors.border,
         },
       ]}
@@ -339,11 +348,17 @@ export default function AllHappyHourEventsScreen() {
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="wine-outline" size={64} color={colors.textSecondary} />
+            <Ionicons
+              name="wine-outline"
+              size={64}
+              color={colors.textSecondary}
+            />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
               No Events Found
             </Text>
-            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+            <Text
+              style={[styles.emptySubtitle, { color: colors.textSecondary }]}
+            >
               Try adjusting your filters or check back later for new events.
             </Text>
           </View>

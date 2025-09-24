@@ -280,7 +280,10 @@ export default function MainTabs() {
       <MainStack.Screen name="Favorites" component={FavoritesScreen} />
       <MainStack.Screen name="GroupDetails" component={GroupDetailsScreen} />
       <MainStack.Screen name="UserProfile" component={UserProfileScreen} />
-      <MainStack.Screen name="AllHappyHourEvents" component={AllHappyHourEventsScreen} />
+      <MainStack.Screen
+        name="AllHappyHourEvents"
+        component={AllHappyHourEventsScreen}
+      />
       <MainStack.Screen name="AllMeetups" component={AllMeetupsScreen} />
     </MainStack.Navigator>
   );

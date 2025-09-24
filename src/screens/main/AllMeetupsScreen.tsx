@@ -23,11 +23,13 @@ export default function AllMeetupsScreen() {
   const navigation = useNavigation();
   const { colors } = useThemeStore();
   const { meetups: localMeetups } = useMeetupStore();
-  const [activeFilter, setActiveFilter] = useState<"all" | "today" | "this-week" | "following">("all");
-  
+  const [activeFilter, setActiveFilter] = useState<
+    "all" | "today" | "this-week" | "following"
+  >("all");
+
   // Get meetups from store or mock data
-  const allMeetups = DataService.isInDeveloperMode() 
-    ? getMockMeetups() 
+  const allMeetups = DataService.isInDeveloperMode()
+    ? getMockMeetups()
     : localMeetups;
 
   const getFilteredMeetups = () => {
@@ -46,13 +48,16 @@ export default function AllMeetupsScreen() {
     // Apply time filters
     switch (activeFilter) {
       case "today":
-        filtered = filtered.filter(meetup => {
+        filtered = filtered.filter((meetup) => {
           const meetupDate = new Date(meetup.time);
-          return meetupDate >= today && meetupDate < new Date(today.getTime() + 24 * 60 * 60 * 1000);
+          return (
+            meetupDate >= today &&
+            meetupDate < new Date(today.getTime() + 24 * 60 * 60 * 1000)
+          );
         });
         break;
       case "this-week":
-        filtered = filtered.filter(meetup => {
+        filtered = filtered.filter((meetup) => {
           const meetupDate = new Date(meetup.time);
           return meetupDate >= today && meetupDate < weekFromNow;
         });
@@ -68,18 +73,24 @@ export default function AllMeetupsScreen() {
     <MeetupCard
       key={item.id}
       meetup={item}
-      onPress={() => navigation.navigate("MeetupDetails", { meetupId: item.id })}
+      onPress={() =>
+        navigation.navigate("MeetupDetails", { meetupId: item.id })
+      }
       style={[styles.meetupCard, { backgroundColor: colors.surface }]}
     />
   );
 
-  const renderFilterButton = (filter: "all" | "today" | "this-week" | "following", label: string) => (
+  const renderFilterButton = (
+    filter: "all" | "today" | "this-week" | "following",
+    label: string
+  ) => (
     <TouchableOpacity
       key={filter}
       style={[
         styles.filterButton,
         {
-          backgroundColor: activeFilter === filter ? colors.primary : colors.surface,
+          backgroundColor:
+            activeFilter === filter ? colors.primary : colors.surface,
           borderColor: colors.border,
         },
       ]}
@@ -135,18 +146,26 @@ export default function AllMeetupsScreen() {
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="people-outline" size={64} color={colors.textSecondary} />
+            <Ionicons
+              name="people-outline"
+              size={64}
+              color={colors.textSecondary}
+            />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
               No Meetups Found
             </Text>
-            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+            <Text
+              style={[styles.emptySubtitle, { color: colors.textSecondary }]}
+            >
               Try adjusting your filters or create a new meetup to get started.
             </Text>
             <TouchableOpacity
               style={[styles.createButton, { backgroundColor: colors.primary }]}
               onPress={() => navigation.navigate("Create")}
             >
-              <Text style={[styles.createButtonText, { color: colors.onPrimary }]}>
+              <Text
+                style={[styles.createButtonText, { color: colors.onPrimary }]}
+              >
                 Create Meetup
               </Text>
             </TouchableOpacity>

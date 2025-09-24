@@ -354,7 +354,9 @@ export default function HappyHourCarousel({
         <Text style={[styles.title, { color: colors.text }]}>
           Happy Hour Events
         </Text>
-        <TouchableOpacity onPress={() => (navigation as any).navigate("AllHappyHourEvents")}>
+        <TouchableOpacity
+          onPress={() => (navigation as any).navigate("AllHappyHourEvents")}
+        >
           <Text style={[styles.seeAllText, { color: colors.primary }]}>
             See All
           </Text>
@@ -378,7 +380,6 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 24,
     paddingTop: 20,
-    paddingHorizontal: 0, // Ensure no additional horizontal padding
   },
   header: {
     flexDirection: "row",
@@ -479,6 +480,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   carouselContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 0,
   },
 });
