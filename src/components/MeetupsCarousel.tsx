@@ -40,69 +40,14 @@ export default function MeetupsCarousel({
   headerComponent,
 }: MeetupsCarouselProps) {
   const { colors } = useThemeStore();
-  const { activeFilter, selectedFilters, setActiveFilter, setSelectedFilters } = useMeetupFilterStore();
+  const { activeFilter, selectedFilters, setActiveFilter, setSelectedFilters } =
+    useMeetupFilterStore();
   const navigation = useNavigation();
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
   // Mock data for meetups
   const allMeetups = DataService.isInDeveloperMode() ? getMockMeetups() : [];
-
-  // Filter meetups based on active filter
-  const getFilteredMeetups = () => {
-    if (!DataService.isInDeveloperMode()) {
-      return [];
-    }
-
-    let filtered = [...allMeetups];
-
-    // Apply primary filter
-    if (activeFilter === "following") {
-      // In a real app, this would filter by followed hosts
-      filtered = filtered.filter((meetup) => meetup.creatorId === "user1");
-    }
-
-    // Apply advanced filters
-    if (selectedFilters.length > 0) {
-      filtered = filtered.filter((meetup) => {
-        return selectedFilters.some((filterId) => {
-          const filter = filterOptions.find((opt) => opt.id === filterId);
-          if (!filter) return false;
-
-          switch (filter.type) {
-            case "alcohol":
-              return (
-                meetup.title.toLowerCase().includes("happy hour") ||
-                meetup.title.toLowerCase().includes("wine") ||
-                meetup.title.toLowerCase().includes("beer")
-              );
-            case "activity":
-              return meetup.activityCategory === filter.label;
-            case "location":
-              return meetup.locationName
-                ?.toLowerCase()
-                .includes(filter.label.toLowerCase());
-            case "time":
-              const now = new Date();
-              const meetupTime = new Date(meetup.time);
-              if (filter.label === "Today") {
-                return meetupTime.toDateString() === now.toDateString();
-              } else if (filter.label === "This Weekend") {
-                const day = meetupTime.getDay();
-                return day === 0 || day === 6; // Sunday or Saturday
-              }
-              return true;
-            default:
-              return true;
-          }
-        });
-      });
-    }
-
-    return filtered;
-  };
-
-  const filteredMeetups = getFilteredMeetups();
 
   // Advanced filter options
   const filterOptions: FilterOption[] = [
@@ -122,6 +67,81 @@ export default function MeetupsCarousel({
     { id: "today", label: "Today", type: "time" },
     { id: "weekend", label: "This Weekend", type: "time" },
   ];
+
+  // Filter meetups based on active filter
+  const getFilteredMeetups = () => {
+    if (!DataService.isInDeveloperMode()) {
+      return [];
+    }
+
+    let filtered = [...allMeetups];
+
+    // Apply primary filter
+    if (activeFilter === "following") {
+      // In a real app, this would filter by followed hosts
+      filtered = filtered.filter((meetup) => meetup.creatorId === "user1");
+    }
+
+    // Apply advanced filters
+    if (selectedFilters.length > 0) {
+      filtered = filtered.filter((meetup) => {
+        try {
+          return selectedFilters.some((filterId) => {
+            const filter = filterOptions.find((opt) => opt.id === filterId);
+            if (!filter) return false;
+
+          switch (filter.type) {
+            case "alcohol":
+              const title = meetup.title?.toLowerCase() || "";
+              return (
+                title.includes("happy hour") ||
+                title.includes("wine") ||
+                title.includes("beer") ||
+                title.includes("cocktail")
+              );
+            case "activity":
+              const activityTitle = meetup.title?.toLowerCase() || "";
+              return (
+                activityTitle.includes("outdoor") ||
+                activityTitle.includes("hiking") ||
+                activityTitle.includes("park") ||
+                activityTitle.includes("walk") ||
+                (meetup.activityCategory && meetup.activityCategory === filter.label)
+              );
+            case "location":
+              const location = meetup.locationName?.toLowerCase() || "";
+              return (
+                location.includes("downtown") ||
+                location.includes("golden gate") ||
+                location.includes("center") ||
+                location.includes(filter.label.toLowerCase())
+              );
+            case "time":
+              if (!meetup.time) return false;
+              const now = new Date();
+              const meetupTime = new Date(meetup.time);
+              if (filter.label === "Today") {
+                return meetupTime.toDateString() === now.toDateString();
+              } else if (filter.label === "This Weekend") {
+                const day = meetupTime.getDay();
+                return day === 0 || day === 6; // Sunday or Saturday
+              }
+              return true;
+            default:
+              return true;
+          }
+          });
+        } catch (error) {
+          console.warn("Error filtering meetup:", error);
+          return false;
+        }
+      });
+    }
+
+    return filtered;
+  };
+
+  const filteredMeetups = getFilteredMeetups();
 
   const toggleFilter = (filterId: string) => {
     const newFilters = selectedFilters.includes(filterId)
