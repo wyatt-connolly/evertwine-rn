@@ -24,6 +24,8 @@ import UserProfileScreen from "../screens/main/UserProfileScreen";
 import EventDetailsScreen from "../screens/main/EventDetailsScreen";
 import PlaceDetailsScreen from "../screens/main/PlaceDetailsScreen";
 import NotificationsScreen from "../screens/main/NotificationsScreen";
+import AllHappyHourEventsScreen from "../screens/main/AllHappyHourEventsScreen";
+import AllMeetupsScreen from "../screens/main/AllMeetupsScreen";
 
 export type MainTabParamList = {
   Home: undefined;
@@ -278,6 +280,8 @@ export default function MainTabs() {
       <MainStack.Screen name="Favorites" component={FavoritesScreen} />
       <MainStack.Screen name="GroupDetails" component={GroupDetailsScreen} />
       <MainStack.Screen name="UserProfile" component={UserProfileScreen} />
+      <MainStack.Screen name="AllHappyHourEvents" component={AllHappyHourEventsScreen} />
+      <MainStack.Screen name="AllMeetups" component={AllMeetupsScreen} />
     </MainStack.Navigator>
   );
 }

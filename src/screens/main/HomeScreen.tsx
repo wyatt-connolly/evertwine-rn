@@ -173,7 +173,7 @@ export default function HomeScreen() {
               <Text style={[styles.meetupsHeaderTitle, { color: colors.text }]}>
                 Meetups
               </Text>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate("AllMeetups")}>
                 <Text style={[styles.seeAllText, { color: colors.primary }]}>
                   See All
                 </Text>

@@ -1,23 +1,22 @@
+import React, { useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  Dimensions,
   FlatList,
   TouchableOpacity,
+  Dimensions,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useThemeStore } from "../hooks/useThemeStore";
+import { useThemeStore } from "../../hooks/useThemeStore";
 import { useNavigation } from "@react-navigation/native";
-import { Event } from "../types";
+import { Event } from "../../types";
+import EventCard from "../../components/EventCard";
 
-const { width: screenWidth } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
-interface HappyHourCarouselProps {
-  onEventPress?: (event: Event) => void;
-}
-
-// Mock happy hour events - using simplified Event interface
+// Mock happy hour events - using the same data as HappyHourCarousel
 const getHappyHourEvents = (): Event[] => [
   {
     id: "hh1",
@@ -240,245 +239,193 @@ const getHappyHourEvents = (): Event[] => [
   },
 ];
 
-export default function HappyHourCarousel({
-  onEventPress,
-}: HappyHourCarouselProps) {
+export default function AllHappyHourEventsScreen() {
   const navigation = useNavigation();
   const { colors } = useThemeStore();
+  const [activeFilter, setActiveFilter] = useState<"all" | "today" | "this-week">("all");
+  
   const happyHourEvents = getHappyHourEvents();
 
-  const formatTime = (date: Date) => {
-    const eventDate = new Date(date);
-    const today = new Date();
-    const diffTime = eventDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const getFilteredEvents = () => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-    if (diffDays === 0) return "Today";
-    if (diffDays === 1) return "Tomorrow";
-    if (diffDays <= 7) return `${diffDays} days`;
-
-    return eventDate.toLocaleDateString();
+    switch (activeFilter) {
+      case "today":
+        return happyHourEvents.filter(event => {
+          const eventDate = new Date(event.startTime);
+          return eventDate >= today && eventDate < new Date(today.getTime() + 24 * 60 * 60 * 1000);
+        });
+      case "this-week":
+        return happyHourEvents.filter(event => {
+          const eventDate = new Date(event.startTime);
+          return eventDate >= today && eventDate < weekFromNow;
+        });
+      default:
+        return happyHourEvents;
+    }
   };
 
-  const formatPrice = (price: number) => {
-    return price === 0 ? "Free" : `$${price}`;
-  };
+  const filteredEvents = getFilteredEvents();
 
   const renderEvent = ({ item }: { item: Event }) => (
-    <TouchableOpacity
+    <EventCard
+      key={item.id}
+      event={item}
+      onPress={() => navigation.navigate("EventDetails", { eventId: item.id })}
       style={[styles.eventCard, { backgroundColor: colors.surface }]}
-      onPress={() => onEventPress?.(item)}
-      activeOpacity={0.8}
+    />
+  );
+
+  const renderFilterButton = (filter: "all" | "today" | "this-week", label: string) => (
+    <TouchableOpacity
+      key={filter}
+      style={[
+        styles.filterButton,
+        {
+          backgroundColor: activeFilter === filter ? colors.primary : colors.surface,
+          borderColor: colors.border,
+        },
+      ]}
+      onPress={() => setActiveFilter(filter)}
     >
-      <View style={styles.eventImageContainer}>
-        <View style={[styles.eventImage, { backgroundColor: colors.border }]}>
-          <Ionicons name="wine" size={32} color={colors.primary} />
-        </View>
-        <View style={[styles.priceTag, { backgroundColor: colors.primary }]}>
-          <Text style={[styles.priceText, { color: colors.onPrimary }]}>
-            {formatPrice(item.price)}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.eventContent}>
-        <Text
-          style={[styles.eventTitle, { color: colors.text }]}
-          numberOfLines={2}
-        >
-          {item.title}
-        </Text>
-
-        <View style={styles.eventDetails}>
-          <View style={styles.eventDetail}>
-            <Ionicons
-              name="location-outline"
-              size={14}
-              color={colors.textSecondary}
-            />
-            <Text
-              style={[styles.eventDetailText, { color: colors.textSecondary }]}
-              numberOfLines={1}
-            >
-              {item.locationName}
-            </Text>
-          </View>
-
-          <View style={styles.eventDetail}>
-            <Ionicons
-              name="time-outline"
-              size={14}
-              color={colors.textSecondary}
-            />
-            <Text
-              style={[styles.eventDetailText, { color: colors.textSecondary }]}
-            >
-              {formatTime(item.startTime)}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.eventStats}>
-          <View style={styles.attendeeCount}>
-            <Ionicons
-              name="people-outline"
-              size={14}
-              color={colors.textSecondary}
-            />
-            <Text
-              style={[styles.attendeeText, { color: colors.textSecondary }]}
-            >
-              {item.currentAttendees}/{item.maxAttendees}
-            </Text>
-          </View>
-
-          <View
-            style={[
-              styles.happyHourBadge,
-              { backgroundColor: colors.primary + "20" },
-            ]}
-          >
-            <Ionicons name="wine" size={12} color={colors.primary} />
-            <Text style={[styles.happyHourText, { color: colors.primary }]}>
-              Happy Hour
-            </Text>
-          </View>
-        </View>
-      </View>
+      <Text
+        style={[
+          styles.filterButtonText,
+          {
+            color: activeFilter === filter ? colors.onPrimary : colors.text,
+          },
+        ]}
+      >
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      {/* Header */}
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>
           Happy Hour Events
         </Text>
-        <TouchableOpacity onPress={() => (navigation as any).navigate("AllHappyHourEvents")}>
-          <Text style={[styles.seeAllText, { color: colors.primary }]}>
-            See All
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.headerRight} />
       </View>
 
+      {/* Filter Buttons */}
+      <View style={styles.filterContainer}>
+        {renderFilterButton("all", "All")}
+        {renderFilterButton("today", "Today")}
+        {renderFilterButton("this-week", "This Week")}
+      </View>
+
+      {/* Events List */}
       <FlatList
-        data={happyHourEvents}
+        data={filteredEvents}
         renderItem={renderEvent}
         keyExtractor={(item) => item.id}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.carouselContent}
-        ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
+        style={styles.eventsList}
+        contentContainerStyle={styles.eventsContent}
+        showsVerticalScrollIndicator={false}
+        ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Ionicons name="wine-outline" size={64} color={colors.textSecondary} />
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>
+              No Events Found
+            </Text>
+            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+              Try adjusting your filters or check back later for new events.
+            </Text>
+          </View>
+        }
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 24,
-    paddingTop: 20,
-    paddingHorizontal: 0, // Ensure no additional horizontal padding
+    flex: 1,
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
   },
-  title: {
-    fontSize: 20,
+  backButton: {
+    padding: 8,
+    borderRadius: 8,
+  },
+  headerTitle: {
+    fontSize: 18,
     fontWeight: "600",
+    flex: 1,
+    textAlign: "center",
+    marginHorizontal: 20,
   },
-  seeAllText: {
+  headerRight: {
+    width: 40,
+  },
+  filterContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    gap: 12,
+  },
+  filterButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  filterButtonText: {
     fontSize: 14,
     fontWeight: "500",
   },
+  eventsList: {
+    flex: 1,
+  },
+  eventsContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
   eventCard: {
-    width: screenWidth * 0.7,
     borderRadius: 16,
-    overflow: "hidden",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  eventImageContainer: {
-    position: "relative",
-    height: 120,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  eventImage: {
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  priceTag: {
-    position: "absolute",
-    top: 12,
-    right: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  priceText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  eventContent: {
-    padding: 16,
-  },
-  eventTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 8,
-    lineHeight: 20,
-  },
-  eventDetails: {
-    gap: 4,
-    marginBottom: 12,
-  },
-  eventDetail: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  eventDetailText: {
-    fontSize: 13,
+  emptyContainer: {
     flex: 1,
-  },
-  eventStats: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
+    paddingVertical: 60,
   },
-  attendeeCount: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginTop: 16,
+    marginBottom: 8,
   },
-  attendeeText: {
-    fontSize: 12,
-  },
-  happyHourBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  happyHourText: {
-    fontSize: 11,
-    fontWeight: "500",
-  },
-  carouselContent: {
-    paddingHorizontal: 20,
+  emptySubtitle: {
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
+    paddingHorizontal: 40,
   },
 });
