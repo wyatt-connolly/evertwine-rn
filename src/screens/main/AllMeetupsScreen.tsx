@@ -37,7 +37,8 @@ const filterOptions = [
 export default function AllMeetupsScreen() {
   const navigation = useNavigation();
   const { colors } = useThemeStore();
-  const { activeFilter, selectedFilters, setActiveFilter, setSelectedFilters } = useMeetupFilterStore();
+  const { activeFilter, selectedFilters, setActiveFilter, setSelectedFilters } =
+    useMeetupFilterStore();
   const { meetups: localMeetups } = useMeetupStore();
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
@@ -78,7 +79,8 @@ export default function AllMeetupsScreen() {
                   activityTitle.includes("hiking") ||
                   activityTitle.includes("park") ||
                   activityTitle.includes("walk") ||
-                  (meetup.activityCategory && meetup.activityCategory === filter.label)
+                  (meetup.activityCategory &&
+                    meetup.activityCategory === filter.label)
                 );
               case "location":
                 const location = meetup.locationName?.toLowerCase() || "";
@@ -127,7 +129,7 @@ export default function AllMeetupsScreen() {
   );
 
   const renderFilterButton = (
-    filter: "all" | "today" | "this-week" | "following",
+    filter: "for-you" | "following",
     label: string
   ) => (
     <TouchableOpacity
@@ -135,7 +137,8 @@ export default function AllMeetupsScreen() {
       style={[
         styles.filterButton,
         {
-          backgroundColor: activeFilter === filter ? colors.primary : colors.surface,
+          backgroundColor:
+            activeFilter === filter ? colors.primary : colors.surface,
           borderColor: colors.border,
         },
       ]}
@@ -154,7 +157,7 @@ export default function AllMeetupsScreen() {
     </TouchableOpacity>
   );
 
-  const renderFilterChip = ({ item }: { item: typeof filterOptions[0] }) => {
+  const renderFilterChip = ({ item }: { item: (typeof filterOptions)[0] }) => {
     const isSelected = selectedFilters.includes(item.id);
     return (
       <TouchableOpacity
@@ -186,7 +189,11 @@ export default function AllMeetupsScreen() {
     );
   };
 
-  const renderActiveFilterChip = ({ item }: { item: typeof filterOptions[0] }) => (
+  const renderActiveFilterChip = ({
+    item,
+  }: {
+    item: (typeof filterOptions)[0];
+  }) => (
     <View
       key={item.id}
       style={[
@@ -210,7 +217,9 @@ export default function AllMeetupsScreen() {
   );
 
   const getActiveFilters = () => {
-    return filterOptions.filter((filter) => selectedFilters.includes(filter.id));
+    return filterOptions.filter((filter) =>
+      selectedFilters.includes(filter.id)
+    );
   };
 
   const activeFilters = getActiveFilters();
@@ -228,14 +237,20 @@ export default function AllMeetupsScreen() {
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>
-          All Meetups {selectedFilters.length > 0 && `(${selectedFilters.length} filters)`}
+          All Meetups{" "}
+          {selectedFilters.length > 0 && `(${selectedFilters.length} filters)`}
         </Text>
         <View style={styles.headerRight} />
       </View>
 
       {/* Active Filters Display */}
       {activeFilters.length > 0 && (
-        <View style={[styles.activeFiltersContainer, { backgroundColor: colors.surface }]}>
+        <View
+          style={[
+            styles.activeFiltersContainer,
+            { backgroundColor: colors.surface },
+          ]}
+        >
           <Text style={[styles.activeFiltersTitle, { color: colors.text }]}>
             Active Filters:
           </Text>
@@ -258,7 +273,9 @@ export default function AllMeetupsScreen() {
           style={[
             styles.filterButton,
             {
-              backgroundColor: showAdvancedFilters ? colors.primary : colors.surface,
+              backgroundColor: showAdvancedFilters
+                ? colors.primary
+                : colors.surface,
               borderColor: colors.border,
             },
           ]}
@@ -281,10 +298,8 @@ export default function AllMeetupsScreen() {
           </Text>
         </TouchableOpacity>
 
-        {/* Time Filter Buttons */}
-        {renderFilterButton("all", "All")}
-        {renderFilterButton("today", "Today")}
-        {renderFilterButton("this-week", "This Week")}
+        {/* Primary Filter Buttons */}
+        {renderFilterButton("for-you", "For You")}
         {renderFilterButton("following", "Following")}
       </View>
 
@@ -297,8 +312,18 @@ export default function AllMeetupsScreen() {
           onRequestClose={() => setShowAdvancedFilters(false)}
         >
           <View style={styles.modalOverlay}>
-            <View style={[styles.advancedFiltersModal, { backgroundColor: colors.surface }]}>
-              <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+            <View
+              style={[
+                styles.advancedFiltersModal,
+                { backgroundColor: colors.surface },
+              ]}
+            >
+              <View
+                style={[
+                  styles.modalHeader,
+                  { borderBottomColor: colors.border },
+                ]}
+              >
                 <Text style={[styles.modalTitle, { color: colors.text }]}>
                   Advanced Filters
                 </Text>
@@ -311,7 +336,9 @@ export default function AllMeetupsScreen() {
               </View>
 
               <ScrollView style={styles.advancedFiltersContent}>
-                <Text style={[styles.filterSectionTitle, { color: colors.text }]}>
+                <Text
+                  style={[styles.filterSectionTitle, { color: colors.text }]}
+                >
                   Alcohol Preference
                 </Text>
                 <FlatList
@@ -323,7 +350,9 @@ export default function AllMeetupsScreen() {
                   style={styles.filterRow}
                 />
 
-                <Text style={[styles.filterSectionTitle, { color: colors.text }]}>
+                <Text
+                  style={[styles.filterSectionTitle, { color: colors.text }]}
+                >
                   Activity Type
                 </Text>
                 <FlatList
@@ -335,7 +364,9 @@ export default function AllMeetupsScreen() {
                   style={styles.filterRow}
                 />
 
-                <Text style={[styles.filterSectionTitle, { color: colors.text }]}>
+                <Text
+                  style={[styles.filterSectionTitle, { color: colors.text }]}
+                >
                   Location
                 </Text>
                 <FlatList
@@ -347,7 +378,9 @@ export default function AllMeetupsScreen() {
                   style={styles.filterRow}
                 />
 
-                <Text style={[styles.filterSectionTitle, { color: colors.text }]}>
+                <Text
+                  style={[styles.filterSectionTitle, { color: colors.text }]}
+                >
                   Time
                 </Text>
                 <FlatList
