@@ -156,12 +156,29 @@ export default function HomeScreen() {
         refreshing={refreshing}
         headerComponent={() => (
           <View>
-            {/*  Hour Carousel */}
+            {/* Happy Hour Carousel */}
             <HappyHourCarousel
               onEventPress={(event) => {
                 navigation.navigate("EventDetails", { eventId: event.id });
               }}
             />
+
+            {/* Meetups Header */}
+            <View
+              style={[
+                styles.meetupsHeader,
+                { backgroundColor: colors.background },
+              ]}
+            >
+              <Text style={[styles.meetupsHeaderTitle, { color: colors.text }]}>
+                Meetups
+              </Text>
+              <TouchableOpacity>
+                <Text style={[styles.seeAllText, { color: colors.primary }]}>
+                  See All
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       />
@@ -302,5 +319,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: "center",
     lineHeight: 16,
+  },
+  meetupsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 16,
+    marginBottom: 8,
+  },
+  meetupsHeaderTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+  },
+  seeAllText: {
+    fontSize: 14,
+    fontWeight: "500",
   },
 });
