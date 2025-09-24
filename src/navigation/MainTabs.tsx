@@ -27,7 +27,7 @@ import NotificationsScreen from "../screens/main/NotificationsScreen";
 
 export type MainTabParamList = {
   Home: undefined;
-  Standouts: undefined;
+  Community: undefined;
   Create: undefined;
   Messages: undefined;
   Profile: undefined;
@@ -48,8 +48,8 @@ export type HomeStackParamList = {
   Map: undefined;
 };
 
-export type StandoutsStackParamList = {
-  StandoutsMain: undefined;
+export type CommunityStackParamList = {
+  CommunityMain: undefined;
   Map: undefined;
 };
 
@@ -73,7 +73,7 @@ export type MainStackParamList = {
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const ProfileStack = createStackNavigator<ProfileStackParamList>();
 const HomeStack = createStackNavigator<HomeStackParamList>();
-const StandoutsStack = createStackNavigator<StandoutsStackParamList>();
+const CommunityStack = createStackNavigator<CommunityStackParamList>();
 const MessagesStack = createStackNavigator<MessagesStackParamList>();
 const MainStack = createStackNavigator<MainStackParamList>();
 
@@ -118,19 +118,19 @@ function HomeStackNavigator() {
   );
 }
 
-function StandoutsStackNavigator() {
+function CommunityStackNavigator() {
   return (
-    <StandoutsStack.Navigator
+    <CommunityStack.Navigator
       screenOptions={{
         headerShown: false,
       }}
     >
-      <StandoutsStack.Screen
-        name="StandoutsMain"
+      <CommunityStack.Screen
+        name="CommunityMain"
         component={AnimatedAvatarScreen}
       />
-      <StandoutsStack.Screen name="Map" component={MapScreen} />
-    </StandoutsStack.Navigator>
+      <CommunityStack.Screen name="Map" component={MapScreen} />
+    </CommunityStack.Navigator>
   );
 }
 
@@ -165,7 +165,7 @@ function MainTabsNavigator() {
 
           if (route.name === "Home") {
             iconName = focused ? "home" : "home-outline";
-          } else if (route.name === "Standouts") {
+          } else if (route.name === "Community") {
             iconName = focused ? "people" : "people-outline";
           } else if (route.name === "Create") {
             iconName = focused ? "add-circle" : "add-circle-outline";
@@ -201,12 +201,12 @@ function MainTabsNavigator() {
         }}
       />
       <Tab.Screen
-        name="Standouts"
-        component={StandoutsStackNavigator}
+        name="Community"
+        component={CommunityStackNavigator}
         options={({ route }) => {
           const routeName =
-            getFocusedRouteNameFromRoute(route) ?? "StandoutsMain";
-          const shouldShowTabBar = ["StandoutsMain"].includes(routeName);
+            getFocusedRouteNameFromRoute(route) ?? "CommunityMain";
+          const shouldShowTabBar = ["CommunityMain"].includes(routeName);
           return {
             tabBarStyle: shouldShowTabBar
               ? {

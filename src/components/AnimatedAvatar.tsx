@@ -34,8 +34,8 @@ export default function AnimatedAvatar({
   const translateY = useRef(
     new Animated.Value(Math.random() * (screenHeight - size))
   ).current;
-  const velocityX = useRef((Math.random() - 0.5) * 2); // Random velocity between -1 and 1
-  const velocityY = useRef((Math.random() - 0.5) * 2);
+  const velocityX = useRef((Math.random() - 0.5) * 0.8); // Random velocity between -0.4 and 0.4
+  const velocityY = useRef((Math.random() - 0.5) * 0.8);
 
   useEffect(() => {
     const animate = () => {
@@ -53,23 +53,28 @@ export default function AnimatedAvatar({
         const dx = newX - otherAvatar.x;
         const dy = newY - otherAvatar.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        const minDistance = (size + otherAvatar.size) / 2;
+        const minDistance = (size + otherAvatar.size) / 2 + 5; // Add small buffer
 
         if (distance < minDistance && distance > 0) {
-          // Collision detected - bounce off each other
+          // Simple collision - just separate and bounce
           const overlap = minDistance - distance;
-          const angle = Math.atan2(dy, dx);
+
+          // Normalize the collision vector
+          const normalX = dx / distance;
+          const normalY = dy / distance;
 
           // Separate avatars
-          const separationX = Math.cos(angle) * overlap * 0.5;
-          const separationY = Math.sin(angle) * overlap * 0.5;
+          newX += normalX * overlap * 0.5;
+          newY += normalY * overlap * 0.5;
 
-          newX += separationX;
-          newY += separationY;
+          // Simple bounce - reverse velocity in collision direction
+          const velocityInNormal =
+            velocityX.current * normalX + velocityY.current * normalY;
 
-          // Reverse velocity for bouncing effect
-          velocityX.current = -velocityX.current * 0.7;
-          velocityY.current = -velocityY.current * 0.7;
+          if (velocityInNormal < 0) {
+            velocityX.current -= 2 * velocityInNormal * normalX * 0.8;
+            velocityY.current -= 2 * velocityInNormal * normalY * 0.8;
+          }
         }
       });
 
@@ -85,12 +90,12 @@ export default function AnimatedAvatar({
       }
 
       // Add slight random variation to movement for organic feel
-      velocityX.current += (Math.random() - 0.5) * 0.05;
-      velocityY.current += (Math.random() - 0.5) * 0.05;
+      velocityX.current += (Math.random() - 0.5) * 0.02;
+      velocityY.current += (Math.random() - 0.5) * 0.02;
 
-      // Limit velocity to keep movement smooth and slow
-      velocityX.current = Math.max(-1.5, Math.min(1.5, velocityX.current));
-      velocityY.current = Math.max(-1.5, Math.min(1.5, velocityY.current));
+      // Limit velocity to keep movement smooth and controlled
+      velocityX.current = Math.max(-0.8, Math.min(0.8, velocityX.current));
+      velocityY.current = Math.max(-0.8, Math.min(0.8, velocityY.current));
 
       // Apply friction to gradually slow down
       velocityX.current *= 0.999;

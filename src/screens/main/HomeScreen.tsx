@@ -697,6 +697,64 @@ export default function HomeScreen() {
           />
         }
       >
+        {/* Welcome Section for New Users */}
+        {!DataService.isInDeveloperMode() && (
+          <View style={styles.content}>
+            <View
+              style={[styles.welcomeCard, { backgroundColor: colors.surface }]}
+            >
+              <Text style={[styles.welcomeTitle, { color: colors.text }]}>
+                Welcome to Evertwine!
+              </Text>
+              <Text
+                style={[
+                  styles.welcomeSubtitle,
+                  { color: colors.textSecondary },
+                ]}
+              >
+                Connect with people, discover events, and build meaningful
+                relationships
+              </Text>
+              <View style={styles.quickActions}>
+                <TouchableOpacity
+                  style={[
+                    styles.quickActionButton,
+                    { backgroundColor: colors.primary },
+                  ]}
+                  onPress={() => navigation.navigate("Create")}
+                >
+                  <Ionicons name="add" size={20} color={colors.onPrimary} />
+                  <Text
+                    style={[
+                      styles.quickActionText,
+                      { color: colors.onPrimary },
+                    ]}
+                  >
+                    Create Meetup
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.quickActionButton,
+                    { backgroundColor: colors.secondary },
+                  ]}
+                  onPress={() => navigation.navigate("Explore")}
+                >
+                  <Ionicons name="search" size={20} color={colors.onPrimary} />
+                  <Text
+                    style={[
+                      styles.quickActionText,
+                      { color: colors.onPrimary },
+                    ]}
+                  >
+                    Explore
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
+
         {/* Quick Stats - Only show in developer mode or with real data */}
         {DataService.isInDeveloperMode() && (
           <View
@@ -763,76 +821,141 @@ export default function HomeScreen() {
           ))}
         </View>
 
-        {/* Happy Hours Section - Always visible at top */}
-        {!isInitialLoading && currentUser && (
-          <View style={styles.content}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Happy Hours
-            </Text>
-            <View style={styles.happyHoursHorizontal}>
-              <View
-                style={[
-                  styles.happyHourCardHorizontal,
-                  { backgroundColor: colors.surface },
-                ]}
-              >
-                <View style={styles.happyHourHeader}>
-                  <Ionicons name="wine" size={20} color={colors.primary} />
-                  <Text
-                    style={[styles.happyHourTitleSmall, { color: colors.text }]}
-                  >
-                    Tech Networking
-                  </Text>
-                </View>
-                <Text
+        {/* Happy Hours Section - Only in developer mode */}
+        {DataService.isInDeveloperMode() &&
+          !isInitialLoading &&
+          currentUser && (
+            <View style={styles.content}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Happy Hours
+              </Text>
+              <View style={styles.happyHoursHorizontal}>
+                <View
                   style={[
-                    styles.happyHourLocationSmall,
-                    { color: colors.textSecondary },
+                    styles.happyHourCardHorizontal,
+                    { backgroundColor: colors.surface },
                   ]}
                 >
-                  5:00 PM - 7:00 PM
-                </Text>
-                <Text
-                  style={[styles.happyHourStatsText, { color: colors.primary }]}
-                >
-                  32 going
-                </Text>
-              </View>
+                  <View style={styles.happyHourHeader}>
+                    <Ionicons name="wine" size={20} color={colors.primary} />
+                    <Text
+                      style={[
+                        styles.happyHourTitleSmall,
+                        { color: colors.text },
+                      ]}
+                    >
+                      Tech Networking
+                    </Text>
+                  </View>
+                  <Text
+                    style={[
+                      styles.happyHourLocationSmall,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    5:00 PM - 7:00 PM
+                  </Text>
+                  <Text
+                    style={[
+                      styles.happyHourStatsText,
+                      { color: colors.primary },
+                    ]}
+                  >
+                    32 going
+                  </Text>
+                </View>
 
-              <View
-                style={[
-                  styles.happyHourCardHorizontal,
-                  { backgroundColor: colors.surface },
-                ]}
-              >
-                <View style={styles.happyHourHeader}>
-                  <Ionicons name="beer" size={20} color={colors.secondary} />
+                <View
+                  style={[
+                    styles.happyHourCardHorizontal,
+                    { backgroundColor: colors.surface },
+                  ]}
+                >
+                  <View style={styles.happyHourHeader}>
+                    <Ionicons name="beer" size={20} color={colors.secondary} />
+                    <Text
+                      style={[
+                        styles.happyHourTitleSmall,
+                        { color: colors.text },
+                      ]}
+                    >
+                      Startup Meetup
+                    </Text>
+                  </View>
                   <Text
-                    style={[styles.happyHourTitleSmall, { color: colors.text }]}
+                    style={[
+                      styles.happyHourLocationSmall,
+                      { color: colors.textSecondary },
+                    ]}
                   >
-                    Startup Meetup
+                    6:00 PM - 8:00 PM
+                  </Text>
+                  <Text
+                    style={[
+                      styles.happyHourStatsText,
+                      { color: colors.secondary },
+                    ]}
+                  >
+                    18 going
                   </Text>
                 </View>
-                <Text
-                  style={[
-                    styles.happyHourLocationSmall,
-                    { color: colors.textSecondary },
-                  ]}
-                >
-                  6:00 PM - 8:00 PM
-                </Text>
-                <Text
-                  style={[
-                    styles.happyHourStatsText,
-                    { color: colors.secondary },
-                  ]}
-                >
-                  18 going
-                </Text>
               </View>
             </View>
-          </View>
-        )}
+          )}
+
+        {/* Discover Section for New Users */}
+        {!DataService.isInDeveloperMode() &&
+          !isInitialLoading &&
+          currentUser && (
+            <View style={styles.content}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Discover
+              </Text>
+              <View style={styles.discoverGrid}>
+                <TouchableOpacity
+                  style={[
+                    styles.discoverCard,
+                    { backgroundColor: colors.surface },
+                  ]}
+                  onPress={() => navigation.navigate("Map")}
+                >
+                  <Ionicons name="map" size={32} color={colors.primary} />
+                  <Text style={[styles.discoverTitle, { color: colors.text }]}>
+                    Find Events Near You
+                  </Text>
+                  <Text
+                    style={[
+                      styles.discoverSubtitle,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Discover meetups and events in your area
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.discoverCard,
+                    { backgroundColor: colors.surface },
+                  ]}
+                  onPress={() => navigation.navigate("Community")}
+                >
+                  <Ionicons name="people" size={32} color={colors.secondary} />
+                  <Text style={[styles.discoverTitle, { color: colors.text }]}>
+                    Connect with Community
+                  </Text>
+                  <Text
+                    style={[
+                      styles.discoverSubtitle,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Meet like-minded people and build connections
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
 
         {/* Content based on active tab */}
         {isInitialLoading || !currentUser ? (
@@ -842,14 +965,61 @@ export default function HomeScreen() {
             {activeTab === "live" && (
               <View style={styles.content}>
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                  Live Meetups
+                  {DataService.isInDeveloperMode()
+                    ? "Live Meetups"
+                    : "Recent Activity"}
                 </Text>
-                {allMeetups.length > 0 ? (
-                  allMeetups.map(renderMeetupCard)
+                {DataService.isInDeveloperMode() ? (
+                  allMeetups.length > 0 ? (
+                    allMeetups.map(renderMeetupCard)
+                  ) : (
+                    <EmptyMeetupsState
+                      onActionPress={() => navigation.navigate("Create")}
+                    />
+                  )
                 ) : (
-                  <EmptyMeetupsState
-                    onActionPress={() => navigation.navigate("Create")}
-                  />
+                  <View
+                    style={[
+                      styles.emptyStateCard,
+                      { backgroundColor: colors.surface },
+                    ]}
+                  >
+                    <Ionicons
+                      name="calendar-outline"
+                      size={48}
+                      color={colors.textSecondary}
+                    />
+                    <Text
+                      style={[styles.emptyStateTitle, { color: colors.text }]}
+                    >
+                      No recent activity yet
+                    </Text>
+                    <Text
+                      style={[
+                        styles.emptyStateSubtitle,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      Create your first meetup or join an existing event to get
+                      started
+                    </Text>
+                    <TouchableOpacity
+                      style={[
+                        styles.emptyStateButton,
+                        { backgroundColor: colors.primary },
+                      ]}
+                      onPress={() => navigation.navigate("Create")}
+                    >
+                      <Text
+                        style={[
+                          styles.emptyStateButtonText,
+                          { color: colors.onPrimary },
+                        ]}
+                      >
+                        Create Meetup
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 )}
               </View>
             )}
@@ -857,14 +1027,60 @@ export default function HomeScreen() {
             {activeTab === "upcoming" && (
               <View style={styles.content}>
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                  Upcoming Events
+                  {DataService.isInDeveloperMode()
+                    ? "Upcoming Events"
+                    : "Upcoming"}
                 </Text>
-                {mockEvents.length > 0 ? (
-                  mockEvents.map(renderEventCard)
+                {DataService.isInDeveloperMode() ? (
+                  mockEvents.length > 0 ? (
+                    mockEvents.map(renderEventCard)
+                  ) : (
+                    <EmptyEventsState
+                      onActionPress={() => navigation.navigate("Explore")}
+                    />
+                  )
                 ) : (
-                  <EmptyEventsState
-                    onActionPress={() => navigation.navigate("Explore")}
-                  />
+                  <View
+                    style={[
+                      styles.emptyStateCard,
+                      { backgroundColor: colors.surface },
+                    ]}
+                  >
+                    <Ionicons
+                      name="time-outline"
+                      size={48}
+                      color={colors.textSecondary}
+                    />
+                    <Text
+                      style={[styles.emptyStateTitle, { color: colors.text }]}
+                    >
+                      No upcoming events
+                    </Text>
+                    <Text
+                      style={[
+                        styles.emptyStateSubtitle,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      Join events or create your own to see them here
+                    </Text>
+                    <TouchableOpacity
+                      style={[
+                        styles.emptyStateButton,
+                        { backgroundColor: colors.primary },
+                      ]}
+                      onPress={() => navigation.navigate("Explore")}
+                    >
+                      <Text
+                        style={[
+                          styles.emptyStateButtonText,
+                          { color: colors.onPrimary },
+                        ]}
+                      >
+                        Explore Events
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 )}
               </View>
             )}
@@ -872,17 +1088,63 @@ export default function HomeScreen() {
             {activeTab === "nearby" && (
               <View style={styles.content}>
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                  Nearby Activities
+                  {DataService.isInDeveloperMode()
+                    ? "Nearby Activities"
+                    : "Nearby"}
                 </Text>
-                {allMeetups.length > 0 || mockEvents.length > 0 ? (
-                  <>
-                    {allMeetups.slice(0, 2).map(renderMeetupCard)}
-                    {mockEvents.slice(0, 1).map(renderEventCard)}
-                  </>
+                {DataService.isInDeveloperMode() ? (
+                  allMeetups.length > 0 || mockEvents.length > 0 ? (
+                    <>
+                      {allMeetups.slice(0, 2).map(renderMeetupCard)}
+                      {mockEvents.slice(0, 1).map(renderEventCard)}
+                    </>
+                  ) : (
+                    <EmptyMeetupsState
+                      onActionPress={() => navigation.navigate("Create")}
+                    />
+                  )
                 ) : (
-                  <EmptyMeetupsState
-                    onActionPress={() => navigation.navigate("Create")}
-                  />
+                  <View
+                    style={[
+                      styles.emptyStateCard,
+                      { backgroundColor: colors.surface },
+                    ]}
+                  >
+                    <Ionicons
+                      name="location-outline"
+                      size={48}
+                      color={colors.textSecondary}
+                    />
+                    <Text
+                      style={[styles.emptyStateTitle, { color: colors.text }]}
+                    >
+                      Nothing nearby yet
+                    </Text>
+                    <Text
+                      style={[
+                        styles.emptyStateSubtitle,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      Check the map to find events in your area
+                    </Text>
+                    <TouchableOpacity
+                      style={[
+                        styles.emptyStateButton,
+                        { backgroundColor: colors.primary },
+                      ]}
+                      onPress={() => navigation.navigate("Map")}
+                    >
+                      <Text
+                        style={[
+                          styles.emptyStateButtonText,
+                          { color: colors.onPrimary },
+                        ]}
+                      >
+                        View Map
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 )}
               </View>
             )}
@@ -1377,6 +1639,109 @@ const styles = StyleSheet.create({
   },
   happyHourStatsText: {
     fontSize: 14,
+    fontWeight: "600",
+  },
+  // Welcome section styles
+  welcomeCard: {
+    padding: 24,
+    borderRadius: 16,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  welcomeSubtitle: {
+    fontSize: 16,
+    textAlign: "center",
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  quickActions: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  quickActionButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+  quickActionText: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  // Discover section styles
+  discoverGrid: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 20,
+  },
+  discoverCard: {
+    flex: 1,
+    padding: 20,
+    borderRadius: 16,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  discoverTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  discoverSubtitle: {
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 18,
+  },
+  // Empty state styles
+  emptyStateCard: {
+    padding: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  emptyStateSubtitle: {
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  emptyStateButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+  },
+  emptyStateButtonText: {
+    fontSize: 16,
     fontWeight: "600",
   },
 });
