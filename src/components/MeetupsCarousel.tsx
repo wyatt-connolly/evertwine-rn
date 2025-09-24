@@ -10,10 +10,8 @@ import {
   ScrollView,
   RefreshControl,
 } from "react-native";
-import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../hooks/useThemeStore";
-import { useAuthStore } from "../hooks/useAuthStore";
 import { useNavigation } from "@react-navigation/native";
 import MeetupCard from "./MeetupCard";
 import { Meetup } from "../types";
@@ -44,7 +42,6 @@ export default function MeetupsCarousel({
   headerComponent,
 }: MeetupsCarouselProps) {
   const { colors } = useThemeStore();
-  const { currentUser } = useAuthStore();
   const navigation = useNavigation();
   const [activeFilter, setActiveFilter] = useState<FilterType>("for-you");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -83,14 +80,14 @@ export default function MeetupsCarousel({
                 meetup.title.toLowerCase().includes("beer")
               );
             case "activity":
-              return meetup.category === filter.label;
+              return meetup.activityCategory === filter.label;
             case "location":
               return meetup.locationName
                 ?.toLowerCase()
                 .includes(filter.label.toLowerCase());
             case "time":
               const now = new Date();
-              const meetupTime = new Date(meetup.startTime);
+              const meetupTime = new Date(meetup.time);
               if (filter.label === "Today") {
                 return meetupTime.toDateString() === now.toDateString();
               } else if (filter.label === "This Weekend") {
@@ -137,7 +134,7 @@ export default function MeetupsCarousel({
     );
   };
 
-  const renderMeetup = ({ item, index }: { item: Meetup; index: number }) => (
+  const renderMeetup = ({ item }: { item: Meetup }) => (
     <View style={styles.meetupWrapper}>
       <MeetupCard
         meetup={item}
@@ -254,102 +251,94 @@ export default function MeetupsCarousel({
 
   return (
     <View style={styles.container}>
-      {/* Sticky App Bar with Filter Tabs */}
-      <View
-        style={[styles.stickyAppBar, { backgroundColor: colors.background }]}
-      >
-        {/* Left: User Avatar */}
-        <View style={styles.appBarLeft}>
-          <Image
-            source={{
-              uri:
-                currentUser?.photoURL ||
-                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-            }}
-            style={styles.appBarAvatar}
-            onError={(error) => console.log("Image load error:", error)}
-            onLoad={() =>
-              console.log("Image loaded successfully:", currentUser?.photoURL)
-            }
-          />
-        </View>
+      {/* Sticky App Bar with Filter Tabs - Only for Developer Login */}
+      {DataService.isInDeveloperMode() && (
+        <View
+          style={[styles.stickyAppBar, { backgroundColor: colors.background }]}
+        >
+          {/* Left: Filter Tabs */}
+          <View style={styles.appBarLeft}>
+            <View style={styles.primaryFilters}>
+              <TouchableOpacity
+                style={[
+                  styles.primaryFilter,
+                  {
+                    backgroundColor:
+                      activeFilter === "for-you"
+                        ? colors.primary
+                        : colors.surface,
+                    borderColor: colors.border,
+                  },
+                ]}
+                onPress={() => setActiveFilter("for-you")}
+              >
+                <Text
+                  style={[
+                    styles.primaryFilterText,
+                    {
+                      color:
+                        activeFilter === "for-you"
+                          ? colors.onPrimary
+                          : colors.text,
+                    },
+                  ]}
+                >
+                  For You
+                </Text>
+              </TouchableOpacity>
 
-        {/* Center: Filter Tabs */}
-        <View style={styles.primaryFilters}>
-          <TouchableOpacity
-            style={[
-              styles.primaryFilter,
-              {
-                backgroundColor:
-                  activeFilter === "for-you" ? colors.primary : colors.surface,
-                borderColor: colors.border,
-              },
-            ]}
-            onPress={() => setActiveFilter("for-you")}
-          >
-            <Text
-              style={[
-                styles.primaryFilterText,
-                {
-                  color:
-                    activeFilter === "for-you" ? colors.onPrimary : colors.text,
-                },
-              ]}
+              <TouchableOpacity
+                style={[
+                  styles.primaryFilter,
+                  {
+                    backgroundColor:
+                      activeFilter === "following"
+                        ? colors.primary
+                        : colors.surface,
+                    borderColor: colors.border,
+                  },
+                ]}
+                onPress={() => setActiveFilter("following")}
+              >
+                <Text
+                  style={[
+                    styles.primaryFilterText,
+                    {
+                      color:
+                        activeFilter === "following"
+                          ? colors.onPrimary
+                          : colors.text,
+                    },
+                  ]}
+                >
+                  Following
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Right: Actions */}
+          <View style={styles.appBarRight}>
+            <TouchableOpacity
+              style={[styles.appBarButton, { backgroundColor: colors.surface }]}
+              onPress={() => setShowAdvancedFilters(true)}
             >
-              For You
-            </Text>
-          </TouchableOpacity>
+              <Ionicons name="options-outline" size={20} color={colors.text} />
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[
-              styles.primaryFilter,
-              {
-                backgroundColor:
-                  activeFilter === "following"
-                    ? colors.primary
-                    : colors.surface,
-                borderColor: colors.border,
-              },
-            ]}
-            onPress={() => setActiveFilter("following")}
-          >
-            <Text
-              style={[
-                styles.primaryFilterText,
-                {
-                  color:
-                    activeFilter === "following"
-                      ? colors.onPrimary
-                      : colors.text,
-                },
-              ]}
+            <TouchableOpacity
+              style={[styles.appBarButton, { backgroundColor: colors.surface }]}
+              onPress={() => (navigation as any).navigate("Notifications")}
             >
-              Following
-            </Text>
-          </TouchableOpacity>
+              <Ionicons
+                name="notifications-outline"
+                size={20}
+                color={colors.text}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
-
-        {/* Right: Actions */}
-        <View style={styles.appBarRight}>
-          <TouchableOpacity
-            style={[styles.appBarButton, { backgroundColor: colors.surface }]}
-            onPress={() => setShowAdvancedFilters(true)}
-          >
-            <Ionicons name="options-outline" size={20} color={colors.text} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.appBarButton, { backgroundColor: colors.surface }]}
-            onPress={() => navigation.navigate("Notifications")}
-          >
-            <Ionicons
-              name="notifications-outline"
-              size={20}
-              color={colors.text}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
+      )}
 
       {/* Meetups List */}
       <FlatList
@@ -361,7 +350,10 @@ export default function MeetupsCarousel({
         snapToInterval={screenHeight * 0.6}
         snapToAlignment="start"
         decelerationRate="fast"
-        style={styles.meetupsList}
+        style={[
+          styles.meetupsList,
+          { paddingTop: DataService.isInDeveloperMode() ? 70 : 0 },
+        ]}
         contentContainerStyle={styles.meetupsContent}
         ItemSeparatorComponent={() => <View style={{ height: 20 }} />}
         refreshControl={
@@ -391,8 +383,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: "rgba(255,255,255,0.1)",
     zIndex: 1000,
@@ -404,7 +396,8 @@ const styles = StyleSheet.create({
   appBarLeft: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 1,
+    flex: 2,
+    justifyContent: "flex-start",
   },
   appBarAvatar: {
     width: 32,
@@ -414,13 +407,14 @@ const styles = StyleSheet.create({
   appBarRight: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 12,
     flex: 1,
     justifyContent: "flex-end",
   },
   appBarButton: {
-    padding: 8,
-    borderRadius: 8,
+    padding: 12,
+    borderRadius: 12,
+    marginHorizontal: 2,
   },
   stickyFilterHeader: {
     flexDirection: "row",
@@ -464,16 +458,16 @@ const styles = StyleSheet.create({
   },
   primaryFilters: {
     flexDirection: "row",
-    gap: 8,
+    gap: 12,
     backgroundColor: "rgba(0,0,0,0.05)",
-    borderRadius: 20,
-    padding: 4,
+    borderRadius: 24,
+    padding: 6,
   },
   primaryFilter: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 16,
-    minWidth: 80,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 18,
+    minWidth: 90,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -488,7 +482,6 @@ const styles = StyleSheet.create({
   },
   meetupsList: {
     flex: 1,
-    paddingTop: 60, // Account for app bar height
   },
   meetupsContent: {
     paddingHorizontal: 16,

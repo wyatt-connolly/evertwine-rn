@@ -383,20 +383,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
-    paddingHorizontal: 0,
   },
   title: {
     fontSize: 20,
     fontWeight: "600",
-    paddingLeft: 16,
   },
   seeAllText: {
     fontSize: 14,
     fontWeight: "500",
-    paddingRight: 16,
-  },
-  carouselContent: {
-    paddingHorizontal: 16,
   },
   eventCard: {
     width: screenWidth * 0.7,

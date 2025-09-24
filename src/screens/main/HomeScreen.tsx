@@ -156,7 +156,7 @@ export default function HomeScreen() {
         refreshing={refreshing}
         headerComponent={() => (
           <View>
-            {/* Happy Hour Carousel */}
+            {/*  Hour Carousel */}
             <HappyHourCarousel
               onEventPress={(event) => {
                 navigation.navigate("EventDetails", { eventId: event.id });
