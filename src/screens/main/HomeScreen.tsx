@@ -17,6 +17,8 @@ import { useThemeStore } from "../../hooks/useThemeStore";
 import { useMeetupStore } from "../../hooks/useMeetupStore";
 import MeetupCard from "../../components/MeetupCard";
 import EventCard from "../../components/EventCard";
+import MeetupsCarousel from "../../components/MeetupsCarousel";
+import HappyHourCarousel from "../../components/HappyHourCarousel";
 import {
   getMockMeetups,
   getMockEvents,
@@ -755,41 +757,12 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* Quick Stats - Only show in developer mode or with real data */}
-        {DataService.isInDeveloperMode() && (
-          <View
-            style={[styles.statsContainer, { backgroundColor: colors.surface }]}
-          >
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: colors.primary }]}>
-                {mockMeetups.length}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-                Meetups
-              </Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: colors.primary }]}>
-                {mockEvents.length}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-                Events
-              </Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: colors.primary }]}>
-                {
-                  notifications.filter(
-                    (n) => n.notificationType === "friendRequest"
-                  ).length
-                }
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-                Connections
-              </Text>
-            </View>
-          </View>
-        )}
+        {/* Happy Hour Carousel */}
+        <HappyHourCarousel 
+          onEventPress={(event) => {
+            navigation.navigate("EventDetails", { eventId: event.id });
+          }}
+        />
 
         {/* Tab Navigation */}
         <View
@@ -957,74 +930,38 @@ export default function HomeScreen() {
             </View>
           )}
 
-        {/* Content based on active tab */}
+        {/* Meetups Carousel */}
         {isInitialLoading || !currentUser ? (
           <LoadingState style={{ margin: 20 }} />
         ) : (
-          <>
-            {activeTab === "live" && (
-              <View style={styles.content}>
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                  {DataService.isInDeveloperMode()
-                    ? "Live Meetups"
-                    : "Recent Activity"}
-                </Text>
-                {DataService.isInDeveloperMode() ? (
-                  allMeetups.length > 0 ? (
-                    allMeetups.map(renderMeetupCard)
-                  ) : (
-                    <EmptyMeetupsState
-                      onActionPress={() => navigation.navigate("Create")}
-                    />
-                  )
-                ) : (
-                  <View
-                    style={[
-                      styles.emptyStateCard,
-                      { backgroundColor: colors.surface },
-                    ]}
-                  >
-                    <Ionicons
-                      name="calendar-outline"
-                      size={48}
-                      color={colors.textSecondary}
-                    />
-                    <Text
-                      style={[styles.emptyStateTitle, { color: colors.text }]}
-                    >
-                      No recent activity yet
-                    </Text>
-                    <Text
-                      style={[
-                        styles.emptyStateSubtitle,
-                        { color: colors.textSecondary },
-                      ]}
-                    >
-                      Create your first meetup or join an existing event to get
-                      started
-                    </Text>
-                    <TouchableOpacity
-                      style={[
-                        styles.emptyStateButton,
-                        { backgroundColor: colors.primary },
-                      ]}
-                      onPress={() => navigation.navigate("Create")}
-                    >
-                      <Text
-                        style={[
-                          styles.emptyStateButtonText,
-                          { color: colors.onPrimary },
-                        ]}
-                      >
-                        Create Meetup
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-            )}
+          <MeetupsCarousel 
+            onMeetupPress={(meetup) => {
+              navigation.navigate("MeetupDetails", { meetupId: meetup.id });
+            }}
+          />
+        )}
+      </ScrollView>
 
-            {activeTab === "upcoming" && (
+      <InviteSnackbar
+        visible={showInviteSnackbar}
+        onDismiss={handleDismissInvite}
+        onInvite={handleInviteFriends}
+        message="Loving the activity? Invite friends to join the fun!"
+        type="invite"
+      />
+
+      <InviteSnackbar
+        visible={showShareSnackbar}
+        onDismiss={handleDismissShare}
+        onInvite={handleShareApp}
+        message="Share Evertwine with your friends and help them discover amazing meetups!"
+        actionText="Share App"
+      />
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
               <View style={styles.content}>
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>
                   {DataService.isInDeveloperMode()
