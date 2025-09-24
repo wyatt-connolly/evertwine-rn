@@ -130,7 +130,6 @@ export default function MeetupCard({
 const styles = StyleSheet.create({
   meetupCard: {
     borderRadius: 12,
-    marginBottom: 16, // Increased spacing for taller cards
     overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },

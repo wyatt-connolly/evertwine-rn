@@ -1,4 +1,3 @@
-import React from "react";
 import {
   View,
   Text,
@@ -42,18 +41,26 @@ const getHappyHourEvents = (): Event[] => [
     currentAttendees: 12,
     coverImage:
       "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=300&fit=crop",
-    isOnline: false,
-    requirements: [],
-    isHappyHour: true,
-    // Compatibility properties for simpler interface
-    date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-    time: "18:00",
-    capacity: 20,
-    attendees: 12,
-    hostId: "host1",
-    hostName: "Sarah Johnson",
-    imageUrl:
+    subcategory: "Wine Tasting",
+    images: [
       "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=300&fit=crop",
+    ],
+    status: "published",
+    isRecurring: false,
+    features: {
+      hasQRCode: true,
+      hasTickets: true,
+      hasCoupons: true,
+      allowsSharing: true,
+      requiresVerification: false,
+    },
+    views: 150,
+    shares: 12,
+    likes: 25,
+    attendees: ["user1", "user2"],
+    waitlist: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: "hh2",
@@ -78,17 +85,26 @@ const getHappyHourEvents = (): Event[] => [
     currentAttendees: 28,
     coverImage:
       "https://images.unsplash.com/photo-1571613316887-6f8d5cbf7ef7?w=400&h=300&fit=crop",
-    isOnline: false,
-    requirements: [],
-    isHappyHour: true,
-    date: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
-    time: "17:00",
-    capacity: 50,
-    attendees: 28,
-    hostId: "host2",
-    hostName: "Mike Chen",
-    imageUrl:
+    subcategory: "Beer Tasting",
+    images: [
       "https://images.unsplash.com/photo-1571613316887-6f8d5cbf7ef7?w=400&h=300&fit=crop",
+    ],
+    status: "published",
+    isRecurring: false,
+    features: {
+      hasQRCode: true,
+      hasTickets: true,
+      hasCoupons: true,
+      allowsSharing: true,
+      requiresVerification: false,
+    },
+    views: 200,
+    shares: 18,
+    likes: 35,
+    attendees: ["user1", "user2", "user3"],
+    waitlist: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: "hh3",
@@ -113,17 +129,26 @@ const getHappyHourEvents = (): Event[] => [
     currentAttendees: 8,
     coverImage:
       "https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=300&fit=crop",
-    isOnline: false,
-    requirements: [],
-    isHappyHour: true,
-    date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-    time: "19:00",
-    capacity: 15,
-    attendees: 8,
-    hostId: "host3",
-    hostName: "Emma Rodriguez",
-    imageUrl:
+    subcategory: "Mocktail Mixing",
+    images: [
       "https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=300&fit=crop",
+    ],
+    status: "published",
+    isRecurring: false,
+    features: {
+      hasQRCode: true,
+      hasTickets: true,
+      hasCoupons: true,
+      allowsSharing: true,
+      requiresVerification: false,
+    },
+    views: 120,
+    shares: 8,
+    likes: 18,
+    attendees: ["user1", "user2"],
+    waitlist: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: "hh4",
@@ -147,17 +172,26 @@ const getHappyHourEvents = (): Event[] => [
     currentAttendees: 18,
     coverImage:
       "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop",
-    isOnline: false,
-    requirements: [],
-    isHappyHour: true,
-    date: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
-    time: "18:30",
-    capacity: 30,
-    attendees: 18,
-    hostId: "host4",
-    hostName: "David Park",
-    imageUrl:
+    subcategory: "Rooftop Drinks",
+    images: [
       "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop",
+    ],
+    status: "published",
+    isRecurring: false,
+    features: {
+      hasQRCode: true,
+      hasTickets: true,
+      hasCoupons: true,
+      allowsSharing: true,
+      requiresVerification: false,
+    },
+    views: 180,
+    shares: 15,
+    likes: 28,
+    attendees: ["user1", "user2", "user3"],
+    waitlist: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: "hh5",
@@ -182,17 +216,26 @@ const getHappyHourEvents = (): Event[] => [
     currentAttendees: 15,
     coverImage:
       "https://images.unsplash.com/photo-1551218808-94e220e084d2?w=400&h=300&fit=crop",
-    isOnline: false,
-    requirements: [],
-    isHappyHour: true,
-    date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-    time: "19:30",
-    capacity: 25,
-    attendees: 15,
-    hostId: "host5",
-    hostName: "Isabella Martinez",
-    imageUrl:
+    subcategory: "Spanish Cuisine",
+    images: [
       "https://images.unsplash.com/photo-1551218808-94e220e084d2?w=400&h=300&fit=crop",
+    ],
+    status: "published",
+    isRecurring: false,
+    features: {
+      hasQRCode: true,
+      hasTickets: true,
+      hasCoupons: true,
+      allowsSharing: true,
+      requiresVerification: false,
+    },
+    views: 220,
+    shares: 20,
+    likes: 42,
+    attendees: ["user1", "user2", "user3", "user4"],
+    waitlist: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
 ];
 
@@ -268,7 +311,7 @@ export default function HappyHourCarousel({
             <Text
               style={[styles.eventDetailText, { color: colors.textSecondary }]}
             >
-              {formatTime(item.date || item.startTime)}
+              {formatTime(item.startTime)}
             </Text>
           </View>
         </View>
@@ -283,8 +326,7 @@ export default function HappyHourCarousel({
             <Text
               style={[styles.attendeeText, { color: colors.textSecondary }]}
             >
-              {item.attendees || item.currentAttendees}/
-              {item.capacity || item.maxAttendees}
+              {item.currentAttendees}/{item.maxAttendees}
             </Text>
           </View>
 
@@ -333,6 +375,7 @@ export default function HappyHourCarousel({
 const styles = StyleSheet.create({
   container: {
     marginBottom: 24,
+    paddingTop: 20,
   },
   header: {
     flexDirection: "row",

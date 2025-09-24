@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -57,13 +57,40 @@ export default function MeetupsCarousel({
     }
 
     // Apply advanced filters
-    if (selectedFilters.includes("non-alcoholic")) {
-      filtered = filtered.filter(
-        (meetup) =>
-          !meetup.title.toLowerCase().includes("bar") &&
-          !meetup.title.toLowerCase().includes("drink") &&
-          !meetup.description.toLowerCase().includes("alcohol")
-      );
+    if (selectedFilters.length > 0) {
+      filtered = filtered.filter((meetup) => {
+        return selectedFilters.some((filterId) => {
+          const filter = filterOptions.find((opt) => opt.id === filterId);
+          if (!filter) return false;
+
+          switch (filter.type) {
+            case "alcohol":
+              return (
+                meetup.title.toLowerCase().includes("happy hour") ||
+                meetup.title.toLowerCase().includes("wine") ||
+                meetup.title.toLowerCase().includes("beer")
+              );
+            case "activity":
+              return meetup.category === filter.label;
+            case "location":
+              return meetup.locationName
+                ?.toLowerCase()
+                .includes(filter.label.toLowerCase());
+            case "time":
+              const now = new Date();
+              const meetupTime = new Date(meetup.startTime);
+              if (filter.label === "Today") {
+                return meetupTime.toDateString() === now.toDateString();
+              } else if (filter.label === "This Weekend") {
+                const day = meetupTime.getDay();
+                return day === 0 || day === 6; // Sunday or Saturday
+              }
+              return true;
+            default:
+              return true;
+          }
+        });
+      });
     }
 
     return filtered;
@@ -73,12 +100,21 @@ export default function MeetupsCarousel({
 
   // Advanced filter options
   const filterOptions: FilterOption[] = [
+    // Alcohol-related
     { id: "non-alcoholic", label: "Non-alcoholic", type: "alcohol" },
+    { id: "wine", label: "Wine & Cocktails", type: "alcohol" },
+
+    // Activity types
     { id: "outdoor", label: "Outdoor", type: "activity" },
     { id: "indoor", label: "Indoor", type: "activity" },
+
+    // Locations
     { id: "downtown", label: "Downtown", type: "location" },
-    { id: "weekend", label: "Weekend", type: "time" },
-    { id: "evening", label: "Evening", type: "time" },
+    { id: "golden-gate", label: "Golden Gate Park", type: "location" },
+
+    // Time
+    { id: "today", label: "Today", type: "time" },
+    { id: "weekend", label: "This Weekend", type: "time" },
   ];
 
   const toggleFilter = (filterId: string) => {
@@ -89,11 +125,13 @@ export default function MeetupsCarousel({
     );
   };
 
-  const renderMeetup = ({ item }: { item: Meetup }) => (
-    <View
-      style={[styles.meetupContainer, { backgroundColor: colors.background }]}
-    >
-      <MeetupCard meetup={item} onPress={() => onMeetupPress?.(item)} />
+  const renderMeetup = ({ item, index }: { item: Meetup; index: number }) => (
+    <View style={styles.meetupWrapper}>
+      <MeetupCard
+        meetup={item}
+        onPress={() => onMeetupPress?.(item)}
+        style={styles.meetupCard}
+      />
     </View>
   );
 
@@ -204,10 +242,10 @@ export default function MeetupsCarousel({
 
   return (
     <View style={styles.container}>
-      {/* Filter Header */}
-      <View style={[styles.filterHeader, { borderBottomColor: colors.border }]}>
+      {/* Filter Header - This should be visible */}
+      <View style={[styles.filterHeader, { backgroundColor: colors.surface }]}>
         <TouchableOpacity
-          style={styles.filterButton}
+          style={[styles.filterButton, { backgroundColor: colors.background }]}
           onPress={() => setShowAdvancedFilters(true)}
         >
           <Ionicons name="options-outline" size={20} color={colors.text} />
@@ -219,7 +257,9 @@ export default function MeetupsCarousel({
               styles.primaryFilter,
               {
                 backgroundColor:
-                  activeFilter === "for-you" ? colors.primary : colors.surface,
+                  activeFilter === "for-you"
+                    ? colors.primary
+                    : colors.background,
                 borderColor: colors.border,
               },
             ]}
@@ -245,7 +285,7 @@ export default function MeetupsCarousel({
                 backgroundColor:
                   activeFilter === "following"
                     ? colors.primary
-                    : colors.surface,
+                    : colors.background,
                 borderColor: colors.border,
               },
             ]}
@@ -276,18 +316,19 @@ export default function MeetupsCarousel({
         </View>
       </View>
 
-      {/* Meetups List */}
+      {/* Meetups List with proper spacing */}
       <FlatList
         ref={flatListRef}
         data={filteredMeetups}
         renderItem={renderMeetup}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        snapToInterval={screenHeight * 0.4 + 20}
+        snapToInterval={screenHeight * 0.6}
         snapToAlignment="start"
         decelerationRate="fast"
         style={styles.meetupsList}
         contentContainerStyle={styles.meetupsContent}
+        ItemSeparatorComponent={() => <View style={{ height: 20 }} />}
       />
 
       {renderAdvancedFiltersModal()}
@@ -301,39 +342,41 @@ const styles = StyleSheet.create({
   },
   filterHeader: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    backgroundColor: "rgba(0,0,0,0.02)",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 8,
+    borderRadius: 12,
+    marginHorizontal: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   filterButton: {
-    padding: 10,
-    borderRadius: 20,
-    backgroundColor: "rgba(0,0,0,0.05)",
+    padding: 8,
+    borderRadius: 8,
   },
   primaryFilters: {
     flexDirection: "row",
-    gap: 12,
+    gap: 8,
     backgroundColor: "rgba(0,0,0,0.05)",
-    borderRadius: 25,
+    borderRadius: 20,
     padding: 4,
   },
   primaryFilter: {
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 20,
+    borderRadius: 16,
     minWidth: 80,
     alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    elevation: 2,
+    elevation: 1,
   },
   primaryFilterText: {
     fontSize: 15,
@@ -344,23 +387,30 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   meetupsContent: {
-    paddingTop: 30,
+    paddingHorizontal: 16,
+    paddingTop: 10,
     paddingBottom: 20,
   },
-  meetupContainer: {
-    height: screenHeight * 0.4,
-    paddingHorizontal: 16,
-    justifyContent: "center",
-    marginBottom: 20,
+  meetupWrapper: {
+    marginBottom: 20, // This creates the gap between meetups
+  },
+  meetupCard: {
+    borderRadius: 16,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
   modalContainer: {
     flex: 1,
   },
   modalHeader: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
+    alignItems: "center",
+    paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
   },
@@ -374,7 +424,8 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingTop: 20,
   },
   filterSectionTitle: {
     fontSize: 16,
@@ -389,8 +440,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    borderWidth: 1,
     marginRight: 8,
+    borderWidth: 1,
   },
   filterChipText: {
     fontSize: 14,

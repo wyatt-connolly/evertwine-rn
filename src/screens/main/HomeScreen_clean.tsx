@@ -5,10 +5,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Image,
   Dimensions,
   RefreshControl,
 } from "react-native";
-import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -54,10 +54,6 @@ export default function HomeScreen() {
   const { colors } = useThemeStore();
   const { currentUser, isInitialLoading } = useAuthStore();
   const { meetups, fetchMeetups } = useMeetupStore();
-
-  // Debug current user data
-  console.log("HomeScreen - currentUser:", currentUser);
-  console.log("HomeScreen - photoURL:", currentUser?.photoURL);
 
   // State
   const [refreshing, setRefreshing] = useState(false);
@@ -158,27 +154,13 @@ export default function HomeScreen() {
         }
       >
         {/* Header */}
-        <View
-          style={[
-            styles.header,
-            {
-              borderBottomColor: colors.border,
-              backgroundColor: colors.background,
-            },
-          ]}
-        >
+        <View style={[styles.header, { borderBottomColor: colors.border }]}>
           <View style={styles.headerLeft}>
             <Image
               source={{
-                uri:
-                  currentUser?.photoURL ||
-                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+                uri: currentUser?.photoURL || "https://via.placeholder.com/40",
               }}
               style={styles.profileImage}
-              onError={(error) => console.log("Image load error:", error)}
-              onLoad={() =>
-                console.log("Image loaded successfully:", currentUser?.photoURL)
-              }
             />
             <View>
               <Text style={[styles.greeting, { color: colors.text }]}>
@@ -189,7 +171,9 @@ export default function HomeScreen() {
               <Text
                 style={[styles.welcomeText, { color: colors.textSecondary }]}
               >
-                Discover amazing meetups
+                {DataService.isInDeveloperMode()
+                  ? "Developer Mode - Using mock data"
+                  : "Discover amazing meetups"}
               </Text>
             </View>
           </View>
@@ -207,6 +191,112 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* Welcome Section for New Users (not in developer mode) */}
+        {!DataService.isInDeveloperMode() && (
+          <View style={styles.content}>
+            <View
+              style={[styles.welcomeCard, { backgroundColor: colors.surface }]}
+            >
+              <Text style={[styles.welcomeTitle, { color: colors.text }]}>
+                Welcome to Evertwine! 🌟
+              </Text>
+              <Text
+                style={[
+                  styles.welcomeSubtitle,
+                  { color: colors.textSecondary },
+                ]}
+              >
+                Ready to discover amazing meetups and connect with your
+                community? Let's get you started with some quick actions.
+              </Text>
+              <View style={styles.quickActions}>
+                <TouchableOpacity
+                  style={[
+                    styles.quickActionButton,
+                    { backgroundColor: colors.primary },
+                  ]}
+                  onPress={() => navigation.navigate("Create")}
+                >
+                  <Ionicons name="add" size={20} color={colors.onPrimary} />
+                  <Text
+                    style={[
+                      styles.quickActionText,
+                      { color: colors.onPrimary },
+                    ]}
+                  >
+                    Create Meetup
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.quickActionButton,
+                    {
+                      backgroundColor: colors.surface,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                  onPress={() => navigation.navigate("Explore")}
+                >
+                  <Ionicons name="search" size={20} color={colors.text} />
+                  <Text
+                    style={[styles.quickActionText, { color: colors.text }]}
+                  >
+                    Explore
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Discover Section for New Users */}
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Discover
+            </Text>
+            <View style={styles.discoverGrid}>
+              <TouchableOpacity
+                style={[
+                  styles.discoverCard,
+                  { backgroundColor: colors.surface },
+                ]}
+                onPress={() => navigation.navigate("Explore")}
+              >
+                <Ionicons name="location" size={32} color={colors.primary} />
+                <Text style={[styles.discoverTitle, { color: colors.text }]}>
+                  Find Events Near You
+                </Text>
+                <Text
+                  style={[
+                    styles.discoverSubtitle,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Discover local meetups and activities
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.discoverCard,
+                  { backgroundColor: colors.surface },
+                ]}
+                onPress={() => navigation.navigate("Community")}
+              >
+                <Ionicons name="people" size={32} color={colors.primary} />
+                <Text style={[styles.discoverTitle, { color: colors.text }]}>
+                  Connect with Community
+                </Text>
+                <Text
+                  style={[
+                    styles.discoverSubtitle,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Meet like-minded people
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
         {/* Happy Hour Carousel */}
         <HappyHourCarousel
           onEventPress={(event) => {
@@ -215,11 +305,15 @@ export default function HomeScreen() {
         />
 
         {/* Meetups Carousel */}
-        <MeetupsCarousel
-          onMeetupPress={(meetup) => {
-            navigation.navigate("MeetupDetails", { meetupId: meetup.id });
-          }}
-        />
+        {isInitialLoading || !currentUser ? (
+          <LoadingState style={{ margin: 20 }} />
+        ) : (
+          <MeetupsCarousel
+            onMeetupPress={(meetup) => {
+              navigation.navigate("MeetupDetails", { meetupId: meetup.id });
+            }}
+          />
+        )}
       </ScrollView>
 
       <InviteSnackbar
@@ -256,6 +350,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
+    backgroundColor: "#fff",
   },
   headerLeft: {
     flexDirection: "row",
