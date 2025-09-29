@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
 import { FirestoreService } from "../../services/firebase";
+import { DataService } from "../../services/DataService";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import GradientBackground from "../../components/GradientBackground";
@@ -86,7 +87,8 @@ export default function InterestSelectionScreen({ navigation }: Props) {
         interests: selectedInterests,
       });
 
-      if (user?.uid) {
+      // Only connect to Firebase if not in developer mode
+      if (!DataService.isInDeveloperMode() && user?.uid) {
         const result = await FirestoreService.updateUser(user.uid, {
           interests: selectedInterests,
         });
@@ -96,9 +98,13 @@ export default function InterestSelectionScreen({ navigation }: Props) {
           console.error("Firestore error:", result.error);
           return;
         }
+      } else {
+        console.log(
+          "🔧 Developer Mode: Skipping Firebase, using local storage only"
+        );
       }
 
-      navigation.navigate("LocationPermission");
+      navigation.navigate("AppFeatures");
     } catch (error) {
       Alert.alert("Error", "Failed to save interests. Please try again.");
       console.error("Interest selection error:", error);

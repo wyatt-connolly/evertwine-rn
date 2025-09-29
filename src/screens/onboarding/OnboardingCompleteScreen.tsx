@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
 import { FirestoreService } from "../../services/firebase";
+import { DataService } from "../../services/DataService";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { usePreferenceStore } from "../../hooks/usePreferenceStore";
@@ -50,7 +51,8 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
       setOnboardingComplete(true);
       updateUserProfile({ onboardingComplete: true });
 
-      if (user?.uid) {
+      // Only connect to Firebase if not in developer mode
+      if (!DataService.isInDeveloperMode() && user?.uid) {
         console.log("💾 Saving onboarding completion to Firebase...");
         // Write default preferences to Firebase
         const result = await FirestoreService.updateUser(user.uid, {
@@ -65,7 +67,11 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
           console.log("🎉 User should now be redirected to main app");
         }
       } else {
-        console.error("❌ No user UID available for saving onboarding status");
+        console.log(
+          "🔧 Developer Mode: Skipping Firebase, using local storage only"
+        );
+        console.log("✅ Onboarding completed with default preferences!");
+        console.log("🎉 User should now be redirected to main app");
       }
     } catch (error) {
       console.error("❌ Error completing onboarding:", error);

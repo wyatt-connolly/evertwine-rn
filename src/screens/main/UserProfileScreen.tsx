@@ -61,6 +61,7 @@ export default function UserProfileScreen({
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["top", "left", "right"]}
     >
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
@@ -75,7 +76,10 @@ export default function UserProfileScreen({
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={[styles.content, { backgroundColor: colors.background }]}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Hero Section */}
         <View style={[styles.heroSection, { backgroundColor: colors.surface }]}>
           {/* Photo Gallery */}
@@ -227,7 +231,7 @@ export default function UserProfileScreen({
               >
                 <Ionicons
                   name="school-outline"
-                  size={18}
+                  size={20}
                   color={colors.primary}
                 />
               </View>
@@ -254,7 +258,7 @@ export default function UserProfileScreen({
               >
                 <Ionicons
                   name="briefcase-outline"
-                  size={18}
+                  size={20}
                   color={colors.primary}
                 />
               </View>
@@ -281,7 +285,7 @@ export default function UserProfileScreen({
               >
                 <Ionicons
                   name="business-outline"
-                  size={18}
+                  size={20}
                   color={colors.primary}
                 />
               </View>
@@ -496,6 +500,7 @@ export default function UserProfileScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "transparent",
   },
   // Fixed Header Styles
   fixedHeader: {
@@ -736,16 +741,19 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   professionalInfo: {
-    gap: 12,
+    gap: 20,
   },
   professionalItem: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
+    alignItems: "flex-start",
+    gap: 16,
+    paddingVertical: 4,
   },
   professionalText: {
     fontSize: 16,
     flex: 1,
+    lineHeight: 22,
+    fontWeight: "500",
   },
   // New styles to match EditProfileScreen
   heroSection: {
@@ -770,9 +778,9 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   professionalIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -783,7 +791,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    marginBottom: 2,
+    marginBottom: 4,
+    fontWeight: "600",
   },
   // Additional missing styles
   header: {

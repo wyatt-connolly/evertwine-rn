@@ -321,9 +321,13 @@ export interface Event {
   id: string;
   title: string;
   description: string;
-  organizerId: string;
-  organizerName: string;
+  organizerId?: string;
+  organizerName?: string;
   organizerAvatar?: string;
+
+  // Venue info (for happy hours)
+  venue?: string;
+  venueType?: string;
 
   // Location & Time
   location: {
@@ -332,7 +336,6 @@ export interface Event {
   };
   locationName: string;
   address: string;
-  venue?: string;
   startTime: Date;
   endTime: Date;
   timezone: string;
@@ -375,6 +378,16 @@ export interface Event {
   likes: number;
   attendees: string[];
   waitlist: string[];
+
+  // Happy hour participation (updated for venue-based events)
+  interestedUsers?: string[];
+  checkIns?: number;
+  whosGoing?: {
+    id: string;
+    name: string;
+    avatar: string;
+    isCheckedIn: boolean;
+  }[]; // Who's going to the happy hour event
 
   // Timestamps
   createdAt: Date;

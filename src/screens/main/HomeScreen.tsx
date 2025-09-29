@@ -53,7 +53,7 @@ export default function HomeScreen() {
   const navigation = useNavigation();
   const { colors } = useThemeStore();
   const { currentUser, isInitialLoading } = useAuthStore();
-  const { meetups, fetchMeetups } = useMeetupStore();
+  const { meetups } = useMeetupStore();
 
   // Debug current user data
 
@@ -78,9 +78,9 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (currentUser && !DataService.isInDeveloperMode()) {
-      fetchMeetups();
+      // No API calls needed - using mock data
     }
-  }, [currentUser, fetchMeetups]);
+  }, [currentUser]);
 
   // Only test Firebase data when not in developer mode and in dev environment
   useEffect(() => {
@@ -92,12 +92,8 @@ export default function HomeScreen() {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      if (DataService.isInDeveloperMode()) {
-        // In developer mode, just simulate a refresh
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      } else {
-        await fetchMeetups();
-      }
+      // Simulate refresh delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (error) {
     } finally {
       setRefreshing(false);

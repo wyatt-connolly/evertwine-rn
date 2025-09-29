@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  ScrollView,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -14,10 +13,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
-import { FirestoreService } from "../../services/firebase";
 import { OnboardingService } from "../../services/OnboardingService";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { Ionicons } from "@expo/vector-icons";
 import GradientBackground from "../../components/GradientBackground";
 import AnimatedButton from "../../components/AnimatedButton";
 import AnimatedCard from "../../components/AnimatedCard";
@@ -48,20 +47,16 @@ export default function ProfileSetupScreen({ navigation }: Props) {
   const pickImage = async () => {
     try {
       console.log("📸 Starting image picker...");
-
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
-      console.log("📸 Permission status:", status);
-
       if (status !== "granted") {
         Alert.alert(
           "Permission Required",
-          "Please grant camera roll permissions to upload a photo."
+          "Please grant camera roll permissions to add a profile photo."
         );
         return;
       }
 
-      console.log("📸 Launching image library...");
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -69,24 +64,20 @@ export default function ProfileSetupScreen({ navigation }: Props) {
         quality: 0.8,
       });
 
-      console.log("📸 Image picker result:", result);
-
-      if (!result.canceled && result.assets && result.assets[0]) {
-        console.log("📸 Image selected:", result.assets[0].uri);
+      if (!result.canceled && result.assets[0]) {
+        console.log("✅ Image selected:", result.assets[0].uri);
         setProfileImage(result.assets[0].uri);
-        Alert.alert("Success", "Photo selected successfully!");
-      } else {
-        console.log("📸 Image picker canceled or no assets");
       }
     } catch (error) {
-      console.error("📸 Image picker error:", error);
+      console.error("❌ Image picker error:", error);
       Alert.alert("Error", "Failed to pick image. Please try again.");
     }
   };
 
   const handleContinue = async () => {
     if (!displayName.trim()) {
-      Alert.alert("Required Field", "Please enter your display name");
+      Alert.alert("Required Field", "Please enter your name.");
+      displayNameRef.current?.focus();
       return;
     }
 
@@ -120,7 +111,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
       }
 
       console.log("✅ Profile setup completed successfully");
-      navigation.navigate("InterestSelection");
+      navigation.navigate("AgeVerification");
     } catch (error) {
       Alert.alert("Error", "Failed to save profile. Please try again.");
       console.error("Profile setup error:", error);
@@ -138,14 +129,17 @@ export default function ProfileSetupScreen({ navigation }: Props) {
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.keyboardAvoidingView}
         >
-          <ScrollView
-            style={styles.scrollView}
-            contentContainerStyle={styles.content}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            <AnimatedCard delay={200} direction="up">
-              <View style={styles.header}>
+          {/* Header */}
+          <AnimatedCard delay={200} direction="up">
+            <View style={styles.header}>
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={styles.backButton}
+              >
+                <Ionicons name="arrow-back" size={24} color={colors.text} />
+              </TouchableOpacity>
+
+              <View style={styles.headerContent}>
                 <Text style={[styles.title, { color: colors.text }]}>
                   Set Up Your Profile
                 </Text>
@@ -155,131 +149,107 @@ export default function ProfileSetupScreen({ navigation }: Props) {
                   Tell us a bit about yourself
                 </Text>
               </View>
-            </AnimatedCard>
+            </View>
+          </AnimatedCard>
 
-            <AnimatedCard delay={400} direction="up">
-              <View style={styles.profileImageContainer}>
-                <TouchableOpacity
-                  style={styles.profileImageButton}
-                  onPress={pickImage}
-                >
-                  {profileImage ? (
-                    <Image
-                      source={{ uri: profileImage }}
-                      style={styles.profileImage}
-                    />
-                  ) : (
-                    <View
-                      style={[
-                        styles.profileImagePlaceholder,
-                        { backgroundColor: colors.surfaceVariant },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.profileImageText,
-                          { color: colors.textSecondary },
-                        ]}
-                      >
-                        +
-                      </Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-                <Text
-                  style={[
-                    styles.profileImageLabel,
-                    { color: colors.textSecondary },
-                  ]}
-                >
-                  Add Photo
-                </Text>
-              </View>
-            </AnimatedCard>
-
-            <AnimatedCard delay={600} direction="up">
-              <View style={styles.form}>
-                <TouchableOpacity
-                  style={styles.inputGroup}
-                  onPress={() => displayNameRef.current?.focus()}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.label, { color: colors.text }]}>
-                    Display Name *
-                  </Text>
-                  <TextInput
-                    ref={displayNameRef}
-                    style={[
-                      styles.input,
-                      {
-                        backgroundColor: colors.surface,
-                        borderColor: colors.border,
-                        color: colors.text,
-                      },
-                    ]}
-                    value={displayName}
-                    onChangeText={setDisplayName}
-                    placeholder="Enter your display name"
-                    placeholderTextColor={colors.textTertiary}
-                    maxLength={50}
-                    returnKeyType="next"
-                    onSubmitEditing={() => headlineRef.current?.focus()}
+          {/* Main Content */}
+          <View style={styles.mainContent}>
+            {/* Profile Image */}
+            <View style={styles.profileImageContainer}>
+              <TouchableOpacity
+                style={styles.profileImageButton}
+                onPress={pickImage}
+              >
+                {profileImage ? (
+                  <Image
+                    source={{ uri: profileImage }}
+                    style={styles.profileImage}
                   />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.inputGroup}
-                  onPress={() => headlineRef.current?.focus()}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.label, { color: colors.text }]}>
-                    Professional Headline (Optional)
-                  </Text>
-                  <TextInput
-                    ref={headlineRef}
+                ) : (
+                  <View
                     style={[
-                      styles.input,
-                      styles.bioInput,
-                      {
-                        backgroundColor: colors.surface,
-                        borderColor: colors.border,
-                        color: colors.text,
-                        fontSize: 16,
-                      },
-                    ]}
-                    value={headline}
-                    onChangeText={setHeadline}
-                    placeholder="e.g. Software Engineer at Tech Company"
-                    placeholderTextColor={colors.textTertiary}
-                    multiline
-                    numberOfLines={2}
-                    maxLength={100}
-                    textAlignVertical="top"
-                    selectionColor={colors.primary}
-                    returnKeyType="done"
-                    onSubmitEditing={() => headlineRef.current?.blur()}
-                  />
-                  <Text
-                    style={[
-                      styles.characterCount,
-                      { color: colors.textSecondary },
+                      styles.profileImagePlaceholder,
+                      { backgroundColor: colors.surfaceVariant },
                     ]}
                   >
-                    {headline.length}/100
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </AnimatedCard>
+                    <Ionicons name="camera" size={32} color={colors.primary} />
+                  </View>
+                )}
+              </TouchableOpacity>
+              <Text
+                style={[styles.imageLabel, { color: colors.textSecondary }]}
+              >
+                Add a photo
+              </Text>
+            </View>
 
+            {/* Form Fields */}
+            <View style={styles.formContainer}>
+              <View style={styles.inputContainer}>
+                <Text style={[styles.inputLabel, { color: colors.text }]}>
+                  What's your name? *
+                </Text>
+                <TextInput
+                  ref={displayNameRef}
+                  style={[
+                    styles.textInput,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                      color: colors.text,
+                    },
+                  ]}
+                  value={displayName}
+                  onChangeText={setDisplayName}
+                  placeholder="Enter your name"
+                  placeholderTextColor={colors.textTertiary}
+                  returnKeyType="next"
+                  onSubmitEditing={() => headlineRef.current?.focus()}
+                  autoFocus
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={[styles.inputLabel, { color: colors.text }]}>
+                  Add a headline (optional)
+                </Text>
+                <TextInput
+                  ref={headlineRef}
+                  style={[
+                    styles.textInput,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                      color: colors.text,
+                    },
+                  ]}
+                  value={headline}
+                  onChangeText={setHeadline}
+                  placeholder="e.g., Software Engineer at Tech Corp"
+                  placeholderTextColor={colors.textTertiary}
+                  returnKeyType="done"
+                  onSubmitEditing={handleContinue}
+                  multiline
+                  numberOfLines={2}
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* Continue Button */}
+          <View style={styles.buttonContainer}>
             <AnimatedButton
-              title={loading ? "Saving..." : "Continue"}
+              title={loading ? "Setting up..." : "Continue"}
               onPress={handleContinue}
               variant="primary"
-              disabled={loading}
-              loading={loading}
-              style={styles.button}
+              disabled={loading || !displayName.trim()}
+              icon="arrow-forward"
+              style={[
+                styles.continueButton,
+                (!displayName.trim() || loading) && styles.disabledButton,
+              ]}
             />
-          </ScrollView>
+          </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
     </GradientBackground>
@@ -293,84 +263,90 @@ const styles = StyleSheet.create({
   keyboardAvoidingView: {
     flex: 1,
   },
-  scrollView: {
+  header: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 20,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 16,
+  },
+  headerContent: {
     flex: 1,
   },
-  content: {
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 100, // Extra padding for keyboard
-  },
-  header: {
-    marginBottom: 20,
-    alignItems: "center",
-  },
   title: {
-    fontSize: 32,
-    fontWeight: "bold",
+    fontSize: 28,
+    fontWeight: "700",
     marginBottom: 8,
-    textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    textAlign: "center",
+    lineHeight: 24,
+  },
+  mainContent: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    justifyContent: "center",
   },
   profileImageContainer: {
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 40,
   },
   profileImageButton: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     marginBottom: 12,
+    overflow: "hidden",
   },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: "100%",
+    height: "100%",
   },
   profileImagePlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: "100%",
+    height: "100%",
     justifyContent: "center",
     alignItems: "center",
+    borderRadius: 60,
     borderWidth: 2,
     borderStyle: "dashed",
   },
-  profileImageText: {
-    fontSize: 32,
-    fontWeight: "300",
-  },
-  profileImageLabel: {
+  imageLabel: {
     fontSize: 14,
     fontWeight: "500",
   },
-  form: {
-    marginBottom: 20,
+  formContainer: {
+    gap: 24,
   },
-  inputGroup: {
-    marginBottom: 24,
+  inputContainer: {
+    gap: 8,
   },
-  label: {
+  inputLabel: {
     fontSize: 16,
     fontWeight: "600",
-    marginBottom: 8,
   },
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
+  textInput: {
+    height: 56,
+    borderRadius: 16,
+    borderWidth: 2,
+    paddingHorizontal: 20,
     fontSize: 16,
+    fontWeight: "500",
   },
-  bioInput: {
-    height: 60,
-    textAlignVertical: "top",
+  buttonContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 20,
   },
-  characterCount: {
-    fontSize: 12,
-    textAlign: "right",
-    marginTop: 4,
+  continueButton: {
+    height: 56,
+    borderRadius: 16,
   },
-  button: {
-    marginTop: 20,
+  disabledButton: {
+    opacity: 0.6,
   },
 });

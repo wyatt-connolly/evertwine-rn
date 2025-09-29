@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Alert,
   Dimensions,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -176,6 +177,49 @@ export default function AuthHomeScreen({ navigation }: Props) {
     }
   };
 
+  const handleDeveloperOnboarding = async () => {
+    setLoading(true);
+
+    try {
+      // Enable developer mode to use mock data and disable Firebase
+      DataService.setDeveloperMode(true);
+
+      // Create a local user for onboarding testing (no Firebase)
+      const localUser = {
+        uid: "local_onboarding_user",
+        phoneNumber: "+1234567890",
+        displayName: "Local User",
+        email: "local@evertwine.app",
+        photoURL: null,
+        onboardingComplete: false,
+        interests: [],
+        location: null,
+        bio: "",
+        about: "",
+      };
+
+      // Set local authentication state (no Firebase connection)
+      setUser(localUser);
+      setAuthenticated(true);
+      setOnboardingComplete(false);
+
+      console.log("🔧 Developer Onboarding:", {
+        message: "Starting local onboarding flow (no Firebase)",
+        isAuthenticated: true,
+        onboardingComplete: false,
+        user: localUser,
+      });
+
+      // Navigate to ProfileSetup to start onboarding UI testing
+      setTimeout(() => {
+        setLoading(false);
+        navigation.navigate("ProfileSetup");
+      }, 500);
+    } catch (error) {
+      setLoading(false);
+    }
+  };
+
   return (
     <GradientBackground variant="primary">
       <SafeAreaView
@@ -294,7 +338,22 @@ export default function AuthHomeScreen({ navigation }: Props) {
                   styles.button,
                   styles.developerButton,
                 ])}
-                icon="code-slash"
+                icon="home"
+              />
+            )}
+
+            {/* Developer Onboarding Button - Only show in development */}
+            {__DEV__ && (
+              <AnimatedButton
+                title="🚀 Developer Onboarding"
+                onPress={handleDeveloperOnboarding}
+                variant="outline"
+                disabled={loading}
+                style={StyleSheet.flatten([
+                  styles.button,
+                  styles.developerButton,
+                ])}
+                icon="person-add"
               />
             )}
           </View>

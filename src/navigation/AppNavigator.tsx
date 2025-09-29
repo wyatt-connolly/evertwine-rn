@@ -61,16 +61,11 @@ export default function AppNavigator() {
   // Check if user has completed onboarding from their profile data
   useEffect(() => {
     if (isAuthenticated && user) {
-      const userOnboardingComplete = user.onboardingComplete || false;
+      const userOnboardingComplete = user.onboardingComplete ?? false;
 
-      // Only update if the user profile has a different onboarding status
-      // AND if the store value is false (to avoid overriding completed onboarding)
-      if (
-        userOnboardingComplete !== onboardingComplete &&
-        !onboardingComplete
-      ) {
+      // Update store to match user profile data
+      if (userOnboardingComplete !== onboardingComplete) {
         setOnboardingComplete(userOnboardingComplete);
-      } else if (onboardingComplete && !userOnboardingComplete) {
       }
     }
   }, [isAuthenticated, user, onboardingComplete, setOnboardingComplete]);
@@ -79,8 +74,19 @@ export default function AppNavigator() {
     return <OnboardingStack />;
   }
 
-  // Check both the store state and user profile data
-  const userOnboardingComplete = user?.onboardingComplete || onboardingComplete;
+  // Prioritize user profile data over store state
+  const userOnboardingComplete =
+    user?.onboardingComplete !== undefined
+      ? user.onboardingComplete
+      : onboardingComplete;
+
+  console.log("🧭 AppNavigator Routing:", {
+    isAuthenticated,
+    userOnboardingComplete,
+    userOnboardingStatus: user?.onboardingComplete,
+    storeOnboardingStatus: onboardingComplete,
+    willShowOnboarding: !userOnboardingComplete,
+  });
 
   if (!userOnboardingComplete) {
     return <OnboardingStack />;

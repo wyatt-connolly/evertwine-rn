@@ -10,6 +10,7 @@ import {
 } from "../../constants/preferences";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { FirestoreService } from "../../services/firebase";
+import { DataService } from "../../services/DataService";
 
 // Import preference step components
 import AgeRangeStep from "./steps/AgeRangeStep";
@@ -98,8 +99,8 @@ export default function PreferenceSetupScreen({
           style: "destructive",
           onPress: async () => {
             try {
-              // Save default preferences to Firebase
-              if (user?.uid) {
+              // Save default preferences to Firebase (only if not in developer mode)
+              if (!DataService.isInDeveloperMode() && user?.uid) {
                 const result = await FirestoreService.updateUser(user.uid, {
                   preferences: DEFAULT_PREFERENCES,
                 });
@@ -112,6 +113,11 @@ export default function PreferenceSetupScreen({
                 } else {
                   console.log("✅ Default preferences saved to Firebase!");
                 }
+              } else {
+                console.log(
+                  "🔧 Developer Mode: Skipping Firebase, using local storage only"
+                );
+                console.log("✅ Default preferences saved locally!");
               }
 
               if (onSkip) {
@@ -141,8 +147,8 @@ export default function PreferenceSetupScreen({
       await markPreferencesComplete();
       await savePreferences();
 
-      // Save preferences to Firebase
-      if (user?.uid) {
+      // Save preferences to Firebase (only if not in developer mode)
+      if (!DataService.isInDeveloperMode() && user?.uid) {
         const result = await FirestoreService.updateUser(user.uid, {
           preferences: preferences,
         });
@@ -155,6 +161,11 @@ export default function PreferenceSetupScreen({
         } else {
           console.log("✅ Preferences saved to Firebase successfully!");
         }
+      } else {
+        console.log(
+          "🔧 Developer Mode: Skipping Firebase, using local storage only"
+        );
+        console.log("✅ Preferences saved locally!");
       }
 
       if (onComplete) {

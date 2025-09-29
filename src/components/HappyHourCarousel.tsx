@@ -25,8 +25,8 @@ const getHappyHourEvents = (): Event[] => [
     title: "Wine & Cheese Tasting",
     description:
       "Join us for an evening of fine wines and artisanal cheeses from local producers.",
-    organizerId: "host1",
-    organizerName: "Sarah Johnson",
+    venue: "Downtown Wine Bar",
+    venueType: "Restaurant",
     location: { latitude: 37.7749, longitude: -122.4194 },
     locationName: "Downtown Wine Bar",
     address: "123 Main St, San Francisco, CA",
@@ -59,8 +59,31 @@ const getHappyHourEvents = (): Event[] => [
     views: 150,
     shares: 12,
     likes: 25,
-    attendees: ["user1", "user2"],
-    waitlist: [],
+    interestedUsers: ["user1", "user2"],
+    checkIns: 0,
+    whosGoing: [
+      {
+        id: "user5",
+        name: "David L.",
+        avatar:
+          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: false,
+      },
+      {
+        id: "user6",
+        name: "Lisa K.",
+        avatar:
+          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: true,
+      },
+      {
+        id: "user7",
+        name: "James W.",
+        avatar:
+          "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: false,
+      },
+    ],
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -69,8 +92,8 @@ const getHappyHourEvents = (): Event[] => [
     title: "Craft Beer Happy Hour",
     description:
       "Sample the latest craft beers from local breweries. 50% off all drinks!",
-    organizerId: "host2",
-    organizerName: "Mike Chen",
+    venue: "Brewery District",
+    venueType: "Brewery",
     location: { latitude: 37.7849, longitude: -122.4094 },
     locationName: "Brewery District",
     address: "456 Brew St, San Francisco, CA",
@@ -103,8 +126,38 @@ const getHappyHourEvents = (): Event[] => [
     views: 200,
     shares: 18,
     likes: 35,
-    attendees: ["user1", "user2", "user3"],
-    waitlist: [],
+    interestedUsers: ["user1", "user2", "user3"],
+    checkIns: 0,
+    whosGoing: [
+      {
+        id: "user1",
+        name: "Sarah M.",
+        avatar:
+          "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: false,
+      },
+      {
+        id: "user2",
+        name: "Mike C.",
+        avatar:
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: true,
+      },
+      {
+        id: "user3",
+        name: "Emma R.",
+        avatar:
+          "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: false,
+      },
+      {
+        id: "user4",
+        name: "Alex T.",
+        avatar:
+          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: true,
+      },
+    ],
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -113,8 +166,8 @@ const getHappyHourEvents = (): Event[] => [
     title: "Non-Alcoholic Mocktail Mixing",
     description:
       "Learn to create beautiful mocktails with fresh ingredients. Perfect for designated drivers!",
-    organizerId: "host3",
-    organizerName: "Emma Rodriguez",
+    venue: "Green Garden Café",
+    venueType: "Café",
     location: { latitude: 37.7949, longitude: -122.3994 },
     locationName: "Green Garden Café",
     address: "789 Green Ave, San Francisco, CA",
@@ -147,8 +200,24 @@ const getHappyHourEvents = (): Event[] => [
     views: 120,
     shares: 8,
     likes: 18,
-    attendees: ["user1", "user2"],
-    waitlist: [],
+    interestedUsers: ["user1", "user2"],
+    checkIns: 0,
+    whosGoing: [
+      {
+        id: "user8",
+        name: "Maria G.",
+        avatar:
+          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: false,
+      },
+      {
+        id: "user9",
+        name: "Tom H.",
+        avatar:
+          "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: true,
+      },
+    ],
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -156,8 +225,8 @@ const getHappyHourEvents = (): Event[] => [
     id: "hh4",
     title: "Rooftop Sunset Drinks",
     description: "Enjoy cocktails with a stunning city view as the sun sets.",
-    organizerId: "host4",
-    organizerName: "David Park",
+    venue: "Sky Lounge",
+    venueType: "Rooftop Bar",
     location: { latitude: 37.8049, longitude: -122.3894 },
     locationName: "Sky Lounge",
     address: "321 Sky Tower, San Francisco, CA",
@@ -190,8 +259,38 @@ const getHappyHourEvents = (): Event[] => [
     views: 180,
     shares: 15,
     likes: 28,
-    attendees: ["user1", "user2", "user3"],
-    waitlist: [],
+    interestedUsers: ["user1", "user2", "user3"],
+    checkIns: 0,
+    whosGoing: [
+      {
+        id: "user10",
+        name: "Sophie B.",
+        avatar:
+          "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: false,
+      },
+      {
+        id: "user11",
+        name: "Ryan M.",
+        avatar:
+          "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: true,
+      },
+      {
+        id: "user12",
+        name: "Nina S.",
+        avatar:
+          "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: false,
+      },
+      {
+        id: "user13",
+        name: "Chris P.",
+        avatar:
+          "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: true,
+      },
+    ],
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -200,8 +299,8 @@ const getHappyHourEvents = (): Event[] => [
     title: "Tapas & Sangria Night",
     description:
       "Authentic Spanish tapas paired with traditional sangria. ¡Olé!",
-    organizerId: "host5",
-    organizerName: "Isabella Martinez",
+    venue: "Barcelona Bistro",
+    venueType: "Spanish Restaurant",
     location: { latitude: 37.8149, longitude: -122.3794 },
     locationName: "Barcelona Bistro",
     address: "654 Spain St, San Francisco, CA",
@@ -234,8 +333,45 @@ const getHappyHourEvents = (): Event[] => [
     views: 220,
     shares: 20,
     likes: 42,
-    attendees: ["user1", "user2", "user3", "user4"],
-    waitlist: [],
+    interestedUsers: ["user1", "user2", "user3", "user4"],
+    checkIns: 0,
+    whosGoing: [
+      {
+        id: "user14",
+        name: "Isabella M.",
+        avatar:
+          "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: false,
+      },
+      {
+        id: "user15",
+        name: "Diego R.",
+        avatar:
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: true,
+      },
+      {
+        id: "user16",
+        name: "Amanda K.",
+        avatar:
+          "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: false,
+      },
+      {
+        id: "user17",
+        name: "Kevin L.",
+        avatar:
+          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: true,
+      },
+      {
+        id: "user18",
+        name: "Zoe T.",
+        avatar:
+          "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+        isCheckedIn: false,
+      },
+    ],
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -353,28 +489,61 @@ export default function HappyHourCarousel({
           </View>
 
           <View style={styles.eventStats}>
-            <View style={styles.attendeeCount}>
-              <Ionicons
-                name="people-outline"
-                size={14}
-                color={colors.textSecondary}
-              />
+            <View style={styles.whosGoing}>
+              <View style={styles.avatarRow}>
+                {item.whosGoing?.slice(0, 3).map((person, index) => (
+                  <View
+                    key={person.id}
+                    style={[
+                      styles.avatar,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: person.isCheckedIn
+                          ? colors.primary
+                          : colors.border,
+                        borderWidth: person.isCheckedIn ? 2 : 1,
+                        marginLeft: index > 0 ? -8 : 0,
+                      },
+                    ]}
+                  >
+                    <Image
+                      source={{ uri: person.avatar }}
+                      style={styles.avatarImage}
+                    />
+                    {person.isCheckedIn && (
+                      <View
+                        style={[
+                          styles.checkInBadge,
+                          { backgroundColor: colors.primary },
+                        ]}
+                      >
+                        <Ionicons
+                          name="checkmark"
+                          size={8}
+                          color={colors.onPrimary}
+                        />
+                      </View>
+                    )}
+                  </View>
+                ))}
+                {item.whosGoing && item.whosGoing.length > 3 && (
+                  <View
+                    style={[
+                      styles.avatar,
+                      styles.moreAvatars,
+                      { backgroundColor: colors.border },
+                    ]}
+                  >
+                    <Text style={[styles.moreText, { color: colors.text }]}>
+                      +{item.whosGoing.length - 3}
+                    </Text>
+                  </View>
+                )}
+              </View>
               <Text
-                style={[styles.attendeeText, { color: colors.textSecondary }]}
+                style={[styles.whosGoingText, { color: colors.textSecondary }]}
               >
-                {item.currentAttendees}/{item.maxAttendees}
-              </Text>
-            </View>
-
-            <View
-              style={[
-                styles.happyHourBadge,
-                { backgroundColor: colors.primary + "20" },
-              ]}
-            >
-              <Ionicons name="wine" size={12} color={colors.primary} />
-              <Text style={[styles.happyHourText, { color: colors.primary }]}>
-                Happy Hour
+                {item.whosGoing?.length || 0} going
               </Text>
             </View>
           </View>
@@ -512,6 +681,49 @@ const styles = StyleSheet.create({
   },
   happyHourText: {
     fontSize: 11,
+    fontWeight: "500",
+  },
+  whosGoing: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  avatarRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  avatar: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: "hidden",
+    position: "relative",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
+  },
+  checkInBadge: {
+    position: "absolute",
+    bottom: -2,
+    right: -2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  moreAvatars: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  moreText: {
+    fontSize: 10,
+    fontWeight: "600",
+  },
+  whosGoingText: {
+    fontSize: 12,
     fontWeight: "500",
   },
   carouselContent: {

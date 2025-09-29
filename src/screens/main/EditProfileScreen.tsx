@@ -1612,22 +1612,21 @@ const styles = StyleSheet.create({
   },
   // Professional Information Styles
   professionalGrid: {
-    flexDirection: "row",
+    flexDirection: "column",
     marginBottom: 16,
-    alignItems: "flex-start",
+    gap: 20,
   },
   professionalItem: {
-    flex: 1,
     flexDirection: "row",
     alignItems: "flex-start",
-    marginRight: 16,
+    paddingVertical: 4,
   },
   professionalItemContent: {
     flex: 1,
-    marginLeft: 8,
+    marginLeft: 16,
   },
   professionalItemLabel: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "600",
     textTransform: "uppercase",
     letterSpacing: 0.8,
@@ -1635,13 +1634,15 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   professionalItemValue: {
-    fontSize: 15,
-    fontWeight: "700",
-    marginBottom: 2,
-    lineHeight: 20,
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 4,
+    lineHeight: 22,
   },
   professionalItemSubtext: {
-    fontSize: 12,
+    fontSize: 14,
+    opacity: 0.8,
+    lineHeight: 18,
   },
   // Interests Styles
   interestsList: {

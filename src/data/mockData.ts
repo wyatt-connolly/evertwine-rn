@@ -43,7 +43,7 @@ export const mockUsers: User[] = [
     jobCompany: "InnovateTech Solutions",
     professionalLevel: "Senior",
     hometown: "Seattle, WA",
-    starSign: "Gemini",
+    starSign: "Cancer",
     hobbies: [
       "Hiking",
       "Photography",
