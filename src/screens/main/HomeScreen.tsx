@@ -187,6 +187,20 @@ export default function HomeScreen() {
         )}
       />
 
+      {/* Floating Action Button */}
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: colors.primary }]}
+        onPress={() =>
+          navigation.navigate("CreateMeetupStep1", {
+            formData: {},
+            onUpdate: () => {},
+          })
+        }
+        activeOpacity={0.8}
+      >
+        <Ionicons name="add" size={24} color="white" />
+      </TouchableOpacity>
+
       <InviteSnackbar
         visible={showInviteSnackbar}
         onDismiss={handleDismissInvite}
@@ -338,5 +352,23 @@ const styles = StyleSheet.create({
   seeAllText: {
     fontSize: 14,
     fontWeight: "500",
+  },
+  fab: {
+    position: "absolute",
+    bottom: 10,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });

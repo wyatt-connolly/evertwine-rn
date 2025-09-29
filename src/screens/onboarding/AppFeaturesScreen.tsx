@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -69,12 +69,29 @@ export default function AppFeaturesScreen({
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
+  useEffect(() => {
+    // Ensure the carousel starts at the first item
+    const timer = setTimeout(() => {
+      if (flatListRef.current) {
+        flatListRef.current.scrollToOffset({ offset: 0, animated: false });
+      }
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleNext = () => {
+    console.log("Next button pressed, currentIndex:", currentIndex);
     if (currentIndex < appFeatures.length - 1) {
       const nextIndex = currentIndex + 1;
+      console.log("Moving to next index:", nextIndex);
       setCurrentIndex(nextIndex);
-      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+      flatListRef.current?.scrollToOffset({
+        offset: nextIndex * width,
+        animated: true,
+      });
     } else {
+      console.log("Navigating to LocationPermission");
       // Navigate to next onboarding step
       navigation.navigate("LocationPermission");
     }
@@ -83,7 +100,9 @@ export default function AppFeaturesScreen({
   const handleScroll = (event: any) => {
     const contentOffset = event.nativeEvent.contentOffset.x;
     const index = Math.round(contentOffset / width);
-    setCurrentIndex(index);
+    if (index >= 0 && index < appFeatures.length) {
+      setCurrentIndex(index);
+    }
   };
 
   const renderFeature = ({ item, index }: { item: any; index: number }) => (
@@ -182,6 +201,9 @@ export default function AppFeaturesScreen({
                 offset: width * index,
                 index,
               })}
+              initialScrollIndex={0}
+              contentContainerStyle={styles.carouselContent}
+              removeClippedSubviews={false}
             />
 
             {renderPagination()}
@@ -246,6 +268,9 @@ const styles = StyleSheet.create({
   carousel: {
     flex: 1,
   },
+  carouselContent: {
+    paddingHorizontal: 0,
+  },
   featureCard: {
     width: width - 48,
     marginHorizontal: 24,
@@ -262,6 +287,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
+    alignSelf: "center",
   },
   imageContainer: {
     height: 160,

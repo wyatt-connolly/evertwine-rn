@@ -34,7 +34,6 @@ import AllMeetupsScreen from "../screens/main/AllMeetupsScreen";
 export type MainTabParamList = {
   Home: undefined;
   Community: undefined;
-  Create: undefined;
   Messages: undefined;
   Profile: undefined;
 };
@@ -179,8 +178,6 @@ function MainTabsNavigator() {
             iconName = focused ? "home" : "home-outline";
           } else if (route.name === "Community") {
             iconName = focused ? "people" : "people-outline";
-          } else if (route.name === "Create") {
-            iconName = focused ? "add-circle" : "add-circle-outline";
           } else if (route.name === "Messages") {
             iconName = focused ? "chatbubbles" : "chatbubbles-outline";
           } else if (route.name === "Profile") {
@@ -227,14 +224,6 @@ function MainTabsNavigator() {
                 }
               : { display: "none" },
           };
-        }}
-      />
-      <Tab.Screen
-        name="Create"
-        component={CreateMeetupScreen}
-        options={{
-          title: "Create",
-          tabBarStyle: { display: "none" },
         }}
       />
       <Tab.Screen

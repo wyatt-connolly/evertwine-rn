@@ -81,40 +81,6 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
     }
   };
 
-  const handleSetupPreferences = async () => {
-    console.log("🎯 Setup Preferences button pressed");
-    setLoading(true);
-
-    try {
-      // Load preferences
-      await loadPreferences();
-
-      // Update local state
-      setOnboardingComplete(true);
-      updateUserProfile({ onboardingComplete: true });
-
-      if (user?.uid) {
-        const result = await FirestoreService.updateUser(user.uid, {
-          onboardingComplete: true,
-        });
-
-        if (result.error) {
-          console.error("Failed to update onboarding status:", result.error);
-        } else {
-          console.log("✅ Onboarding completed successfully!");
-        }
-      }
-
-      // Navigate to preference setup
-      console.log("🔄 Navigating to PreferenceSetup...");
-      navigation.navigate("PreferenceSetup");
-    } catch (error) {
-      console.error("Error completing onboarding:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <GradientBackground variant="primary">
       <SafeAreaView
@@ -166,20 +132,12 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
 
           <View style={styles.buttonContainer}>
             <AnimatedButton
-              title={loading ? "Getting Started..." : "Setup Preferences"}
-              onPress={handleSetupPreferences}
+              title={loading ? "Getting Started..." : "Get Started"}
+              onPress={handleGetStarted}
               variant="primary"
               disabled={loading}
               loading={loading}
               style={styles.primaryButton}
-            />
-
-            <AnimatedButton
-              title="Skip for Now"
-              onPress={handleGetStarted}
-              variant="outline"
-              disabled={loading}
-              style={styles.secondaryButton}
             />
           </View>
         </View>
