@@ -9,6 +9,7 @@ import {
   Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../hooks/useAuthStore";
@@ -75,7 +76,7 @@ const CONTENT_PROMPTS = [
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
-  const { colors } = useThemeStore();
+  const { colors, isDarkMode } = useThemeStore();
   const { user: currentUser, isLoading: isInitialLoading } = useAuthStore();
   const { meetups } = useMeetupStore();
   const flatListRef = useRef<FlatList>(null);
@@ -673,16 +674,18 @@ export default function HomeScreen() {
 
   if (isInitialLoading) {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <StatusBar
+          barStyle={isDarkMode ? "light-content" : "dark-content"}
+          backgroundColor={colors.background}
+        />
         <LoadingIndicator />
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView
+    <View
       style={[
         activeFilter === "happy_hours"
           ? styles.containerCompact
@@ -690,6 +693,11 @@ export default function HomeScreen() {
         { backgroundColor: colors.background },
       ]}
     >
+      <StatusBar
+        barStyle={isDarkMode ? "light-content" : "dark-content"}
+        backgroundColor={colors.background}
+      />
+
       {/* Dropdown Overlay */}
       {showFeedModeDropdown && (
         <TouchableOpacity
@@ -700,129 +708,136 @@ export default function HomeScreen() {
       )}
 
       {/* Clean App Bar */}
-      <View style={[styles.appBar, { borderBottomColor: colors.border }]}>
-        {/* Logo with Dropdown */}
-        <TouchableOpacity
-          style={styles.logoContainer}
-          onPress={() => setShowFeedModeDropdown(!showFeedModeDropdown)}
-          activeOpacity={0.7}
-        >
-          <Text style={[styles.logoText, { color: colors.text }]}>
-            Evertwine
-          </Text>
-          <Ionicons
-            name={showFeedModeDropdown ? "chevron-up" : "chevron-down"}
-            size={18}
-            color={colors.text}
-          />
-        </TouchableOpacity>
-
-        {/* Action Buttons */}
-        <View style={styles.actionBar}>
+      <SafeAreaView
+        edges={["top"]}
+        style={{ backgroundColor: colors.background }}
+      >
+        <View style={[styles.appBar, { borderBottomColor: colors.border }]}>
+          {/* Logo with Dropdown */}
           <TouchableOpacity
-            style={[styles.iconButton, { backgroundColor: colors.surface }]}
-            onPress={() => setShowFilterModal(true)}
+            style={styles.logoContainer}
+            onPress={() => setShowFeedModeDropdown(!showFeedModeDropdown)}
             activeOpacity={0.7}
           >
-            <Ionicons name="options-outline" size={20} color={colors.text} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.iconButton, { backgroundColor: colors.surface }]}
-            onPress={() => navigation.navigate("Notifications")}
-            activeOpacity={0.7}
-          >
+            <Text style={[styles.logoText, { color: colors.text }]}>
+              Evertwine
+            </Text>
             <Ionicons
-              name="notifications-outline"
-              size={20}
+              name={showFeedModeDropdown ? "chevron-up" : "chevron-down"}
+              size={18}
               color={colors.text}
             />
-            {notifications.filter((n) => !n.isRead).length > 0 && (
-              <View style={[styles.badge, { backgroundColor: colors.primary }]}>
-                <Text style={styles.badgeText}>
-                  {notifications.filter((n) => !n.isRead).length > 9
-                    ? "9+"
-                    : notifications.filter((n) => !n.isRead).length}
-                </Text>
-              </View>
-            )}
           </TouchableOpacity>
-        </View>
 
-        {/* Feed Mode Dropdown */}
-        {showFeedModeDropdown && (
-          <View
-            style={[
-              styles.feedModeDropdown,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-                shadowColor: "#000",
-              },
-            ]}
-          >
+          {/* Action Buttons */}
+          <View style={styles.actionBar}>
             <TouchableOpacity
-              style={[
-                styles.feedModeOption,
-                feedMode === "for_you" && {
-                  backgroundColor: colors.primary + "10",
-                },
-              ]}
-              onPress={() => {
-                setFeedMode("for_you");
-                setShowFeedModeDropdown(false);
-              }}
+              style={[styles.iconButton, { backgroundColor: colors.surface }]}
+              onPress={() => setShowFilterModal(true)}
               activeOpacity={0.7}
             >
-              <Text
-                style={[
-                  styles.feedModeText,
-                  {
-                    color:
-                      feedMode === "for_you" ? colors.primary : colors.text,
-                    fontWeight: feedMode === "for_you" ? "600" : "500",
-                  },
-                ]}
-              >
-                For You
-              </Text>
-              {feedMode === "for_you" && (
-                <Ionicons name="checkmark" size={18} color={colors.primary} />
-              )}
+              <Ionicons name="options-outline" size={20} color={colors.text} />
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.feedModeOption,
-                feedMode === "favorites" && {
-                  backgroundColor: colors.primary + "10",
-                },
-              ]}
-              onPress={() => {
-                setFeedMode("favorites");
-                setShowFeedModeDropdown(false);
-              }}
+              style={[styles.iconButton, { backgroundColor: colors.surface }]}
+              onPress={() => navigation.navigate("Notifications")}
               activeOpacity={0.7}
             >
-              <Text
-                style={[
-                  styles.feedModeText,
-                  {
-                    color:
-                      feedMode === "favorites" ? colors.primary : colors.text,
-                    fontWeight: feedMode === "favorites" ? "600" : "500",
-                  },
-                ]}
-              >
-                Favorites
-              </Text>
-              {feedMode === "favorites" && (
-                <Ionicons name="checkmark" size={18} color={colors.primary} />
+              <Ionicons
+                name="notifications-outline"
+                size={20}
+                color={colors.text}
+              />
+              {notifications.filter((n) => !n.isRead).length > 0 && (
+                <View
+                  style={[styles.badge, { backgroundColor: colors.primary }]}
+                >
+                  <Text style={styles.badgeText}>
+                    {notifications.filter((n) => !n.isRead).length > 9
+                      ? "9+"
+                      : notifications.filter((n) => !n.isRead).length}
+                  </Text>
+                </View>
               )}
             </TouchableOpacity>
           </View>
-        )}
-      </View>
+
+          {/* Feed Mode Dropdown */}
+          {showFeedModeDropdown && (
+            <View
+              style={[
+                styles.feedModeDropdown,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  shadowColor: "#000",
+                },
+              ]}
+            >
+              <TouchableOpacity
+                style={[
+                  styles.feedModeOption,
+                  feedMode === "for_you" && {
+                    backgroundColor: colors.primary + "10",
+                  },
+                ]}
+                onPress={() => {
+                  setFeedMode("for_you");
+                  setShowFeedModeDropdown(false);
+                }}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.feedModeText,
+                    {
+                      color:
+                        feedMode === "for_you" ? colors.primary : colors.text,
+                      fontWeight: feedMode === "for_you" ? "600" : "500",
+                    },
+                  ]}
+                >
+                  For You
+                </Text>
+                {feedMode === "for_you" && (
+                  <Ionicons name="checkmark" size={18} color={colors.primary} />
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.feedModeOption,
+                  feedMode === "favorites" && {
+                    backgroundColor: colors.primary + "10",
+                  },
+                ]}
+                onPress={() => {
+                  setFeedMode("favorites");
+                  setShowFeedModeDropdown(false);
+                }}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.feedModeText,
+                    {
+                      color:
+                        feedMode === "favorites" ? colors.primary : colors.text,
+                      fontWeight: feedMode === "favorites" ? "600" : "500",
+                    },
+                  ]}
+                >
+                  Favorites
+                </Text>
+                {feedMode === "favorites" && (
+                  <Ionicons name="checkmark" size={18} color={colors.primary} />
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </SafeAreaView>
 
       {/* Feed */}
       {loading ? (
@@ -834,7 +849,7 @@ export default function HomeScreen() {
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
-          style={activeFilter === "happy_hours" ? { flex: 0 } : undefined}
+          style={{ flex: 1 }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -1051,7 +1066,7 @@ export default function HomeScreen() {
           },
         ]}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -1152,8 +1167,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   feedContent: {
-    paddingTop: 16,
-    paddingBottom: 80,
+    paddingBottom: 40,
   },
   feedContentCompact: {
     paddingBottom: 20,

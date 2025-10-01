@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -178,7 +178,6 @@ const styles = StyleSheet.create({
   optionLabel: {
     fontSize: 14,
     fontWeight: "600",
-    whiteSpace: "nowrap",
   },
   optionButton: {
     width: 48,
