@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
   RefreshControl,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -16,8 +17,6 @@ import { useMeetupStore } from "../../hooks/useMeetupStore";
 import EnhancedMeetupCard from "../../components/EnhancedMeetupCard";
 import EnhancedPostCard from "../../components/EnhancedPostCard";
 import HappyHourCarousel from "../../components/HappyHourCarousel";
-import FilterTabs, { FilterType } from "../../components/FilterTabs";
-import QuickActionsBar, { DateFilter } from "../../components/QuickActionsBar";
 import SkeletonLoader from "../../components/SkeletonLoader";
 import ContentPrompt from "../../components/ContentPrompt";
 import ExpandableFAB from "../../components/ExpandableFAB";
@@ -28,8 +27,10 @@ import {
 } from "../../data/mockData";
 import { DataService } from "../../services/DataService";
 import LoadingIndicator from "../../components/LoadingIndicator";
-import { testFirebaseData } from "../../utils/devTesting";
 import { Meetup, Notification, Post } from "../../types";
+
+type FilterType = "all" | "meetups" | "posts" | "happy_hours";
+type DateFilter = "all" | "today" | "this_week" | "this_weekend";
 
 type FeedItem = {
   id: string;
@@ -74,9 +75,9 @@ const CONTENT_PROMPTS = [
 ];
 
 export default function HomeScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { colors } = useThemeStore();
-  const { currentUser, isInitialLoading } = useAuthStore();
+  const { user: currentUser, isLoading: isInitialLoading } = useAuthStore();
   const { meetups } = useMeetupStore();
   const flatListRef = useRef<FlatList>(null);
 
@@ -92,6 +93,9 @@ export default function HomeScreen() {
     new Set()
   );
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [feedMode, setFeedMode] = useState<"for_you" | "favorites">("for_you");
+  const [showFeedModeDropdown, setShowFeedModeDropdown] = useState(false);
 
   // Mock data
   const allMeetups = DataService.isInDeveloperMode()
@@ -112,12 +116,6 @@ export default function HomeScreen() {
       setNotifications(getUserNotifications(currentUser.uid));
     }
   }, [currentUser]);
-
-  useEffect(() => {
-    if (__DEV__ && !DataService.isInDeveloperMode()) {
-      testFirebaseData();
-    }
-  }, []);
 
   // Rotate content prompts every 5 items
   useEffect(() => {
@@ -314,25 +312,6 @@ export default function HomeScreen() {
     currentPromptIndex,
   ]);
 
-  // Filter counts
-  const filterCounts = useMemo(() => {
-    const now = new Date();
-    const futureMeetups = allMeetups.filter(
-      (m) => m.time.getTime() > now.getTime()
-    );
-
-    return {
-      all: posts.length + futureMeetups.length,
-      meetups: futureMeetups.length,
-      posts: posts.length,
-      happy_hours: 5, // Mock count from carousel
-    };
-  }, [posts, allMeetups]);
-
-  // Nearby count (mock)
-  const nearbyCount = useMemo(() => {
-    return allMeetups.filter((m) => m.time.getTime() > Date.now()).length;
-  }, [allMeetups]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -371,7 +350,7 @@ export default function HomeScreen() {
             id: `comment_${Date.now()}`,
             userId: currentUser.uid,
             userName: currentUser.displayName || "User",
-            userAvatar: currentUser.profilePictures?.[0] || "",
+            userAvatar: currentUser.photoURL || "",
             message,
             createdAt: new Date(),
           };
@@ -424,7 +403,7 @@ export default function HomeScreen() {
   };
 
   // Mock mutual friends generator
-  const getMutualFriends = (meetup: Meetup) => {
+  const getMutualFriends = () => {
     // This would be calculated from real friend data
     if (Math.random() > 0.6) {
       return [
@@ -523,7 +502,7 @@ export default function HomeScreen() {
               }
               onInterested={handleMeetupInterested}
               isInterested={interestedMeetups.has(recommendedMeetup.id)}
-              mutualFriends={getMutualFriends(recommendedMeetup)}
+              mutualFriends={getMutualFriends()}
             />
           </View>
         );
@@ -619,7 +598,7 @@ export default function HomeScreen() {
               }
               onInterested={handleMeetupInterested}
               isInterested={interestedMeetups.has(meetup.id)}
-              mutualFriends={getMutualFriends(meetup)}
+              mutualFriends={getMutualFriends()}
             />
           </View>
         );
@@ -727,64 +706,138 @@ export default function HomeScreen() {
         { backgroundColor: colors.background },
       ]}
     >
-      {/* App Bar */}
-      <View
-        style={[
-          styles.appBar,
-          {
-            backgroundColor: colors.background,
-            borderBottomColor: colors.border,
-          },
-        ]}
-      >
-        <View style={styles.appBarContent}>
-          <View style={styles.appBarTitleContainer}>
-            <Ionicons name="home" size={22} color={colors.primary} />
-            <Text style={[styles.appBarTitle, { color: colors.text }]}>
-              Evertwine
-            </Text>
-          </View>
+      {/* Dropdown Overlay */}
+      {showFeedModeDropdown && (
+        <TouchableOpacity
+          style={styles.dropdownOverlay}
+          activeOpacity={1}
+          onPress={() => setShowFeedModeDropdown(false)}
+        />
+      )}
+
+      {/* Clean App Bar */}
+      <View style={[styles.appBar, { borderBottomColor: colors.border }]}>
+        {/* Logo with Dropdown */}
+        <TouchableOpacity
+          style={styles.logoContainer}
+          onPress={() => setShowFeedModeDropdown(!showFeedModeDropdown)}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.logoText, { color: colors.text }]}>
+            Evertwine
+          </Text>
+          <Ionicons
+            name={showFeedModeDropdown ? "chevron-up" : "chevron-down"}
+            size={18}
+            color={colors.text}
+          />
+        </TouchableOpacity>
+
+        {/* Action Buttons */}
+        <View style={styles.actionBar}>
           <TouchableOpacity
-            style={styles.notificationButton}
+            style={[styles.iconButton, { backgroundColor: colors.surface }]}
+            onPress={() => setShowFilterModal(true)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="options-outline" size={20} color={colors.text} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.iconButton, { backgroundColor: colors.surface }]}
             onPress={() => navigation.navigate("Notifications")}
+            activeOpacity={0.7}
           >
             <Ionicons
               name="notifications-outline"
-              size={22}
+              size={20}
               color={colors.text}
             />
             {notifications.filter((n) => !n.isRead).length > 0 && (
-              <View
-                style={[
-                  styles.notificationBadge,
-                  { backgroundColor: colors.primary },
-                ]}
-              >
-                <Text style={styles.notificationBadgeText}>
-                  {notifications.filter((n) => !n.isRead).length}
+              <View style={[styles.badge, { backgroundColor: colors.primary }]}>
+                <Text style={styles.badgeText}>
+                  {notifications.filter((n) => !n.isRead).length > 9
+                    ? "9+"
+                    : notifications.filter((n) => !n.isRead).length}
                 </Text>
               </View>
             )}
           </TouchableOpacity>
         </View>
+
+        {/* Feed Mode Dropdown */}
+        {showFeedModeDropdown && (
+          <View
+            style={[
+              styles.feedModeDropdown,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                shadowColor: "#000",
+              },
+            ]}
+          >
+            <TouchableOpacity
+              style={[
+                styles.feedModeOption,
+                feedMode === "for_you" && {
+                  backgroundColor: colors.primary + "10",
+                },
+              ]}
+              onPress={() => {
+                setFeedMode("for_you");
+                setShowFeedModeDropdown(false);
+              }}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={[
+                  styles.feedModeText,
+                  {
+                    color: feedMode === "for_you" ? colors.primary : colors.text,
+                    fontWeight: feedMode === "for_you" ? "600" : "500",
+                  },
+                ]}
+              >
+                For You
+              </Text>
+              {feedMode === "for_you" && (
+                <Ionicons name="checkmark" size={18} color={colors.primary} />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.feedModeOption,
+                feedMode === "favorites" && {
+                  backgroundColor: colors.primary + "10",
+                },
+              ]}
+              onPress={() => {
+                setFeedMode("favorites");
+                setShowFeedModeDropdown(false);
+              }}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={[
+                  styles.feedModeText,
+                  {
+                    color:
+                      feedMode === "favorites" ? colors.primary : colors.text,
+                    fontWeight: feedMode === "favorites" ? "600" : "500",
+                  },
+                ]}
+              >
+                Favorites
+              </Text>
+              {feedMode === "favorites" && (
+                <Ionicons name="checkmark" size={18} color={colors.primary} />
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
-
-      {/* Filter Tabs */}
-      <FilterTabs
-        activeFilter={activeFilter}
-        onFilterChange={handleFilterChange}
-        counts={filterCounts}
-      />
-
-      {/* Quick Actions Bar */}
-      <QuickActionsBar
-        onLocationPress={() => navigation.navigate("Map")}
-        onDateFilterChange={setSelectedDateFilter}
-        onMapPress={() => navigation.navigate("Map")}
-        onSearchPress={() => navigation.navigate("Search")}
-        selectedDateFilter={selectedDateFilter}
-        nearbyCount={nearbyCount}
-      />
 
       {/* Feed */}
       {loading ? (
@@ -826,6 +879,172 @@ export default function HomeScreen() {
         />
       )}
 
+      {/* Filter Modal */}
+      <Modal
+        visible={showFilterModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowFilterModal(false)}
+        >
+          <View
+            style={[styles.modalContent, { backgroundColor: colors.surface }]}
+            onStartShouldSetResponder={() => true}
+          >
+            <View
+              style={[styles.modalHeader, { borderBottomColor: colors.border }]}
+            >
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
+                Feed Filters
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowFilterModal(false)}
+                style={styles.modalClose}
+              >
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Content Type */}
+            <View style={styles.section}>
+              <Text
+                style={[styles.sectionTitle, { color: colors.textSecondary }]}
+              >
+                CONTENT TYPE
+              </Text>
+              {[
+                { type: "all", label: "All", icon: "apps" },
+                { type: "meetups", label: "Meetups", icon: "people" },
+                { type: "posts", label: "Posts", icon: "newspaper" },
+                { type: "happy_hours", label: "Happy Hours", icon: "wine" },
+              ].map((filter) => {
+                const isActive = activeFilter === filter.type;
+                return (
+                  <TouchableOpacity
+                    key={filter.type}
+                    style={[
+                      styles.modalOption,
+                      {
+                        backgroundColor: isActive
+                          ? colors.primary + "10"
+                          : "transparent",
+                      },
+                    ]}
+                    onPress={() => {
+                      handleFilterChange(filter.type as FilterType);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.modalOptionLeft}>
+                      <Ionicons
+                        name={filter.icon as any}
+                        size={22}
+                        color={isActive ? colors.primary : colors.textSecondary}
+                      />
+                      <Text
+                        style={[
+                          styles.modalOptionText,
+                          {
+                            color: isActive ? colors.primary : colors.text,
+                            fontWeight: isActive ? "600" : "500",
+                          },
+                        ]}
+                      >
+                        {filter.label}
+                      </Text>
+                    </View>
+                    {isActive && (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={24}
+                        color={colors.primary}
+                      />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {/* Time Range */}
+            <View style={styles.section}>
+              <Text
+                style={[styles.sectionTitle, { color: colors.textSecondary }]}
+              >
+                TIME RANGE
+              </Text>
+              {[
+                { type: "all", label: "All" },
+                { type: "today", label: "Today" },
+                { type: "this_week", label: "This Week" },
+                { type: "this_weekend", label: "This Weekend" },
+              ].map((filter) => {
+                const isActive = selectedDateFilter === filter.type;
+                return (
+                  <TouchableOpacity
+                    key={filter.type}
+                    style={[
+                      styles.modalOption,
+                      {
+                        backgroundColor: isActive
+                          ? colors.primary + "10"
+                          : "transparent",
+                      },
+                    ]}
+                    onPress={() => {
+                      setSelectedDateFilter(filter.type as DateFilter);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.modalOptionLeft}>
+                      <Ionicons
+                        name="calendar-outline"
+                        size={22}
+                        color={isActive ? colors.primary : colors.textSecondary}
+                      />
+                      <Text
+                        style={[
+                          styles.modalOptionText,
+                          {
+                            color: isActive ? colors.primary : colors.text,
+                            fontWeight: isActive ? "600" : "500",
+                          },
+                        ]}
+                      >
+                        {filter.label}
+                      </Text>
+                    </View>
+                    {isActive && (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={24}
+                        color={colors.primary}
+                      />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {/* Apply Button */}
+            <TouchableOpacity
+              style={[styles.applyButton, { backgroundColor: colors.primary }]}
+              onPress={() => setShowFilterModal(false)}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[styles.applyButtonText, { color: colors.onPrimary }]}
+              >
+                Apply Filters
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       {/* Expandable Floating Action Button */}
       <ExpandableFAB
         options={[
@@ -859,47 +1078,96 @@ const styles = StyleSheet.create({
     flex: 1,
     flexShrink: 1,
   },
+  dropdownOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 50,
+  },
   appBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 8,
     paddingBottom: 12,
     borderBottomWidth: 1,
+    position: "relative",
+    zIndex: 10,
   },
-  appBarContent: {
+  logoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  logoText: {
+    fontSize: 22,
+    fontWeight: "700",
+    letterSpacing: -0.5,
+  },
+  feedModeDropdown: {
+    position: "absolute",
+    top: 50,
+    left: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingVertical: 8,
+    minWidth: 160,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
+    zIndex: 100,
+  },
+  feedModeOption: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
-  appBarTitleContainer: {
+  feedModeText: {
+    fontSize: 16,
+  },
+  actionBar: {
     flexDirection: "row",
+    gap: 10,
+  },
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
     alignItems: "center",
-    gap: 8,
-  },
-  appBarTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-  },
-  notificationButton: {
-    padding: 4,
     position: "relative",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  notificationBadge: {
+  badge: {
     position: "absolute",
-    top: 6,
-    right: 6,
+    top: -2,
+    right: -2,
     minWidth: 18,
     height: 18,
     borderRadius: 9,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 4,
+    paddingHorizontal: 5,
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
   },
-  notificationBadgeText: {
+  badgeText: {
     color: "#FFFFFF",
     fontSize: 10,
     fontWeight: "700",
   },
   feedContent: {
+    paddingTop: 16,
     paddingBottom: 100,
   },
   feedContentCompact: {
@@ -985,5 +1253,81 @@ const styles = StyleSheet.create({
   emptyButtonText: {
     fontSize: 15,
     fontWeight: "600",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 32,
+    maxHeight: "80%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 12,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+  },
+  modalClose: {
+    width: 32,
+    height: 32,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  section: {
+    paddingTop: 20,
+  },
+  sectionTitle: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1,
+    paddingHorizontal: 24,
+    marginBottom: 8,
+  },
+  modalOption: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    marginHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 6,
+  },
+  modalOptionLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    flex: 1,
+  },
+  modalOptionText: {
+    fontSize: 16,
+    flex: 1,
+  },
+  applyButton: {
+    marginHorizontal: 24,
+    marginTop: 24,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  applyButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
   },
 });
