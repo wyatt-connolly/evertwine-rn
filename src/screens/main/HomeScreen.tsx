@@ -150,40 +150,6 @@ export default function HomeScreen() {
     const items: FeedItem[] = [];
     const now = new Date();
 
-    // Add Happy Hour events (only if not filtered)
-    if (activeFilter === "all" || activeFilter === "happy_hours") {
-      happyHourEvents.forEach((event) => {
-        const hoursUntilEvent =
-          (event.startTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-        let priority = 100;
-        // Events happening TODAY get highest priority
-        if (hoursUntilEvent > 0 && hoursUntilEvent < 24) {
-          priority = 3;
-        }
-        // Events THIS WEEK
-        else if (hoursUntilEvent > 0 && hoursUntilEvent < 168) {
-          priority = 15 + Math.floor(hoursUntilEvent / 24);
-        }
-        // Future events
-        else if (hoursUntilEvent > 0) {
-          priority = 40 + Math.floor(hoursUntilEvent / 24);
-        }
-        // Past events (lower priority)
-        else {
-          priority = 200;
-        }
-
-        items.push({
-          id: `happy_hour_${event.id}`,
-          type: "happy_hour",
-          data: event,
-          timestamp: event.startTime,
-          priority,
-        });
-      });
-    }
-
     // Add Recommended section (only for "all" and "meetups")
     if (
       (activeFilter === "all" || activeFilter === "meetups") &&
@@ -204,7 +170,7 @@ export default function HomeScreen() {
       });
     }
 
-    // Combine posts and meetups with priority
+    // Combine ALL content types with priority
     const combined: FeedItem[] = [];
     let itemCount = 0;
 
@@ -312,7 +278,41 @@ export default function HomeScreen() {
       });
     }
 
-    // Sort by priority (lower number = higher priority)
+    // Add Happy Hour events (only if not filtered) - MIXED WITH OTHER CONTENT
+    if (activeFilter === "all" || activeFilter === "happy_hours") {
+      happyHourEvents.forEach((event) => {
+        const hoursUntilEvent =
+          (event.startTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+        let priority = 100;
+        // Events happening TODAY get highest priority
+        if (hoursUntilEvent > 0 && hoursUntilEvent < 24) {
+          priority = 3;
+        }
+        // Events THIS WEEK
+        else if (hoursUntilEvent > 0 && hoursUntilEvent < 168) {
+          priority = 15 + Math.floor(hoursUntilEvent / 24);
+        }
+        // Future events
+        else if (hoursUntilEvent > 0) {
+          priority = 40 + Math.floor(hoursUntilEvent / 24);
+        }
+        // Past events (lower priority)
+        else {
+          priority = 200;
+        }
+
+        combined.push({
+          id: `happy_hour_${event.id}`,
+          type: "happy_hour",
+          data: event,
+          timestamp: event.startTime,
+          priority,
+        });
+      });
+    }
+
+    // Sort by priority (lower number = higher priority) - ALL ITEMS MIXED TOGETHER
     combined.sort((a, b) => (a.priority || 0) - (b.priority || 0));
 
     items.push(...combined);

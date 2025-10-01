@@ -56,8 +56,16 @@ export default function EventCard({ event, onPress, style }: EventCardProps) {
               style={styles.shareButton}
             />
             <View style={styles.happyHourIndicator}>
-              <Ionicons name="wine-outline" size={12} color={colors.textSecondary} />
-              <Text style={[styles.happyHourText, { color: colors.textSecondary }]}>Happy Hour</Text>
+              <Ionicons
+                name="wine-outline"
+                size={12}
+                color={colors.textSecondary}
+              />
+              <Text
+                style={[styles.happyHourText, { color: colors.textSecondary }]}
+              >
+                Happy Hour
+              </Text>
             </View>
           </View>
         </View>
@@ -93,7 +101,9 @@ export default function EventCard({ event, onPress, style }: EventCardProps) {
               key={index}
               style={[styles.tag, { backgroundColor: colors.primary + "20" }]}
             >
-              <Text style={[styles.tagText, { color: colors.primary }]}>{tag}</Text>
+              <Text style={[styles.tagText, { color: colors.primary }]}>
+                {tag}
+              </Text>
             </View>
           ))}
         </View>
