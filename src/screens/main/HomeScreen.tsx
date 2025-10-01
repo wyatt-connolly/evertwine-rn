@@ -103,12 +103,16 @@ export default function HomeScreen() {
   const [tempSelectedPostTypes, setTempSelectedPostTypes] = useState<string[]>(
     []
   );
-  
+
   // Applied filters (what's actually being used in the feed)
-  const [appliedMeetupActivities, setAppliedMeetupActivities] = useState<string[]>([]);
-  const [appliedHappyHourTypes, setAppliedHappyHourTypes] = useState<string[]>([]);
+  const [appliedMeetupActivities, setAppliedMeetupActivities] = useState<
+    string[]
+  >([]);
+  const [appliedHappyHourTypes, setAppliedHappyHourTypes] = useState<string[]>(
+    []
+  );
   const [appliedPostTypes, setAppliedPostTypes] = useState<string[]>([]);
-  
+
   const [interestedMeetups, setInterestedMeetups] = useState<Set<string>>(
     new Set()
   );
