@@ -618,7 +618,8 @@ export const mockMeetups: Meetup[] = [
   {
     id: "upcoming_meetup_1",
     title: "Coffee & Code Morning",
-    description: "Join fellow developers for a casual coding session over coffee. Bring your laptop and work on personal projects together!",
+    description:
+      "Join fellow developers for a casual coding session over coffee. Bring your laptop and work on personal projects together!",
     creatorId: "user1",
     creatorRef: "users/user1",
     location: { latitude: 37.7749, longitude: -122.4194 },
@@ -647,15 +648,19 @@ export const mockMeetups: Meetup[] = [
     joinRequests: 3,
     completionRate: 85,
     engagementScore: 78,
-    coverImage: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800",
-    images: ["https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800"],
+    coverImage:
+      "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800",
+    images: [
+      "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800",
+    ],
     createdAt: new Date(),
     updatedAt: new Date(),
   },
   {
     id: "upcoming_meetup_2",
     title: "Weekend Farmers Market Tour",
-    description: "Explore the best local farmers market together! We'll visit multiple vendors and share tips on finding the freshest produce.",
+    description:
+      "Explore the best local farmers market together! We'll visit multiple vendors and share tips on finding the freshest produce.",
     creatorId: "user2",
     creatorRef: "users/user2",
     location: { latitude: 37.7849, longitude: -122.4094 },
@@ -684,15 +689,19 @@ export const mockMeetups: Meetup[] = [
     joinRequests: 7,
     completionRate: 90,
     engagementScore: 82,
-    coverImage: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800",
-    images: ["https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800"],
+    coverImage:
+      "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800",
+    images: [
+      "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800",
+    ],
     createdAt: new Date(),
     updatedAt: new Date(),
   },
   {
     id: "upcoming_meetup_3",
     title: "Sunset Photography Workshop",
-    description: "Learn the basics of sunset photography with professional tips and hands-on practice at a beautiful SF location.",
+    description:
+      "Learn the basics of sunset photography with professional tips and hands-on practice at a beautiful SF location.",
     creatorId: "user1",
     creatorRef: "users/user1",
     location: { latitude: 37.8199, longitude: -122.4783 },
@@ -721,8 +730,11 @@ export const mockMeetups: Meetup[] = [
     joinRequests: 4,
     completionRate: 92,
     engagementScore: 88,
-    coverImage: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
-    images: ["https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800"],
+    coverImage:
+      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    images: [
+      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800",
+    ],
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -744,7 +756,9 @@ export const mockEvents: Event[] = [
     address: "2 Marina Blvd, San Francisco, CA 94123",
     venue: "Fort Mason Center",
     startTime: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000), // 4 days from now
-    endTime: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000 + 9 * 60 * 60 * 1000), // 4 days from now + 9 hours
+    endTime: new Date(
+      Date.now() + 4 * 24 * 60 * 60 * 1000 + 9 * 60 * 60 * 1000
+    ), // 4 days from now + 9 hours
     timezone: "PST",
     category: "Food & Drink",
     subcategory: "Food Festival",

@@ -7,6 +7,7 @@ import {
   FlatList,
   RefreshControl,
   Modal,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "react-native";
@@ -89,6 +90,13 @@ export default function HomeScreen() {
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [selectedDateFilter, setSelectedDateFilter] =
     useState<DateFilter>("all");
+  
+  // Filter state for the modal (not applied until user clicks Apply)
+  const [tempActiveFilter, setTempActiveFilter] = useState<FilterType>("all");
+  const [tempSelectedDateFilter, setTempSelectedDateFilter] = useState<DateFilter>("all");
+  const [tempSelectedMeetupActivities, setTempSelectedMeetupActivities] = useState<string[]>([]);
+  const [tempSelectedHappyHourTypes, setTempSelectedHappyHourTypes] = useState<string[]>([]);
+  const [tempSelectedPostTypes, setTempSelectedPostTypes] = useState<string[]>([]);
   const [interestedMeetups, setInterestedMeetups] = useState<Set<string>>(
     new Set()
   );
@@ -392,13 +400,27 @@ export default function HomeScreen() {
     });
   };
 
-  const handleFilterChange = (filter: FilterType) => {
-    setActiveFilter(filter);
+  const handleOpenFilterModal = () => {
+    // Initialize temp filters with current values
+    setTempActiveFilter(activeFilter);
+    setTempSelectedDateFilter(selectedDateFilter);
+    setTempSelectedMeetupActivities([]);
+    setTempSelectedHappyHourTypes([]);
+    setTempSelectedPostTypes([]);
+    setShowFilterModal(true);
+  };
 
-    // Always scroll to top when changing filters
+  const handleApplyFilters = () => {
+    // Apply the temp filters to the actual filters
+    setActiveFilter(tempActiveFilter);
+    setSelectedDateFilter(tempSelectedDateFilter);
+    
+    // Scroll to top when applying filters
     setTimeout(() => {
       flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
     }, 100);
+    
+    setShowFilterModal(false);
   };
 
   const getTimeUntilMeetup = (meetupTime: Date): string => {
@@ -733,7 +755,7 @@ export default function HomeScreen() {
           <View style={styles.actionBar}>
             <TouchableOpacity
               style={[styles.iconButton, { backgroundColor: colors.surface }]}
-              onPress={() => setShowFilterModal(true)}
+              onPress={handleOpenFilterModal}
               activeOpacity={0.7}
             >
               <Ionicons name="options-outline" size={20} color={colors.text} />
@@ -909,130 +931,341 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Content Type */}
-            <View style={styles.section}>
-              <Text
-                style={[styles.sectionTitle, { color: colors.textSecondary }]}
-              >
-                CONTENT TYPE
-              </Text>
-              {[
-                { type: "all", label: "All", icon: "apps" },
-                { type: "meetups", label: "Meetups", icon: "people" },
-                { type: "posts", label: "Posts", icon: "newspaper" },
-                { type: "happy_hours", label: "Happy Hours", icon: "wine" },
-              ].map((filter) => {
-                const isActive = activeFilter === filter.type;
-                return (
-                  <TouchableOpacity
-                    key={filter.type}
-                    style={[
-                      styles.modalOption,
-                      {
-                        backgroundColor: isActive
-                          ? colors.primary + "10"
-                          : "transparent",
-                      },
-                    ]}
-                    onPress={() => {
-                      handleFilterChange(filter.type as FilterType);
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <View style={styles.modalOptionLeft}>
-                      <Ionicons
-                        name={filter.icon as any}
-                        size={22}
-                        color={isActive ? colors.primary : colors.textSecondary}
-                      />
-                      <Text
-                        style={[
-                          styles.modalOptionText,
-                          {
-                            color: isActive ? colors.primary : colors.text,
-                            fontWeight: isActive ? "600" : "500",
-                          },
-                        ]}
-                      >
-                        {filter.label}
-                      </Text>
-                    </View>
-                    {isActive && (
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={24}
-                        color={colors.primary}
-                      />
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+            <ScrollView 
+              style={styles.modalScrollView}
+              showsVerticalScrollIndicator={false}
+            >
+              {/* Content Type */}
+              <View style={styles.section}>
+                <Text
+                  style={[styles.sectionTitle, { color: colors.textSecondary }]}
+                >
+                  CONTENT TYPE
+                </Text>
+                {[
+                  { type: "all", label: "All", icon: "apps" },
+                  { type: "meetups", label: "Meetups", icon: "people" },
+                  { type: "posts", label: "Posts", icon: "newspaper" },
+                  { type: "happy_hours", label: "Happy Hours", icon: "wine" },
+                ].map((filter) => {
+                  const isActive = tempActiveFilter === filter.type;
+                  return (
+                    <TouchableOpacity
+                      key={filter.type}
+                      style={[
+                        styles.modalOption,
+                        {
+                          backgroundColor: isActive
+                            ? colors.primary + "10"
+                            : "transparent",
+                        },
+                      ]}
+                      onPress={() => setTempActiveFilter(filter.type as FilterType)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.modalOptionLeft}>
+                        <Ionicons
+                          name={filter.icon as any}
+                          size={22}
+                          color={isActive ? colors.primary : colors.textSecondary}
+                        />
+                        <Text
+                          style={[
+                            styles.modalOptionText,
+                            {
+                              color: isActive ? colors.primary : colors.text,
+                              fontWeight: isActive ? "600" : "500",
+                            },
+                          ]}
+                        >
+                          {filter.label}
+                        </Text>
+                      </View>
+                      {isActive && (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={24}
+                          color={colors.primary}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
 
-            {/* Time Range */}
-            <View style={styles.section}>
-              <Text
-                style={[styles.sectionTitle, { color: colors.textSecondary }]}
-              >
-                TIME RANGE
-              </Text>
-              {[
-                { type: "all", label: "All" },
-                { type: "today", label: "Today" },
-                { type: "this_week", label: "This Week" },
-                { type: "this_weekend", label: "This Weekend" },
-              ].map((filter) => {
-                const isActive = selectedDateFilter === filter.type;
-                return (
-                  <TouchableOpacity
-                    key={filter.type}
-                    style={[
-                      styles.modalOption,
-                      {
-                        backgroundColor: isActive
-                          ? colors.primary + "10"
-                          : "transparent",
-                      },
-                    ]}
-                    onPress={() => {
-                      setSelectedDateFilter(filter.type as DateFilter);
-                    }}
-                    activeOpacity={0.7}
+              {/* Time Range */}
+              <View style={styles.section}>
+                <Text
+                  style={[styles.sectionTitle, { color: colors.textSecondary }]}
+                >
+                  TIME RANGE
+                </Text>
+                {[
+                  { type: "all", label: "All" },
+                  { type: "today", label: "Today" },
+                  { type: "this_week", label: "This Week" },
+                  { type: "this_weekend", label: "This Weekend" },
+                ].map((filter) => {
+                  const isActive = tempSelectedDateFilter === filter.type;
+                  return (
+                    <TouchableOpacity
+                      key={filter.type}
+                      style={[
+                        styles.modalOption,
+                        {
+                          backgroundColor: isActive
+                            ? colors.primary + "10"
+                            : "transparent",
+                        },
+                      ]}
+                      onPress={() => setTempSelectedDateFilter(filter.type as DateFilter)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.modalOptionLeft}>
+                        <Ionicons
+                          name="calendar-outline"
+                          size={22}
+                          color={isActive ? colors.primary : colors.textSecondary}
+                        />
+                        <Text
+                          style={[
+                            styles.modalOptionText,
+                            {
+                              color: isActive ? colors.primary : colors.text,
+                              fontWeight: isActive ? "600" : "500",
+                            },
+                          ]}
+                        >
+                          {filter.label}
+                        </Text>
+                      </View>
+                      {isActive && (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={24}
+                          color={colors.primary}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              {/* Meetup Activity Filters */}
+              {(tempActiveFilter === "all" || tempActiveFilter === "meetups") && (
+                <View style={styles.section}>
+                  <Text
+                    style={[styles.sectionTitle, { color: colors.textSecondary }]}
                   >
-                    <View style={styles.modalOptionLeft}>
-                      <Ionicons
-                        name="calendar-outline"
-                        size={22}
-                        color={isActive ? colors.primary : colors.textSecondary}
-                      />
-                      <Text
+                    MEETUP ACTIVITIES
+                  </Text>
+                  {[
+                    { id: "yoga", label: "Yoga & Wellness", icon: "leaf" },
+                    { id: "fitness", label: "Fitness", icon: "fitness" },
+                    { id: "photography", label: "Photography", icon: "camera" },
+                    { id: "networking", label: "Networking", icon: "people" },
+                    { id: "food", label: "Food & Cooking", icon: "restaurant" },
+                    { id: "art", label: "Arts & Culture", icon: "color-palette" },
+                    { id: "technology", label: "Technology", icon: "laptop" },
+                    { id: "outdoor", label: "Outdoor Activities", icon: "trail-sign" },
+                  ].map((activity) => {
+                    const isSelected = tempSelectedMeetupActivities.includes(activity.id);
+                    return (
+                      <TouchableOpacity
+                        key={activity.id}
                         style={[
-                          styles.modalOptionText,
+                          styles.modalOption,
                           {
-                            color: isActive ? colors.primary : colors.text,
-                            fontWeight: isActive ? "600" : "500",
+                            backgroundColor: isSelected
+                              ? colors.primary + "10"
+                              : "transparent",
                           },
                         ]}
+                        onPress={() => {
+                          setTempSelectedMeetupActivities(prev => 
+                            isSelected 
+                              ? prev.filter(id => id !== activity.id)
+                              : [...prev, activity.id]
+                          );
+                        }}
+                        activeOpacity={0.7}
                       >
-                        {filter.label}
-                      </Text>
-                    </View>
-                    {isActive && (
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={24}
-                        color={colors.primary}
-                      />
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+                        <View style={styles.modalOptionLeft}>
+                          <Ionicons
+                            name={activity.icon as any}
+                            size={22}
+                            color={isSelected ? colors.primary : colors.textSecondary}
+                          />
+                          <Text
+                            style={[
+                              styles.modalOptionText,
+                              {
+                                color: isSelected ? colors.primary : colors.text,
+                                fontWeight: isSelected ? "600" : "500",
+                              },
+                            ]}
+                          >
+                            {activity.label}
+                          </Text>
+                        </View>
+                        {isSelected && (
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={24}
+                            color={colors.primary}
+                          />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
+
+              {/* Happy Hour Type Filters */}
+              {(tempActiveFilter === "all" || tempActiveFilter === "happy_hours") && (
+                <View style={styles.section}>
+                  <Text
+                    style={[styles.sectionTitle, { color: colors.textSecondary }]}
+                  >
+                    HAPPY HOUR TYPES
+                  </Text>
+                  {[
+                    { id: "bars", label: "Bars & Pubs", icon: "wine" },
+                    { id: "cocktails", label: "Cocktail Lounges", icon: "wine-outline" },
+                    { id: "wine", label: "Wine Bars", icon: "wine" },
+                    { id: "beer", label: "Craft Beer", icon: "beer" },
+                    { id: "non-alcoholic", label: "Non-Alcoholic", icon: "leaf" },
+                    { id: "rooftop", label: "Rooftop Bars", icon: "business" },
+                    { id: "dive", label: "Dive Bars", icon: "home" },
+                    { id: "speakeasy", label: "Speakeasies", icon: "lock-closed" },
+                  ].map((type) => {
+                    const isSelected = tempSelectedHappyHourTypes.includes(type.id);
+                    return (
+                      <TouchableOpacity
+                        key={type.id}
+                        style={[
+                          styles.modalOption,
+                          {
+                            backgroundColor: isSelected
+                              ? colors.primary + "10"
+                              : "transparent",
+                          },
+                        ]}
+                        onPress={() => {
+                          setTempSelectedHappyHourTypes(prev => 
+                            isSelected 
+                              ? prev.filter(id => id !== type.id)
+                              : [...prev, type.id]
+                          );
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <View style={styles.modalOptionLeft}>
+                          <Ionicons
+                            name={type.icon as any}
+                            size={22}
+                            color={isSelected ? colors.primary : colors.textSecondary}
+                          />
+                          <Text
+                            style={[
+                              styles.modalOptionText,
+                              {
+                                color: isSelected ? colors.primary : colors.text,
+                                fontWeight: isSelected ? "600" : "500",
+                              },
+                            ]}
+                          >
+                            {type.label}
+                          </Text>
+                        </View>
+                        {isSelected && (
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={24}
+                            color={colors.primary}
+                          />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
+
+              {/* Post Type Filters */}
+              {(tempActiveFilter === "all" || tempActiveFilter === "posts") && (
+                <View style={styles.section}>
+                  <Text
+                    style={[styles.sectionTitle, { color: colors.textSecondary }]}
+                  >
+                    POST TYPES
+                  </Text>
+                  {[
+                    { id: "announcements", label: "Announcements", icon: "megaphone" },
+                    { id: "personal", label: "Personal Updates", icon: "person" },
+                    { id: "recommendations", label: "Recommendations", icon: "star" },
+                    { id: "questions", label: "Questions", icon: "help-circle" },
+                    { id: "events", label: "Event Posts", icon: "calendar" },
+                    { id: "photos", label: "Photo Posts", icon: "camera" },
+                    { id: "discussions", label: "Discussions", icon: "chatbubbles" },
+                    { id: "tips", label: "Tips & Advice", icon: "bulb" },
+                  ].map((type) => {
+                    const isSelected = tempSelectedPostTypes.includes(type.id);
+                    return (
+                      <TouchableOpacity
+                        key={type.id}
+                        style={[
+                          styles.modalOption,
+                          {
+                            backgroundColor: isSelected
+                              ? colors.primary + "10"
+                              : "transparent",
+                          },
+                        ]}
+                        onPress={() => {
+                          setTempSelectedPostTypes(prev => 
+                            isSelected 
+                              ? prev.filter(id => id !== type.id)
+                              : [...prev, type.id]
+                          );
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <View style={styles.modalOptionLeft}>
+                          <Ionicons
+                            name={type.icon as any}
+                            size={22}
+                            color={isSelected ? colors.primary : colors.textSecondary}
+                          />
+                          <Text
+                            style={[
+                              styles.modalOptionText,
+                              {
+                                color: isSelected ? colors.primary : colors.text,
+                                fontWeight: isSelected ? "600" : "500",
+                              },
+                            ]}
+                          >
+                            {type.label}
+                          </Text>
+                        </View>
+                        {isSelected && (
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={24}
+                            color={colors.primary}
+                          />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
+            </ScrollView>
 
             {/* Apply Button */}
             <TouchableOpacity
               style={[styles.applyButton, { backgroundColor: colors.primary }]}
-              onPress={() => setShowFilterModal(false)}
+              onPress={handleApplyFilters}
               activeOpacity={0.8}
             >
               <Text
@@ -1266,12 +1499,16 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingBottom: 32,
-    maxHeight: "80%",
+    maxHeight: "90%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 12,
+  },
+  modalScrollView: {
+    flex: 1,
+    paddingBottom: 16,
   },
   modalHeader: {
     flexDirection: "row",
