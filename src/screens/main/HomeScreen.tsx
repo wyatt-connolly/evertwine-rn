@@ -103,6 +103,12 @@ export default function HomeScreen() {
   const [tempSelectedPostTypes, setTempSelectedPostTypes] = useState<string[]>(
     []
   );
+  
+  // Applied filters (what's actually being used in the feed)
+  const [appliedMeetupActivities, setAppliedMeetupActivities] = useState<string[]>([]);
+  const [appliedHappyHourTypes, setAppliedHappyHourTypes] = useState<string[]>([]);
+  const [appliedPostTypes, setAppliedPostTypes] = useState<string[]>([]);
+  
   const [interestedMeetups, setInterestedMeetups] = useState<Set<string>>(
     new Set()
   );
@@ -146,13 +152,13 @@ export default function HomeScreen() {
 
   // Helper function to check if meetup matches activity filters
   const meetsMeetupActivityFilter = (meetup: Meetup): boolean => {
-    if (tempSelectedMeetupActivities.length === 0) return true;
+    if (appliedMeetupActivities.length === 0) return true;
 
     const meetupActivity = meetup.activity?.toLowerCase() || "";
     const meetupCategory = meetup.activityCategory?.toLowerCase() || "";
     const meetupTags = meetup.tags.map((tag) => tag.toLowerCase());
 
-    return tempSelectedMeetupActivities.some((activity) => {
+    return appliedMeetupActivities.some((activity) => {
       switch (activity) {
         case "yoga":
           return (
@@ -214,13 +220,13 @@ export default function HomeScreen() {
 
   // Helper function to check if happy hour matches type filters
   const meetsHappyHourTypeFilter = (event: Event): boolean => {
-    if (tempSelectedHappyHourTypes.length === 0) return true;
+    if (appliedHappyHourTypes.length === 0) return true;
 
     const eventTitle = event.title?.toLowerCase() || "";
     const eventCategory = event.category?.toLowerCase() || "";
     const eventTags = event.tags.map((tag) => tag.toLowerCase());
 
-    return tempSelectedHappyHourTypes.some((type) => {
+    return appliedHappyHourTypes.some((type) => {
       switch (type) {
         case "bars":
           return (
@@ -272,12 +278,12 @@ export default function HomeScreen() {
 
   // Helper function to check if post matches type filters
   const meetsPostTypeFilter = (post: Post): boolean => {
-    if (tempSelectedPostTypes.length === 0) return true;
+    if (appliedPostTypes.length === 0) return true;
 
     const postTitle = post.title?.toLowerCase() || "";
     const postMessage = post.message?.toLowerCase() || "";
 
-    return tempSelectedPostTypes.some((type) => {
+    return appliedPostTypes.some((type) => {
       switch (type) {
         case "announcements":
           return post.isAnnouncement || postTitle.includes("announcement");
@@ -523,9 +529,9 @@ export default function HomeScreen() {
     selectedDateFilter,
     recommendedMeetups,
     currentPromptIndex,
-    tempSelectedMeetupActivities,
-    tempSelectedHappyHourTypes,
-    tempSelectedPostTypes,
+    appliedMeetupActivities,
+    appliedHappyHourTypes,
+    appliedPostTypes,
   ]);
 
   const handleRefresh = async () => {
@@ -592,12 +598,12 @@ export default function HomeScreen() {
   };
 
   const handleOpenFilterModal = () => {
-    // Initialize temp filters with current values
+    // Initialize temp filters with current applied values
     setTempActiveFilter(activeFilter);
     setTempSelectedDateFilter(selectedDateFilter);
-    setTempSelectedMeetupActivities([]);
-    setTempSelectedHappyHourTypes([]);
-    setTempSelectedPostTypes([]);
+    setTempSelectedMeetupActivities(appliedMeetupActivities);
+    setTempSelectedHappyHourTypes(appliedHappyHourTypes);
+    setTempSelectedPostTypes(appliedPostTypes);
     setShowFilterModal(true);
   };
 
@@ -605,6 +611,9 @@ export default function HomeScreen() {
     // Apply the temp filters to the actual filters
     setActiveFilter(tempActiveFilter);
     setSelectedDateFilter(tempSelectedDateFilter);
+    setAppliedMeetupActivities(tempSelectedMeetupActivities);
+    setAppliedHappyHourTypes(tempSelectedHappyHourTypes);
+    setAppliedPostTypes(tempSelectedPostTypes);
 
     // Scroll to top when applying filters
     setTimeout(() => {
@@ -1765,7 +1774,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingBottom: 32,
-    maxHeight: "90%",
+    height: "80%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
