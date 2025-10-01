@@ -1153,6 +1153,7 @@ const styles = StyleSheet.create({
   },
   feedContent: {
     paddingTop: 16,
+    paddingBottom: 80,
   },
   feedContentCompact: {
     paddingBottom: 20,
