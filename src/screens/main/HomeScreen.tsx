@@ -90,13 +90,19 @@ export default function HomeScreen() {
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [selectedDateFilter, setSelectedDateFilter] =
     useState<DateFilter>("all");
-  
+
   // Filter state for the modal (not applied until user clicks Apply)
   const [tempActiveFilter, setTempActiveFilter] = useState<FilterType>("all");
-  const [tempSelectedDateFilter, setTempSelectedDateFilter] = useState<DateFilter>("all");
-  const [tempSelectedMeetupActivities, setTempSelectedMeetupActivities] = useState<string[]>([]);
-  const [tempSelectedHappyHourTypes, setTempSelectedHappyHourTypes] = useState<string[]>([]);
-  const [tempSelectedPostTypes, setTempSelectedPostTypes] = useState<string[]>([]);
+  const [tempSelectedDateFilter, setTempSelectedDateFilter] =
+    useState<DateFilter>("all");
+  const [tempSelectedMeetupActivities, setTempSelectedMeetupActivities] =
+    useState<string[]>([]);
+  const [tempSelectedHappyHourTypes, setTempSelectedHappyHourTypes] = useState<
+    string[]
+  >([]);
+  const [tempSelectedPostTypes, setTempSelectedPostTypes] = useState<string[]>(
+    []
+  );
   const [interestedMeetups, setInterestedMeetups] = useState<Set<string>>(
     new Set()
   );
@@ -186,6 +192,9 @@ export default function HomeScreen() {
     // Add posts with priority based on type and recency
     if (activeFilter === "all" || activeFilter === "posts") {
       posts.forEach((post) => {
+        // Apply post type filter
+        if (!meetsPostTypeFilter(post)) return;
+
         const hoursSincePost =
           (now.getTime() - post.createdAt.getTime()) / (1000 * 60 * 60);
         let priority = 100;
@@ -258,6 +267,9 @@ export default function HomeScreen() {
 
         if (!includeInFeed) return;
 
+        // Apply activity type filter
+        if (!meetsMeetupActivityFilter(meetup)) return;
+
         let priority = 100;
 
         // Meetups happening TODAY get highest priority
@@ -290,6 +302,9 @@ export default function HomeScreen() {
     // Add Happy Hour events (only if not filtered) - MIXED WITH OTHER CONTENT
     if (activeFilter === "all" || activeFilter === "happy_hours") {
       happyHourEvents.forEach((event) => {
+        // Apply happy hour type filter
+        if (!meetsHappyHourTypeFilter(event)) return;
+
         const hoursUntilEvent =
           (event.startTime.getTime() - now.getTime()) / (1000 * 60 * 60);
 
@@ -335,6 +350,9 @@ export default function HomeScreen() {
     selectedDateFilter,
     recommendedMeetups,
     currentPromptIndex,
+    tempSelectedMeetupActivities,
+    tempSelectedHappyHourTypes,
+    tempSelectedPostTypes,
   ]);
 
   const handleRefresh = async () => {
@@ -421,6 +439,101 @@ export default function HomeScreen() {
     }, 100);
     
     setShowFilterModal(false);
+  };
+
+  // Helper function to check if meetup matches activity filters
+  const meetsMeetupActivityFilter = (meetup: Meetup): boolean => {
+    if (tempSelectedMeetupActivities.length === 0) return true;
+    
+    const meetupActivity = meetup.activity?.toLowerCase() || '';
+    const meetupCategory = meetup.activityCategory?.toLowerCase() || '';
+    const meetupTags = meetup.tags.map(tag => tag.toLowerCase());
+    
+    return tempSelectedMeetupActivities.some(activity => {
+      switch (activity) {
+        case 'yoga':
+          return meetupActivity.includes('yoga') || meetupCategory.includes('wellness') || meetupTags.some(tag => tag.includes('yoga'));
+        case 'fitness':
+          return meetupActivity.includes('fitness') || meetupCategory.includes('fitness') || meetupTags.some(tag => tag.includes('fitness'));
+        case 'photography':
+          return meetupActivity.includes('photography') || meetupTags.some(tag => tag.includes('photography'));
+        case 'networking':
+          return meetupActivity.includes('networking') || meetupCategory.includes('professional') || meetupTags.some(tag => tag.includes('networking'));
+        case 'food':
+          return meetupActivity.includes('cooking') || meetupCategory.includes('food') || meetupTags.some(tag => tag.includes('food') || tag.includes('cooking'));
+        case 'art':
+          return meetupCategory.includes('art') || meetupActivity.includes('gallery') || meetupTags.some(tag => tag.includes('art'));
+        case 'technology':
+          return meetupActivity.includes('coding') || meetupActivity.includes('tech') || meetupCategory.includes('technology') || meetupTags.some(tag => tag.includes('tech'));
+        case 'outdoor':
+          return meetupActivity.includes('hiking') || meetupActivity.includes('walk') || meetupTags.some(tag => tag.includes('outdoor') || tag.includes('hiking'));
+        default:
+          return false;
+      }
+    });
+  };
+
+  // Helper function to check if happy hour matches type filters
+  const meetsHappyHourTypeFilter = (event: Event): boolean => {
+    if (tempSelectedHappyHourTypes.length === 0) return true;
+    
+    const eventTitle = event.title?.toLowerCase() || '';
+    const eventCategory = event.category?.toLowerCase() || '';
+    const eventTags = event.tags.map(tag => tag.toLowerCase());
+    
+    return tempSelectedHappyHourTypes.some(type => {
+      switch (type) {
+        case 'bars':
+          return eventTitle.includes('bar') || eventTitle.includes('pub') || eventCategory.includes('bar');
+        case 'cocktails':
+          return eventTitle.includes('cocktail') || eventTags.some(tag => tag.includes('cocktail'));
+        case 'wine':
+          return eventTitle.includes('wine') || eventTags.some(tag => tag.includes('wine'));
+        case 'beer':
+          return eventTitle.includes('beer') || eventTags.some(tag => tag.includes('beer'));
+        case 'non-alcoholic':
+          return eventTitle.includes('non-alcoholic') || eventTitle.includes('mocktail') || eventTags.some(tag => tag.includes('non-alcoholic'));
+        case 'rooftop':
+          return eventTitle.includes('rooftop') || eventTags.some(tag => tag.includes('rooftop'));
+        case 'dive':
+          return eventTitle.includes('dive') || eventTags.some(tag => tag.includes('dive'));
+        case 'speakeasy':
+          return eventTitle.includes('speakeasy') || eventTags.some(tag => tag.includes('speakeasy'));
+        default:
+          return false;
+      }
+    });
+  };
+
+  // Helper function to check if post matches type filters
+  const meetsPostTypeFilter = (post: Post): boolean => {
+    if (tempSelectedPostTypes.length === 0) return true;
+    
+    const postTitle = post.title?.toLowerCase() || '';
+    const postMessage = post.message?.toLowerCase() || '';
+    
+    return tempSelectedPostTypes.some(type => {
+      switch (type) {
+        case 'announcements':
+          return post.isAnnouncement || postTitle.includes('announcement');
+        case 'personal':
+          return postTitle.includes('just') || postTitle.includes('first time') || postMessage.includes('looking for');
+        case 'recommendations':
+          return postTitle.includes('recommend') || postMessage.includes('recommend');
+        case 'questions':
+          return postTitle.includes('?') || postMessage.includes('?') || postTitle.includes('help');
+        case 'events':
+          return postTitle.includes('event') || postMessage.includes('event');
+        case 'photos':
+          return post.images && post.images.length > 0;
+        case 'discussions':
+          return postTitle.includes('discuss') || postMessage.includes('thoughts');
+        case 'tips':
+          return postTitle.includes('tip') || postTitle.includes('advice') || postMessage.includes('tip');
+        default:
+          return false;
+      }
+    });
   };
 
   const getTimeUntilMeetup = (meetupTime: Date): string => {
@@ -931,7 +1044,7 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView 
+            <ScrollView
               style={styles.modalScrollView}
               showsVerticalScrollIndicator={false}
             >
@@ -960,14 +1073,18 @@ export default function HomeScreen() {
                             : "transparent",
                         },
                       ]}
-                      onPress={() => setTempActiveFilter(filter.type as FilterType)}
+                      onPress={() =>
+                        setTempActiveFilter(filter.type as FilterType)
+                      }
                       activeOpacity={0.7}
                     >
                       <View style={styles.modalOptionLeft}>
                         <Ionicons
                           name={filter.icon as any}
                           size={22}
-                          color={isActive ? colors.primary : colors.textSecondary}
+                          color={
+                            isActive ? colors.primary : colors.textSecondary
+                          }
                         />
                         <Text
                           style={[
@@ -1018,14 +1135,18 @@ export default function HomeScreen() {
                             : "transparent",
                         },
                       ]}
-                      onPress={() => setTempSelectedDateFilter(filter.type as DateFilter)}
+                      onPress={() =>
+                        setTempSelectedDateFilter(filter.type as DateFilter)
+                      }
                       activeOpacity={0.7}
                     >
                       <View style={styles.modalOptionLeft}>
                         <Ionicons
                           name="calendar-outline"
                           size={22}
-                          color={isActive ? colors.primary : colors.textSecondary}
+                          color={
+                            isActive ? colors.primary : colors.textSecondary
+                          }
                         />
                         <Text
                           style={[
@@ -1052,10 +1173,14 @@ export default function HomeScreen() {
               </View>
 
               {/* Meetup Activity Filters */}
-              {(tempActiveFilter === "all" || tempActiveFilter === "meetups") && (
+              {(tempActiveFilter === "all" ||
+                tempActiveFilter === "meetups") && (
                 <View style={styles.section}>
                   <Text
-                    style={[styles.sectionTitle, { color: colors.textSecondary }]}
+                    style={[
+                      styles.sectionTitle,
+                      { color: colors.textSecondary },
+                    ]}
                   >
                     MEETUP ACTIVITIES
                   </Text>
@@ -1065,11 +1190,21 @@ export default function HomeScreen() {
                     { id: "photography", label: "Photography", icon: "camera" },
                     { id: "networking", label: "Networking", icon: "people" },
                     { id: "food", label: "Food & Cooking", icon: "restaurant" },
-                    { id: "art", label: "Arts & Culture", icon: "color-palette" },
+                    {
+                      id: "art",
+                      label: "Arts & Culture",
+                      icon: "color-palette",
+                    },
                     { id: "technology", label: "Technology", icon: "laptop" },
-                    { id: "outdoor", label: "Outdoor Activities", icon: "trail-sign" },
+                    {
+                      id: "outdoor",
+                      label: "Outdoor Activities",
+                      icon: "trail-sign",
+                    },
                   ].map((activity) => {
-                    const isSelected = tempSelectedMeetupActivities.includes(activity.id);
+                    const isSelected = tempSelectedMeetupActivities.includes(
+                      activity.id
+                    );
                     return (
                       <TouchableOpacity
                         key={activity.id}
@@ -1082,9 +1217,9 @@ export default function HomeScreen() {
                           },
                         ]}
                         onPress={() => {
-                          setTempSelectedMeetupActivities(prev => 
-                            isSelected 
-                              ? prev.filter(id => id !== activity.id)
+                          setTempSelectedMeetupActivities((prev) =>
+                            isSelected
+                              ? prev.filter((id) => id !== activity.id)
                               : [...prev, activity.id]
                           );
                         }}
@@ -1094,13 +1229,17 @@ export default function HomeScreen() {
                           <Ionicons
                             name={activity.icon as any}
                             size={22}
-                            color={isSelected ? colors.primary : colors.textSecondary}
+                            color={
+                              isSelected ? colors.primary : colors.textSecondary
+                            }
                           />
                           <Text
                             style={[
                               styles.modalOptionText,
                               {
-                                color: isSelected ? colors.primary : colors.text,
+                                color: isSelected
+                                  ? colors.primary
+                                  : colors.text,
                                 fontWeight: isSelected ? "600" : "500",
                               },
                             ]}
@@ -1122,24 +1261,42 @@ export default function HomeScreen() {
               )}
 
               {/* Happy Hour Type Filters */}
-              {(tempActiveFilter === "all" || tempActiveFilter === "happy_hours") && (
+              {(tempActiveFilter === "all" ||
+                tempActiveFilter === "happy_hours") && (
                 <View style={styles.section}>
                   <Text
-                    style={[styles.sectionTitle, { color: colors.textSecondary }]}
+                    style={[
+                      styles.sectionTitle,
+                      { color: colors.textSecondary },
+                    ]}
                   >
                     HAPPY HOUR TYPES
                   </Text>
                   {[
                     { id: "bars", label: "Bars & Pubs", icon: "wine" },
-                    { id: "cocktails", label: "Cocktail Lounges", icon: "wine-outline" },
+                    {
+                      id: "cocktails",
+                      label: "Cocktail Lounges",
+                      icon: "wine-outline",
+                    },
                     { id: "wine", label: "Wine Bars", icon: "wine" },
                     { id: "beer", label: "Craft Beer", icon: "beer" },
-                    { id: "non-alcoholic", label: "Non-Alcoholic", icon: "leaf" },
+                    {
+                      id: "non-alcoholic",
+                      label: "Non-Alcoholic",
+                      icon: "leaf",
+                    },
                     { id: "rooftop", label: "Rooftop Bars", icon: "business" },
                     { id: "dive", label: "Dive Bars", icon: "home" },
-                    { id: "speakeasy", label: "Speakeasies", icon: "lock-closed" },
+                    {
+                      id: "speakeasy",
+                      label: "Speakeasies",
+                      icon: "lock-closed",
+                    },
                   ].map((type) => {
-                    const isSelected = tempSelectedHappyHourTypes.includes(type.id);
+                    const isSelected = tempSelectedHappyHourTypes.includes(
+                      type.id
+                    );
                     return (
                       <TouchableOpacity
                         key={type.id}
@@ -1152,9 +1309,9 @@ export default function HomeScreen() {
                           },
                         ]}
                         onPress={() => {
-                          setTempSelectedHappyHourTypes(prev => 
-                            isSelected 
-                              ? prev.filter(id => id !== type.id)
+                          setTempSelectedHappyHourTypes((prev) =>
+                            isSelected
+                              ? prev.filter((id) => id !== type.id)
                               : [...prev, type.id]
                           );
                         }}
@@ -1164,13 +1321,17 @@ export default function HomeScreen() {
                           <Ionicons
                             name={type.icon as any}
                             size={22}
-                            color={isSelected ? colors.primary : colors.textSecondary}
+                            color={
+                              isSelected ? colors.primary : colors.textSecondary
+                            }
                           />
                           <Text
                             style={[
                               styles.modalOptionText,
                               {
-                                color: isSelected ? colors.primary : colors.text,
+                                color: isSelected
+                                  ? colors.primary
+                                  : colors.text,
                                 fontWeight: isSelected ? "600" : "500",
                               },
                             ]}
@@ -1195,18 +1356,41 @@ export default function HomeScreen() {
               {(tempActiveFilter === "all" || tempActiveFilter === "posts") && (
                 <View style={styles.section}>
                   <Text
-                    style={[styles.sectionTitle, { color: colors.textSecondary }]}
+                    style={[
+                      styles.sectionTitle,
+                      { color: colors.textSecondary },
+                    ]}
                   >
                     POST TYPES
                   </Text>
                   {[
-                    { id: "announcements", label: "Announcements", icon: "megaphone" },
-                    { id: "personal", label: "Personal Updates", icon: "person" },
-                    { id: "recommendations", label: "Recommendations", icon: "star" },
-                    { id: "questions", label: "Questions", icon: "help-circle" },
+                    {
+                      id: "announcements",
+                      label: "Announcements",
+                      icon: "megaphone",
+                    },
+                    {
+                      id: "personal",
+                      label: "Personal Updates",
+                      icon: "person",
+                    },
+                    {
+                      id: "recommendations",
+                      label: "Recommendations",
+                      icon: "star",
+                    },
+                    {
+                      id: "questions",
+                      label: "Questions",
+                      icon: "help-circle",
+                    },
                     { id: "events", label: "Event Posts", icon: "calendar" },
                     { id: "photos", label: "Photo Posts", icon: "camera" },
-                    { id: "discussions", label: "Discussions", icon: "chatbubbles" },
+                    {
+                      id: "discussions",
+                      label: "Discussions",
+                      icon: "chatbubbles",
+                    },
                     { id: "tips", label: "Tips & Advice", icon: "bulb" },
                   ].map((type) => {
                     const isSelected = tempSelectedPostTypes.includes(type.id);
@@ -1222,9 +1406,9 @@ export default function HomeScreen() {
                           },
                         ]}
                         onPress={() => {
-                          setTempSelectedPostTypes(prev => 
-                            isSelected 
-                              ? prev.filter(id => id !== type.id)
+                          setTempSelectedPostTypes((prev) =>
+                            isSelected
+                              ? prev.filter((id) => id !== type.id)
                               : [...prev, type.id]
                           );
                         }}
@@ -1234,13 +1418,17 @@ export default function HomeScreen() {
                           <Ionicons
                             name={type.icon as any}
                             size={22}
-                            color={isSelected ? colors.primary : colors.textSecondary}
+                            color={
+                              isSelected ? colors.primary : colors.textSecondary
+                            }
                           />
                           <Text
                             style={[
                               styles.modalOptionText,
                               {
-                                color: isSelected ? colors.primary : colors.text,
+                                color: isSelected
+                                  ? colors.primary
+                                  : colors.text,
                                 fontWeight: isSelected ? "600" : "500",
                               },
                             ]}
