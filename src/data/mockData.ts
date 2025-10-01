@@ -12,6 +12,8 @@ import {
   TutorialScreen,
   StandoutItem,
   ActivityItem,
+  Post,
+  PostComment,
 } from "../types";
 
 // Mock Users
@@ -158,14 +160,14 @@ export const mockUsers: User[] = [
 export const mockMeetups: Meetup[] = [
   {
     id: "meetup1",
-    title: "Morning Yoga in Golden Gate Park",
+    title: "Morning Yoga on the Beach",
     description:
-      "Join us for a peaceful morning yoga session in the beautiful Golden Gate Park. All levels welcome!",
+      "Join us for a peaceful morning yoga session on the beautiful Pacific Beach. All levels welcome!",
     creatorId: "user2",
     creatorRef: "users/user2",
-    location: { latitude: 37.7694, longitude: -122.4862 },
-    locationName: "Golden Gate Park",
-    address: "Golden Gate Park, San Francisco, CA",
+    location: { latitude: 32.797, longitude: -117.255 },
+    locationName: "Pacific Beach",
+    address: "Pacific Beach, San Diego, CA",
     time: new Date("2024-09-15T08:00:00"),
     duration: 60,
     timezone: "PST",
@@ -211,9 +213,9 @@ export const mockMeetups: Meetup[] = [
       "Connect with fellow tech professionals over drinks and appetizers. Great opportunity to expand your network!",
     creatorId: "user3",
     creatorRef: "users/user3",
-    location: { latitude: 37.7849, longitude: -122.4094 },
-    locationName: "The View Lounge",
-    address: "123 Market St, San Francisco, CA",
+    location: { latitude: 32.845, longitude: -117.274 },
+    locationName: "The Shores Restaurant",
+    address: "8110 Camino Del Oro, La Jolla, San Diego, CA",
     time: new Date("2024-09-14T18:00:00"),
     duration: 120,
     timezone: "PST",
@@ -248,14 +250,14 @@ export const mockMeetups: Meetup[] = [
   },
   {
     id: "meetup3",
-    title: "Photography Walk - Mission District",
+    title: "Photography Walk - Mission Beach Boardwalk",
     description:
-      "Explore the vibrant street art and architecture of the Mission District through photography. Bring your camera!",
+      "Explore the vibrant beach scene and beautiful coastline of Mission Beach through photography. Bring your camera!",
     creatorId: "user1",
     creatorRef: "users/user1",
-    location: { latitude: 37.7599, longitude: -122.4148 },
-    locationName: "Mission District",
-    address: "Mission District, San Francisco, CA",
+    location: { latitude: 32.77, longitude: -117.252 },
+    locationName: "Mission Beach Boardwalk",
+    address: "Mission Beach Boardwalk, San Diego, CA",
     time: new Date("2024-09-16T14:00:00"),
     duration: 180,
     timezone: "PST",
@@ -291,17 +293,17 @@ export const mockMeetups: Meetup[] = [
   // Standout User Meetups
   {
     id: "sarah_meetup_1",
-    title: "Sunrise Yoga in Central Park",
+    title: "Sunrise Yoga at La Jolla Cove",
     description:
-      "Start your day with peaceful yoga as the sun rises over Central Park. All levels welcome!",
+      "Start your day with peaceful yoga as the sun rises over La Jolla Cove. All levels welcome!",
     creatorId: "user_sarah_chen",
     creatorRef: "users/user_sarah_chen",
-    location: { latitude: 40.7829, longitude: -73.9654 },
-    locationName: "Central Park, NYC",
-    address: "Central Park, New York, NY",
+    location: { latitude: 32.8509, longitude: -117.2713 },
+    locationName: "La Jolla Cove",
+    address: "La Jolla Cove, San Diego, CA",
     time: new Date("2024-09-20T07:00:00"),
     duration: 60,
-    timezone: "EST",
+    timezone: "PST",
     activity: "Yoga",
     activityCategory: "Fitness & Wellness",
     tags: ["yoga", "morning", "outdoor", "sunrise", "beginner-friendly"],
@@ -344,9 +346,9 @@ export const mockMeetups: Meetup[] = [
       "Present your startup idea to fellow entrepreneurs and get valuable feedback.",
     creatorId: "user_marcus_rodriguez",
     creatorRef: "users/user_marcus_rodriguez",
-    location: { latitude: 37.7749, longitude: -122.4194 },
-    locationName: "TechConnect Hub, Silicon Valley",
-    address: "TechConnect Hub, Silicon Valley, CA",
+    location: { latitude: 32.7915, longitude: -117.254 },
+    locationName: "Pacific Beach Innovation Hub",
+    address: "Pacific Beach Innovation Hub, San Diego, CA",
     time: new Date("2024-09-22T19:00:00"),
     duration: 180,
     timezone: "PST",
@@ -391,12 +393,12 @@ export const mockMeetups: Meetup[] = [
       "Join us for an exclusive gallery opening featuring talented emerging contemporary artists.",
     creatorId: "user_emma_thompson",
     creatorRef: "users/user_emma_thompson",
-    location: { latitude: 40.7231, longitude: -74.0026 },
-    locationName: "SoHo Gallery, NYC",
-    address: "SoHo Gallery, New York, NY",
+    location: { latitude: 32.847, longitude: -117.274 },
+    locationName: "La Jolla Art Gallery",
+    address: "La Jolla Art Gallery, San Diego, CA",
     time: new Date("2024-09-21T18:00:00"),
     duration: 180,
-    timezone: "EST",
+    timezone: "PST",
     activity: "Gallery Opening",
     activityCategory: "Arts & Culture",
     tags: ["art", "gallery", "contemporary", "emerging-artists", "networking"],
@@ -433,12 +435,12 @@ export const mockMeetups: Meetup[] = [
       "Learn the secrets of authentic Korean BBQ from a Michelin-starred chef.",
     creatorId: "user_david_kim",
     creatorRef: "users/user_david_kim",
-    location: { latitude: 40.6782, longitude: -73.9442 },
-    locationName: "Kim's Kitchen, Brooklyn",
-    address: "Kim's Kitchen, Brooklyn, NY",
+    location: { latitude: 32.773, longitude: -117.253 },
+    locationName: "Kim's Kitchen, Mission Beach",
+    address: "Kim's Kitchen, Mission Beach, San Diego, CA",
     time: new Date("2024-09-23T18:00:00"),
     duration: 120,
-    timezone: "EST",
+    timezone: "PST",
     activity: "Cooking Class",
     activityCategory: "Food & Cooking",
     tags: ["cooking", "korean-bbq", "masterclass", "food", "hands-on"],
@@ -480,12 +482,12 @@ export const mockMeetups: Meetup[] = [
       "Start your day with guided meditation and mindfulness practices in a supportive group setting.",
     creatorId: "user_lisa_park",
     creatorRef: "users/user_lisa_park",
-    location: { latitude: 40.7505, longitude: -73.9934 },
-    locationName: "Mindful Moments Center, Manhattan",
-    address: "Mindful Moments Center, Manhattan, NY",
+    location: { latitude: 32.838, longitude: -117.272 },
+    locationName: "Mindful Moments Center, La Jolla",
+    address: "Mindful Moments Center, La Jolla, San Diego, CA",
     time: new Date("2024-09-24T07:30:00"),
     duration: 45,
-    timezone: "EST",
+    timezone: "PST",
     activity: "Meditation",
     activityCategory: "Wellness",
     tags: ["meditation", "mindfulness", "morning", "wellness", "guided"],
@@ -518,6 +520,100 @@ export const mockMeetups: Meetup[] = [
       "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800",
     ],
     createdAt: new Date("2024-08-05"),
+    updatedAt: new Date(),
+  },
+  {
+    id: "meetup_clairemont_1",
+    title: "Weekend Book Club & Coffee",
+    description:
+      "Join our casual book club at a cozy Clairemont café. This month we're reading contemporary fiction. All book lovers welcome!",
+    creatorId: "user1",
+    creatorRef: "users/user1",
+    location: { latitude: 32.822, longitude: -117.202 },
+    locationName: "Clairemont Coffee House",
+    address: "Clairemont Coffee House, Clairemont, San Diego, CA",
+    time: new Date("2024-09-25T10:00:00"),
+    duration: 120,
+    timezone: "PST",
+    activity: "Book Club",
+    activityCategory: "Social & Hobbies",
+    tags: ["books", "coffee", "reading", "discussion", "casual"],
+    connectionType: "casual",
+    maxParticipants: 12,
+    currentParticipants: 7,
+    participants: ["user1", "user2"],
+    waitlist: [],
+    declinedUsers: [],
+    status: "active",
+    isRecurring: true,
+    recurringPattern: {
+      frequency: "monthly",
+      daysOfWeek: [6], // Saturday
+      endDate: new Date("2024-12-31"),
+    },
+    requirements: {
+      minAge: 18,
+      verificationRequired: false,
+      skillLevel: "any",
+    },
+    views: 142,
+    joinRequests: 9,
+    completionRate: 88,
+    engagementScore: 82,
+    coverImage:
+      "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=800",
+    images: [
+      "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=800",
+      "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800",
+    ],
+    createdAt: new Date("2024-08-12"),
+    updatedAt: new Date(),
+  },
+  {
+    id: "meetup_clairemont_2",
+    title: "Family-Friendly Park Picnic",
+    description:
+      "Bring the whole family for a Sunday picnic at Clairemont Community Park. Games, food, and fun for all ages!",
+    creatorId: "user_sarah_chen",
+    creatorRef: "users/user_sarah_chen",
+    location: { latitude: 32.827, longitude: -117.205 },
+    locationName: "Clairemont Community Park",
+    address: "Clairemont Community Park, San Diego, CA",
+    time: new Date("2024-09-26T11:30:00"),
+    duration: 180,
+    timezone: "PST",
+    activity: "Picnic",
+    activityCategory: "Family & Kids",
+    tags: ["family", "picnic", "outdoor", "kids", "games"],
+    connectionType: "casual",
+    maxParticipants: 40,
+    currentParticipants: 24,
+    participants: ["user_sarah_chen", "user1"],
+    waitlist: [],
+    declinedUsers: [],
+    status: "active",
+    isRecurring: true,
+    recurringPattern: {
+      frequency: "weekly",
+      daysOfWeek: [0], // Sunday
+      endDate: new Date("2024-12-31"),
+    },
+    requirements: {
+      minAge: 0,
+      verificationRequired: false,
+      skillLevel: "any",
+    },
+    views: 198,
+    joinRequests: 18,
+    completionRate: 92,
+    engagementScore: 86,
+    coverImage:
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+    images: [
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+      "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=800",
+    ],
+    createdAt: new Date("2024-08-18"),
     updatedAt: new Date(),
   },
 ];
@@ -782,11 +878,12 @@ export const mockPlaceReviews: PlaceReview[] = [
 
 // Mock Notifications - Account specific
 export const mockNotifications: Notification[] = [
+  // Meetup Notifications
   {
     id: "notif1",
-    receiverRef: "users/user1",
+    receiverRef: "users/developer_demo_user",
     senderRef: "users/user2",
-    meetupRef: "meetups/meetup1",
+    meetupRef: "meetup1",
     title: "New Meetup Request",
     message: "Maya Rodriguez wants to join your yoga session",
     notificationType: NotificationType.meetupRequest,
@@ -795,30 +892,240 @@ export const mockNotifications: Notification[] = [
     metadata: {
       imageUrl:
         "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
-      priority: "medium",
+      priority: "high",
     },
-    createdAt: new Date("2024-09-13T10:30:00"),
+    createdAt: new Date(Date.now() - 30 * 60 * 1000), // 30 mins ago
   },
   {
     id: "notif2",
-    receiverRef: "users/user1",
+    receiverRef: "users/developer_demo_user",
     senderRef: "users/user3",
+    meetupRef: "meetup2",
     title: "Meetup Accepted",
     message:
       "Your request to join Tech Networking Happy Hour has been accepted!",
     notificationType: NotificationType.meetupAccepted,
-    isRead: true,
+    isRead: false,
     actionRequired: false,
     metadata: {
       imageUrl:
         "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
       priority: "high",
     },
-    createdAt: new Date("2024-09-12T15:45:00"),
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
   },
   {
     id: "notif3",
-    receiverRef: "users/user1",
+    receiverRef: "users/developer_demo_user",
+    senderRef: "users/user2",
+    meetupRef: "meetup1",
+    title: "Meetup Starting Soon",
+    message: "Morning Yoga on the Beach starts in 30 minutes!",
+    notificationType: NotificationType.meetupStartingSoon,
+    isRead: false,
+    actionRequired: false,
+    metadata: {
+      imageUrl:
+        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+      priority: "high",
+    },
+    createdAt: new Date(Date.now() - 15 * 60 * 1000), // 15 mins ago
+  },
+  {
+    id: "notif4",
+    receiverRef: "users/developer_demo_user",
+    senderRef: "users/user_sarah_chen",
+    meetupRef: "meetup3",
+    title: "Someone Liked Your Meetup",
+    message: "Sarah Chen liked Photography Walk - Mission Beach Boardwalk",
+    notificationType: NotificationType.meetupLiked,
+    isRead: false,
+    actionRequired: false,
+    metadata: {
+      imageUrl:
+        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
+      priority: "medium",
+    },
+    createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
+  },
+  {
+    id: "notif5",
+    receiverRef: "users/developer_demo_user",
+    senderRef: "users/user_marcus_rodriguez",
+    meetupRef: "meetup1",
+    title: "New Comment on Your Meetup",
+    message: 'Marcus commented: "Looking forward to this!"',
+    notificationType: NotificationType.meetupCommented,
+    isRead: false,
+    actionRequired: false,
+    metadata: {
+      imageUrl:
+        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
+      priority: "medium",
+    },
+    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
+  },
+
+  // Post Notifications
+  {
+    id: "notif6",
+    receiverRef: "users/developer_demo_user",
+    senderRef: "users/user2",
+    postRef: "post1",
+    title: "Someone Liked Your Post",
+    message: "Maya Rodriguez liked your post about wine tasting",
+    notificationType: NotificationType.postLiked,
+    isRead: false,
+    actionRequired: false,
+    metadata: {
+      imageUrl:
+        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
+      priority: "medium",
+    },
+    createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
+  },
+  {
+    id: "notif7",
+    receiverRef: "users/developer_demo_user",
+    senderRef: "users/user3",
+    postRef: "post2",
+    title: "New Comment on Your Post",
+    message: 'James Wilson commented: "This looks amazing!"',
+    notificationType: NotificationType.postCommented,
+    isRead: false,
+    actionRequired: false,
+    metadata: {
+      imageUrl:
+        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
+      priority: "medium",
+    },
+    createdAt: new Date(Date.now() - 45 * 60 * 1000), // 45 mins ago
+  },
+  {
+    id: "notif8",
+    receiverRef: "users/developer_demo_user",
+    senderRef: "users/user_david_kim",
+    commentRef: "comment_123",
+    postRef: "post1",
+    title: "Reply to Your Comment",
+    message: "David Kim replied to your comment",
+    notificationType: NotificationType.commentReply,
+    isRead: false,
+    actionRequired: false,
+    metadata: {
+      imageUrl:
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+      priority: "medium",
+    },
+    createdAt: new Date(Date.now() - 20 * 60 * 1000), // 20 mins ago
+  },
+  {
+    id: "notif9",
+    receiverRef: "users/developer_demo_user",
+    senderRef: "users/user_emma_thompson",
+    postRef: "post3",
+    title: "Your Post Was Shared",
+    message: "Emma Thompson shared your post with her network",
+    notificationType: NotificationType.postShared,
+    isRead: true,
+    actionRequired: false,
+    metadata: {
+      imageUrl:
+        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400",
+      priority: "low",
+    },
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+  },
+  {
+    id: "notif10",
+    receiverRef: "users/developer_demo_user",
+    senderRef: "users/user_lisa_park",
+    commentRef: "comment_456",
+    postRef: "post1",
+    title: "Someone Liked Your Comment",
+    message: "Lisa Park liked your comment",
+    notificationType: NotificationType.commentLiked,
+    isRead: true,
+    actionRequired: false,
+    metadata: {
+      imageUrl:
+        "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400",
+      priority: "low",
+    },
+    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+  },
+
+  // Social Notifications
+  {
+    id: "notif11",
+    receiverRef: "users/developer_demo_user",
+    senderRef: "users/user3",
+    title: "New Friend Request",
+    message: "James Wilson sent you a friend request",
+    notificationType: NotificationType.friendRequest,
+    isRead: false,
+    actionRequired: true,
+    metadata: {
+      imageUrl:
+        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
+      priority: "high",
+    },
+    createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
+  },
+  {
+    id: "notif12",
+    receiverRef: "users/developer_demo_user",
+    senderRef: "users/user_sarah_chen",
+    title: "New Follower",
+    message: "Sarah Chen started following you",
+    notificationType: NotificationType.newFollower,
+    isRead: false,
+    actionRequired: false,
+    metadata: {
+      imageUrl:
+        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
+      priority: "medium",
+    },
+    createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000), // 8 hours ago
+  },
+  {
+    id: "notif13",
+    receiverRef: "users/developer_demo_user",
+    senderRef: "users/user_marcus_rodriguez",
+    title: "Mutual Connection",
+    message:
+      "You and Marcus Rodriguez are now connected through 3 mutual friends",
+    notificationType: NotificationType.mutualConnection,
+    isRead: true,
+    actionRequired: false,
+    metadata: {
+      imageUrl:
+        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
+      priority: "low",
+    },
+    createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
+  },
+  {
+    id: "notif14",
+    receiverRef: "users/developer_demo_user",
+    senderRef: "users/user_david_kim",
+    title: "Profile View",
+    message: "David Kim viewed your profile",
+    notificationType: NotificationType.profileView,
+    isRead: true,
+    actionRequired: false,
+    metadata: {
+      imageUrl:
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+      priority: "low",
+    },
+    createdAt: new Date(Date.now() - 18 * 60 * 60 * 1000), // 18 hours ago
+  },
+
+  // Message Notifications
+  {
+    id: "notif15",
+    receiverRef: "users/developer_demo_user",
     senderRef: "users/user2",
     title: "New Message",
     message: "Maya Rodriguez sent you a message",
@@ -828,41 +1135,92 @@ export const mockNotifications: Notification[] = [
     metadata: {
       imageUrl:
         "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
-      priority: "medium",
+      priority: "high",
     },
-    createdAt: new Date("2024-09-13T08:15:00"),
+    createdAt: new Date(Date.now() - 10 * 60 * 1000), // 10 mins ago
+  },
+
+  // Happy Hour Notifications
+  {
+    id: "notif16",
+    receiverRef: "users/developer_demo_user",
+    eventRef: "hh1",
+    title: "Happy Hour Starting Soon",
+    message: "Wine & Cheese Tasting starts in 1 hour at Pacific Wine Bar",
+    notificationType: NotificationType.happyHourStartingSoon,
+    isRead: false,
+    actionRequired: false,
+    metadata: {
+      imageUrl:
+        "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=400&h=300&fit=crop",
+      priority: "high",
+    },
+    createdAt: new Date(Date.now() - 5 * 60 * 1000), // 5 mins ago
   },
   {
-    id: "notif4",
-    receiverRef: "users/user1",
-    senderRef: "users/user3",
-    title: "Friend Request",
-    message: "James Wilson sent you a friend request",
-    notificationType: NotificationType.friendRequest,
+    id: "notif17",
+    receiverRef: "users/developer_demo_user",
+    senderRef: "users/user2",
+    eventRef: "hh2",
+    title: "Happy Hour Invite",
+    message: "Maya Rodriguez invited you to Craft Beer Happy Hour",
+    notificationType: NotificationType.happyHourInvite,
     isRead: false,
     actionRequired: true,
     metadata: {
       imageUrl:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
-      priority: "medium",
+        "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&h=300&fit=crop",
+      priority: "high",
     },
-    createdAt: new Date("2024-09-12T20:30:00"),
+    createdAt: new Date(Date.now() - 25 * 60 * 1000), // 25 mins ago
   },
+
+  // System Notifications
   {
-    id: "notif5",
-    receiverRef: "users/user1",
-    senderRef: "users/user2",
-    title: "Meetup Reminder",
-    message: "Your yoga session starts in 1 hour",
-    notificationType: NotificationType.meetupReminder,
+    id: "notif18",
+    receiverRef: "users/developer_demo_user",
+    title: "Verification Complete",
+    message:
+      "Your account has been verified! You now have access to all features.",
+    notificationType: NotificationType.verificationComplete,
     isRead: true,
     actionRequired: false,
     metadata: {
-      imageUrl:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
       priority: "high",
     },
-    createdAt: new Date("2024-09-13T07:00:00"),
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+  },
+  {
+    id: "notif19",
+    receiverRef: "users/developer_demo_user",
+    title: "New Feature: Map View",
+    message: "Check out the new map view to discover meetups near you!",
+    notificationType: NotificationType.newFeature,
+    isRead: false,
+    actionRequired: false,
+    metadata: {
+      priority: "low",
+    },
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+  },
+
+  // Additional Meetup Notifications
+  {
+    id: "notif20",
+    receiverRef: "users/developer_demo_user",
+    senderRef: "users/user3",
+    meetupRef: "meetup_clairemont_1",
+    title: "Meetup Cancelled",
+    message: "Weekend Book Club & Coffee has been cancelled by the organizer",
+    notificationType: NotificationType.meetupCancelled,
+    isRead: false,
+    actionRequired: false,
+    metadata: {
+      imageUrl:
+        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
+      priority: "high",
+    },
+    createdAt: new Date(Date.now() - 7 * 60 * 60 * 1000), // 7 hours ago
   },
 ];
 
@@ -1536,3 +1894,161 @@ export const mockMessageRooms = [
     updatedTime: new Date("2024-01-15T16:45:00"),
   },
 ];
+
+// Mock Posts
+export const mockPosts: Post[] = [
+  {
+    id: "post1",
+    userId: "evertwine",
+    userName: "Evertwine Team",
+    userAvatar:
+      "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=400&fit=crop",
+    title: "Welcome to Evertwine! 🎉",
+    message:
+      "We're thrilled to have you here! Create posts to share your thoughts, or create meetups to connect in person. This is your community - let's make it amazing together!",
+    likes: ["user1", "user2", "user3", "user4"],
+    comments: [
+      {
+        id: "comment1",
+        userId: "user1",
+        userName: "Alex Chen",
+        userAvatar:
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+        message: "So excited to be here! Can't wait to meet new people! 🙌",
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+      },
+    ],
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    isAnnouncement: true,
+  },
+  {
+    id: "post2",
+    userId: "user1",
+    userName: "Alex Chen",
+    userAvatar:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+    title: "Just downloaded! 🎊",
+    message:
+      "Hey everyone! Just joined Evertwine and I'm looking forward to meeting new people who love hiking and coffee as much as I do! Anyone want to grab a coffee this weekend?",
+    images: [
+      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&h=400&fit=crop",
+    ],
+    likes: ["user2", "user3", "user5"],
+    comments: [
+      {
+        id: "comment2",
+        userId: "user2",
+        userName: "Maya Rodriguez",
+        userAvatar:
+          "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
+        message: "Welcome Alex! I'd love to grab coffee! ☕",
+        createdAt: new Date(Date.now() - 30 * 60 * 1000),
+      },
+    ],
+    createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
+  },
+  {
+    id: "post3",
+    userId: "user3",
+    userName: "Sam Johnson",
+    userAvatar:
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
+    title: "Looking for hiking buddies! 🥾",
+    message:
+      "I've been going on solo hikes but would love some company! Planning to hit Marin Headlands this weekend. Beginner-friendly pace. Drop a comment if you're interested!",
+    images: [
+      "https://images.unsplash.com/photo-1551632811-561732d1e306?w=600&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&h=400&fit=crop",
+    ],
+    likes: ["user1", "user4", "user5", "user6"],
+    comments: [
+      {
+        id: "comment3",
+        userId: "user1",
+        userName: "Alex Chen",
+        userAvatar:
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+        message: "Count me in! I've been wanting to explore that trail!",
+        createdAt: new Date(Date.now() - 45 * 60 * 1000),
+      },
+      {
+        id: "comment4",
+        userId: "user4",
+        userName: "Jordan Lee",
+        userAvatar:
+          "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop",
+        message: "Sounds great! What time are you thinking?",
+        createdAt: new Date(Date.now() - 20 * 60 * 1000),
+      },
+    ],
+    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
+  },
+  {
+    id: "post4",
+    userId: "user2",
+    userName: "Maya Rodriguez",
+    userAvatar:
+      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
+    title: "Best day ever! ✨",
+    message:
+      "Just attended my first meetup through Evertwine - a morning yoga session at Dolores Park! Met amazing people and can't wait for the next one. This community is incredible!",
+    images: [
+      "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&h=400&fit=crop",
+    ],
+    likes: ["user1", "user3", "user4", "user5"],
+    comments: [
+      {
+        id: "comment5",
+        userId: "user1",
+        userName: "Alex Chen",
+        userAvatar:
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+        message: "That's awesome! I saw that meetup and wanted to go!",
+        createdAt: new Date(Date.now() - 15 * 60 * 1000),
+      },
+    ],
+    createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
+  },
+  {
+    id: "post5",
+    userId: "evertwine",
+    userName: "Evertwine Team",
+    userAvatar:
+      "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=400&fit=crop",
+    title: "New Feature: Happy Hour Events! 🍷",
+    message:
+      "Check out our new Happy Hour section! Discover the best happy hours in your area and see who else is going. Perfect for after-work socializing!",
+    likes: ["user1", "user2", "user3", "user4", "user5", "user6"],
+    comments: [],
+    createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
+    isAnnouncement: true,
+  },
+  {
+    id: "post6",
+    userId: "user4",
+    userName: "Jordan Lee",
+    userAvatar:
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop",
+    title: "First time posting! 👋",
+    message:
+      "Hi everyone! New to the area and looking to make friends. I'm into gaming, board games, and trying new restaurants. Anyone up for a game night soon?",
+    likes: ["user1", "user2", "user5"],
+    comments: [
+      {
+        id: "comment6",
+        userId: "user5",
+        userName: "Taylor Smith",
+        userAvatar:
+          "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop",
+        message:
+          "Welcome! There's a board game meetup next week you should check out!",
+        createdAt: new Date(Date.now() - 10 * 60 * 1000),
+      },
+    ],
+    createdAt: new Date(Date.now() - 10 * 60 * 60 * 1000),
+  },
+];
+
+export const getMockPosts = (limit?: number): Post[] => {
+  return limit ? mockPosts.slice(0, limit) : mockPosts;
+};

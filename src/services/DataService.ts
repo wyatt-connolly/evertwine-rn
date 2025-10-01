@@ -9,7 +9,7 @@ import {
 } from "../data/mockData";
 
 export class DataService {
-  private static isDeveloperMode = false;
+  private static isDeveloperMode = true;
 
   // Set developer mode (bypasses Firebase)
   static setDeveloperMode(enabled: boolean) {

@@ -59,6 +59,8 @@ const getHappyHourEvents = (): Event[] => [
     views: 150,
     shares: 12,
     likes: 25,
+    attendees: ["user1", "user2", "user5", "user6", "user7"],
+    waitlist: [],
     interestedUsers: ["user1", "user2"],
     checkIns: 0,
     whosGoing: [
@@ -126,6 +128,8 @@ const getHappyHourEvents = (): Event[] => [
     views: 200,
     shares: 18,
     likes: 35,
+    attendees: ["user1", "user2", "user3"],
+    waitlist: [],
     interestedUsers: ["user1", "user2", "user3"],
     checkIns: 0,
     whosGoing: [
@@ -200,6 +204,8 @@ const getHappyHourEvents = (): Event[] => [
     views: 120,
     shares: 8,
     likes: 18,
+    attendees: ["user1", "user2"],
+    waitlist: [],
     interestedUsers: ["user1", "user2"],
     checkIns: 0,
     whosGoing: [
@@ -259,6 +265,8 @@ const getHappyHourEvents = (): Event[] => [
     views: 180,
     shares: 15,
     likes: 28,
+    attendees: ["user1", "user2", "user3"],
+    waitlist: [],
     interestedUsers: ["user1", "user2", "user3"],
     checkIns: 0,
     whosGoing: [
@@ -333,6 +341,8 @@ const getHappyHourEvents = (): Event[] => [
     views: 220,
     shares: 20,
     likes: 42,
+    attendees: ["user1", "user2", "user3", "user4"],
+    waitlist: [],
     interestedUsers: ["user1", "user2", "user3", "user4"],
     checkIns: 0,
     whosGoing: [
@@ -552,21 +562,32 @@ export default function HappyHourCarousel({
     );
   };
 
+  const renderSeeAllCard = () => (
+    <TouchableOpacity
+      style={[styles.seeAllCard, { backgroundColor: colors.surface }]}
+      onPress={() => (navigation as any).navigate("AllHappyHourEvents")}
+      activeOpacity={0.8}
+    >
+      <View style={styles.seeAllContent}>
+        <Ionicons
+          name="arrow-forward-circle"
+          size={48}
+          color={colors.primary}
+        />
+        <Text style={[styles.seeAllCardTitle, { color: colors.text }]}>
+          See All Events
+        </Text>
+        <Text
+          style={[styles.seeAllCardSubtitle, { color: colors.textSecondary }]}
+        >
+          View all happy hours
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>
-          Happy Hour Events
-        </Text>
-        <TouchableOpacity
-          onPress={() => (navigation as any).navigate("AllHappyHourEvents")}
-        >
-          <Text style={[styles.seeAllText, { color: colors.primary }]}>
-            See All
-          </Text>
-        </TouchableOpacity>
-      </View>
-
       <FlatList
         data={happyHourEvents}
         renderItem={renderEvent}
@@ -575,6 +596,7 @@ export default function HappyHourCarousel({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.carouselContent}
         ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
+        ListFooterComponent={renderSeeAllCard}
       />
     </View>
   );
@@ -582,22 +604,32 @@ export default function HappyHourCarousel({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 24,
-    paddingTop: 20,
+    marginBottom: 8,
+    flexShrink: 1,
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  seeAllCard: {
+    width: screenWidth * 0.5,
+    height: 240,
+    borderRadius: 16,
+    marginLeft: 16,
+    justifyContent: "center",
     alignItems: "center",
-    marginBottom: 16,
+    borderWidth: 2,
+    borderStyle: "dashed",
+    borderColor: "#E5E7EB",
   },
-  title: {
-    fontSize: 20,
-    fontWeight: "600",
+  seeAllContent: {
+    alignItems: "center",
+    gap: 12,
   },
-  seeAllText: {
+  seeAllCardTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+  seeAllCardSubtitle: {
     fontSize: 14,
-    fontWeight: "500",
+    textAlign: "center",
   },
   eventCard: {
     width: screenWidth * 0.7,

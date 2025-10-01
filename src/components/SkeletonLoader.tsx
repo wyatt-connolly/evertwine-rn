@@ -1,25 +1,25 @@
 import React, { useEffect, useRef } from "react";
-import { View, StyleSheet, Animated, ViewStyle } from "react-native";
+import { View, StyleSheet, Animated, Dimensions } from "react-native";
 import { useThemeStore } from "../hooks/useThemeStore";
 
+const { width } = Dimensions.get("window");
+
+type SkeletonType = "post" | "meetup" | "carousel";
+
 interface SkeletonLoaderProps {
-  width?: number;
-  height?: number;
-  borderRadius?: number;
-  style?: ViewStyle;
+  type?: SkeletonType;
+  count?: number;
 }
 
-export function SkeletonLoader({
-  width = 200,
-  height = 20,
-  borderRadius = 4,
-  style,
+export default function SkeletonLoader({
+  type = "post",
+  count = 3,
 }: SkeletonLoaderProps) {
   const { colors } = useThemeStore();
   const animatedValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const animation = Animated.loop(
+    Animated.loop(
       Animated.sequence([
         Animated.timing(animatedValue, {
           toValue: 1,
@@ -32,157 +32,170 @@ export function SkeletonLoader({
           useNativeDriver: true,
         }),
       ])
-    );
-    animation.start();
-
-    return () => animation.stop();
-  }, []);
+    ).start();
+  }, [animatedValue]);
 
   const opacity = animatedValue.interpolate({
     inputRange: [0, 1],
     outputRange: [0.3, 0.7],
   });
 
-  return (
+  const SkeletonBox = ({ style }: any) => (
     <Animated.View
-      style={[
-        styles.skeleton,
-        {
-          width,
-          height,
-          borderRadius,
-          backgroundColor: colors.textTertiary,
-          opacity,
-        },
-        style,
-      ]}
+      style={[style, { backgroundColor: colors.border, opacity }]}
     />
   );
-}
 
-interface SkeletonCardProps {
-  showAvatar?: boolean;
-  showImage?: boolean;
-  lines?: number;
-}
-
-export function SkeletonCard({
-  showAvatar = true,
-  showImage = false,
-  lines = 3,
-}: SkeletonCardProps) {
-  const { colors } = useThemeStore();
-
-  return (
-    <View style={[styles.card, { backgroundColor: colors.surface }]}>
-      {showImage && (
-        <SkeletonLoader
-          width={300}
-          height={150}
-          borderRadius={8}
-          style={styles.image}
-        />
-      )}
-
-      <View style={styles.cardContent}>
-        {showAvatar && (
-          <View style={styles.header}>
-            <SkeletonLoader width={40} height={40} borderRadius={20} />
-            <View style={styles.headerText}>
-              <SkeletonLoader width={120} height={16} />
-              <SkeletonLoader width={80} height={12} style={styles.subtitle} />
-            </View>
-          </View>
-        )}
-
-        <View style={styles.content}>
-          {Array.from({ length: lines }).map((_, index) => (
-            <SkeletonLoader
-              key={index}
-              width={index === lines - 1 ? 140 : 200}
-              height={14}
-              style={styles.line}
-            />
-          ))}
+  const renderPostSkeleton = () => (
+    <View style={[styles.postContainer, { backgroundColor: colors.surface }]}>
+      <View style={styles.postHeader}>
+        <SkeletonBox style={styles.avatar} />
+        <View style={styles.postHeaderInfo}>
+          <SkeletonBox style={styles.nameBox} />
+          <SkeletonBox style={styles.timeBox} />
         </View>
+      </View>
+      <SkeletonBox style={styles.titleBox} />
+      <SkeletonBox style={styles.textBox} />
+      <SkeletonBox style={[styles.textBox, { width: "70%" }]} />
+      <View style={styles.postActions}>
+        <SkeletonBox style={styles.actionBox} />
+        <SkeletonBox style={styles.actionBox} />
+      </View>
+    </View>
+  );
 
-        <View style={styles.footer}>
-          <SkeletonLoader width={80} height={12} />
-          <SkeletonLoader width={60} height={12} />
+  const renderMeetupSkeleton = () => (
+    <View style={[styles.meetupContainer, { backgroundColor: colors.surface }]}>
+      <SkeletonBox style={styles.meetupImage} />
+      <View style={styles.meetupContent}>
+        <SkeletonBox style={styles.titleBox} />
+        <SkeletonBox style={styles.textBox} />
+        <View style={styles.meetupFooter}>
+          <SkeletonBox style={styles.smallBox} />
+          <SkeletonBox style={styles.smallBox} />
         </View>
       </View>
     </View>
   );
-}
 
-interface SkeletonListProps {
-  itemCount?: number;
-  showAvatar?: boolean;
-  showImage?: boolean;
-}
+  const renderCarouselSkeleton = () => (
+    <View style={styles.carouselContainer}>
+      <SkeletonBox style={styles.carouselCard} />
+      <SkeletonBox style={styles.carouselCard} />
+    </View>
+  );
 
-export function SkeletonList({
-  itemCount = 3,
-  showAvatar = true,
-  showImage = false,
-}: SkeletonListProps) {
+  const renderSkeleton = () => {
+    switch (type) {
+      case "meetup":
+        return renderMeetupSkeleton();
+      case "carousel":
+        return renderCarouselSkeleton();
+      case "post":
+      default:
+        return renderPostSkeleton();
+    }
+  };
+
   return (
-    <View style={styles.list}>
-      {Array.from({ length: itemCount }).map((_, index) => (
-        <SkeletonCard
-          key={index}
-          showAvatar={showAvatar}
-          showImage={showImage}
-        />
+    <View style={styles.container}>
+      {Array.from({ length: count }).map((_, index) => (
+        <View key={index}>{renderSkeleton()}</View>
       ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  skeleton: {
-    backgroundColor: "#E0E0E0",
+  container: {
+    flex: 1,
   },
-  card: {
+  postContainer: {
+    marginHorizontal: 16,
+    marginVertical: 8,
     borderRadius: 12,
-    marginBottom: 16,
     padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
-  image: {
-    marginBottom: 12,
-  },
-  cardContent: {
-    flex: 1,
-  },
-  header: {
+  postHeader: {
     flexDirection: "row",
-    alignItems: "center",
     marginBottom: 12,
   },
-  headerText: {
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  postHeaderInfo: {
     flex: 1,
-    marginLeft: 12,
+    justifyContent: "center",
+    gap: 6,
   },
-  subtitle: {
-    marginTop: 4,
+  nameBox: {
+    width: "40%",
+    height: 16,
+    borderRadius: 4,
   },
-  content: {
-    marginBottom: 12,
+  timeBox: {
+    width: "25%",
+    height: 12,
+    borderRadius: 4,
   },
-  line: {
+  titleBox: {
+    width: "80%",
+    height: 18,
+    borderRadius: 4,
     marginBottom: 8,
   },
-  footer: {
+  textBox: {
+    width: "100%",
+    height: 14,
+    borderRadius: 4,
+    marginBottom: 6,
+  },
+  postActions: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 12,
+  },
+  actionBox: {
+    width: 60,
+    height: 32,
+    borderRadius: 16,
+  },
+  meetupContainer: {
+    marginHorizontal: 16,
+    marginVertical: 8,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  meetupImage: {
+    width: "100%",
+    height: 180,
+  },
+  meetupContent: {
+    padding: 16,
+    gap: 8,
+  },
+  meetupFooter: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    marginTop: 8,
   },
-  list: {
-    padding: 16,
+  smallBox: {
+    width: 80,
+    height: 20,
+    borderRadius: 4,
+  },
+  carouselContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    gap: 16,
+  },
+  carouselCard: {
+    width: width * 0.7,
+    height: 240,
+    borderRadius: 16,
   },
 });

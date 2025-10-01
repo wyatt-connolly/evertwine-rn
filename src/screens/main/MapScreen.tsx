@@ -12,15 +12,372 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
-import { getMockMeetups, getMockPlaces, mockUsers } from "../../data/mockData";
+import { getMockMeetups, mockUsers } from "../../data/mockData";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import { DataService } from "../../services/DataService";
+import { Event } from "../../types";
+
+// Happy Hour Events - San Diego locations
+const getHappyHourEvents = (): Event[] => [
+  {
+    id: "hh1",
+    title: "Wine & Cheese Tasting",
+    description:
+      "Join us for an evening of fine wines and artisanal cheeses from local producers.",
+    venue: "Pacific Wine Bar",
+    venueType: "Wine Bar",
+    location: { latitude: 32.7941, longitude: -117.2533 },
+    locationName: "Pacific Wine Bar",
+    address: "1234 Garnet Ave, Pacific Beach, San Diego, CA",
+    startTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+    endTime: new Date(
+      Date.now() + 2 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000
+    ),
+    timezone: "PST",
+    category: "Food & Drink",
+    subcategory: "Wine Tasting",
+    tags: ["wine", "cheese", "tasting"],
+    price: 25,
+    currency: "USD",
+    maxAttendees: 20,
+    currentAttendees: 12,
+    coverImage:
+      "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=400&h=300&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=400&h=300&fit=crop",
+    ],
+    status: "published",
+    isRecurring: false,
+    features: {
+      hasQRCode: true,
+      hasTickets: true,
+      hasCoupons: true,
+      allowsSharing: true,
+      requiresVerification: false,
+    },
+    views: 150,
+    shares: 12,
+    likes: 25,
+    attendees: ["user1", "user2"],
+    waitlist: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "hh2",
+    title: "Craft Beer Happy Hour",
+    description:
+      "Sample the latest craft beers from local breweries. 50% off all drinks!",
+    venue: "Mission Brewing Co.",
+    venueType: "Brewery",
+    location: { latitude: 32.7714, longitude: -117.2523 },
+    locationName: "Mission Brewing Co.",
+    address: "3456 Mission Blvd, Mission Beach, San Diego, CA",
+    startTime: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
+    endTime: new Date(
+      Date.now() + 1 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000
+    ),
+    timezone: "PST",
+    category: "Food & Drink",
+    subcategory: "Beer Tasting",
+    tags: ["beer", "craft", "happy-hour"],
+    price: 0,
+    currency: "USD",
+    maxAttendees: 50,
+    currentAttendees: 28,
+    coverImage:
+      "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&h=300&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&h=300&fit=crop",
+    ],
+    status: "published",
+    isRecurring: false,
+    features: {
+      hasQRCode: true,
+      hasTickets: true,
+      hasCoupons: true,
+      allowsSharing: true,
+      requiresVerification: false,
+    },
+    views: 200,
+    shares: 18,
+    likes: 35,
+    attendees: ["user1", "user2", "user3"],
+    waitlist: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "hh3",
+    title: "Non-Alcoholic Mocktail Mixing",
+    description:
+      "Learn to create beautiful mocktails with fresh ingredients. Perfect for designated drivers!",
+    venue: "La Jolla Garden Café",
+    venueType: "Café",
+    location: { latitude: 32.8328, longitude: -117.2713 },
+    locationName: "La Jolla Garden Café",
+    address: "7890 Girard Ave, La Jolla, San Diego, CA",
+    startTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+    endTime: new Date(
+      Date.now() + 3 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000
+    ),
+    timezone: "PST",
+    category: "Food & Drink",
+    subcategory: "Mocktail Mixing",
+    tags: ["mocktails", "non-alcoholic", "mixology"],
+    price: 15,
+    currency: "USD",
+    maxAttendees: 15,
+    currentAttendees: 8,
+    coverImage:
+      "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop",
+    ],
+    status: "published",
+    isRecurring: false,
+    features: {
+      hasQRCode: true,
+      hasTickets: true,
+      hasCoupons: true,
+      allowsSharing: true,
+      requiresVerification: false,
+    },
+    views: 120,
+    shares: 8,
+    likes: 18,
+    attendees: ["user1", "user2"],
+    waitlist: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "hh4",
+    title: "Beachfront Sunset Cocktails",
+    description:
+      "Enjoy cocktails with an ocean view as the sun sets over the Pacific.",
+    venue: "Pacific Terrace Lounge",
+    venueType: "Beachfront Bar",
+    location: { latitude: 32.7898, longitude: -117.2544 },
+    locationName: "Pacific Terrace Lounge",
+    address: "610 Diamond St, Pacific Beach, San Diego, CA",
+    startTime: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
+    endTime: new Date(
+      Date.now() + 4 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000
+    ),
+    timezone: "PST",
+    category: "Food & Drink",
+    subcategory: "Sunset Cocktails",
+    tags: ["beachfront", "sunset", "cocktails"],
+    price: 20,
+    currency: "USD",
+    maxAttendees: 30,
+    currentAttendees: 18,
+    coverImage:
+      "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=300&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=300&fit=crop",
+    ],
+    status: "published",
+    isRecurring: false,
+    features: {
+      hasQRCode: true,
+      hasTickets: true,
+      hasCoupons: true,
+      allowsSharing: true,
+      requiresVerification: false,
+    },
+    views: 180,
+    shares: 15,
+    likes: 28,
+    attendees: ["user1", "user2", "user3"],
+    waitlist: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "hh5",
+    title: "Tapas & Sangria Night",
+    description:
+      "Authentic Spanish tapas paired with traditional sangria. ¡Olé!",
+    venue: "La Jolla Tapas Bar",
+    venueType: "Spanish Restaurant",
+    location: { latitude: 32.842, longitude: -117.275 },
+    locationName: "La Jolla Tapas Bar",
+    address: "1155 Prospect St, La Jolla, San Diego, CA",
+    startTime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+    endTime: new Date(
+      Date.now() + 5 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000
+    ),
+    timezone: "PST",
+    category: "Food & Drink",
+    subcategory: "Spanish Cuisine",
+    tags: ["tapas", "sangria", "spanish"],
+    price: 35,
+    currency: "USD",
+    maxAttendees: 25,
+    currentAttendees: 15,
+    coverImage:
+      "https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&h=300&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&h=300&fit=crop",
+    ],
+    status: "published",
+    isRecurring: false,
+    features: {
+      hasQRCode: true,
+      hasTickets: true,
+      hasCoupons: true,
+      allowsSharing: true,
+      requiresVerification: false,
+    },
+    views: 220,
+    shares: 20,
+    likes: 42,
+    attendees: ["user1", "user2", "user3", "user4"],
+    waitlist: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "hh6",
+    title: "Surf & Sip Saturday",
+    description:
+      "Beach vibes with refreshing drinks and live music by the boardwalk.",
+    venue: "Mission Beach Bar & Grill",
+    venueType: "Beach Bar",
+    location: { latitude: 32.768, longitude: -117.251 },
+    locationName: "Mission Beach Bar & Grill",
+    address: "3001 Ocean Front Walk, Mission Beach, San Diego, CA",
+    startTime: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
+    endTime: new Date(
+      Date.now() + 6 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000
+    ),
+    timezone: "PST",
+    category: "Food & Drink",
+    subcategory: "Beach Party",
+    tags: ["beach", "live-music", "drinks"],
+    price: 10,
+    currency: "USD",
+    maxAttendees: 60,
+    currentAttendees: 35,
+    coverImage:
+      "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=300&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=300&fit=crop",
+    ],
+    status: "published",
+    isRecurring: false,
+    features: {
+      hasQRCode: true,
+      hasTickets: true,
+      hasCoupons: true,
+      allowsSharing: true,
+      requiresVerification: false,
+    },
+    views: 280,
+    shares: 25,
+    likes: 50,
+    attendees: ["user1", "user2", "user3", "user4", "user5"],
+    waitlist: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "hh7",
+    title: "Wine Down Wednesday",
+    description:
+      "Midweek wind-down with half-price wine bottles and live acoustic music.",
+    venue: "Clairemont Wine Cellar",
+    venueType: "Wine Shop & Bar",
+    location: { latitude: 32.8234, longitude: -117.2009 },
+    locationName: "Clairemont Wine Cellar",
+    address: "5500 Clairemont Mesa Blvd, Clairemont, San Diego, CA",
+    startTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    endTime: new Date(
+      Date.now() + 7 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000
+    ),
+    timezone: "PST",
+    category: "Food & Drink",
+    subcategory: "Wine Night",
+    tags: ["wine", "live-music", "midweek", "acoustic"],
+    price: 15,
+    currency: "USD",
+    maxAttendees: 40,
+    currentAttendees: 22,
+    coverImage:
+      "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=300&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=300&fit=crop",
+    ],
+    status: "published",
+    isRecurring: false,
+    features: {
+      hasQRCode: true,
+      hasTickets: true,
+      hasCoupons: true,
+      allowsSharing: true,
+      requiresVerification: false,
+    },
+    views: 190,
+    shares: 14,
+    likes: 32,
+    attendees: ["user1", "user2", "user3"],
+    waitlist: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "hh8",
+    title: "Local Brewery Tasting Flight",
+    description:
+      "Sample 6 local craft beers with complimentary pretzel bites. Perfect for beer enthusiasts!",
+    venue: "Clairemont Tap House",
+    venueType: "Tap House",
+    location: { latitude: 32.819, longitude: -117.198 },
+    locationName: "Clairemont Tap House",
+    address: "4670 Clairemont Dr, Clairemont, San Diego, CA",
+    startTime: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
+    endTime: new Date(
+      Date.now() + 8 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000
+    ),
+    timezone: "PST",
+    category: "Food & Drink",
+    subcategory: "Beer Tasting",
+    tags: ["beer", "tasting", "craft", "local"],
+    price: 18,
+    currency: "USD",
+    maxAttendees: 35,
+    currentAttendees: 20,
+    coverImage:
+      "https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&h=300&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&h=300&fit=crop",
+    ],
+    status: "published",
+    isRecurring: false,
+    features: {
+      hasQRCode: true,
+      hasTickets: true,
+      hasCoupons: true,
+      allowsSharing: true,
+      requiresVerification: false,
+    },
+    views: 210,
+    shares: 16,
+    likes: 38,
+    attendees: ["user1", "user2"],
+    waitlist: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];
 
 export default function MapScreen({ navigation }: any) {
   const { colors } = useThemeStore();
   const [selectedFilter, setSelectedFilter] = useState<
-    "all" | "meetups" | "places"
+    "all" | "meetups" | "happy_hours"
   >("all");
   const [selectedMarker, setSelectedMarker] = useState<any>(null);
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -31,7 +388,9 @@ export default function MapScreen({ navigation }: any) {
 
   // Only load mock data in developer mode
   const meetups = DataService.isInDeveloperMode() ? getMockMeetups() : [];
-  const places = DataService.isInDeveloperMode() ? getMockPlaces() : [];
+  const happyHours = DataService.isInDeveloperMode()
+    ? getHappyHourEvents()
+    : [];
 
   const getCreatorInfo = (creatorId: string) => {
     return mockUsers.find((user) => user.uid === creatorId);
@@ -90,6 +449,10 @@ export default function MapScreen({ navigation }: any) {
     return marker && typeof marker === "object" && "creatorId" in marker;
   };
 
+  const isHappyHour = (marker: any) => {
+    return marker && typeof marker === "object" && "venue" in marker;
+  };
+
   const renderMap = () => {
     try {
       // Get initial region based on current location or default
@@ -102,12 +465,12 @@ export default function MapScreen({ navigation }: any) {
             longitudeDelta: 0.0421,
           };
         }
-        // Default to San Francisco if no location
+        // Default to Pacific Beach, San Diego if no location
         return {
-          latitude: 37.7749,
-          longitude: -122.4194,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
+          latitude: 32.7941,
+          longitude: -117.2533,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
         };
       };
 
@@ -125,7 +488,7 @@ export default function MapScreen({ navigation }: any) {
             {DataService.isInDeveloperMode() && (
               <>
                 {/* Meetup Markers */}
-                {selectedFilter !== "places" &&
+                {selectedFilter !== "happy_hours" &&
                   meetups.map((meetup) => (
                     <Marker
                       key={meetup.id}
@@ -142,20 +505,23 @@ export default function MapScreen({ navigation }: any) {
                     />
                   ))}
 
-                {/* Place Markers */}
+                {/* Happy Hour Event Markers */}
                 {selectedFilter !== "meetups" &&
-                  places.map((place) => (
+                  happyHours.map((event) => (
                     <Marker
-                      key={place.id}
+                      key={event.id}
                       coordinate={{
-                        latitude: place.location.latitude,
-                        longitude: place.location.longitude,
+                        latitude: event.location.latitude,
+                        longitude: event.location.longitude,
                       }}
-                      pinColor={colors.secondary}
+                      pinColor="#FFB800"
                       tracksViewChanges={false}
                       onPress={() => {
-                        console.log("🗺️ Marker pressed for place:", place.id);
-                        handleMarkerPress(place);
+                        console.log(
+                          "🗺️ Marker pressed for happy hour:",
+                          event.id
+                        );
+                        handleMarkerPress(event);
                       }}
                     />
                   ))}
@@ -197,7 +563,7 @@ export default function MapScreen({ navigation }: any) {
   };
 
   const renderFilterButton = (
-    filter: "all" | "meetups" | "places",
+    filter: "all" | "meetups" | "happy_hours",
     label: string,
     icon: string
   ) => (
@@ -284,7 +650,7 @@ export default function MapScreen({ navigation }: any) {
       <View style={styles.filterContainer}>
         {renderFilterButton("all", "All", "grid-outline")}
         {renderFilterButton("meetups", "Meetups", "people-outline")}
-        {renderFilterButton("places", "Places", "location-outline")}
+        {renderFilterButton("happy_hours", "Happy Hours", "wine-outline")}
       </View>
 
       {/* Map */}
@@ -310,19 +676,21 @@ export default function MapScreen({ navigation }: any) {
                 name={
                   isMeetup(selectedMarker)
                     ? "people-outline"
+                    : isHappyHour(selectedMarker)
+                    ? "wine-outline"
                     : "location-outline"
                 }
                 size={24}
                 color={
-                  isMeetup(selectedMarker) ? colors.primary : colors.secondary
+                  isMeetup(selectedMarker)
+                    ? colors.primary
+                    : isHappyHour(selectedMarker)
+                    ? "#FFB800"
+                    : colors.secondary
                 }
               />
               <Text style={[styles.dialogTitle, { color: colors.text }]}>
-                {selectedMarker &&
-                typeof selectedMarker === "object" &&
-                "name" in selectedMarker
-                  ? selectedMarker.name
-                  : selectedMarker?.title || "Unknown"}
+                {selectedMarker?.title || selectedMarker?.name || "Unknown"}
               </Text>
               <TouchableOpacity
                 onPress={closeDialog}
@@ -336,11 +704,10 @@ export default function MapScreen({ navigation }: any) {
             <View style={styles.imageContainer}>
               <Image
                 source={{
-                  uri: isMeetup(selectedMarker)
-                    ? selectedMarker?.coverImage ||
-                      "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&h=200&fit=crop"
-                    : selectedMarker?.photos?.[0] ||
-                      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=200&fit=crop",
+                  uri:
+                    selectedMarker?.coverImage ||
+                    selectedMarker?.photos?.[0] ||
+                    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&h=200&fit=crop",
                 }}
                 style={styles.dialogImage}
                 resizeMode="cover"
@@ -411,11 +778,9 @@ export default function MapScreen({ navigation }: any) {
                 <Text
                   style={[styles.detailText, { color: colors.textSecondary }]}
                 >
-                  {selectedMarker &&
-                  typeof selectedMarker === "object" &&
-                  "locationName" in selectedMarker
-                    ? selectedMarker.locationName
-                    : selectedMarker?.address || "Location not available"}
+                  {selectedMarker?.locationName ||
+                    selectedMarker?.address ||
+                    "Location not available"}
                 </Text>
               </View>
 
@@ -472,6 +837,78 @@ export default function MapScreen({ navigation }: any) {
                         ]}
                       >
                         {selectedMarker.activity}
+                      </Text>
+                    </View>
+                  )}
+                </>
+              ) : isHappyHour(selectedMarker) ? (
+                <>
+                  <View style={styles.detailRow}>
+                    <Ionicons
+                      name="calendar-outline"
+                      size={16}
+                      color="#FFB800"
+                    />
+                    <Text
+                      style={[
+                        styles.detailText,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      {selectedMarker?.startTime?.toLocaleDateString() ||
+                        "Date not available"}{" "}
+                      at{" "}
+                      {selectedMarker?.startTime?.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }) || "Time not available"}
+                    </Text>
+                  </View>
+                  <View style={styles.detailRow}>
+                    <Ionicons name="people-outline" size={16} color="#FFB800" />
+                    <Text
+                      style={[
+                        styles.detailText,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      {selectedMarker?.currentAttendees || 0} /{" "}
+                      {selectedMarker?.maxAttendees || 0} attendees
+                    </Text>
+                  </View>
+                  {selectedMarker?.price !== undefined && (
+                    <View style={styles.detailRow}>
+                      <Ionicons
+                        name="pricetag-outline"
+                        size={16}
+                        color="#FFB800"
+                      />
+                      <Text
+                        style={[
+                          styles.detailText,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
+                        {selectedMarker.price === 0
+                          ? "Free"
+                          : `$${selectedMarker.price}`}
+                      </Text>
+                    </View>
+                  )}
+                  {selectedMarker?.venue && (
+                    <View style={styles.detailRow}>
+                      <Ionicons
+                        name="business-outline"
+                        size={16}
+                        color="#FFB800"
+                      />
+                      <Text
+                        style={[
+                          styles.detailText,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
+                        {selectedMarker.venue} ({selectedMarker.venueType})
                       </Text>
                     </View>
                   )}
@@ -539,9 +976,17 @@ export default function MapScreen({ navigation }: any) {
                   navigation.navigate("MeetupDetails", {
                     meetupId: selectedMarker.id,
                   });
-                } else if (selectedMarker) {
-                  navigation.navigate("PlaceDetails", {
-                    placeId: selectedMarker.id,
+                } else if (isHappyHour(selectedMarker)) {
+                  const serializedEvent = {
+                    ...selectedMarker,
+                    startTime: selectedMarker.startTime?.toISOString(),
+                    endTime: selectedMarker.endTime?.toISOString(),
+                    createdAt: selectedMarker.createdAt?.toISOString(),
+                    updatedAt: selectedMarker.updatedAt?.toISOString(),
+                  };
+                  navigation.navigate("EventDetails", {
+                    eventId: selectedMarker.id,
+                    event: serializedEvent,
                   });
                 }
                 closeDialog();
@@ -570,13 +1015,10 @@ export default function MapScreen({ navigation }: any) {
           </View>
           <View style={styles.legendItem}>
             <View
-              style={[
-                styles.legendMarker,
-                { backgroundColor: colors.secondary },
-              ]}
+              style={[styles.legendMarker, { backgroundColor: "#FFB800" }]}
             />
             <Text style={[styles.legendText, { color: colors.textSecondary }]}>
-              Places ({places.length})
+              Happy Hours ({happyHours.length})
             </Text>
           </View>
         </View>

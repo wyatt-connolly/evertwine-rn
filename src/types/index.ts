@@ -242,6 +242,9 @@ export interface Notification {
   receiverRef: string;
   senderRef?: string;
   meetupRef?: string;
+  postRef?: string;
+  commentRef?: string;
+  eventRef?: string;
 
   // Notification Content
   title: string;
@@ -291,12 +294,23 @@ export enum NotificationType {
   meetupShared = "meetup_shared",
   meetupCommented = "meetup_commented",
 
+  // Post Interactions
+  postLiked = "post_liked",
+  postCommented = "post_commented",
+  postShared = "post_shared",
+  commentReply = "comment_reply",
+  commentLiked = "comment_liked",
+
   // Messages
   message = "message",
 
   // System
   verificationComplete = "verification_complete",
   newFeature = "new_feature",
+
+  // Happy Hour Events
+  happyHourStartingSoon = "happy_hour_starting_soon",
+  happyHourInvite = "happy_hour_invite",
 }
 
 // AI Types
@@ -428,6 +442,30 @@ export interface PlaceReview {
   visitDate: Date;
   helpful: number;
   verified: boolean;
+  createdAt: Date;
+}
+
+// Post Types
+export interface Post {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar: string;
+  title: string;
+  message: string;
+  images?: string[];
+  likes: string[];
+  comments: PostComment[];
+  createdAt: Date;
+  isAnnouncement?: boolean;
+}
+
+export interface PostComment {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar: string;
+  message: string;
   createdAt: Date;
 }
 

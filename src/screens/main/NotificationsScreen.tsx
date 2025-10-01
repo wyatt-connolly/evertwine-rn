@@ -68,18 +68,66 @@ export default function NotificationsScreen({ navigation }: any) {
 
   const getNotificationIcon = (type: NotificationType) => {
     switch (type) {
-      case NotificationType.meetupReminder:
-        return "time-outline";
-      case NotificationType.message:
-        return "chatbubble-outline";
-      case NotificationType.meetupAccepted:
-        return "people-outline";
-      case NotificationType.friendRequest:
-        return "person-add-outline";
-      case NotificationType.meetupCancelled:
-        return "close-circle-outline";
+      // Meetup Notifications
       case NotificationType.meetupRequest:
         return "calendar-outline";
+      case NotificationType.meetupAccepted:
+        return "checkmark-circle-outline";
+      case NotificationType.meetupDeclined:
+        return "close-circle-outline";
+      case NotificationType.meetupReminder:
+      case NotificationType.meetupStartingSoon:
+        return "time-outline";
+      case NotificationType.meetupCancelled:
+        return "close-circle-outline";
+      case NotificationType.meetupLiked:
+        return "heart-outline";
+      case NotificationType.meetupCommented:
+        return "chatbubble-outline";
+      case NotificationType.meetupShared:
+        return "share-social-outline";
+
+      // Post Notifications
+      case NotificationType.postLiked:
+      case NotificationType.commentLiked:
+        return "heart-outline";
+      case NotificationType.postCommented:
+      case NotificationType.commentReply:
+        return "chatbubble-ellipses-outline";
+      case NotificationType.postShared:
+        return "share-social-outline";
+
+      // Social Notifications
+      case NotificationType.friendRequest:
+        return "person-add-outline";
+      case NotificationType.newFollower:
+        return "person-outline";
+      case NotificationType.mutualConnection:
+        return "people-outline";
+      case NotificationType.profileView:
+      case NotificationType.profileViewReturn:
+        return "eye-outline";
+      case NotificationType.profileLike:
+        return "heart-circle-outline";
+
+      // Message Notifications
+      case NotificationType.message:
+        return "mail-outline";
+
+      // Happy Hour Notifications
+      case NotificationType.happyHourStartingSoon:
+        return "wine-outline";
+      case NotificationType.happyHourInvite:
+        return "wine-outline";
+
+      // System Notifications
+      case NotificationType.verificationComplete:
+        return "checkmark-done-circle-outline";
+      case NotificationType.newFeature:
+        return "sparkles-outline";
+      case NotificationType.friendSuggestion:
+        return "people-circle-outline";
+
       default:
         return "notifications-outline";
     }
@@ -87,18 +135,59 @@ export default function NotificationsScreen({ navigation }: any) {
 
   const getNotificationColor = (type: NotificationType) => {
     switch (type) {
-      case NotificationType.meetupReminder:
-        return colors.warning;
-      case NotificationType.message:
+      // Meetup Notifications - Primary/Success/Warning
+      case NotificationType.meetupRequest:
         return colors.primary;
       case NotificationType.meetupAccepted:
         return colors.success;
-      case NotificationType.friendRequest:
-        return colors.secondary;
+      case NotificationType.meetupDeclined:
       case NotificationType.meetupCancelled:
         return colors.error;
-      case NotificationType.meetupRequest:
+      case NotificationType.meetupReminder:
+      case NotificationType.meetupStartingSoon:
+        return colors.warning;
+      case NotificationType.meetupLiked:
+      case NotificationType.meetupCommented:
+      case NotificationType.meetupShared:
         return colors.primary;
+
+      // Post Notifications - Info/Primary
+      case NotificationType.postLiked:
+      case NotificationType.commentLiked:
+        return "#E91E63"; // Pink for likes
+      case NotificationType.postCommented:
+      case NotificationType.commentReply:
+        return colors.primary;
+      case NotificationType.postShared:
+        return "#00BCD4"; // Cyan for shares
+
+      // Social Notifications - Secondary
+      case NotificationType.friendRequest:
+      case NotificationType.newFollower:
+      case NotificationType.mutualConnection:
+        return colors.secondary;
+      case NotificationType.profileView:
+      case NotificationType.profileViewReturn:
+      case NotificationType.profileLike:
+        return colors.primary;
+
+      // Message Notifications - Primary
+      case NotificationType.message:
+        return colors.primary;
+
+      // Happy Hour Notifications - Warning (gold/amber)
+      case NotificationType.happyHourStartingSoon:
+      case NotificationType.happyHourInvite:
+        return "#FFB800";
+
+      // System Notifications - Success/Info
+      case NotificationType.verificationComplete:
+        return colors.success;
+      case NotificationType.newFeature:
+        return "#9C27B0"; // Purple for new features
+      case NotificationType.friendSuggestion:
+        return colors.secondary;
+
       default:
         return colors.textSecondary;
     }
@@ -125,12 +214,99 @@ export default function NotificationsScreen({ navigation }: any) {
     markAsRead(notification.id);
 
     // Navigate based on notification type
-    if (notification.meetupRef) {
-      navigation.navigate("MeetupDetails", {
-        meetupId: notification.meetupRef,
-      });
-    } else if (notification.senderRef) {
-      navigation.navigate("UserProfile", { userId: notification.senderRef });
+    switch (notification.notificationType) {
+      // Meetup Notifications
+      case NotificationType.meetupRequest:
+      case NotificationType.meetupAccepted:
+      case NotificationType.meetupDeclined:
+      case NotificationType.meetupReminder:
+      case NotificationType.meetupStartingSoon:
+      case NotificationType.meetupCancelled:
+      case NotificationType.meetupLiked:
+      case NotificationType.meetupCommented:
+      case NotificationType.meetupShared:
+        if (notification.meetupRef) {
+          navigation.navigate("MeetupDetails", {
+            meetupId: notification.meetupRef,
+          });
+        }
+        break;
+
+      // Post Notifications
+      case NotificationType.postLiked:
+      case NotificationType.postCommented:
+      case NotificationType.postShared:
+      case NotificationType.commentReply:
+      case NotificationType.commentLiked:
+        if (notification.postRef) {
+          navigation.navigate("PostDetails", {
+            postId: notification.postRef,
+          });
+        }
+        break;
+
+      // Social Notifications
+      case NotificationType.friendRequest:
+      case NotificationType.newFollower:
+      case NotificationType.mutualConnection:
+      case NotificationType.profileView:
+      case NotificationType.profileLike:
+      case NotificationType.profileViewReturn:
+        if (notification.senderRef) {
+          const userId = notification.senderRef.replace("users/", "");
+          navigation.navigate("UserProfile", { userId });
+        }
+        break;
+
+      // Message Notifications
+      case NotificationType.message:
+        if (notification.senderRef) {
+          const userId = notification.senderRef.replace("users/", "");
+          navigation.navigate("Messages", {
+            screen: "Chat",
+            params: { userId },
+          });
+        }
+        break;
+
+      // Happy Hour Notifications
+      case NotificationType.happyHourStartingSoon:
+      case NotificationType.happyHourInvite:
+        if (notification.eventRef) {
+          navigation.navigate("EventDetails", {
+            eventId: notification.eventRef,
+          });
+        }
+        break;
+
+      // System Notifications
+      case NotificationType.verificationComplete:
+        navigation.navigate("Profile");
+        break;
+
+      case NotificationType.newFeature:
+        navigation.navigate("Home");
+        break;
+
+      case NotificationType.friendSuggestion:
+        navigation.navigate("Community");
+        break;
+
+      default:
+        // Default navigation if no specific handler
+        if (notification.meetupRef) {
+          navigation.navigate("MeetupDetails", {
+            meetupId: notification.meetupRef,
+          });
+        } else if (notification.postRef) {
+          navigation.navigate("PostDetails", {
+            postId: notification.postRef,
+          });
+        } else if (notification.senderRef) {
+          const userId = notification.senderRef.replace("users/", "");
+          navigation.navigate("UserProfile", { userId });
+        }
+        break;
     }
   };
 
@@ -142,23 +318,17 @@ export default function NotificationsScreen({ navigation }: any) {
     >
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
+        <View style={styles.leftContainer}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          </TouchableOpacity>
+        </View>
         <View style={styles.titleContainer}>
           <Text style={[styles.title, { color: colors.text }]}>
             Notifications
           </Text>
         </View>
-        <View style={styles.rightContainer}>
-          {unreadCount > 0 && (
-            <TouchableOpacity onPress={markAllAsRead}>
-              <Text style={[styles.markAllText, { color: colors.primary }]}>
-                Mark all read
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        <View style={styles.rightContainer} />
       </View>
 
       {/* Loading State */}
@@ -229,27 +399,55 @@ export default function NotificationsScreen({ navigation }: any) {
                   onPress={() => handleNotificationPress(notification)}
                 >
                   <View style={styles.notificationContent}>
-                    <View
-                      style={[
-                        styles.iconContainer,
-                        {
-                          backgroundColor:
-                            getNotificationColor(
+                    {/* User Avatar */}
+                    {notification.metadata?.imageUrl ? (
+                      <View style={styles.avatarContainer}>
+                        <Image
+                          source={{ uri: notification.metadata.imageUrl }}
+                          style={styles.avatar}
+                        />
+                        <View
+                          style={[
+                            styles.iconBadge,
+                            {
+                              backgroundColor: getNotificationColor(
+                                notification.notificationType
+                              ),
+                            },
+                          ]}
+                        >
+                          <Ionicons
+                            name={getNotificationIcon(
                               notification.notificationType
-                            ) + "20",
-                        },
-                      ]}
-                    >
-                      <Ionicons
-                        name={getNotificationIcon(
-                          notification.notificationType
-                        )}
-                        size={20}
-                        color={getNotificationColor(
-                          notification.notificationType
-                        )}
-                      />
-                    </View>
+                            )}
+                            size={12}
+                            color="#FFFFFF"
+                          />
+                        </View>
+                      </View>
+                    ) : (
+                      <View
+                        style={[
+                          styles.iconContainer,
+                          {
+                            backgroundColor:
+                              getNotificationColor(
+                                notification.notificationType
+                              ) + "20",
+                          },
+                        ]}
+                      >
+                        <Ionicons
+                          name={getNotificationIcon(
+                            notification.notificationType
+                          )}
+                          size={20}
+                          color={getNotificationColor(
+                            notification.notificationType
+                          )}
+                        />
+                      </View>
+                    )}
 
                     <View style={styles.textContent}>
                       <View style={styles.titleRow}>
@@ -313,6 +511,10 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
   },
+  leftContainer: {
+    width: 40,
+    alignItems: "flex-start",
+  },
   titleContainer: {
     flex: 1,
     alignItems: "center",
@@ -322,7 +524,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   rightContainer: {
-    width: 80,
+    width: 40,
     alignItems: "flex-end",
   },
   markAllText: {
@@ -376,6 +578,29 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
+  },
+  avatarContainer: {
+    width: 40,
+    height: 40,
+    marginRight: 12,
+    position: "relative",
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  iconBadge: {
+    position: "absolute",
+    bottom: -2,
+    right: -2,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
   },
   textContent: {
     flex: 1,
