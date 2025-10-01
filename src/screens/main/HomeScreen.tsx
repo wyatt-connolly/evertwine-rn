@@ -8,10 +8,7 @@ import {
   RefreshControl,
   Modal,
 } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../hooks/useAuthStore";
@@ -82,7 +79,6 @@ export default function HomeScreen() {
   const { user: currentUser, isLoading: isInitialLoading } = useAuthStore();
   const { meetups } = useMeetupStore();
   const flatListRef = useRef<FlatList>(null);
-  const insets = useSafeAreaInsets();
 
   // State
   const [refreshing, setRefreshing] = useState(false);
@@ -853,7 +849,7 @@ export default function HomeScreen() {
               ? styles.emptyContainer
               : activeFilter === "happy_hours"
               ? styles.feedContentCompact
-              : [styles.feedContent, { paddingBottom: 120 + insets.bottom }]
+              : styles.feedContent
           }
           onScrollToIndexFailed={(info) => {
             const wait = new Promise((resolve) => setTimeout(resolve, 100));
@@ -1157,7 +1153,6 @@ const styles = StyleSheet.create({
   },
   feedContent: {
     paddingTop: 16,
-    paddingBottom: 120,
   },
   feedContentCompact: {
     paddingBottom: 20,
@@ -1322,10 +1317,5 @@ const styles = StyleSheet.create({
   applyButtonText: {
     fontSize: 16,
     fontWeight: "700",
-  },
-  fabContainer: {
-    position: "absolute",
-    right: 20,
-    zIndex: 1000,
   },
 });
