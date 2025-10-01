@@ -469,21 +469,6 @@ export interface PostComment {
   createdAt: Date;
 }
 
-// Status Update Types
-export interface StatusUpdate {
-  id: string;
-  userId: string;
-  userName: string;
-  userAvatar: string;
-  type: "joined_meetup" | "joined_happy_hour" | "created_meetup" | "created_happy_hour";
-  targetId: string; // meetup ID or event ID
-  targetTitle: string;
-  targetType: "meetup" | "happy_hour";
-  targetImage?: string;
-  createdAt: Date;
-  likes: string[];
-  comments: PostComment[];
-}
 
 // Activity Feed Types
 export interface ActivityItem {

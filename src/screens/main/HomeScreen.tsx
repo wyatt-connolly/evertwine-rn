@@ -17,7 +17,6 @@ import { useMeetupStore } from "../../hooks/useMeetupStore";
 import EnhancedMeetupCard from "../../components/EnhancedMeetupCard";
 import EnhancedPostCard from "../../components/EnhancedPostCard";
 import EventCard from "../../components/EventCard";
-import StatusUpdateCard from "../../components/StatusUpdateCard";
 import { getHappyHourEvents } from "../../components/HappyHourCarousel";
 import SkeletonLoader from "../../components/SkeletonLoader";
 import ContentPrompt from "../../components/ContentPrompt";
@@ -26,13 +25,12 @@ import {
   getMockMeetups,
   getMockPosts,
   getUserNotifications,
-  getMockStatusUpdates,
 } from "../../data/mockData";
 import { DataService } from "../../services/DataService";
 import LoadingIndicator from "../../components/LoadingIndicator";
-import { Meetup, Notification, Post, Event, StatusUpdate } from "../../types";
+import { Meetup, Notification, Post, Event } from "../../types";
 
-type FilterType = "all" | "meetups" | "posts" | "happy_hours" | "status_updates";
+type FilterType = "all" | "meetups" | "posts" | "happy_hours";
 type DateFilter = "all" | "today" | "this_week" | "this_weekend";
 
 type FeedItem = {
@@ -43,9 +41,8 @@ type FeedItem = {
     | "post"
     | "meetup"
     | "happy_hour"
-    | "status_update"
     | "prompt";
-  data?: Post | Meetup | Event | StatusUpdate;
+  data?: Post | Meetup | Event;
   timestamp?: Date;
   priority?: number;
   promptType?: "introduction" | "rate_meetup" | "share_experience";
@@ -88,7 +85,6 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [statusUpdates, setStatusUpdates] = useState<StatusUpdate[]>([]);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [selectedDateFilter, setSelectedDateFilter] =
     useState<DateFilter>("all");
@@ -110,11 +106,10 @@ export default function HomeScreen() {
     ? getHappyHourEvents()
     : [];
 
-  // Initialize posts and status updates from mock data
+  // Initialize posts from mock data
   useEffect(() => {
     if (DataService.isInDeveloperMode()) {
       setPosts(getMockPosts());
-      setStatusUpdates(getMockStatusUpdates());
     }
     // Simulate loading
     setTimeout(() => setLoading(false), 1500);
@@ -317,36 +312,6 @@ export default function HomeScreen() {
       });
     }
 
-    // Add Status Updates (only if not filtered) - MIXED WITH OTHER CONTENT
-    if (activeFilter === "all" || activeFilter === "status_updates") {
-      statusUpdates.forEach((statusUpdate) => {
-        const hoursSinceUpdate =
-          (now.getTime() - statusUpdate.createdAt.getTime()) / (1000 * 60 * 60);
-        
-        let priority = 100;
-        
-        // Recent status updates (< 2 hours) get higher priority
-        if (hoursSinceUpdate < 2) {
-          priority = 8 + hoursSinceUpdate;
-        }
-        // Popular status updates (lots of engagement)
-        else if (statusUpdate.likes.length + statusUpdate.comments.length > 3) {
-          priority = 15 + hoursSinceUpdate;
-        }
-        // Older status updates
-        else {
-          priority = 25 + hoursSinceUpdate;
-        }
-
-        combined.push({
-          id: `status_update_${statusUpdate.id}`,
-          type: "status_update",
-          data: statusUpdate,
-          timestamp: statusUpdate.createdAt,
-          priority,
-        });
-      });
-    }
 
     // Sort by priority (lower number = higher priority) - ALL ITEMS MIXED TOGETHER
     combined.sort((a, b) => (a.priority || 0) - (b.priority || 0));
@@ -358,7 +323,6 @@ export default function HomeScreen() {
     posts,
     allMeetups,
     happyHourEvents,
-    statusUpdates,
     activeFilter,
     selectedDateFilter,
     recommendedMeetups,
@@ -502,65 +466,6 @@ export default function HomeScreen() {
           </View>
         );
 
-      case "status_update":
-        const statusUpdate = item.data as StatusUpdate;
-        return (
-          <StatusUpdateCard
-            statusUpdate={statusUpdate}
-            onPress={() => {
-              // Navigate to meetup or event details based on target type
-              if (statusUpdate.targetType === "meetup") {
-                navigation.navigate("MeetupDetails", {
-                  meetupId: statusUpdate.targetId,
-                });
-              } else {
-                // For happy hour events, we'd need to find the event and navigate
-                navigation.navigate("EventDetails", {
-                  eventId: statusUpdate.targetId,
-                });
-              }
-            }}
-            onLike={(statusId) => {
-              setStatusUpdates((prev) =>
-                prev.map((status) => {
-                  if (status.id === statusId && currentUser) {
-                    const isLiked = status.likes.includes(currentUser.uid);
-                    return {
-                      ...status,
-                      likes: isLiked
-                        ? status.likes.filter((uid) => uid !== currentUser.uid)
-                        : [...status.likes, currentUser.uid],
-                    };
-                  }
-                  return status;
-                })
-              );
-            }}
-            onComment={(statusId, message) => {
-              if (!currentUser || !message.trim()) return;
-
-              setStatusUpdates((prev) =>
-                prev.map((status) => {
-                  if (status.id === statusId) {
-                    const newComment = {
-                      id: `comment_${Date.now()}`,
-                      userId: currentUser.uid,
-                      userName: currentUser.displayName || "User",
-                      userAvatar: currentUser.photoURL || "",
-                      message,
-                      createdAt: new Date(),
-                    };
-                    return {
-                      ...status,
-                      comments: [...status.comments, newComment],
-                    };
-                  }
-                  return status;
-                })
-              );
-            }}
-          />
-        );
 
       case "recommended_header":
         return (
@@ -751,33 +656,6 @@ export default function HomeScreen() {
       );
     }
 
-    if (activeFilter === "status_updates") {
-      return (
-        <View style={styles.emptyState}>
-          <Ionicons
-            name="notifications-outline"
-            size={64}
-            color={colors.textTertiary}
-          />
-          <Text style={[styles.emptyTitle, { color: colors.text }]}>
-            No Status Updates Yet
-          </Text>
-          <Text
-            style={[styles.emptyDescription, { color: colors.textSecondary }]}
-          >
-            Join some meetups or happy hours to see status updates!
-          </Text>
-          <TouchableOpacity
-            style={[styles.emptyButton, { backgroundColor: colors.primary }]}
-            onPress={() => setActiveFilter("all")}
-          >
-            <Text style={[styles.emptyButtonText, { color: colors.onPrimary }]}>
-              View All Content
-            </Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
 
     return (
       <View style={styles.emptyState}>
@@ -1031,7 +909,6 @@ export default function HomeScreen() {
                 { type: "meetups", label: "Meetups", icon: "people" },
                 { type: "posts", label: "Posts", icon: "newspaper" },
                 { type: "happy_hours", label: "Happy Hours", icon: "wine" },
-                { type: "status_updates", label: "Status Updates", icon: "notifications" },
               ].map((filter) => {
                 const isActive = activeFilter === filter.type;
                 return (
