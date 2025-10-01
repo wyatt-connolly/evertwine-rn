@@ -16,7 +16,8 @@ import { useThemeStore } from "../../hooks/useThemeStore";
 import { useMeetupStore } from "../../hooks/useMeetupStore";
 import EnhancedMeetupCard from "../../components/EnhancedMeetupCard";
 import EnhancedPostCard from "../../components/EnhancedPostCard";
-import HappyHourCarousel from "../../components/HappyHourCarousel";
+import EventCard from "../../components/EventCard";
+import { getHappyHourEvents } from "../../components/HappyHourCarousel";
 import SkeletonLoader from "../../components/SkeletonLoader";
 import ContentPrompt from "../../components/ContentPrompt";
 import ExpandableFAB from "../../components/ExpandableFAB";
@@ -27,7 +28,7 @@ import {
 } from "../../data/mockData";
 import { DataService } from "../../services/DataService";
 import LoadingIndicator from "../../components/LoadingIndicator";
-import { Meetup, Notification, Post } from "../../types";
+import { Meetup, Notification, Post, Event } from "../../types";
 
 type FilterType = "all" | "meetups" | "posts" | "happy_hours";
 type DateFilter = "all" | "today" | "this_week" | "this_weekend";
@@ -35,15 +36,13 @@ type DateFilter = "all" | "today" | "this_week" | "this_weekend";
 type FeedItem = {
   id: string;
   type:
-    | "happy_hour_header"
-    | "happy_hour"
     | "recommended_header"
     | "recommended_meetup"
-    | "header"
     | "post"
     | "meetup"
+    | "happy_hour"
     | "prompt";
-  data?: Post | Meetup;
+  data?: Post | Meetup | Event;
   timestamp?: Date;
   priority?: number;
   promptType?: "introduction" | "rate_meetup" | "share_experience";
@@ -102,6 +101,11 @@ export default function HomeScreen() {
     ? getMockMeetups()
     : meetups;
 
+  // Get happy hour events
+  const happyHourEvents = DataService.isInDeveloperMode()
+    ? getHappyHourEvents()
+    : [];
+
   // Initialize posts from mock data
   useEffect(() => {
     if (DataService.isInDeveloperMode()) {
@@ -146,17 +150,37 @@ export default function HomeScreen() {
     const items: FeedItem[] = [];
     const now = new Date();
 
-    // Add Happy Hour section (only if not filtered)
+    // Add Happy Hour events (only if not filtered)
     if (activeFilter === "all" || activeFilter === "happy_hours") {
-      items.push({
-        id: "happy_hour_header",
-        type: "happy_hour_header",
-        priority: 0,
-      });
-      items.push({
-        id: "happy_hour",
-        type: "happy_hour",
-        priority: 0,
+      happyHourEvents.forEach((event) => {
+        const hoursUntilEvent =
+          (event.startTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+        let priority = 100;
+        // Events happening TODAY get highest priority
+        if (hoursUntilEvent > 0 && hoursUntilEvent < 24) {
+          priority = 3;
+        }
+        // Events THIS WEEK
+        else if (hoursUntilEvent > 0 && hoursUntilEvent < 168) {
+          priority = 15 + Math.floor(hoursUntilEvent / 24);
+        }
+        // Future events
+        else if (hoursUntilEvent > 0) {
+          priority = 40 + Math.floor(hoursUntilEvent / 24);
+        }
+        // Past events (lower priority)
+        else {
+          priority = 200;
+        }
+
+        items.push({
+          id: `happy_hour_${event.id}`,
+          type: "happy_hour",
+          data: event,
+          timestamp: event.startTime,
+          priority,
+        });
       });
     }
 
@@ -177,15 +201,6 @@ export default function HomeScreen() {
           data: meetup,
           priority: 1 + index * 0.1,
         });
-      });
-    }
-
-    // Add feed header
-    if (activeFilter === "all") {
-      items.push({
-        id: "feed_header",
-        type: "header",
-        priority: 2,
       });
     }
 
@@ -306,12 +321,12 @@ export default function HomeScreen() {
   }, [
     posts,
     allMeetups,
+    happyHourEvents,
     activeFilter,
     selectedDateFilter,
     recommendedMeetups,
     currentPromptIndex,
   ]);
-
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -426,28 +441,13 @@ export default function HomeScreen() {
 
   const renderItem = ({ item }: { item: FeedItem }) => {
     switch (item.type) {
-      case "happy_hour_header":
-        return (
-          <View
-            style={[
-              styles.sectionHeader,
-              { backgroundColor: colors.background },
-            ]}
-          >
-            <View style={styles.sectionHeaderContent}>
-              <Ionicons name="wine" size={20} color={colors.primary} />
-              <Text style={[styles.sectionHeaderTitle, { color: colors.text }]}>
-                Happy Hour Events
-              </Text>
-            </View>
-          </View>
-        );
-
       case "happy_hour":
+        const event = item.data as Event;
         return (
-          <View style={styles.happyHourCarouselWrapper}>
-            <HappyHourCarousel
-              onEventPress={(event) => {
+          <View style={styles.eventWrapper}>
+            <EventCard
+              event={event}
+              onPress={() => {
                 const serializedEvent = {
                   ...event,
                   startTime: event.startTime?.toISOString(),
@@ -460,6 +460,7 @@ export default function HomeScreen() {
                   event: serializedEvent,
                 });
               }}
+              style={styles.eventCard}
             />
           </View>
         );
@@ -504,23 +505,6 @@ export default function HomeScreen() {
               isInterested={interestedMeetups.has(recommendedMeetup.id)}
               mutualFriends={getMutualFriends()}
             />
-          </View>
-        );
-
-      case "header":
-        return (
-          <View
-            style={[
-              styles.sectionHeader,
-              { backgroundColor: colors.background },
-            ]}
-          >
-            <View style={styles.sectionHeaderContent}>
-              <Ionicons name="newspaper" size={20} color={colors.primary} />
-              <Text style={[styles.sectionHeaderTitle, { color: colors.text }]}>
-                Your Feed
-              </Text>
-            </View>
           </View>
         );
 
@@ -794,7 +778,8 @@ export default function HomeScreen() {
                 style={[
                   styles.feedModeText,
                   {
-                    color: feedMode === "for_you" ? colors.primary : colors.text,
+                    color:
+                      feedMode === "for_you" ? colors.primary : colors.text,
                     fontWeight: feedMode === "for_you" ? "600" : "500",
                   },
                 ]}
@@ -1198,8 +1183,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginLeft: 28,
   },
-  happyHourCarouselWrapper: {
-    marginBottom: 8,
+  eventWrapper: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+  },
+  eventCard: {
+    marginBottom: 0,
   },
   recommendedMeetupWrapper: {
     marginHorizontal: 16,

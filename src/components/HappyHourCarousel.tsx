@@ -19,7 +19,7 @@ interface HappyHourCarouselProps {
 }
 
 // Mock happy hour events - using simplified Event interface
-const getHappyHourEvents = (): Event[] => [
+export const getHappyHourEvents = (): Event[] => [
   {
     id: "hh1",
     title: "Wine & Cheese Tasting",
