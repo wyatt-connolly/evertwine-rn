@@ -469,7 +469,6 @@ export interface PostComment {
   createdAt: Date;
 }
 
-
 // Activity Feed Types
 export interface ActivityItem {
   id: string;

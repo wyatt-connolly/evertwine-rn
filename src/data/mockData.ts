@@ -2050,4 +2050,3 @@ export const mockPosts: Post[] = [
 export const getMockPosts = (limit?: number): Post[] => {
   return limit ? mockPosts.slice(0, limit) : mockPosts;
 };
-

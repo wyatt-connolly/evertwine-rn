@@ -8,7 +8,10 @@ import {
   RefreshControl,
   Modal,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../hooks/useAuthStore";
@@ -79,6 +82,7 @@ export default function HomeScreen() {
   const { user: currentUser, isLoading: isInitialLoading } = useAuthStore();
   const { meetups } = useMeetupStore();
   const flatListRef = useRef<FlatList>(null);
+  const insets = useSafeAreaInsets();
 
   // State
   const [refreshing, setRefreshing] = useState(false);
@@ -312,7 +316,6 @@ export default function HomeScreen() {
       });
     }
 
-
     // Sort by priority (lower number = higher priority) - ALL ITEMS MIXED TOGETHER
     combined.sort((a, b) => (a.priority || 0) - (b.priority || 0));
 
@@ -465,7 +468,6 @@ export default function HomeScreen() {
             />
           </View>
         );
-
 
       case "recommended_header":
         return (
@@ -655,7 +657,6 @@ export default function HomeScreen() {
         </View>
       );
     }
-
 
     return (
       <View style={styles.emptyState}>
@@ -852,7 +853,7 @@ export default function HomeScreen() {
               ? styles.emptyContainer
               : activeFilter === "happy_hours"
               ? styles.feedContentCompact
-              : styles.feedContent
+              : [styles.feedContent, { paddingBottom: 120 + insets.bottom }]
           }
           onScrollToIndexFailed={(info) => {
             const wait = new Promise((resolve) => setTimeout(resolve, 100));
@@ -1156,7 +1157,7 @@ const styles = StyleSheet.create({
   },
   feedContent: {
     paddingTop: 16,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   feedContentCompact: {
     paddingBottom: 20,
@@ -1321,5 +1322,10 @@ const styles = StyleSheet.create({
   applyButtonText: {
     fontSize: 16,
     fontWeight: "700",
+  },
+  fabContainer: {
+    position: "absolute",
+    right: 20,
+    zIndex: 1000,
   },
 });
