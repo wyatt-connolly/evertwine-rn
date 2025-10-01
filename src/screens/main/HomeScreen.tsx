@@ -144,6 +144,179 @@ export default function HomeScreen() {
     return () => clearInterval(interval);
   }, []);
 
+  // Helper function to check if meetup matches activity filters
+  const meetsMeetupActivityFilter = (meetup: Meetup): boolean => {
+    if (tempSelectedMeetupActivities.length === 0) return true;
+
+    const meetupActivity = meetup.activity?.toLowerCase() || "";
+    const meetupCategory = meetup.activityCategory?.toLowerCase() || "";
+    const meetupTags = meetup.tags.map((tag) => tag.toLowerCase());
+
+    return tempSelectedMeetupActivities.some((activity) => {
+      switch (activity) {
+        case "yoga":
+          return (
+            meetupActivity.includes("yoga") ||
+            meetupCategory.includes("wellness") ||
+            meetupTags.some((tag) => tag.includes("yoga"))
+          );
+        case "fitness":
+          return (
+            meetupActivity.includes("fitness") ||
+            meetupCategory.includes("fitness") ||
+            meetupTags.some((tag) => tag.includes("fitness"))
+          );
+        case "photography":
+          return (
+            meetupActivity.includes("photography") ||
+            meetupTags.some((tag) => tag.includes("photography"))
+          );
+        case "networking":
+          return (
+            meetupActivity.includes("networking") ||
+            meetupCategory.includes("professional") ||
+            meetupTags.some((tag) => tag.includes("networking"))
+          );
+        case "food":
+          return (
+            meetupActivity.includes("cooking") ||
+            meetupCategory.includes("food") ||
+            meetupTags.some(
+              (tag) => tag.includes("food") || tag.includes("cooking")
+            )
+          );
+        case "art":
+          return (
+            meetupCategory.includes("art") ||
+            meetupActivity.includes("gallery") ||
+            meetupTags.some((tag) => tag.includes("art"))
+          );
+        case "technology":
+          return (
+            meetupActivity.includes("coding") ||
+            meetupActivity.includes("tech") ||
+            meetupCategory.includes("technology") ||
+            meetupTags.some((tag) => tag.includes("tech"))
+          );
+        case "outdoor":
+          return (
+            meetupActivity.includes("hiking") ||
+            meetupActivity.includes("walk") ||
+            meetupTags.some(
+              (tag) => tag.includes("outdoor") || tag.includes("hiking")
+            )
+          );
+        default:
+          return false;
+      }
+    });
+  };
+
+  // Helper function to check if happy hour matches type filters
+  const meetsHappyHourTypeFilter = (event: Event): boolean => {
+    if (tempSelectedHappyHourTypes.length === 0) return true;
+
+    const eventTitle = event.title?.toLowerCase() || "";
+    const eventCategory = event.category?.toLowerCase() || "";
+    const eventTags = event.tags.map((tag) => tag.toLowerCase());
+
+    return tempSelectedHappyHourTypes.some((type) => {
+      switch (type) {
+        case "bars":
+          return (
+            eventTitle.includes("bar") ||
+            eventTitle.includes("pub") ||
+            eventCategory.includes("bar")
+          );
+        case "cocktails":
+          return (
+            eventTitle.includes("cocktail") ||
+            eventTags.some((tag) => tag.includes("cocktail"))
+          );
+        case "wine":
+          return (
+            eventTitle.includes("wine") ||
+            eventTags.some((tag) => tag.includes("wine"))
+          );
+        case "beer":
+          return (
+            eventTitle.includes("beer") ||
+            eventTags.some((tag) => tag.includes("beer"))
+          );
+        case "non-alcoholic":
+          return (
+            eventTitle.includes("non-alcoholic") ||
+            eventTitle.includes("mocktail") ||
+            eventTags.some((tag) => tag.includes("non-alcoholic"))
+          );
+        case "rooftop":
+          return (
+            eventTitle.includes("rooftop") ||
+            eventTags.some((tag) => tag.includes("rooftop"))
+          );
+        case "dive":
+          return (
+            eventTitle.includes("dive") ||
+            eventTags.some((tag) => tag.includes("dive"))
+          );
+        case "speakeasy":
+          return (
+            eventTitle.includes("speakeasy") ||
+            eventTags.some((tag) => tag.includes("speakeasy"))
+          );
+        default:
+          return false;
+      }
+    });
+  };
+
+  // Helper function to check if post matches type filters
+  const meetsPostTypeFilter = (post: Post): boolean => {
+    if (tempSelectedPostTypes.length === 0) return true;
+
+    const postTitle = post.title?.toLowerCase() || "";
+    const postMessage = post.message?.toLowerCase() || "";
+
+    return tempSelectedPostTypes.some((type) => {
+      switch (type) {
+        case "announcements":
+          return post.isAnnouncement || postTitle.includes("announcement");
+        case "personal":
+          return (
+            postTitle.includes("just") ||
+            postTitle.includes("first time") ||
+            postMessage.includes("looking for")
+          );
+        case "recommendations":
+          return (
+            postTitle.includes("recommend") || postMessage.includes("recommend")
+          );
+        case "questions":
+          return (
+            postTitle.includes("?") ||
+            postMessage.includes("?") ||
+            postTitle.includes("help")
+          );
+        case "events":
+          return postTitle.includes("event") || postMessage.includes("event");
+        case "photos":
+          return post.images && post.images.length > 0;
+        case "discussions":
+          return (
+            postTitle.includes("discuss") || postMessage.includes("thoughts")
+          );
+        case "tips":
+          return (
+            postTitle.includes("tip") ||
+            postTitle.includes("advice") ||
+            postMessage.includes("tip")
+          );
+        default:
+          return false;
+      }
+    });
+  };
+
   // Get personalized/recommended meetups
   const recommendedMeetups = useMemo(() => {
     if (!currentUser?.interests) return [];
@@ -432,108 +605,13 @@ export default function HomeScreen() {
     // Apply the temp filters to the actual filters
     setActiveFilter(tempActiveFilter);
     setSelectedDateFilter(tempSelectedDateFilter);
-    
+
     // Scroll to top when applying filters
     setTimeout(() => {
       flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
     }, 100);
-    
+
     setShowFilterModal(false);
-  };
-
-  // Helper function to check if meetup matches activity filters
-  const meetsMeetupActivityFilter = (meetup: Meetup): boolean => {
-    if (tempSelectedMeetupActivities.length === 0) return true;
-    
-    const meetupActivity = meetup.activity?.toLowerCase() || '';
-    const meetupCategory = meetup.activityCategory?.toLowerCase() || '';
-    const meetupTags = meetup.tags.map(tag => tag.toLowerCase());
-    
-    return tempSelectedMeetupActivities.some(activity => {
-      switch (activity) {
-        case 'yoga':
-          return meetupActivity.includes('yoga') || meetupCategory.includes('wellness') || meetupTags.some(tag => tag.includes('yoga'));
-        case 'fitness':
-          return meetupActivity.includes('fitness') || meetupCategory.includes('fitness') || meetupTags.some(tag => tag.includes('fitness'));
-        case 'photography':
-          return meetupActivity.includes('photography') || meetupTags.some(tag => tag.includes('photography'));
-        case 'networking':
-          return meetupActivity.includes('networking') || meetupCategory.includes('professional') || meetupTags.some(tag => tag.includes('networking'));
-        case 'food':
-          return meetupActivity.includes('cooking') || meetupCategory.includes('food') || meetupTags.some(tag => tag.includes('food') || tag.includes('cooking'));
-        case 'art':
-          return meetupCategory.includes('art') || meetupActivity.includes('gallery') || meetupTags.some(tag => tag.includes('art'));
-        case 'technology':
-          return meetupActivity.includes('coding') || meetupActivity.includes('tech') || meetupCategory.includes('technology') || meetupTags.some(tag => tag.includes('tech'));
-        case 'outdoor':
-          return meetupActivity.includes('hiking') || meetupActivity.includes('walk') || meetupTags.some(tag => tag.includes('outdoor') || tag.includes('hiking'));
-        default:
-          return false;
-      }
-    });
-  };
-
-  // Helper function to check if happy hour matches type filters
-  const meetsHappyHourTypeFilter = (event: Event): boolean => {
-    if (tempSelectedHappyHourTypes.length === 0) return true;
-    
-    const eventTitle = event.title?.toLowerCase() || '';
-    const eventCategory = event.category?.toLowerCase() || '';
-    const eventTags = event.tags.map(tag => tag.toLowerCase());
-    
-    return tempSelectedHappyHourTypes.some(type => {
-      switch (type) {
-        case 'bars':
-          return eventTitle.includes('bar') || eventTitle.includes('pub') || eventCategory.includes('bar');
-        case 'cocktails':
-          return eventTitle.includes('cocktail') || eventTags.some(tag => tag.includes('cocktail'));
-        case 'wine':
-          return eventTitle.includes('wine') || eventTags.some(tag => tag.includes('wine'));
-        case 'beer':
-          return eventTitle.includes('beer') || eventTags.some(tag => tag.includes('beer'));
-        case 'non-alcoholic':
-          return eventTitle.includes('non-alcoholic') || eventTitle.includes('mocktail') || eventTags.some(tag => tag.includes('non-alcoholic'));
-        case 'rooftop':
-          return eventTitle.includes('rooftop') || eventTags.some(tag => tag.includes('rooftop'));
-        case 'dive':
-          return eventTitle.includes('dive') || eventTags.some(tag => tag.includes('dive'));
-        case 'speakeasy':
-          return eventTitle.includes('speakeasy') || eventTags.some(tag => tag.includes('speakeasy'));
-        default:
-          return false;
-      }
-    });
-  };
-
-  // Helper function to check if post matches type filters
-  const meetsPostTypeFilter = (post: Post): boolean => {
-    if (tempSelectedPostTypes.length === 0) return true;
-    
-    const postTitle = post.title?.toLowerCase() || '';
-    const postMessage = post.message?.toLowerCase() || '';
-    
-    return tempSelectedPostTypes.some(type => {
-      switch (type) {
-        case 'announcements':
-          return post.isAnnouncement || postTitle.includes('announcement');
-        case 'personal':
-          return postTitle.includes('just') || postTitle.includes('first time') || postMessage.includes('looking for');
-        case 'recommendations':
-          return postTitle.includes('recommend') || postMessage.includes('recommend');
-        case 'questions':
-          return postTitle.includes('?') || postMessage.includes('?') || postTitle.includes('help');
-        case 'events':
-          return postTitle.includes('event') || postMessage.includes('event');
-        case 'photos':
-          return post.images && post.images.length > 0;
-        case 'discussions':
-          return postTitle.includes('discuss') || postMessage.includes('thoughts');
-        case 'tips':
-          return postTitle.includes('tip') || postTitle.includes('advice') || postMessage.includes('tip');
-        default:
-          return false;
-      }
-    });
   };
 
   const getTimeUntilMeetup = (meetupTime: Date): string => {
