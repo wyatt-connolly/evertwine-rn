@@ -1,8 +1,8 @@
-import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Event } from "../types";
 import { useThemeStore } from "../hooks/useThemeStore";
+import ShareButton from "./ShareButton";
 
 interface EventCardProps {
   event: Event;
@@ -12,89 +12,67 @@ interface EventCardProps {
 
 export default function EventCard({ event, onPress, style }: EventCardProps) {
   const { colors } = useThemeStore();
-  const [imageError, setImageError] = useState(false);
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString([], { month: "short", day: "numeric" });
-  };
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  // Image debugging logs
-  console.log(`🖼️ EventCard - ${event.title}:`, {
-    hasCoverImage: !!event.coverImage,
-    coverImageUrl: event.coverImage,
-    imageError: imageError,
-  });
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString([], { month: "short", day: "numeric" });
+  };
 
   return (
     <TouchableOpacity
       style={[styles.eventCard, { backgroundColor: colors.surface }, style]}
       onPress={onPress}
     >
-      {event.coverImage && !imageError ? (
-        <Image
-          source={{ uri: event.coverImage }}
-          style={styles.eventImage}
-          onError={(error) => {
-            console.log(
-              `❌ Image load error for ${event.title}:`,
-              error.nativeEvent.error
-            );
-            setImageError(true);
-          }}
-          onLoad={() => {
-            console.log(`✅ Image loaded successfully for ${event.title}`);
-            setImageError(false);
-          }}
-        />
-      ) : (
-        <View
-          style={[
-            styles.eventImage,
-            styles.placeholderImage,
-            { backgroundColor: colors.surface },
-          ]}
-        >
-          <Ionicons
-            name="wine-outline"
-            size={40}
-            color={colors.textSecondary}
-          />
-        </View>
+      {event.coverImage && (
+        <Image source={{ uri: event.coverImage }} style={styles.eventImage} />
       )}
+
       <View style={styles.eventContent}>
         <View style={styles.eventHeader}>
-          <Text style={[styles.eventTitle, { color: colors.text }]}>
-            {event.title}
-          </Text>
-          <View style={[styles.priceTag, { backgroundColor: colors.primary }]}>
-            <Text style={[styles.priceText, { color: colors.onPrimary }]}>
-              ${event.price}
+          <View style={styles.eventInfo}>
+            <Text style={[styles.eventTitle, { color: colors.text }]}>
+              {event.title}
             </Text>
+            <Text
+              style={[styles.eventLocation, { color: colors.textSecondary }]}
+            >
+              <Ionicons
+                name="location-outline"
+                size={12}
+                color={colors.textSecondary}
+              />
+              {event.locationName}
+            </Text>
+          </View>
+          <View style={styles.eventActions}>
+            <ShareButton
+              type="event"
+              data={event}
+              variant="icon"
+              size="small"
+              style={styles.shareButton}
+            />
+            <View style={styles.happyHourIndicator}>
+              <Ionicons name="wine-outline" size={12} color={colors.textSecondary} />
+              <Text style={[styles.happyHourText, { color: colors.textSecondary }]}>Happy Hour</Text>
+            </View>
           </View>
         </View>
 
-        <Text style={[styles.eventLocation, { color: colors.textSecondary }]}>
-          <Ionicons
-            name="location-outline"
-            size={12}
-            color={colors.textSecondary}
-          />
-          {event.locationName}
+        <Text
+          style={[styles.eventDescription, { color: colors.textSecondary }]}
+        >
+          {event.description}
         </Text>
 
         <View style={styles.eventFooter}>
           <View style={styles.eventTime}>
-            <Ionicons
-              name="calendar-outline"
-              size={14}
-              color={colors.primary}
-            />
+            <Ionicons name="time-outline" size={14} color={colors.primary} />
             <Text style={[styles.timeText, { color: colors.primary }]}>
-              {formatDate(event.startTime)} • {formatTime(event.startTime)}
+              {formatTime(event.startTime)} • {formatDate(event.startTime)}
             </Text>
           </View>
           <View style={styles.eventStats}>
@@ -113,26 +91,11 @@ export default function EventCard({ event, onPress, style }: EventCardProps) {
           {event.tags.slice(0, 3).map((tag, index) => (
             <View
               key={index}
-              style={[
-                styles.eventTag,
-                { backgroundColor: colors.primary + "20" },
-              ]}
+              style={[styles.tag, { backgroundColor: colors.primary + "20" }]}
             >
-              <Text style={[styles.eventTagText, { color: colors.primary }]}>
-                {tag}
-              </Text>
+              <Text style={[styles.tagText, { color: colors.primary }]}>{tag}</Text>
             </View>
           ))}
-        </View>
-
-        <View style={styles.organizerInfo}>
-          <Image
-            source={{ uri: event.organizerAvatar }}
-            style={styles.organizerAvatar}
-          />
-          <Text style={[styles.organizerText, { color: colors.textSecondary }]}>
-            Organized by {event.organizerName}
-          </Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -142,7 +105,6 @@ export default function EventCard({ event, onPress, style }: EventCardProps) {
 const styles = StyleSheet.create({
   eventCard: {
     borderRadius: 12,
-    marginBottom: 16, // Increased spacing for taller cards
     overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -154,10 +116,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 240, // 3:4 aspect ratio (180 * 4/3 = 240)
   },
-  placeholderImage: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
   eventContent: {
     padding: 16,
   },
@@ -167,26 +125,43 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 8,
   },
+  eventInfo: {
+    flex: 1,
+  },
+  eventActions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  shareButton: {
+    marginRight: 4,
+  },
   eventTitle: {
     fontSize: 16,
     fontWeight: "600",
-    flex: 1,
-    marginRight: 8,
-  },
-  priceTag: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  priceText: {
-    fontSize: 12,
-    fontWeight: "bold",
+    marginBottom: 4,
   },
   eventLocation: {
     fontSize: 12,
-    marginBottom: 8,
     flexDirection: "row",
     alignItems: "center",
+  },
+  happyHourIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: "transparent",
+  },
+  happyHourText: {
+    fontSize: 10,
+    fontWeight: "500",
+    marginLeft: 4,
+  },
+  eventDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
   },
   eventFooter: {
     flexDirection: "row",
@@ -214,30 +189,16 @@ const styles = StyleSheet.create({
   eventTags: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginBottom: 12,
   },
-  eventTag: {
+  tag: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
     marginRight: 6,
     marginBottom: 4,
   },
-  eventTagText: {
+  tagText: {
     fontSize: 10,
     fontWeight: "500",
-  },
-  organizerInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  organizerAvatar: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    marginRight: 8,
-  },
-  organizerText: {
-    fontSize: 12,
   },
 });
