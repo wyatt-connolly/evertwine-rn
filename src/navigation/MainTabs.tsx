@@ -194,8 +194,6 @@ function MainTabsNavigator() {
         tabBarStyle: {
           position: "absolute",
           bottom: 20,
-          left: 20,
-          right: 20,
           backgroundColor: colors.surface,
           borderRadius: 20,
           height: 60,
@@ -208,6 +206,7 @@ function MainTabsNavigator() {
           shadowOpacity: 0.25,
           shadowRadius: 12,
           elevation: 12,
+          marginHorizontal: 40,
         },
       })}
     >
@@ -222,8 +221,6 @@ function MainTabsNavigator() {
               ? {
                   position: "absolute",
                   bottom: 20,
-                  left: 20,
-                  right: 20,
                   backgroundColor: colors.surface,
                   borderRadius: 20,
                   height: 60,
@@ -236,6 +233,7 @@ function MainTabsNavigator() {
                   shadowOpacity: 0.25,
                   shadowRadius: 12,
                   elevation: 12,
+                  marginHorizontal: 40,
                 }
               : { display: "none" },
           };
@@ -253,8 +251,6 @@ function MainTabsNavigator() {
               ? {
                   position: "absolute",
                   bottom: 20,
-                  left: 20,
-                  right: 20,
                   backgroundColor: colors.surface,
                   borderRadius: 20,
                   height: 60,
@@ -267,6 +263,7 @@ function MainTabsNavigator() {
                   shadowOpacity: 0.25,
                   shadowRadius: 12,
                   elevation: 12,
+                  marginHorizontal: 40,
                 }
               : { display: "none" },
           };
@@ -284,8 +281,6 @@ function MainTabsNavigator() {
               ? {
                   position: "absolute",
                   bottom: 20,
-                  left: 20,
-                  right: 20,
                   backgroundColor: colors.surface,
                   borderRadius: 20,
                   height: 60,
@@ -298,6 +293,7 @@ function MainTabsNavigator() {
                   shadowOpacity: 0.25,
                   shadowRadius: 12,
                   elevation: 12,
+                  marginHorizontal: 40,
                 }
               : { display: "none" },
           };
@@ -315,8 +311,6 @@ function MainTabsNavigator() {
               ? {
                   position: "absolute",
                   bottom: 20,
-                  left: 20,
-                  right: 20,
                   backgroundColor: colors.surface,
                   borderRadius: 20,
                   height: 60,
@@ -329,6 +323,7 @@ function MainTabsNavigator() {
                   shadowOpacity: 0.25,
                   shadowRadius: 12,
                   elevation: 12,
+                  marginHorizontal: 40,
                 }
               : { display: "none" },
           };
