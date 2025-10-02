@@ -1,4 +1,3 @@
-import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
@@ -17,16 +16,16 @@ import MapScreen from "../screens/main/MapScreen";
 import MessageDetailsScreen from "../screens/main/MessageDetailsScreen";
 import ComposeMessageScreen from "../screens/main/ComposeMessageScreen";
 import FavoritesScreen from "../screens/main/FavoritesScreen";
-import CreateMeetupScreen from "../screens/main/CreateMeetupScreen";
 import CreateMeetupStep1Screen from "../screens/main/CreateMeetupStep1Screen";
 import CreateMeetupStep2Screen from "../screens/main/CreateMeetupStep2Screen";
-import CreateMeetupStep3Screen from "../screens/main/CreateMeetupStep3Screen";
 import CreateMeetupStep4Screen from "../screens/main/CreateMeetupStep4Screen";
+import CreateMeetupConfirmationScreen from "../screens/main/CreateMeetupConfirmationScreen";
 import EditMeetupScreen from "../screens/main/EditMeetupScreen";
 import GroupDetailsScreen from "../screens/main/GroupDetailsScreen";
 import UserProfileScreen from "../screens/main/UserProfileScreen";
 import EventDetailsScreen from "../screens/main/EventDetailsScreen";
 import PlaceDetailsScreen from "../screens/main/PlaceDetailsScreen";
+import PostDetailsScreen from "../screens/main/PostDetailsScreen";
 import NotificationsScreen from "../screens/main/NotificationsScreen";
 import AllHappyHourEventsScreen from "../screens/main/AllHappyHourEventsScreen";
 import AllMeetupsScreen from "../screens/main/AllMeetupsScreen";
@@ -70,6 +69,7 @@ export type MainStackParamList = {
   EditMeetup: { meetupId: string };
   EventDetails: { eventId: string; event?: any };
   PlaceDetails: { placeId: string; place?: any };
+  PostDetails: { post: any };
   Favorites: undefined;
   GroupDetails: { groupId: string; groupData?: any };
   UserProfile: { userId: string; userData?: any };
@@ -77,8 +77,8 @@ export type MainStackParamList = {
   AllMeetups: undefined;
   CreateMeetupStep1: { formData?: any; onUpdate: (data: any) => void };
   CreateMeetupStep2: { formData: any; onUpdate: (data: any) => void };
-  CreateMeetupStep3: { formData: any; onUpdate: (data: any) => void };
   CreateMeetupStep4: { formData: any; onUpdate: (data: any) => void };
+  CreateMeetupConfirmation: { formData: any; onUpdate: (data: any) => void };
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -191,6 +191,24 @@ function MainTabsNavigator() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textTertiary,
         headerShown: false,
+        tabBarStyle: {
+          position: "absolute",
+          bottom: 20,
+          left: 20,
+          right: 20,
+          backgroundColor: colors.surface,
+          borderRadius: 20,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+          paddingHorizontal: 16,
+          borderTopWidth: 0,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: 0.25,
+          shadowRadius: 12,
+          elevation: 12,
+        },
       })}
     >
       <Tab.Screen
@@ -202,8 +220,22 @@ function MainTabsNavigator() {
           return {
             tabBarStyle: shouldShowTabBar
               ? {
+                  position: "absolute",
+                  bottom: 20,
+                  left: 20,
+                  right: 20,
                   backgroundColor: colors.surface,
-                  borderTopColor: colors.border,
+                  borderRadius: 20,
+                  height: 60,
+                  paddingBottom: 8,
+                  paddingTop: 8,
+                  paddingHorizontal: 16,
+                  borderTopWidth: 0,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 6 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 12,
+                  elevation: 12,
                 }
               : { display: "none" },
           };
@@ -219,8 +251,22 @@ function MainTabsNavigator() {
           return {
             tabBarStyle: shouldShowTabBar
               ? {
+                  position: "absolute",
+                  bottom: 20,
+                  left: 20,
+                  right: 20,
                   backgroundColor: colors.surface,
-                  borderTopColor: colors.border,
+                  borderRadius: 20,
+                  height: 60,
+                  paddingBottom: 8,
+                  paddingTop: 8,
+                  paddingHorizontal: 16,
+                  borderTopWidth: 0,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 6 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 12,
+                  elevation: 12,
                 }
               : { display: "none" },
           };
@@ -236,8 +282,22 @@ function MainTabsNavigator() {
           return {
             tabBarStyle: shouldShowTabBar
               ? {
+                  position: "absolute",
+                  bottom: 20,
+                  left: 20,
+                  right: 20,
                   backgroundColor: colors.surface,
-                  borderTopColor: colors.border,
+                  borderRadius: 20,
+                  height: 60,
+                  paddingBottom: 8,
+                  paddingTop: 8,
+                  paddingHorizontal: 16,
+                  borderTopWidth: 0,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 6 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 12,
+                  elevation: 12,
                 }
               : { display: "none" },
           };
@@ -253,8 +313,22 @@ function MainTabsNavigator() {
           return {
             tabBarStyle: shouldShowTabBar
               ? {
+                  position: "absolute",
+                  bottom: 20,
+                  left: 20,
+                  right: 20,
                   backgroundColor: colors.surface,
-                  borderTopColor: colors.border,
+                  borderRadius: 20,
+                  height: 60,
+                  paddingBottom: 8,
+                  paddingTop: 8,
+                  paddingHorizontal: 16,
+                  borderTopWidth: 0,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 6 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 12,
+                  elevation: 12,
                 }
               : { display: "none" },
           };
@@ -276,6 +350,7 @@ export default function MainTabs() {
       <MainStack.Screen name="EditMeetup" component={EditMeetupScreen} />
       <MainStack.Screen name="EventDetails" component={EventDetailsScreen} />
       <MainStack.Screen name="PlaceDetails" component={PlaceDetailsScreen} />
+      <MainStack.Screen name="PostDetails" component={PostDetailsScreen} />
       <MainStack.Screen name="Favorites" component={FavoritesScreen} />
       <MainStack.Screen name="GroupDetails" component={GroupDetailsScreen} />
       <MainStack.Screen name="UserProfile" component={UserProfileScreen} />
@@ -293,12 +368,12 @@ export default function MainTabs() {
         component={CreateMeetupStep2Screen}
       />
       <MainStack.Screen
-        name="CreateMeetupStep3"
-        component={CreateMeetupStep3Screen}
-      />
-      <MainStack.Screen
         name="CreateMeetupStep4"
         component={CreateMeetupStep4Screen}
+      />
+      <MainStack.Screen
+        name="CreateMeetupConfirmation"
+        component={CreateMeetupConfirmationScreen}
       />
     </MainStack.Navigator>
   );

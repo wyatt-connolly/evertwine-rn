@@ -7,6 +7,7 @@ import {
   TextInput,
   ScrollView,
   Platform,
+  Switch,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -22,6 +23,15 @@ const DURATION_OPTIONS = [
   { label: "4 hours", value: "240" },
   { label: "Half day (4+ hours)", value: "300" },
   { label: "Full day (8+ hours)", value: "480" },
+];
+
+const AGE_RANGE_OPTIONS = [
+  "18-25",
+  "25-35",
+  "35-45",
+  "45-55",
+  "55+",
+  "All ages",
 ];
 
 interface CreateMeetupStep2ScreenProps {
@@ -47,6 +57,9 @@ export default function CreateMeetupStep2Screen({
     address: initialData?.address || "",
     time: initialData?.time || "",
     duration: initialData?.duration || "60",
+    maxParticipants: initialData?.maxParticipants || "",
+    ageRange: initialData?.ageRange || "",
+    verificationRequired: initialData?.verificationRequired || false,
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -54,6 +67,7 @@ export default function CreateMeetupStep2Screen({
     initialData?.time ? new Date(initialData.time) : new Date()
   );
   const [showDurationModal, setShowDurationModal] = useState(false);
+  const [showAgeRangeModal, setShowAgeRangeModal] = useState(false);
 
   const updateFormData = (field: string, value: string) => {
     const newData = { ...formData, [field]: value };
@@ -194,7 +208,7 @@ export default function CreateMeetupStep2Screen({
         <Text style={[styles.title, { color: colors.text }]}>When & Where</Text>
         <View style={styles.stepIndicator}>
           <Text style={[styles.stepText, { color: colors.textSecondary }]}>
-            Step 2 of 4
+            Step 2 of 2
           </Text>
         </View>
       </View>
@@ -261,6 +275,14 @@ export default function CreateMeetupStep2Screen({
               />
             </TouchableOpacity>
           </View>
+
+          {/* Max Participants */}
+          {renderInput(
+            "Max Participants",
+            "maxParticipants",
+            "e.g., 10",
+            "numeric"
+          )}
         </View>
       </ScrollView>
 

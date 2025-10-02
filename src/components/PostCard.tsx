@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -24,11 +24,11 @@ interface PostCardProps {
 
 export default function PostCard({ post, onLike, onComment }: PostCardProps) {
   const { colors } = useThemeStore();
-  const { currentUser } = useAuthStore();
+  const { user } = useAuthStore();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
 
-  const isLiked = currentUser ? post.likes.includes(currentUser.uid) : false;
+  const isLiked = user ? post.likes.includes(user.uid) : false;
 
   const formatTime = (date: Date) => {
     const now = new Date();
@@ -62,11 +62,11 @@ export default function PostCard({ post, onLike, onComment }: PostCardProps) {
         <View
           style={[
             styles.announcementBadge,
-            { backgroundColor: colors.primary },
+            { backgroundColor: colors.announcement },
           ]}
         >
-          <Ionicons name="megaphone" size={12} color={colors.onPrimary} />
-          <Text style={[styles.announcementText, { color: colors.onPrimary }]}>
+          <Ionicons name="megaphone" size={12} color={colors.onAnnouncement} />
+          <Text style={[styles.announcementText, { color: colors.onAnnouncement }]}>
             Announcement
           </Text>
         </View>
@@ -202,10 +202,10 @@ export default function PostCard({ post, onLike, onComment }: PostCardProps) {
           )}
 
           {/* Add Comment Input */}
-          {currentUser && (
+          {user && (
             <View style={styles.commentInputContainer}>
               <Image
-                source={{ uri: currentUser.profilePictures?.[0] || "" }}
+                source={{ uri: user.photoURL || "" }}
                 style={styles.commentAvatar}
               />
               <TextInput

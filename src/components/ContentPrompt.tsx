@@ -1,5 +1,4 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../hooks/useThemeStore";
 
@@ -9,7 +8,6 @@ interface ContentPromptProps {
   description: string;
   actionText: string;
   onAction: () => void;
-  accentColor?: string;
 }
 
 export default function ContentPrompt({
@@ -18,11 +16,10 @@ export default function ContentPrompt({
   description,
   actionText,
   onAction,
-  accentColor,
 }: ContentPromptProps) {
   const { colors } = useThemeStore();
-  const primaryColor = accentColor || colors.primary;
-  const onPrimaryColor = accentColor ? colors.onAccent : colors.onPrimary;
+  const primaryColor = colors.primary;
+  const onPrimaryColor = colors.onPrimary;
 
   return (
     <View

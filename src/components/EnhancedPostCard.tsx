@@ -1,34 +1,26 @@
-import { useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
   ScrollView,
   Dimensions,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { Post } from "../types";
 import { useThemeStore } from "../hooks/useThemeStore";
-import { useAuthStore } from "../hooks/useAuthStore";
 
 const { width } = Dimensions.get("window");
 
 interface EnhancedPostCardProps {
   post: Post;
-  onComment?: (postId: string, message: string) => void;
 }
 
-export default function EnhancedPostCard({
-  post,
-  onComment,
-}: EnhancedPostCardProps) {
+export default function EnhancedPostCard({ post }: EnhancedPostCardProps) {
   const { colors } = useThemeStore();
-  const { user: currentUser } = useAuthStore();
-  const [showComments, setShowComments] = useState(false);
-  const [commentText, setCommentText] = useState("");
+  const navigation = useNavigation<any>();
 
   const formatTime = (date: Date) => {
     const now = new Date();
@@ -43,22 +35,14 @@ export default function EnhancedPostCard({
     return "Just now";
   };
 
-  const handleComment = () => {
-    if (commentText.trim() && onComment) {
-      onComment(post.id, commentText.trim());
-      setCommentText("");
-    }
-  };
-
-  // Get first 2 comments for preview
-  const previewComments = post.comments.slice(0, 2);
-  const hasMoreComments = post.comments.length > 2;
-
   return (
     <View
       style={[
         styles.container,
-        { backgroundColor: colors.surface, borderColor: colors.border },
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+        },
       ]}
     >
       {/* Announcement Badge */}
@@ -66,11 +50,13 @@ export default function EnhancedPostCard({
         <View
           style={[
             styles.announcementBadge,
-            { backgroundColor: colors.primary },
+            { backgroundColor: colors.announcement },
           ]}
         >
-          <Ionicons name="megaphone" size={12} color={colors.onPrimary} />
-          <Text style={[styles.announcementText, { color: colors.onPrimary }]}>
+          <Ionicons name="megaphone" size={12} color={colors.onAnnouncement} />
+          <Text
+            style={[styles.announcementText, { color: colors.onAnnouncement }]}
+          >
             Announcement
           </Text>
         </View>
@@ -125,7 +111,9 @@ export default function EnhancedPostCard({
       <View style={[styles.actions, { borderTopColor: colors.border }]}>
         <TouchableOpacity
           style={styles.actionButton}
-          onPress={() => setShowComments(!showComments)}
+          onPress={() => {
+            navigation.navigate("PostDetails", { post });
+          }}
         >
           <Ionicons
             name="chatbubble-outline"
@@ -133,167 +121,17 @@ export default function EnhancedPostCard({
             color={colors.textSecondary}
           />
           <Text style={[styles.actionText, { color: colors.textSecondary }]}>
-            {post.comments.length > 0
-              ? `${post.comments.length} Comments`
-              : "Comment"}
+            Comments
           </Text>
         </TouchableOpacity>
       </View>
-
-      {/* Comment Preview */}
-      {!showComments && previewComments.length > 0 && (
-        <View
-          style={[
-            styles.commentPreview,
-            {
-              backgroundColor: colors.background,
-              borderTopColor: colors.border,
-            },
-          ]}
-        >
-          {previewComments.map((comment) => (
-            <View key={comment.id} style={styles.previewComment}>
-              <Image
-                source={{ uri: comment.userAvatar }}
-                style={styles.previewAvatar}
-              />
-              <View style={styles.previewCommentContent}>
-                <Text style={[styles.previewUserName, { color: colors.text }]}>
-                  {comment.userName}
-                </Text>
-                <Text
-                  style={[
-                    styles.previewCommentText,
-                    { color: colors.textSecondary },
-                  ]}
-                  numberOfLines={2}
-                >
-                  {comment.message}
-                </Text>
-              </View>
-            </View>
-          ))}
-          {hasMoreComments && (
-            <TouchableOpacity
-              style={styles.viewAllComments}
-              onPress={() => setShowComments(true)}
-            >
-              <Text style={[styles.viewAllText, { color: colors.primary }]}>
-                View all {post.comments.length} comments
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
-
-      {/* Full Comments Section */}
-      {showComments && (
-        <View
-          style={[
-            styles.commentsSection,
-            {
-              borderTopColor: colors.border,
-              backgroundColor: colors.background,
-            },
-          ]}
-        >
-          {/* Existing Comments */}
-          {post.comments.length > 0 && (
-            <ScrollView style={styles.commentsList}>
-              {post.comments.map((comment) => (
-                <View key={comment.id} style={styles.comment}>
-                  <Image
-                    source={{ uri: comment.userAvatar }}
-                    style={styles.commentAvatar}
-                  />
-                  <View style={styles.commentContent}>
-                    <View
-                      style={[
-                        styles.commentBubble,
-                        { backgroundColor: colors.surface },
-                      ]}
-                    >
-                      <Text
-                        style={[styles.commentUserName, { color: colors.text }]}
-                      >
-                        {comment.userName}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.commentMessage,
-                          { color: colors.textSecondary },
-                        ]}
-                      >
-                        {comment.message}
-                      </Text>
-                    </View>
-                    <Text
-                      style={[
-                        styles.commentTime,
-                        { color: colors.textTertiary },
-                      ]}
-                    >
-                      {formatTime(comment.createdAt)}
-                    </Text>
-                  </View>
-                </View>
-              ))}
-            </ScrollView>
-          )}
-
-          {/* Add Comment Input */}
-          {currentUser && (
-            <View style={styles.commentInputContainer}>
-              <Image
-                source={{ uri: currentUser.photoURL || "" }}
-                style={styles.commentAvatar}
-              />
-              <TextInput
-                style={[
-                  styles.commentInput,
-                  {
-                    backgroundColor: colors.surface,
-                    color: colors.text,
-                    borderColor: colors.border,
-                  },
-                ]}
-                placeholder="Write a comment..."
-                placeholderTextColor={colors.textTertiary}
-                value={commentText}
-                onChangeText={setCommentText}
-                multiline
-              />
-              <TouchableOpacity
-                style={[
-                  styles.sendButton,
-                  {
-                    backgroundColor: commentText.trim()
-                      ? colors.primary
-                      : colors.border,
-                  },
-                ]}
-                onPress={handleComment}
-                disabled={!commentText.trim()}
-              >
-                <Ionicons
-                  name="send"
-                  size={16}
-                  color={
-                    commentText.trim() ? colors.onPrimary : colors.textTertiary
-                  }
-                />
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 12,
+    borderRadius: 20,
     marginHorizontal: 16,
     marginVertical: 8,
     borderWidth: 1,
@@ -378,98 +216,5 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: 14,
     fontWeight: "500",
-  },
-  commentPreview: {
-    borderTopWidth: 1,
-    padding: 12,
-  },
-  previewComment: {
-    flexDirection: "row",
-    marginBottom: 8,
-  },
-  previewAvatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    marginRight: 8,
-  },
-  previewCommentContent: {
-    flex: 1,
-  },
-  previewUserName: {
-    fontSize: 13,
-    fontWeight: "600",
-    marginBottom: 2,
-  },
-  previewCommentText: {
-    fontSize: 13,
-    lineHeight: 16,
-  },
-  viewAllComments: {
-    paddingVertical: 4,
-  },
-  viewAllText: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  commentsSection: {
-    borderTopWidth: 1,
-    padding: 12,
-  },
-  commentsList: {
-    maxHeight: 200,
-  },
-  comment: {
-    flexDirection: "row",
-    marginBottom: 12,
-  },
-  commentAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    marginRight: 8,
-  },
-  commentContent: {
-    flex: 1,
-  },
-  commentBubble: {
-    borderRadius: 12,
-    padding: 10,
-  },
-  commentUserName: {
-    fontSize: 13,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  commentMessage: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  commentTime: {
-    fontSize: 11,
-    marginTop: 4,
-    marginLeft: 10,
-  },
-  commentInputContainer: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    marginTop: 12,
-    gap: 8,
-  },
-  commentInput: {
-    flex: 1,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    fontSize: 14,
-    maxHeight: 100,
-    borderWidth: 1,
-  },
-  sendButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
   },
 });

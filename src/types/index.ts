@@ -125,7 +125,6 @@ export interface Meetup {
   activity: string;
   activityCategory: string;
   tags: string[];
-  connectionType: string;
 
   // Participant Management
   maxParticipants: number;
@@ -149,7 +148,6 @@ export interface Meetup {
     maxAge?: number;
     genderRestriction?: string;
     verificationRequired: boolean;
-    skillLevel?: string;
   };
 
   // Media

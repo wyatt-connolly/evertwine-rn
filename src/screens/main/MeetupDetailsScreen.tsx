@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -7,17 +7,13 @@ import {
   TouchableOpacity,
   Image,
   Alert,
-  Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useFavoritesStore } from "../../hooks/useFavoritesStore";
 import { getMockMeetups, getMockUsers } from "../../data/mockData";
-import { Meetup, User } from "../../types";
 import Snackbar from "../../components/Snackbar";
-
-const { width } = Dimensions.get("window");
 
 interface MeetupDetailsScreenProps {
   route: {
@@ -34,12 +30,8 @@ export default function MeetupDetailsScreen({
   navigation,
 }: MeetupDetailsScreenProps) {
   const { colors } = useThemeStore();
-  const {
-    favoriteMeetups,
-    addMeetupToFavorites,
-    removeMeetupFromFavorites,
-    isMeetupFavorite,
-  } = useFavoritesStore();
+  const { addMeetupToFavorites, removeMeetupFromFavorites, isMeetupFavorite } =
+    useFavoritesStore();
   const { meetupId, meetupData } = route.params;
 
   console.log("🔍 DEBUG - MeetupDetailsScreen received params:", {
@@ -174,9 +166,29 @@ export default function MeetupDetailsScreen({
         <Text style={[styles.headerTitle, { color: colors.text }]}>
           Meetup Details
         </Text>
-        <TouchableOpacity onPress={handleShare} style={styles.shareButton}>
-          <Ionicons name="share-outline" size={24} color={colors.primary} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            onPress={handleLike}
+            style={styles.headerLikeButton}
+          >
+            <Ionicons
+              name={
+                meetup && isMeetupFavorite(meetup.id)
+                  ? "heart"
+                  : "heart-outline"
+              }
+              size={24}
+              color={
+                meetup && isMeetupFavorite(meetup.id)
+                  ? colors.error
+                  : colors.text
+              }
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleShare} style={styles.shareButton}>
+            <Ionicons name="share-outline" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView style={styles.scrollView}>
@@ -224,12 +236,6 @@ export default function MeetupDetailsScreen({
               <Ionicons name="people" size={16} color={colors.primary} />
               <Text style={[styles.statText, { color: colors.text }]}>
                 {meetup.currentParticipants || 0}/{meetup.maxParticipants || 0}
-              </Text>
-            </View>
-            <View style={styles.statItem}>
-              <Ionicons name="eye" size={16} color={colors.primary} />
-              <Text style={[styles.statText, { color: colors.text }]}>
-                {meetup.views || 0} views
               </Text>
             </View>
             <View style={styles.statItem}>
@@ -425,16 +431,6 @@ export default function MeetupDetailsScreen({
                 • ID verification required
               </Text>
             )}
-            {meetup.requirements?.skillLevel && (
-              <Text
-                style={[
-                  styles.requirementText,
-                  { color: colors.textSecondary },
-                ]}
-              >
-                • Skill level: {meetup.requirements?.skillLevel}
-              </Text>
-            )}
           </View>
         </View>
       </ScrollView>
@@ -446,26 +442,11 @@ export default function MeetupDetailsScreen({
           { backgroundColor: colors.surface, borderTopColor: colors.border },
         ]}
       >
-        <TouchableOpacity onPress={handleLike} style={styles.likeButton}>
-          <Ionicons
-            name={
-              meetup && isMeetupFavorite(meetup.id) ? "heart" : "heart-outline"
-            }
-            size={24}
-            color={
-              meetup && isMeetupFavorite(meetup.id)
-                ? colors.error
-                : colors.textSecondary
-            }
-          />
-        </TouchableOpacity>
-
         <TouchableOpacity
           style={[
             styles.joinButton,
             {
               backgroundColor: isJoined ? colors.error : colors.primary,
-              width: width * 0.6,
             },
           ]}
           onPress={handleJoin}
@@ -511,9 +492,16 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
   },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  headerLikeButton: {
+    padding: 8,
+  },
   shareButton: {
     padding: 8,
-    marginLeft: 8,
+    marginLeft: 4,
   },
   scrollView: {
     flex: 1,
@@ -529,6 +517,9 @@ const styles = StyleSheet.create({
   meetupHeader: {
     padding: 20,
     marginBottom: 16,
+    borderRadius: 20,
+    marginHorizontal: 16,
+    marginTop: 16,
   },
   meetupTitleContainer: {
     flexDirection: "row",
@@ -573,6 +564,8 @@ const styles = StyleSheet.create({
   infoCard: {
     padding: 20,
     marginBottom: 16,
+    borderRadius: 20,
+    marginHorizontal: 16,
   },
   infoSection: {
     marginBottom: 20,
@@ -663,14 +656,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderTopWidth: 1,
   },
-  likeButton: {
-    padding: 12,
-    marginRight: 16,
-  },
   joinButton: {
+    flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: "center",
   },
   joinButtonText: {
@@ -681,5 +671,9 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 200,
     resizeMode: "cover",
+    borderRadius: 20,
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 16,
   },
 });

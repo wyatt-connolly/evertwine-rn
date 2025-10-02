@@ -83,10 +83,7 @@ export default function CreateMeetupStep4Screen({
           ? parseInt(formData.maxParticipants)
           : undefined,
         ageRange: formData.ageRange,
-        skillLevel: formData.skillLevel,
-        connectionType: formData.connectionType,
         verificationRequired: formData.verificationRequired,
-        cost: formData.cost,
         coverImage: formData.coverImage,
         organizerId: "current-user-id", // This should come from auth
         organizerName: "You", // This should come from auth
@@ -262,22 +259,8 @@ export default function CreateMeetupStep4Screen({
                   formData.maxParticipants,
                   "people-outline"
                 )}
-              {formData.cost &&
-                renderDetail("Cost", formData.cost, "card-outline")}
               {formData.ageRange &&
                 renderDetail("Age Range", formData.ageRange, "person-outline")}
-              {formData.skillLevel &&
-                renderDetail(
-                  "Skill Level",
-                  formData.skillLevel,
-                  "star-outline"
-                )}
-              {formData.connectionType &&
-                renderDetail(
-                  "Connection Type",
-                  formData.connectionType,
-                  "link-outline"
-                )}
               {formData.verificationRequired && (
                 <View style={styles.verificationBadge}>
                   <Ionicons

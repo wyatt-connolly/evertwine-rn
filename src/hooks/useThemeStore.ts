@@ -50,6 +50,10 @@ export interface ThemeColors {
   gradientStart: string;
   gradientEnd: string;
   gradientSecondary: string;
+
+  // Special colors
+  announcement: string;
+  onAnnouncement: string;
 }
 
 export const lightTheme: ThemeColors = {
@@ -63,14 +67,14 @@ export const lightTheme: ThemeColors = {
   textSecondary: "#6C757D",
   textTertiary: "#ADB5BD",
 
-  // Primary colors - Blue
-  primary: "#2196F3",
-  primaryVariant: "#1976D2",
-  onPrimary: "#FFFFFF",
+  // Primary colors - White
+  primary: "#FFFFFF",
+  primaryVariant: "#F5F5F5",
+  onPrimary: "#000000",
 
-  // Secondary colors - Light Blue
-  secondary: "#03DAC6",
-  secondaryVariant: "#018786",
+  // Secondary colors - Light Grey
+  secondary: "#E0E0E0",
+  secondaryVariant: "#BDBDBD",
   onSecondary: "#000000",
 
   // Accent colors
@@ -86,7 +90,7 @@ export const lightTheme: ThemeColors = {
   success: "#4CAF50",
   warning: "#FF9800",
   error: "#F44336",
-  info: "#2196F3",
+  info: "#FFFFFF",
 
   // Border and divider colors
   border: "#DEE2E6",
@@ -96,10 +100,14 @@ export const lightTheme: ThemeColors = {
   overlay: "rgba(0, 0, 0, 0.5)",
   backdrop: "rgba(0, 0, 0, 0.3)",
 
-  // Gradient colors - Blue to Light Blue
-  gradientStart: "#2196F3",
-  gradientEnd: "#03DAC6",
-  gradientSecondary: "#9C27B0",
+  // Gradient colors - White to Light Grey
+  gradientStart: "#FFFFFF",
+  gradientEnd: "#E0E0E0",
+  gradientSecondary: "#BDBDBD",
+
+  // Special colors - Keep announcements blue
+  announcement: "#2196F3",
+  onAnnouncement: "#FFFFFF",
 };
 
 export const darkTheme: ThemeColors = {
@@ -113,14 +121,14 @@ export const darkTheme: ThemeColors = {
   textSecondary: "#B0B0B0",
   textTertiary: "#808080",
 
-  // Primary colors - Blue
-  primary: "#42A5F5",
-  primaryVariant: "#1976D2",
-  onPrimary: "#FFFFFF",
+  // Primary colors - White
+  primary: "#FFFFFF",
+  primaryVariant: "#F5F5F5",
+  onPrimary: "#000000",
 
-  // Secondary colors - Light Blue
-  secondary: "#26C6DA",
-  secondaryVariant: "#00ACC1",
+  // Secondary colors - Light Grey
+  secondary: "#E0E0E0",
+  secondaryVariant: "#BDBDBD",
   onSecondary: "#000000",
 
   // Accent colors - More vibrant for dark mode
@@ -136,7 +144,7 @@ export const darkTheme: ThemeColors = {
   success: "#66BB6A",
   warning: "#FFB74D",
   error: "#EF5350",
-  info: "#42A5F5",
+  info: "#FFFFFF",
 
   // Border and divider colors
   border: "#404040",
@@ -146,10 +154,14 @@ export const darkTheme: ThemeColors = {
   overlay: "rgba(0, 0, 0, 0.8)",
   backdrop: "rgba(0, 0, 0, 0.6)",
 
-  // Gradient colors - Blue to Light Blue
-  gradientStart: "#42A5F5",
-  gradientEnd: "#26C6DA",
-  gradientSecondary: "#BA68C8",
+  // Gradient colors - White to Light Grey
+  gradientStart: "#FFFFFF",
+  gradientEnd: "#E0E0E0",
+  gradientSecondary: "#BDBDBD",
+
+  // Special colors - Keep announcements blue
+  announcement: "#42A5F5",
+  onAnnouncement: "#FFFFFF",
 };
 
 interface ThemeState {

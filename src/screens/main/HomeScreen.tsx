@@ -548,30 +548,6 @@ export default function HomeScreen() {
     }
   };
 
-  const handlePostComment = (postId: string, message: string) => {
-    if (!currentUser) return;
-
-    setPosts((prevPosts) =>
-      prevPosts.map((post) => {
-        if (post.id === postId) {
-          const newComment = {
-            id: `comment_${Date.now()}`,
-            userId: currentUser.uid,
-            userName: currentUser.displayName || "User",
-            userAvatar: currentUser.photoURL || "",
-            message,
-            createdAt: new Date(),
-          };
-          return {
-            ...post,
-            comments: [...post.comments, newComment],
-          };
-        }
-        return post;
-      })
-    );
-  };
-
   const handleMeetupInterested = (meetupId: string, isInterested: boolean) => {
     setInterestedMeetups((prev) => {
       const newSet = new Set(prev);
@@ -625,28 +601,6 @@ export default function HomeScreen() {
       month: "short",
       day: "numeric",
     });
-  };
-
-  // Mock mutual friends generator
-  const getMutualFriends = () => {
-    // This would be calculated from real friend data
-    if (Math.random() > 0.6) {
-      return [
-        {
-          id: "friend1",
-          name: "Sarah M.",
-          avatar:
-            "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop",
-        },
-        {
-          id: "friend2",
-          name: "Mike C.",
-          avatar:
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop",
-        },
-      ];
-    }
-    return [];
   };
 
   const renderItem = ({ item }: { item: FeedItem }) => {
@@ -717,7 +671,6 @@ export default function HomeScreen() {
               }
               onInterested={handleMeetupInterested}
               isInterested={interestedMeetups.has(recommendedMeetup.id)}
-              mutualFriends={getMutualFriends()}
             />
           </View>
         );
@@ -731,13 +684,6 @@ export default function HomeScreen() {
             title={prompt.title}
             description={prompt.description}
             actionText={prompt.actionText}
-            accentColor={
-              prompt.id === "introduction"
-                ? colors.accentSecondary // Pink for introduction
-                : prompt.id === "rate_meetup"
-                ? colors.accentQuaternary // Amber for rating
-                : colors.accentTertiary // Green for sharing
-            }
             onAction={() => {
               // Handle prompt action
               if (
@@ -754,7 +700,7 @@ export default function HomeScreen() {
 
       case "post":
         const post = item.data as Post;
-        return <EnhancedPostCard post={post} onComment={handlePostComment} />;
+        return <EnhancedPostCard post={post} />;
 
       case "meetup":
         const meetup = item.data as Meetup;
@@ -764,42 +710,16 @@ export default function HomeScreen() {
           meetup.time.getTime() - new Date().getTime() < 24 * 60 * 60 * 1000;
 
         return (
-          <View
-            style={[
-              styles.meetupWrapper,
-              {
-                backgroundColor: colors.surface,
-                borderLeftColor: isUpcoming ? colors.primary : colors.border,
-              },
-            ]}
-          >
-            <View style={styles.meetupTimeBadge}>
-              <Ionicons
-                name="calendar"
-                size={14}
-                color={isUpcoming ? colors.primary : colors.textSecondary}
-              />
-              <Text
-                style={[
-                  styles.meetupTimeText,
-                  {
-                    color: isUpcoming ? colors.primary : colors.textSecondary,
-                  },
-                ]}
-              >
-                {timeLabel}
-              </Text>
-            </View>
-            <EnhancedMeetupCard
-              meetup={meetup}
-              onPress={() =>
-                navigation.navigate("MeetupDetails", { meetupId: meetup.id })
-              }
-              onInterested={handleMeetupInterested}
-              isInterested={interestedMeetups.has(meetup.id)}
-              mutualFriends={getMutualFriends()}
-            />
-          </View>
+          <EnhancedMeetupCard
+            meetup={meetup}
+            onPress={() =>
+              navigation.navigate("MeetupDetails", { meetupId: meetup.id })
+            }
+            onInterested={handleMeetupInterested}
+            isInterested={interestedMeetups.has(meetup.id)}
+            timeLabel={timeLabel}
+            isUpcoming={isUpcoming}
+          />
         );
 
       default:
@@ -912,20 +832,19 @@ export default function HomeScreen() {
         backgroundColor={colors.background}
       />
 
-      {/* Dropdown Overlay */}
-      {showFeedModeDropdown && (
-        <TouchableOpacity
-          style={styles.dropdownOverlay}
-          activeOpacity={1}
-          onPress={() => setShowFeedModeDropdown(false)}
-        />
-      )}
-
       {/* Clean App Bar */}
       <SafeAreaView
         edges={["top"]}
         style={{ backgroundColor: colors.background }}
       >
+        {/* Dropdown Overlay */}
+        {showFeedModeDropdown && (
+          <TouchableOpacity
+            style={styles.dropdownOverlay}
+            activeOpacity={1}
+            onPress={() => setShowFeedModeDropdown(false)}
+          />
+        )}
         <View style={[styles.appBar, { borderBottomColor: colors.border }]}>
           {/* Logo with Dropdown */}
           <TouchableOpacity
@@ -964,9 +883,7 @@ export default function HomeScreen() {
                 color={colors.text}
               />
               {notifications.filter((n) => !n.isRead).length > 0 && (
-                <View
-                  style={[styles.badge, { backgroundColor: colors.primary }]}
-                >
+                <View style={[styles.badge, { backgroundColor: "#F44336" }]}>
                   <Text style={styles.badgeText}>
                     {notifications.filter((n) => !n.isRead).length > 9
                       ? "9+"
@@ -1056,6 +973,37 @@ export default function HomeScreen() {
                   />
                 )}
               </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.feedModeOption}
+                onPress={() => {
+                  setShowFeedModeDropdown(false);
+                  navigation.navigate("Map");
+                }}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name="map-outline"
+                  size={18}
+                  color={colors.textSecondary}
+                />
+                <Text
+                  style={[
+                    styles.feedModeText,
+                    {
+                      color: colors.text,
+                      fontWeight: "500",
+                    },
+                  ]}
+                >
+                  Map View
+                </Text>
+                <Ionicons
+                  name="arrow-forward"
+                  size={16}
+                  color={colors.textTertiary}
+                />
+              </TouchableOpacity>
             </View>
           )}
         </View>
@@ -1071,7 +1019,7 @@ export default function HomeScreen() {
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
-          style={{ flex: 1 }}
+          style={{ flex: 1, zIndex: 1 }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -1588,11 +1536,12 @@ const styles = StyleSheet.create({
   },
   dropdownOverlay: {
     position: "absolute",
-    top: 0,
+    top: 60, // Start below the appBar
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 50,
+    backgroundColor: "transparent",
+    zIndex: 250,
   },
   appBar: {
     flexDirection: "row",
@@ -1603,7 +1552,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     borderBottomWidth: 1,
     position: "relative",
-    zIndex: 100,
+    zIndex: 200,
   },
   logoContainer: {
     flexDirection: "row",
@@ -1627,7 +1576,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 20,
-    zIndex: 300,
+    zIndex: 350,
   },
   feedModeOption: {
     flexDirection: "row",
@@ -1675,7 +1624,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   feedContent: {
-    paddingBottom: 40,
+    paddingBottom: 120,
   },
   feedContentCompact: {
     paddingBottom: 20,
@@ -1706,35 +1655,16 @@ const styles = StyleSheet.create({
     marginLeft: 28,
   },
   eventWrapper: {
-    marginHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 0,
   },
   eventCard: {
     marginBottom: 0,
   },
   recommendedMeetupWrapper: {
-    marginHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 0,
   },
   meetupWrapper: {
-    marginVertical: 8,
-    marginHorizontal: 16,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    overflow: "hidden",
-  },
-  meetupTimeBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  meetupTimeText: {
-    fontSize: 12,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
+    marginBottom: 0,
   },
   emptyState: {
     flex: 1,

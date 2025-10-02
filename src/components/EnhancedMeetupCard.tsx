@@ -1,12 +1,5 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  ScrollView,
-} from "react-native";
+import { useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Meetup } from "../types";
 import { useThemeStore } from "../hooks/useThemeStore";
@@ -21,7 +14,8 @@ interface EnhancedMeetupCardProps {
   style?: any;
   onInterested?: (meetupId: string, isInterested: boolean) => void;
   isInterested?: boolean;
-  mutualFriends?: Array<{ id: string; name: string; avatar: string }>;
+  timeLabel?: string;
+  isUpcoming?: boolean;
 }
 
 export default function EnhancedMeetupCard({
@@ -32,10 +26,11 @@ export default function EnhancedMeetupCard({
   style,
   onInterested,
   isInterested = false,
-  mutualFriends = [],
+  timeLabel,
+  isUpcoming = false,
 }: EnhancedMeetupCardProps) {
   const { colors } = useThemeStore();
-  const { currentUser } = useAuthStore();
+  const { user: currentUser } = useAuthStore();
   const [localInterested, setLocalInterested] = useState(isInterested);
 
   const formatTime = (date: Date) => {
@@ -63,12 +58,25 @@ export default function EnhancedMeetupCard({
         styles.meetupCard,
         {
           backgroundColor: colors.surface,
-          borderColor: colors.primary + "60",
+          borderColor: colors.border,
         },
         style,
       ]}
       onPress={onPress}
     >
+      {/* Meetup Banner */}
+      <View
+        style={[
+          styles.meetupBanner,
+          { backgroundColor: colors.accentTertiary },
+        ]}
+      >
+        <Ionicons name="people" size={12} color={colors.onAccent} />
+        <Text style={[styles.meetupBannerText, { color: colors.onAccent }]}>
+          Meetup
+        </Text>
+      </View>
+
       {meetup.coverImage && (
         <Image source={{ uri: meetup.coverImage }} style={styles.meetupImage} />
       )}
@@ -76,9 +84,41 @@ export default function EnhancedMeetupCard({
       <View style={styles.meetupContent}>
         <View style={styles.meetupHeader}>
           <View style={styles.meetupInfo}>
-            <Text style={[styles.meetupTitle, { color: colors.text }]}>
-              {meetup.title}
-            </Text>
+            <View style={styles.meetupTitleRow}>
+              <Text style={[styles.meetupTitle, { color: colors.text }]}>
+                {meetup.title}
+              </Text>
+              {timeLabel && (
+                <View
+                  style={[
+                    styles.timeBadge,
+                    {
+                      backgroundColor: isUpcoming
+                        ? colors.primary + "15"
+                        : colors.surface,
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name="calendar"
+                    size={10}
+                    color={isUpcoming ? colors.primary : colors.textSecondary}
+                  />
+                  <Text
+                    style={[
+                      styles.timeBadgeText,
+                      {
+                        color: isUpcoming
+                          ? colors.primary
+                          : colors.textSecondary,
+                      },
+                    ]}
+                  >
+                    {timeLabel}
+                  </Text>
+                </View>
+              )}
+            </View>
             <Text
               style={[styles.meetupLocation, { color: colors.textSecondary }]}
             >
@@ -98,17 +138,6 @@ export default function EnhancedMeetupCard({
               size="small"
               style={styles.shareButton}
             />
-            <View
-              style={[
-                styles.meetupIndicator,
-                { backgroundColor: colors.primary + "15" },
-              ]}
-            >
-              <Ionicons name="calendar" size={14} color={colors.primary} />
-              <Text style={[styles.meetupText, { color: colors.primary }]}>
-                Meetup
-              </Text>
-            </View>
             {showEditButton && (
               <TouchableOpacity
                 style={styles.editButton}
@@ -127,13 +156,6 @@ export default function EnhancedMeetupCard({
           </View>
         </View>
 
-        <Text
-          style={[styles.meetupDescription, { color: colors.textSecondary }]}
-          numberOfLines={2}
-        >
-          {meetup.description}
-        </Text>
-
         <View style={styles.meetupFooter}>
           <View style={styles.meetupTime}>
             <Ionicons name="time-outline" size={14} color={colors.primary} />
@@ -151,58 +173,6 @@ export default function EnhancedMeetupCard({
               {meetup.currentParticipants}/{meetup.maxParticipants}
             </Text>
           </View>
-        </View>
-
-        {/* Mutual Friends */}
-        {mutualFriends.length > 0 && (
-          <View style={styles.mutualFriendsContainer}>
-            <View style={styles.avatarStack}>
-              {mutualFriends.slice(0, 3).map((friend, index) => (
-                <Image
-                  key={friend.id}
-                  source={{ uri: friend.avatar }}
-                  style={[
-                    styles.mutualAvatar,
-                    {
-                      marginLeft: index > 0 ? -8 : 0,
-                      borderColor: colors.surface,
-                    },
-                  ]}
-                />
-              ))}
-            </View>
-            <Text
-              style={[
-                styles.mutualFriendsText,
-                { color: colors.textSecondary },
-              ]}
-            >
-              {mutualFriends.length === 1
-                ? `${mutualFriends[0].name} is going`
-                : `${mutualFriends[0].name} and ${mutualFriends.length - 1} ${
-                    mutualFriends.length === 2 ? "other" : "others"
-                  } are going`}
-            </Text>
-          </View>
-        )}
-
-        <View style={styles.meetupTags}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.tagsScroll}
-          >
-            {meetup.tags.slice(0, 4).map((tag, index) => (
-              <View
-                key={index}
-                style={[styles.tag, { backgroundColor: colors.primary + "20" }]}
-              >
-                <Text style={[styles.tagText, { color: colors.primary }]}>
-                  {tag}
-                </Text>
-              </View>
-            ))}
-          </ScrollView>
         </View>
 
         {/* Action Buttons */}
@@ -278,14 +248,29 @@ export default function EnhancedMeetupCard({
 
 const styles = StyleSheet.create({
   meetupCard: {
-    borderRadius: 12,
+    borderRadius: 20,
     overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    borderWidth: 2,
+    borderWidth: 1,
+    marginHorizontal: 16,
+    marginVertical: 12,
+  },
+  meetupBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 6,
+  },
+  meetupBannerText: {
+    fontSize: 12,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   meetupImage: {
     width: "100%",
@@ -329,26 +314,42 @@ const styles = StyleSheet.create({
   editButton: {
     padding: 8,
   },
+  meetupTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
   meetupTitle: {
     fontSize: 16,
     fontWeight: "600",
-    marginBottom: 4,
+    flex: 1,
+    marginRight: 8,
+  },
+  timeBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  timeBadgeText: {
+    fontSize: 10,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
   },
   meetupLocation: {
     fontSize: 12,
     flexDirection: "row",
     alignItems: "center",
   },
-  meetupDescription: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 12,
-  },
   meetupFooter: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 16,
   },
   meetupTime: {
     flexDirection: "row",
@@ -366,41 +367,6 @@ const styles = StyleSheet.create({
   statsText: {
     fontSize: 12,
     marginLeft: 4,
-  },
-  mutualFriendsContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-    paddingVertical: 8,
-  },
-  avatarStack: {
-    flexDirection: "row",
-    marginRight: 8,
-  },
-  mutualAvatar: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-  },
-  mutualFriendsText: {
-    fontSize: 12,
-    flex: 1,
-  },
-  meetupTags: {
-    marginBottom: 12,
-  },
-  tagsScroll: {
-    gap: 6,
-  },
-  tag: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-  },
-  tagText: {
-    fontSize: 11,
-    fontWeight: "500",
   },
   actionButtons: {
     flexDirection: "row",

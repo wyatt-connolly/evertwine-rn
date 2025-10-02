@@ -279,7 +279,7 @@ export default function CreateMeetupStep1Screen({
         </Text>
         <View style={styles.stepIndicator}>
           <Text style={[styles.stepText, { color: colors.textSecondary }]}>
-            Step 1 of 4
+            Step 1 of 2
           </Text>
         </View>
       </View>

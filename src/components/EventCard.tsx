@@ -27,12 +27,25 @@ export default function EventCard({ event, onPress, style }: EventCardProps) {
         styles.eventCard,
         {
           backgroundColor: colors.surface,
-          borderColor: colors.primary + "40",
+          borderColor: colors.border,
         },
         style,
       ]}
       onPress={onPress}
     >
+      {/* Happy Hour Banner */}
+      <View
+        style={[
+          styles.happyHourBanner,
+          { backgroundColor: colors.accentQuaternary },
+        ]}
+      >
+        <Ionicons name="wine" size={12} color="#FFFFFF" />
+        <Text style={[styles.happyHourBannerText, { color: "#FFFFFF" }]}>
+          Happy Hour
+        </Text>
+      </View>
+
       {event.coverImage && (
         <Image source={{ uri: event.coverImage }} style={styles.eventImage} />
       )}
@@ -62,17 +75,6 @@ export default function EventCard({ event, onPress, style }: EventCardProps) {
               size="small"
               style={styles.shareButton}
             />
-            <View
-              style={[
-                styles.happyHourIndicator,
-                { backgroundColor: colors.primary + "15" },
-              ]}
-            >
-              <Ionicons name="wine" size={14} color={colors.primary} />
-              <Text style={[styles.happyHourText, { color: colors.primary }]}>
-                Happy Hour
-              </Text>
-            </View>
           </View>
         </View>
 
@@ -120,14 +122,29 @@ export default function EventCard({ event, onPress, style }: EventCardProps) {
 
 const styles = StyleSheet.create({
   eventCard: {
-    borderRadius: 12,
+    borderRadius: 20,
     overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    borderWidth: 2,
+    borderWidth: 1,
+    marginHorizontal: 16,
+    marginVertical: 12,
+  },
+  happyHourBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 6,
+  },
+  happyHourBannerText: {
+    fontSize: 12,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   eventImage: {
     width: "100%",
