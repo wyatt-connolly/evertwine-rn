@@ -23,6 +23,13 @@ export interface ThemeColors {
   secondaryVariant: string;
   onSecondary: string;
 
+  // Accent colors
+  accent: string;
+  accentVariant: string;
+  accentSecondary: string;
+  accentTertiary: string;
+  onAccent: string;
+
   // Status colors
   success: string;
   warning: string;
@@ -54,21 +61,28 @@ export const lightTheme: ThemeColors = {
   textSecondary: "#6C757D",
   textTertiary: "#ADB5BD",
 
-  // Primary colors
-  primary: "#007AFF",
-  primaryVariant: "#0056CC",
+  // Primary colors - Blue
+  primary: "#2196F3",
+  primaryVariant: "#1976D2",
   onPrimary: "#FFFFFF",
 
-  // Secondary colors
-  secondary: "#6C757D",
-  secondaryVariant: "#495057",
-  onSecondary: "#FFFFFF",
+  // Secondary colors - Light Blue
+  secondary: "#03DAC6",
+  secondaryVariant: "#018786",
+  onSecondary: "#000000",
+
+  // Accent colors
+  accent: "#FF6B35", // Orange accent
+  accentVariant: "#E55A2B",
+  accentSecondary: "#9C27B0", // Purple accent
+  accentTertiary: "#4CAF50", // Green accent
+  onAccent: "#FFFFFF",
 
   // Status colors
-  success: "#28A745",
-  warning: "#FFC107",
-  error: "#DC3545",
-  info: "#17A2B8",
+  success: "#4CAF50",
+  warning: "#FF9800",
+  error: "#F44336",
+  info: "#2196F3",
 
   // Border and divider colors
   border: "#DEE2E6",
@@ -78,51 +92,58 @@ export const lightTheme: ThemeColors = {
   overlay: "rgba(0, 0, 0, 0.5)",
   backdrop: "rgba(0, 0, 0, 0.3)",
 
-  // Gradient colors
-  gradientStart: "#007AFF",
-  gradientEnd: "#5AC8FA",
-  gradientSecondary: "#FF6B6B",
+  // Gradient colors - Blue to Light Blue
+  gradientStart: "#2196F3",
+  gradientEnd: "#03DAC6",
+  gradientSecondary: "#9C27B0",
 };
 
 export const darkTheme: ThemeColors = {
   // Background colors
-  background: "#121212",
-  surface: "#1E1E1E",
-  surfaceVariant: "#2D2D2D",
+  background: "#1A1A1A", // Dark grey instead of pure black
+  surface: "#2A2A2A",
+  surfaceVariant: "#3A3A3A",
 
   // Text colors
   text: "#FFFFFF",
-  textSecondary: "#AEAEB2",
-  textTertiary: "#8E8E93",
+  textSecondary: "#B0B0B0",
+  textTertiary: "#808080",
 
-  // Primary colors
-  primary: "#0A84FF",
-  primaryVariant: "#0056CC",
+  // Primary colors - Blue
+  primary: "#42A5F5",
+  primaryVariant: "#1976D2",
   onPrimary: "#FFFFFF",
 
-  // Secondary colors
-  secondary: "#8E8E93",
-  secondaryVariant: "#636366",
-  onSecondary: "#FFFFFF",
+  // Secondary colors - Light Blue
+  secondary: "#26C6DA",
+  secondaryVariant: "#00ACC1",
+  onSecondary: "#000000",
+
+  // Accent colors
+  accent: "#FF7043", // Orange accent
+  accentVariant: "#FF5722",
+  accentSecondary: "#BA68C8", // Purple accent
+  accentTertiary: "#66BB6A", // Green accent
+  onAccent: "#FFFFFF",
 
   // Status colors
-  success: "#30D158",
-  warning: "#FF9F0A",
-  error: "#FF453A",
-  info: "#64D2FF",
+  success: "#66BB6A",
+  warning: "#FFB74D",
+  error: "#EF5350",
+  info: "#42A5F5",
 
   // Border and divider colors
-  border: "#38383A",
-  divider: "#2C2C2E",
+  border: "#404040",
+  divider: "#3A3A3A",
 
   // Overlay colors
-  overlay: "rgba(0, 0, 0, 0.7)",
-  backdrop: "rgba(0, 0, 0, 0.5)",
+  overlay: "rgba(0, 0, 0, 0.8)",
+  backdrop: "rgba(0, 0, 0, 0.6)",
 
-  // Gradient colors
-  gradientStart: "#0A84FF",
-  gradientEnd: "#64D2FF",
-  gradientSecondary: "#FF6B6B",
+  // Gradient colors - Blue to Light Blue
+  gradientStart: "#42A5F5",
+  gradientEnd: "#26C6DA",
+  gradientSecondary: "#BA68C8",
 };
 
 interface ThemeState {

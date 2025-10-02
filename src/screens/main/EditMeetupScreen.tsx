@@ -160,7 +160,7 @@ export default function EditMeetupScreen({ navigation, route }: any) {
         <Text style={[styles.title, { color: colors.text }]}>Edit Meetup</Text>
         <View style={styles.headerActions}>
           <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
-            <Ionicons name="trash-outline" size={20} color="#FF4444" />
+            <Ionicons name="trash-outline" size={20} color="#FF6B35" />
           </TouchableOpacity>
           <TouchableOpacity onPress={handleSave}>
             <Text style={[styles.saveButton, { color: colors.primary }]}>

@@ -69,7 +69,7 @@ export default class ErrorBoundary extends Component<Props, State> {
       return (
         <View style={styles.container}>
           <ScrollView contentContainerStyle={styles.content}>
-            <Ionicons name="warning-outline" size={80} color="#FF6B6B" />
+            <Ionicons name="warning-outline" size={80} color="#FF6B35" />
 
             <Text style={styles.title}>Oops! Something went wrong</Text>
 
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   retryButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#007AFF",
+    backgroundColor: "#00BCD4",
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,

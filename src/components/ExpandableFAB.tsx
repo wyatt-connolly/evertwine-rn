@@ -72,7 +72,7 @@ export default function ExpandableFAB({ options }: ExpandableFABProps) {
                         {
                           translateY: rotateAnim.interpolate({
                             inputRange: [0, 1],
-                            outputRange: [20, -(index + 1) * 116],
+                            outputRange: [0, -(index + 1) * 50],
                           }),
                         },
                       ],
@@ -152,14 +152,16 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     position: "absolute",
-    bottom: 20,
+    bottom: 80,
     right: 20,
+    zIndex: 1001,
   },
   optionWrapper: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
     marginBottom: 8,
+    zIndex: 1002,
   },
   labelContainer: {
     paddingHorizontal: 12,
@@ -193,5 +195,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 4,
+    zIndex: 1003,
   },
 });

@@ -16,7 +16,13 @@ interface AnimatedButtonProps {
   onPress: () => void;
   style?: ViewStyle;
   textStyle?: TextStyle;
-  variant?: "primary" | "secondary" | "outline";
+  variant?:
+    | "primary"
+    | "secondary"
+    | "outline"
+    | "accent"
+    | "accentSecondary"
+    | "accentTertiary";
   disabled?: boolean;
   loading?: boolean;
   icon?: keyof typeof Ionicons.glyphMap;
@@ -92,6 +98,12 @@ export default function AnimatedButton({
             borderWidth: 2,
           },
         ];
+      case "accent":
+        return [...baseStyle, { backgroundColor: colors.accent }];
+      case "accentSecondary":
+        return [...baseStyle, { backgroundColor: colors.accentSecondary }];
+      case "accentTertiary":
+        return [...baseStyle, { backgroundColor: colors.accentTertiary }];
       default:
         return [...baseStyle, { backgroundColor: colors.primary }];
     }
@@ -107,6 +119,10 @@ export default function AnimatedButton({
         return [...baseStyle, { color: colors.text }];
       case "outline":
         return [...baseStyle, { color: colors.primary }];
+      case "accent":
+      case "accentSecondary":
+      case "accentTertiary":
+        return [...baseStyle, { color: colors.onAccent }];
       default:
         return [...baseStyle, { color: colors.onPrimary }];
     }
@@ -134,7 +150,15 @@ export default function AnimatedButton({
             <Ionicons
               name={icon}
               size={20}
-              color={variant === "primary" ? colors.onPrimary : colors.primary}
+              color={
+                variant === "primary"
+                  ? colors.onPrimary
+                  : variant === "accent" ||
+                    variant === "accentSecondary" ||
+                    variant === "accentTertiary"
+                  ? colors.onAccent
+                  : colors.primary
+              }
               style={styles.icon}
             />
           )}

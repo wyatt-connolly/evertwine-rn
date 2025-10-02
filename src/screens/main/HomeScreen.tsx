@@ -1090,7 +1090,7 @@ export default function HomeScreen() {
               ? styles.emptyContainer
               : activeFilter === "happy_hours"
               ? styles.feedContentCompact
-              : styles.feedContent
+              : [styles.feedContent, showFeedModeDropdown && { paddingTop: 80 }]
           }
           onScrollToIndexFailed={(info) => {
             const wait = new Promise((resolve) => setTimeout(resolve, 100));
@@ -1607,7 +1607,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     borderBottomWidth: 1,
     position: "relative",
-    zIndex: 10,
+    zIndex: 100,
   },
   logoContainer: {
     flexDirection: "row",
@@ -1630,8 +1630,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
-    elevation: 8,
-    zIndex: 100,
+    elevation: 20,
+    zIndex: 300,
   },
   feedModeOption: {
     flexDirection: "row",

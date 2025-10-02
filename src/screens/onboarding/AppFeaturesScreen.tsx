@@ -37,7 +37,7 @@ const appFeatures = [
     description:
       "Meet like-minded individuals and build meaningful relationships",
     icon: "people",
-    color: "#2196F3",
+    color: "#00BCD4",
     image:
       "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=400&h=300&fit=crop",
   },

@@ -39,7 +39,7 @@ export default function ErrorPage({
           icon: "search-outline",
           defaultTitle: "Not Found",
           defaultMessage: "The content you're looking for doesn't exist.",
-          color: "#FF6B6B",
+          color: "#FF6B35",
         };
       case "offline":
         return {
@@ -55,7 +55,7 @@ export default function ErrorPage({
           defaultTitle: "Something went wrong",
           defaultMessage:
             "We encountered an unexpected error. Please try again.",
-          color: "#FF6B6B",
+          color: "#FF6B35",
         };
     }
   };

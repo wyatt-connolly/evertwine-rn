@@ -25,11 +25,11 @@ interface EnhancedPostCardProps {
 }
 
 const REACTIONS = [
-  { emoji: "❤️", name: "love", color: "#EF4444" },
-  { emoji: "👍", name: "like", color: "#3B82F6" },
+  { emoji: "❤️", name: "love", color: "#E91E63" },
+  { emoji: "👍", name: "like", color: "#00BCD4" },
   { emoji: "😂", name: "laugh", color: "#F59E0B" },
   { emoji: "😮", name: "wow", color: "#8B5CF6" },
-  { emoji: "🍷", name: "wine", color: "#DC2626" },
+  { emoji: "🍷", name: "wine", color: "#FF6B35" },
   { emoji: "🎉", name: "celebrate", color: "#10B981" },
 ];
 

@@ -59,7 +59,14 @@ export default function EnhancedMeetupCard({
 
   return (
     <TouchableOpacity
-      style={[styles.meetupCard, { backgroundColor: colors.surface }, style]}
+      style={[
+        styles.meetupCard,
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.primary + "60",
+        },
+        style,
+      ]}
       onPress={onPress}
     >
       {meetup.coverImage && (
@@ -91,6 +98,17 @@ export default function EnhancedMeetupCard({
               size="small"
               style={styles.shareButton}
             />
+            <View
+              style={[
+                styles.meetupIndicator,
+                { backgroundColor: colors.primary + "15" },
+              ]}
+            >
+              <Ionicons name="calendar" size={14} color={colors.primary} />
+              <Text style={[styles.meetupText, { color: colors.primary }]}>
+                Meetup
+              </Text>
+            </View>
             {showEditButton && (
               <TouchableOpacity
                 style={styles.editButton}
@@ -267,6 +285,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    borderWidth: 2,
   },
   meetupImage: {
     width: "100%",
@@ -287,6 +306,22 @@ const styles = StyleSheet.create({
   meetupActions: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  meetupIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginLeft: 8,
+  },
+  meetupText: {
+    fontSize: 11,
+    fontWeight: "600",
+    marginLeft: 4,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   shareButton: {
     marginRight: 4,

@@ -23,7 +23,14 @@ export default function EventCard({ event, onPress, style }: EventCardProps) {
 
   return (
     <TouchableOpacity
-      style={[styles.eventCard, { backgroundColor: colors.surface }, style]}
+      style={[
+        styles.eventCard,
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.primary + "40",
+        },
+        style,
+      ]}
       onPress={onPress}
     >
       {event.coverImage && (
@@ -55,15 +62,14 @@ export default function EventCard({ event, onPress, style }: EventCardProps) {
               size="small"
               style={styles.shareButton}
             />
-            <View style={styles.happyHourIndicator}>
-              <Ionicons
-                name="wine-outline"
-                size={12}
-                color={colors.textSecondary}
-              />
-              <Text
-                style={[styles.happyHourText, { color: colors.textSecondary }]}
-              >
+            <View
+              style={[
+                styles.happyHourIndicator,
+                { backgroundColor: colors.primary + "15" },
+              ]}
+            >
+              <Ionicons name="wine" size={14} color={colors.primary} />
+              <Text style={[styles.happyHourText, { color: colors.primary }]}>
                 Happy Hour
               </Text>
             </View>
@@ -121,6 +127,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    borderWidth: 2,
   },
   eventImage: {
     width: "100%",
@@ -158,15 +165,17 @@ const styles = StyleSheet.create({
   happyHourIndicator: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    backgroundColor: "transparent",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
   },
   happyHourText: {
-    fontSize: 10,
-    fontWeight: "500",
+    fontSize: 11,
+    fontWeight: "600",
     marginLeft: 4,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   eventDescription: {
     fontSize: 14,
