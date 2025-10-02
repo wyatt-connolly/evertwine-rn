@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   TextInput,
   ScrollView,
   Dimensions,
-  Modal,
 } from "react-native";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,34 +18,17 @@ const { width } = Dimensions.get("window");
 
 interface EnhancedPostCardProps {
   post: Post;
-  onLike?: (postId: string) => void;
   onComment?: (postId: string, message: string) => void;
-  onReaction?: (postId: string, reaction: string) => void;
 }
-
-const REACTIONS = [
-  { emoji: "❤️", name: "love", color: "#E91E63" },
-  { emoji: "👍", name: "like", color: "#00BCD4" },
-  { emoji: "😂", name: "laugh", color: "#F59E0B" },
-  { emoji: "😮", name: "wow", color: "#8B5CF6" },
-  { emoji: "🍷", name: "wine", color: "#FF6B35" },
-  { emoji: "🎉", name: "celebrate", color: "#10B981" },
-];
 
 export default function EnhancedPostCard({
   post,
-  onLike,
   onComment,
-  onReaction,
 }: EnhancedPostCardProps) {
   const { colors } = useThemeStore();
-  const { currentUser } = useAuthStore();
+  const { user: currentUser } = useAuthStore();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
-  const [showReactions, setShowReactions] = useState(false);
-  const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
-
-  const isLiked = currentUser ? post.likes.includes(currentUser.uid) : false;
 
   const formatTime = (date: Date) => {
     const now = new Date();
@@ -66,12 +48,6 @@ export default function EnhancedPostCard({
       onComment(post.id, commentText.trim());
       setCommentText("");
     }
-  };
-
-  const handleReaction = (reaction: string) => {
-    setSelectedReaction(reaction);
-    setShowReactions(false);
-    onReaction?.(post.id, reaction);
   };
 
   // Get first 2 comments for preview
@@ -111,6 +87,13 @@ export default function EnhancedPostCard({
             {formatTime(post.createdAt)}
           </Text>
         </View>
+        <TouchableOpacity style={styles.shareButton}>
+          <Ionicons
+            name="share-outline"
+            size={22}
+            color={colors.textSecondary}
+          />
+        </TouchableOpacity>
       </View>
 
       {/* Content */}
@@ -142,57 +125,17 @@ export default function EnhancedPostCard({
       <View style={[styles.actions, { borderTopColor: colors.border }]}>
         <TouchableOpacity
           style={styles.actionButton}
-          onPress={() => onLike?.(post.id)}
-          onLongPress={() => setShowReactions(true)}
-        >
-          {selectedReaction ? (
-            <Text style={styles.reactionEmoji}>
-              {REACTIONS.find((r) => r.name === selectedReaction)?.emoji}
-            </Text>
-          ) : (
-            <Ionicons
-              name={isLiked ? "heart" : "heart-outline"}
-              size={20}
-              color={isLiked ? "#EF4444" : colors.textSecondary}
-            />
-          )}
-          <Text
-            style={[
-              styles.actionText,
-              {
-                color:
-                  isLiked || selectedReaction
-                    ? "#EF4444"
-                    : colors.textSecondary,
-              },
-            ]}
-          >
-            {post.likes.length > 0 ? post.likes.length : "Like"}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.actionButton}
           onPress={() => setShowComments(!showComments)}
         >
           <Ionicons
             name="chatbubble-outline"
-            size={18}
+            size={20}
             color={colors.textSecondary}
           />
           <Text style={[styles.actionText, { color: colors.textSecondary }]}>
-            {post.comments.length > 0 ? `${post.comments.length}` : "Comment"}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.actionButton}>
-          <Ionicons
-            name="share-outline"
-            size={18}
-            color={colors.textSecondary}
-          />
-          <Text style={[styles.actionText, { color: colors.textSecondary }]}>
-            Share
+            {post.comments.length > 0
+              ? `${post.comments.length} Comments`
+              : "Comment"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -302,7 +245,7 @@ export default function EnhancedPostCard({
           {currentUser && (
             <View style={styles.commentInputContainer}>
               <Image
-                source={{ uri: currentUser.profilePictures?.[0] || "" }}
+                source={{ uri: currentUser.photoURL || "" }}
                 style={styles.commentAvatar}
               />
               <TextInput
@@ -344,37 +287,6 @@ export default function EnhancedPostCard({
           )}
         </View>
       )}
-
-      {/* Reactions Modal */}
-      <Modal
-        visible={showReactions}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowReactions(false)}
-      >
-        <TouchableOpacity
-          style={styles.reactionsOverlay}
-          activeOpacity={1}
-          onPress={() => setShowReactions(false)}
-        >
-          <View
-            style={[
-              styles.reactionsContainer,
-              { backgroundColor: colors.surface },
-            ]}
-          >
-            {REACTIONS.map((reaction) => (
-              <TouchableOpacity
-                key={reaction.name}
-                style={styles.reactionButton}
-                onPress={() => handleReaction(reaction.name)}
-              >
-                <Text style={styles.reactionButtonEmoji}>{reaction.emoji}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </TouchableOpacity>
-      </Modal>
     </View>
   );
 }
@@ -423,6 +335,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 2,
   },
+  shareButton: {
+    padding: 8,
+    marginLeft: 8,
+  },
   content: {
     paddingHorizontal: 16,
     paddingBottom: 12,
@@ -462,9 +378,6 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: 14,
     fontWeight: "500",
-  },
-  reactionEmoji: {
-    fontSize: 20,
   },
   commentPreview: {
     borderTopWidth: 1,
@@ -558,27 +471,5 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-  },
-  reactionsOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  reactionsContainer: {
-    flexDirection: "row",
-    padding: 8,
-    borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  reactionButton: {
-    padding: 8,
-  },
-  reactionButtonEmoji: {
-    fontSize: 32,
   },
 });

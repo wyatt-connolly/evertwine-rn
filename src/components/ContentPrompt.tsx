@@ -9,6 +9,7 @@ interface ContentPromptProps {
   description: string;
   actionText: string;
   onAction: () => void;
+  accentColor?: string;
 }
 
 export default function ContentPrompt({
@@ -17,8 +18,11 @@ export default function ContentPrompt({
   description,
   actionText,
   onAction,
+  accentColor,
 }: ContentPromptProps) {
   const { colors } = useThemeStore();
+  const primaryColor = accentColor || colors.primary;
+  const onPrimaryColor = accentColor ? colors.onAccent : colors.onPrimary;
 
   return (
     <View
@@ -31,26 +35,23 @@ export default function ContentPrompt({
       ]}
     >
       <View
-        style={[
-          styles.iconContainer,
-          { backgroundColor: colors.primary + "15" },
-        ]}
+        style={[styles.iconContainer, { backgroundColor: primaryColor + "15" }]}
       >
-        <Ionicons name={icon} size={32} color={colors.primary} />
+        <Ionicons name={icon} size={32} color={primaryColor} />
       </View>
       <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
       <Text style={[styles.description, { color: colors.textSecondary }]}>
         {description}
       </Text>
       <TouchableOpacity
-        style={[styles.actionButton, { backgroundColor: colors.primary }]}
+        style={[styles.actionButton, { backgroundColor: primaryColor }]}
         onPress={onAction}
         activeOpacity={0.8}
       >
-        <Text style={[styles.actionText, { color: colors.onPrimary }]}>
+        <Text style={[styles.actionText, { color: onPrimaryColor }]}>
           {actionText}
         </Text>
-        <Ionicons name="arrow-forward" size={16} color={colors.onPrimary} />
+        <Ionicons name="arrow-forward" size={16} color={onPrimaryColor} />
       </TouchableOpacity>
     </View>
   );

@@ -28,6 +28,8 @@ export interface ThemeColors {
   accentVariant: string;
   accentSecondary: string;
   accentTertiary: string;
+  accentQuaternary: string;
+  accentQuinary: string;
   onAccent: string;
 
   // Status colors
@@ -76,6 +78,8 @@ export const lightTheme: ThemeColors = {
   accentVariant: "#E55A2B",
   accentSecondary: "#9C27B0", // Purple accent
   accentTertiary: "#4CAF50", // Green accent
+  accentQuaternary: "#FF9800", // Amber accent
+  accentQuinary: "#F44336", // Red accent
   onAccent: "#FFFFFF",
 
   // Status colors
@@ -119,11 +123,13 @@ export const darkTheme: ThemeColors = {
   secondaryVariant: "#00ACC1",
   onSecondary: "#000000",
 
-  // Accent colors
-  accent: "#FF7043", // Orange accent
+  // Accent colors - More vibrant for dark mode
+  accent: "#FF6B35", // Vibrant orange
   accentVariant: "#FF5722",
-  accentSecondary: "#BA68C8", // Purple accent
-  accentTertiary: "#66BB6A", // Green accent
+  accentSecondary: "#E91E63", // Bright pink/magenta
+  accentTertiary: "#4CAF50", // Bright green
+  accentQuaternary: "#FFC107", // Bright amber
+  accentQuinary: "#F44336", // Bright red
   onAccent: "#FFFFFF",
 
   // Status colors

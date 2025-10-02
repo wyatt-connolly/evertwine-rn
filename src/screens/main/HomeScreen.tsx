@@ -548,23 +548,6 @@ export default function HomeScreen() {
     }
   };
 
-  const handlePostLike = (postId: string) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) => {
-        if (post.id === postId && currentUser) {
-          const isLiked = post.likes.includes(currentUser.uid);
-          return {
-            ...post,
-            likes: isLiked
-              ? post.likes.filter((uid) => uid !== currentUser.uid)
-              : [...post.likes, currentUser.uid],
-          };
-        }
-        return post;
-      })
-    );
-  };
-
   const handlePostComment = (postId: string, message: string) => {
     if (!currentUser) return;
 
@@ -701,7 +684,11 @@ export default function HomeScreen() {
             ]}
           >
             <View style={styles.sectionHeaderContent}>
-              <Ionicons name="sparkles" size={20} color={colors.primary} />
+              <Ionicons
+                name="sparkles"
+                size={20}
+                color={colors.accentQuaternary}
+              />
               <Text style={[styles.sectionHeaderTitle, { color: colors.text }]}>
                 Recommended for You
               </Text>
@@ -744,6 +731,13 @@ export default function HomeScreen() {
             title={prompt.title}
             description={prompt.description}
             actionText={prompt.actionText}
+            accentColor={
+              prompt.id === "introduction"
+                ? colors.accentSecondary // Pink for introduction
+                : prompt.id === "rate_meetup"
+                ? colors.accentQuaternary // Amber for rating
+                : colors.accentTertiary // Green for sharing
+            }
             onAction={() => {
               // Handle prompt action
               if (
@@ -760,13 +754,7 @@ export default function HomeScreen() {
 
       case "post":
         const post = item.data as Post;
-        return (
-          <EnhancedPostCard
-            post={post}
-            onLike={handlePostLike}
-            onComment={handlePostComment}
-          />
-        );
+        return <EnhancedPostCard post={post} onComment={handlePostComment} />;
 
       case "meetup":
         const meetup = item.data as Meetup;
@@ -1027,7 +1015,11 @@ export default function HomeScreen() {
                   For You
                 </Text>
                 {feedMode === "for_you" && (
-                  <Ionicons name="checkmark" size={18} color={colors.primary} />
+                  <Ionicons
+                    name="checkmark"
+                    size={18}
+                    color={colors.accentQuaternary}
+                  />
                 )}
               </TouchableOpacity>
 
@@ -1057,7 +1049,11 @@ export default function HomeScreen() {
                   Favorites
                 </Text>
                 {feedMode === "favorites" && (
-                  <Ionicons name="checkmark" size={18} color={colors.primary} />
+                  <Ionicons
+                    name="checkmark"
+                    size={18}
+                    color={colors.accentQuaternary}
+                  />
                 )}
               </TouchableOpacity>
             </View>
@@ -1193,7 +1189,7 @@ export default function HomeScreen() {
                         <Ionicons
                           name="checkmark-circle"
                           size={24}
-                          color={colors.primary}
+                          color={colors.accentQuaternary}
                         />
                       )}
                     </TouchableOpacity>
@@ -1255,7 +1251,7 @@ export default function HomeScreen() {
                         <Ionicons
                           name="checkmark-circle"
                           size={24}
-                          color={colors.primary}
+                          color={colors.accentQuaternary}
                         />
                       )}
                     </TouchableOpacity>
@@ -1342,7 +1338,7 @@ export default function HomeScreen() {
                           <Ionicons
                             name="checkmark-circle"
                             size={24}
-                            color={colors.primary}
+                            color={colors.accentQuaternary}
                           />
                         )}
                       </TouchableOpacity>
@@ -1434,7 +1430,7 @@ export default function HomeScreen() {
                           <Ionicons
                             name="checkmark-circle"
                             size={24}
-                            color={colors.primary}
+                            color={colors.accentQuaternary}
                           />
                         )}
                       </TouchableOpacity>
@@ -1531,7 +1527,7 @@ export default function HomeScreen() {
                           <Ionicons
                             name="checkmark-circle"
                             size={24}
-                            color={colors.primary}
+                            color={colors.accentQuaternary}
                           />
                         )}
                       </TouchableOpacity>
@@ -1543,12 +1539,12 @@ export default function HomeScreen() {
 
             {/* Apply Button */}
             <TouchableOpacity
-              style={[styles.applyButton, { backgroundColor: colors.primary }]}
+              style={[styles.applyButton, { backgroundColor: colors.accent }]}
               onPress={handleApplyFilters}
               activeOpacity={0.8}
             >
               <Text
-                style={[styles.applyButtonText, { color: colors.onPrimary }]}
+                style={[styles.applyButtonText, { color: colors.onAccent }]}
               >
                 Apply Filters
               </Text>
@@ -1564,7 +1560,7 @@ export default function HomeScreen() {
             icon: "newspaper",
             label: "Create Post",
             onPress: () => navigation.navigate("CreatePost"),
-            color: colors.primary,
+            color: colors.accentSecondary, // Pink for posts
           },
           {
             icon: "people",
@@ -1574,7 +1570,7 @@ export default function HomeScreen() {
                 formData: {},
                 onUpdate: () => {},
               }),
-            color: colors.primary,
+            color: colors.accentTertiary, // Green for meetups
           },
         ]}
       />

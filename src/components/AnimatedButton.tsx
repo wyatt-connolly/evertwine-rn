@@ -22,7 +22,9 @@ interface AnimatedButtonProps {
     | "outline"
     | "accent"
     | "accentSecondary"
-    | "accentTertiary";
+    | "accentTertiary"
+    | "accentQuaternary"
+    | "accentQuinary";
   disabled?: boolean;
   loading?: boolean;
   icon?: keyof typeof Ionicons.glyphMap;
@@ -104,6 +106,10 @@ export default function AnimatedButton({
         return [...baseStyle, { backgroundColor: colors.accentSecondary }];
       case "accentTertiary":
         return [...baseStyle, { backgroundColor: colors.accentTertiary }];
+      case "accentQuaternary":
+        return [...baseStyle, { backgroundColor: colors.accentQuaternary }];
+      case "accentQuinary":
+        return [...baseStyle, { backgroundColor: colors.accentQuinary }];
       default:
         return [...baseStyle, { backgroundColor: colors.primary }];
     }
@@ -122,6 +128,8 @@ export default function AnimatedButton({
       case "accent":
       case "accentSecondary":
       case "accentTertiary":
+      case "accentQuaternary":
+      case "accentQuinary":
         return [...baseStyle, { color: colors.onAccent }];
       default:
         return [...baseStyle, { color: colors.onPrimary }];
@@ -155,7 +163,9 @@ export default function AnimatedButton({
                   ? colors.onPrimary
                   : variant === "accent" ||
                     variant === "accentSecondary" ||
-                    variant === "accentTertiary"
+                    variant === "accentTertiary" ||
+                    variant === "accentQuaternary" ||
+                    variant === "accentQuinary"
                   ? colors.onAccent
                   : colors.primary
               }
