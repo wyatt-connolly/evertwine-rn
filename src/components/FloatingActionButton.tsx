@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import { useRef } from "react";
 import {
   TouchableOpacity,
   StyleSheet,
@@ -82,6 +82,8 @@ export default function FloatingActionButton({
             borderRadius: size / 2,
             backgroundColor: colors.primary,
             opacity: disabled ? 0.6 : 1,
+            borderWidth: 1,
+            borderColor: "rgba(255, 255, 255, 0.2)",
           },
         ]}
         onPress={onPress}
@@ -104,10 +106,11 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 8,
     },
-    shadowOpacity: 0.3,
-    elevation: 8,
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 16,
   },
   button: {
     alignItems: "center",

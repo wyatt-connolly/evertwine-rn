@@ -72,7 +72,7 @@ export default function ExpandableFAB({ options }: ExpandableFABProps) {
                         {
                           translateY: rotateAnim.interpolate({
                             inputRange: [0, 1],
-                            outputRange: [0, -(index + 1) * 90],
+                            outputRange: [0, -(index + 1) * 120],
                           }),
                         },
                       ],
@@ -114,7 +114,14 @@ export default function ExpandableFAB({ options }: ExpandableFABProps) {
 
       {/* Main FAB */}
       <TouchableOpacity
-        style={[styles.fab, { backgroundColor: colors.primary }]}
+        style={[
+          styles.fab,
+          {
+            backgroundColor: colors.primary,
+            borderWidth: 1,
+            borderColor: "rgba(255, 255, 255, 0.2)",
+          },
+        ]}
         onPress={toggleExpand}
         activeOpacity={0.8}
       >
@@ -139,11 +146,11 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 6,
+      height: 10,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 12,
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    elevation: 20,
     zIndex: 1000,
   },
   backdrop: {
@@ -152,7 +159,7 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     position: "absolute",
-    bottom: 110,
+    bottom: 24,
     right: 24,
     zIndex: 1001,
   },
@@ -166,7 +173,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 12,
-    marginRight: 12,
+    marginRight: 16,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -186,14 +193,16 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.15)",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 6,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 6,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 12,
     zIndex: 1003,
   },
 });
