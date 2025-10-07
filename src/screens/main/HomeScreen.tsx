@@ -864,32 +864,30 @@ export default function HomeScreen() {
         backgroundColor={colors.background}
       />
 
-      {/* Status Bar Spacer */}
+      {/* App Bar */}
       <SafeAreaView
         edges={["top"]}
         style={{ backgroundColor: colors.background }}
-      />
-
-      {/* Sticky App Bar */}
-      <Animated.View
-        style={[
-          styles.stickyAppBar,
-          {
-            backgroundColor: colors.background,
-            borderBottomColor: colors.border,
-            height: scrollY.interpolate({
-              inputRange: [0, 100],
-              outputRange: [80, 0],
-              extrapolate: "clamp",
-            }),
-            opacity: scrollY.interpolate({
-              inputRange: [0, 50],
-              outputRange: [1, 0],
-              extrapolate: "clamp",
-            }),
-          },
-        ]}
       >
+        <Animated.View
+          style={[
+            styles.appBarContainer,
+            {
+              backgroundColor: colors.background,
+              borderBottomColor: colors.border,
+              height: scrollY.interpolate({
+                inputRange: [0, 100],
+                outputRange: [80, 0],
+                extrapolate: "clamp",
+              }),
+              opacity: scrollY.interpolate({
+                inputRange: [0, 50],
+                outputRange: [1, 0],
+                extrapolate: "clamp",
+              }),
+            },
+          ]}
+        >
         {/* Dropdown Overlay */}
         {showFeedModeDropdown && (
           <TouchableOpacity
@@ -1067,7 +1065,8 @@ export default function HomeScreen() {
             </View>
           )}
         </View>
-      </Animated.View>
+        </Animated.View>
+      </SafeAreaView>
 
       {/* Feed */}
       {loading ? (
@@ -1605,13 +1604,9 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     zIndex: 250,
   },
-  stickyAppBar: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 300,
+  appBarContainer: {
     overflow: "hidden",
+    borderBottomWidth: 1,
   },
   appBar: {
     flexDirection: "row",

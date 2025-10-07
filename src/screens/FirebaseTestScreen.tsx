@@ -95,8 +95,6 @@ export default function FirebaseTestScreen() {
     }
   };
 
-
-
   const handleGoogleSignIn = async () => {
     addLog("Attempting Google sign in...");
     const result = await AuthService.signInWithGoogle();
@@ -237,16 +235,13 @@ export default function FirebaseTestScreen() {
 
         {user && (
           <View style={styles.userInfo}>
-            <Text style={styles.userText}>
-              Signed in as: {user.email}
-            </Text>
+            <Text style={styles.userText}>Signed in as: {user.email}</Text>
             <TouchableOpacity style={styles.button} onPress={handleSignOut}>
               <Text style={styles.buttonText}>Sign Out</Text>
             </TouchableOpacity>
           </View>
         )}
       </View>
-
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>🔐 Social Authentication</Text>
