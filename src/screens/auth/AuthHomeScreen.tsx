@@ -34,111 +34,6 @@ export default function AuthHomeScreen({ navigation }: Props) {
   const { setUser, setAuthenticated, setOnboardingComplete } = useAuthStore();
   const { colors } = useThemeStore();
 
-  const handlePhoneSignIn = () => {
-    navigation.navigate("PhoneVerification");
-  };
-
-  const handleAppleSignIn = async () => {
-    setLoading(true);
-    try {
-      // Use Firebase authentication (not developer mode)
-      DataService.setDeveloperMode(false);
-      const result = await AuthService.signInWithApple();
-
-      if (result.error) {
-        Alert.alert("Apple Sign-In Error", result.error);
-        return;
-      }
-
-      // Load user profile from Firebase
-      const profileResult = await DataService.loadUserProfile(
-        result.user?.uid || ""
-      );
-
-      const user = {
-        uid: result.user?.uid || "",
-        phoneNumber: (result.user as any)?.phoneNumber || undefined,
-        displayName:
-          (result.user as any)?.displayName ||
-          profileResult.user?.displayName ||
-          "User",
-        email: (result.user as any)?.email || undefined,
-        photoURL: (result.user as any)?.photoURL || undefined,
-        onboardingComplete: profileResult.user?.onboardingComplete || false,
-        interests: profileResult.user?.interests || undefined,
-        location: profileResult.user?.location || undefined,
-        bio: profileResult.user?.bio || undefined,
-        about: profileResult.user?.about || undefined,
-      };
-
-      setUser(user);
-      setAuthenticated(true);
-
-      // Also update the onboarding status in the store to ensure consistency
-      if (user.onboardingComplete) {
-        setOnboardingComplete(true);
-        // The AppNavigator will handle routing to MainTabs
-      } else {
-        setOnboardingComplete(false);
-        navigation.navigate("ProfileSetup");
-      }
-    } catch (error) {
-      Alert.alert("Error", "Apple Sign-In failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    try {
-      // Use Firebase authentication (not developer mode)
-      DataService.setDeveloperMode(false);
-      const result = await AuthService.signInWithGoogle();
-
-      if (result.error) {
-        Alert.alert("Google Sign-In Error", result.error);
-        return;
-      }
-
-      // Load user profile from Firebase
-      const profileResult = await DataService.loadUserProfile(
-        result.user?.uid || ""
-      );
-
-      const user = {
-        uid: result.user?.uid || "",
-        phoneNumber: (result.user as any)?.phoneNumber || undefined,
-        displayName:
-          (result.user as any)?.displayName ||
-          profileResult.user?.displayName ||
-          "User",
-        email: (result.user as any)?.email || undefined,
-        photoURL: (result.user as any)?.photoURL || undefined,
-        onboardingComplete: profileResult.user?.onboardingComplete || false,
-        interests: profileResult.user?.interests || undefined,
-        location: profileResult.user?.location || undefined,
-        bio: profileResult.user?.bio || undefined,
-        about: profileResult.user?.about || undefined,
-      };
-
-      setUser(user);
-      setAuthenticated(true);
-
-      // Also update the onboarding status in the store to ensure consistency
-      if (user.onboardingComplete) {
-        setOnboardingComplete(true);
-        // The AppNavigator will handle routing to MainTabs
-      } else {
-        setOnboardingComplete(false);
-        navigation.navigate("ProfileSetup");
-      }
-    } catch (error) {
-      Alert.alert("Error", "Google Sign-In failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDeveloperLogin = async () => {
     setLoading(true);
@@ -301,61 +196,22 @@ export default function AuthHomeScreen({ navigation }: Props) {
           {/* Sign In Buttons */}
           <View style={styles.buttonContainer}>
             <AnimatedButton
-              title="Continue with Phone"
-              onPress={handlePhoneSignIn}
+              title="🔧 Developer Login"
+              onPress={handleDeveloperLogin}
               variant="primary"
               disabled={loading}
               style={styles.button}
-              icon="call"
+              icon="home"
             />
 
             <AnimatedButton
-              title="Continue with Apple"
-              onPress={handleAppleSignIn}
+              title="🚀 Developer Onboarding"
+              onPress={handleDeveloperOnboarding}
               variant="secondary"
               disabled={loading}
               style={styles.button}
-              icon="logo-apple"
+              icon="person-add"
             />
-
-            <AnimatedButton
-              title="Continue with Google"
-              onPress={handleGoogleSignIn}
-              variant="secondary"
-              disabled={loading}
-              style={styles.button}
-              icon="logo-google"
-            />
-
-            {/* Developer Login Button - Only show in development */}
-            {__DEV__ && (
-              <AnimatedButton
-                title="🔧 Developer Login"
-                onPress={handleDeveloperLogin}
-                variant="outline"
-                disabled={loading}
-                style={StyleSheet.flatten([
-                  styles.button,
-                  styles.developerButton,
-                ])}
-                icon="home"
-              />
-            )}
-
-            {/* Developer Onboarding Button - Only show in development */}
-            {__DEV__ && (
-              <AnimatedButton
-                title="🚀 Developer Onboarding"
-                onPress={handleDeveloperOnboarding}
-                variant="outline"
-                disabled={loading}
-                style={StyleSheet.flatten([
-                  styles.button,
-                  styles.developerButton,
-                ])}
-                icon="person-add"
-              />
-            )}
           </View>
 
           {/* Footer */}

@@ -8,6 +8,7 @@ import {
   RefreshControl,
   Modal,
   ScrollView,
+  Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "react-native";
@@ -120,6 +121,12 @@ export default function HomeScreen() {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [feedMode, setFeedMode] = useState<"for_you" | "favorites">("for_you");
   const [showFeedModeDropdown, setShowFeedModeDropdown] = useState(false);
+
+  // Scroll animation state
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const [isAppBarVisible, setIsAppBarVisible] = useState(true);
+  const lastScrollY = useRef(0);
+  const scrollThreshold = 50; // Minimum scroll distance to trigger hide/show
 
   // Mock data
   const allMeetups = DataService.isInDeveloperMode()
@@ -586,6 +593,31 @@ export default function HomeScreen() {
     setShowFilterModal(false);
   };
 
+  // Handle scroll events for app bar visibility
+  const handleScroll = (event: any) => {
+    const currentScrollY = event.nativeEvent.contentOffset.y;
+    const scrollDifference = currentScrollY - lastScrollY.current;
+
+    // Only trigger if scroll difference is significant
+    if (Math.abs(scrollDifference) > scrollThreshold) {
+      if (scrollDifference > 0 && currentScrollY > scrollThreshold) {
+        // Scrolling down - hide app bar
+        if (isAppBarVisible) {
+          setIsAppBarVisible(false);
+        }
+      } else if (scrollDifference < 0) {
+        // Scrolling up - show app bar
+        if (!isAppBarVisible) {
+          setIsAppBarVisible(true);
+        }
+      }
+      lastScrollY.current = currentScrollY;
+    }
+
+    // Update scroll position for animations
+    scrollY.setValue(currentScrollY);
+  };
+
   const getTimeUntilMeetup = (meetupTime: Date): string => {
     const now = new Date();
     const diffMs = meetupTime.getTime() - now.getTime();
@@ -845,7 +877,28 @@ export default function HomeScreen() {
             onPress={() => setShowFeedModeDropdown(false)}
           />
         )}
-        <View style={[styles.appBar, { borderBottomColor: colors.border }]}>
+        <Animated.View
+          style={[
+            styles.appBar,
+            {
+              borderBottomColor: colors.border,
+              transform: [
+                {
+                  translateY: scrollY.interpolate({
+                    inputRange: [0, 100],
+                    outputRange: [0, -100],
+                    extrapolate: "clamp",
+                  }),
+                },
+              ],
+              opacity: scrollY.interpolate({
+                inputRange: [0, 50],
+                outputRange: [1, 0],
+                extrapolate: "clamp",
+              }),
+            },
+          ]}
+        >
           {/* Logo with Dropdown */}
           <TouchableOpacity
             style={styles.logoContainer}
@@ -1006,7 +1059,7 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
           )}
-        </View>
+        </Animated.View>
       </SafeAreaView>
 
       {/* Feed */}
@@ -1020,6 +1073,8 @@ export default function HomeScreen() {
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
           style={{ flex: 1, zIndex: 1 }}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
