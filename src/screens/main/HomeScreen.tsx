@@ -864,10 +864,31 @@ export default function HomeScreen() {
         backgroundColor={colors.background}
       />
 
-      {/* Clean App Bar */}
+      {/* Status Bar Spacer */}
       <SafeAreaView
         edges={["top"]}
         style={{ backgroundColor: colors.background }}
+      />
+
+      {/* Sticky App Bar */}
+      <Animated.View
+        style={[
+          styles.stickyAppBar,
+          {
+            backgroundColor: colors.background,
+            borderBottomColor: colors.border,
+            height: scrollY.interpolate({
+              inputRange: [0, 100],
+              outputRange: [80, 0],
+              extrapolate: "clamp",
+            }),
+            opacity: scrollY.interpolate({
+              inputRange: [0, 50],
+              outputRange: [1, 0],
+              extrapolate: "clamp",
+            }),
+          },
+        ]}
       >
         {/* Dropdown Overlay */}
         {showFeedModeDropdown && (
@@ -877,25 +898,11 @@ export default function HomeScreen() {
             onPress={() => setShowFeedModeDropdown(false)}
           />
         )}
-        <Animated.View
+        <View
           style={[
             styles.appBar,
             {
               borderBottomColor: colors.border,
-              transform: [
-                {
-                  translateY: scrollY.interpolate({
-                    inputRange: [0, 100],
-                    outputRange: [0, -100],
-                    extrapolate: "clamp",
-                  }),
-                },
-              ],
-              opacity: scrollY.interpolate({
-                inputRange: [0, 50],
-                outputRange: [1, 0],
-                extrapolate: "clamp",
-              }),
             },
           ]}
         >
@@ -1059,8 +1066,8 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
           )}
-        </Animated.View>
-      </SafeAreaView>
+        </View>
+      </Animated.View>
 
       {/* Feed */}
       {loading ? (
@@ -1591,12 +1598,20 @@ const styles = StyleSheet.create({
   },
   dropdownOverlay: {
     position: "absolute",
-    top: 60, // Start below the appBar
+    top: 0,
     left: 0,
     right: 0,
     bottom: 0,
     backgroundColor: "transparent",
     zIndex: 250,
+  },
+  stickyAppBar: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 300,
+    overflow: "hidden",
   },
   appBar: {
     flexDirection: "row",

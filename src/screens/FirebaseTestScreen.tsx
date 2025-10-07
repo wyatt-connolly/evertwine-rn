@@ -14,13 +14,10 @@ import { Platform } from "react-native";
 export default function FirebaseTestScreen() {
   const [email, setEmail] = useState("test@example.com");
   const [password, setPassword] = useState("password123");
-  const [phoneNumber, setPhoneNumber] = useState("+1234567890");
-  const [verificationCode, setVerificationCode] = useState("");
   const [user, setUser] = useState<any>(null);
   const [connectionStatus, setConnectionStatus] =
     useState<string>("Testing...");
   const [logs, setLogs] = useState<string[]>([]);
-  const [phoneConfirmation, setPhoneConfirmation] = useState<any>(null);
 
   useEffect(() => {
     // Test Firebase connection on mount
@@ -98,43 +95,7 @@ export default function FirebaseTestScreen() {
     }
   };
 
-  const handlePhoneSignIn = async () => {
-    addLog("Attempting phone sign in...");
-    const result = await AuthService.signInWithPhone(phoneNumber);
-    if (result.confirmationResult) {
-      setPhoneConfirmation(result.confirmationResult);
-      addLog("SMS sent! Enter verification code below.");
-      Alert.alert(
-        "SMS Sent",
-        "Please enter the verification code sent to your phone."
-      );
-    } else {
-      addLog(`Phone sign in failed: ${result.error}`);
-      Alert.alert("Error", result.error);
-    }
-  };
 
-  const handleVerifyCode = async () => {
-    if (!phoneConfirmation) {
-      Alert.alert("Error", "Please request SMS first");
-      return;
-    }
-
-    addLog("Verifying phone code...");
-    const result = await AuthService.verifyPhoneCode(
-      phoneConfirmation,
-      verificationCode
-    );
-    if (result.user) {
-      addLog("Phone verification successful");
-      Alert.alert("Success", "Phone authentication successful!");
-      setPhoneConfirmation(null);
-      setVerificationCode("");
-    } else {
-      addLog(`Phone verification failed: ${result.error}`);
-      Alert.alert("Error", result.error);
-    }
-  };
 
   const handleGoogleSignIn = async () => {
     addLog("Attempting Google sign in...");
@@ -195,7 +156,6 @@ export default function FirebaseTestScreen() {
       profilePictures: [],
       location: { latitude: 37.7749, longitude: -122.4194 },
       locationName: "San Francisco, CA",
-      phoneNumber: "+1234567890",
       school: "Test University",
       jobTitle: "Software Developer",
       jobCompany: "Test Company",
@@ -278,7 +238,7 @@ export default function FirebaseTestScreen() {
         {user && (
           <View style={styles.userInfo}>
             <Text style={styles.userText}>
-              Signed in as: {user.email || user.phoneNumber}
+              Signed in as: {user.email}
             </Text>
             <TouchableOpacity style={styles.button} onPress={handleSignOut}>
               <Text style={styles.buttonText}>Sign Out</Text>
@@ -287,61 +247,6 @@ export default function FirebaseTestScreen() {
         )}
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>📱 Phone Authentication</Text>
-        {isSimulatorMode ? (
-          <Text style={styles.simulatorNote}>
-            🧪 Simulator Mode: Enter any phone number and use any 6-digit code
-            (e.g., 123456)
-          </Text>
-        ) : (
-          <Text style={styles.realDeviceNote}>
-            📱 Real Device: Requires SMS setup. Use email/password for testing.
-          </Text>
-        )}
-        <TextInput
-          style={styles.input}
-          placeholder="Phone Number (+1234567890)"
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-          keyboardType="phone-pad"
-        />
-        <TouchableOpacity style={styles.button} onPress={handlePhoneSignIn}>
-          <Text style={styles.buttonText}>
-            {isSimulatorMode ? "Send SMS Code (Simulator)" : "Send SMS Code"}
-          </Text>
-        </TouchableOpacity>
-
-        {phoneConfirmation && (
-          <View style={styles.phoneVerification}>
-            <TextInput
-              style={styles.input}
-              placeholder={
-                isSimulatorMode
-                  ? "Enter any 6-digit code"
-                  : "Enter 6-digit code"
-              }
-              value={verificationCode}
-              onChangeText={setVerificationCode}
-              keyboardType="number-pad"
-              maxLength={6}
-            />
-            <TouchableOpacity style={styles.button} onPress={handleVerifyCode}>
-              <Text style={styles.buttonText}>Verify Code</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* reCAPTCHA container for web */}
-        {Platform.OS === "web" && (
-          <View style={styles.recaptchaContainer}>
-            <Text style={styles.recaptchaNote}>
-              🔒 reCAPTCHA container for phone authentication
-            </Text>
-            <View id="recaptcha-container" style={styles.recaptchaDiv} />
-          </View>
-        )}
-      </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>🔐 Social Authentication</Text>

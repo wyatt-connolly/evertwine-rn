@@ -34,7 +34,6 @@ export default function AuthHomeScreen({ navigation }: Props) {
   const { setUser, setAuthenticated, setOnboardingComplete } = useAuthStore();
   const { colors } = useThemeStore();
 
-
   const handleDeveloperLogin = async () => {
     setLoading(true);
 
