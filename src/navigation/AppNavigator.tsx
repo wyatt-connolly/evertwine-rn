@@ -3,8 +3,7 @@ import { useAuthStore } from "../hooks/useAuthStore";
 import OnboardingStack from "./OnboardingStack";
 import MainTabs from "./MainTabs";
 import TestScreen from "../screens/TestScreen";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../../firebase.config";
+import { onAuthStateChanged } from "../services/supabase";
 import { DataService } from "../services/DataService";
 
 export default function AppNavigator() {
@@ -20,23 +19,25 @@ export default function AppNavigator() {
   // For testing Firebase integration, uncomment the next line
   // return <TestScreen />;
 
-  // Firebase auth state listener - loads user data on app startup
+  // Supabase auth state listener - loads user data on app startup
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        // User is signed in, load their profile data from Firebase
+    const {
+      data: { subscription },
+    } = onAuthStateChanged(async (supabaseUser) => {
+      if (supabaseUser) {
+        // User is signed in, load their profile data from Supabase
         try {
-          const profileResult = await DataService.getUser(firebaseUser.uid);
+          const profileResult = await DataService.getUser(supabaseUser.uid);
 
           if (profileResult.user) {
-            // Update auth store with fresh Firebase data
+            // Update auth store with fresh Supabase data
             setUser(profileResult.user);
             setAuthenticated(true);
             setOnboardingComplete(
               profileResult.user.onboardingComplete || false
             );
           } else {
-            // User exists in Firebase Auth but not in Firestore
+            // User exists in Supabase Auth but not in database
             // This shouldn't happen in normal flow, but handle gracefully
             setAuthenticated(false);
             setUser(null);
@@ -55,7 +56,7 @@ export default function AppNavigator() {
       }
     });
 
-    return () => unsubscribe();
+    return () => subscription.unsubscribe();
   }, [setUser, setAuthenticated, setOnboardingComplete]);
 
   // Check if user has completed onboarding from their profile data

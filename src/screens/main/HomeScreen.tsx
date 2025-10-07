@@ -121,28 +121,22 @@ export default function HomeScreen() {
   const [feedMode, setFeedMode] = useState<"for_you" | "favorites">("for_you");
   const [showFeedModeDropdown, setShowFeedModeDropdown] = useState(false);
 
-  // Mock data
-  const allMeetups = DataService.isInDeveloperMode()
-    ? getMockMeetups()
-    : meetups;
+  // Use real data from Supabase
+  const allMeetups = meetups;
 
-  // Get happy hour events
-  const happyHourEvents = DataService.isInDeveloperMode()
-    ? getHappyHourEvents()
-    : [];
+  // Get happy hour events (empty for now - will be populated from Supabase)
+  const happyHourEvents: any[] = [];
 
-  // Initialize posts from mock data
+  // Initialize posts (empty for now - will be populated from Supabase)
   useEffect(() => {
-    if (DataService.isInDeveloperMode()) {
-      setPosts(getMockPosts());
-    }
     // Simulate loading
     setTimeout(() => setLoading(false), 1500);
   }, []);
 
   useEffect(() => {
-    if (currentUser && DataService.isInDeveloperMode()) {
-      setNotifications(getUserNotifications(currentUser.uid));
+    if (currentUser) {
+      // TODO: Load notifications from Supabase
+      // setNotifications(getUserNotifications(currentUser.uid));
     }
   }, [currentUser]);
 
@@ -798,9 +792,7 @@ export default function HomeScreen() {
         <Text
           style={[styles.emptyDescription, { color: colors.textSecondary }]}
         >
-          {DataService.isInDeveloperMode()
-            ? "Your feed is empty. Posts and meetups will appear here."
-            : "Sign in with Developer Login to see posts and meetups"}
+          Your feed is empty. Posts and meetups will appear here.
         </Text>
       </View>
     );

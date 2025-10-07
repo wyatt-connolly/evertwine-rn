@@ -118,8 +118,8 @@ export default function ExpandableFAB({ options }: ExpandableFABProps) {
           styles.fab,
           {
             backgroundColor: colors.primary,
-            borderWidth: 1,
-            borderColor: "rgba(255, 255, 255, 0.2)",
+            borderWidth: 2,
+            borderColor: "rgba(255, 255, 255, 0.4)",
           },
         ]}
         onPress={toggleExpand}
@@ -146,11 +146,11 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 10,
+      height: 15,
     },
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
-    elevation: 20,
+    shadowOpacity: 0.6,
+    shadowRadius: 30,
+    elevation: 30,
     zIndex: 1000,
   },
   backdrop: {
@@ -193,16 +193,16 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.15)",
+    borderWidth: 2,
+    borderColor: "rgba(255, 255, 255, 0.25)",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 6,
+      height: 8,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 12,
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 16,
     zIndex: 1003,
   },
 });

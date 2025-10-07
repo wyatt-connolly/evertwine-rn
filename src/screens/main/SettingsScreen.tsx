@@ -14,7 +14,8 @@ import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { usePreferenceStore } from "../../hooks/usePreferenceStore";
 import { getPreferenceCompletionPercentage } from "../../constants/preferences";
-import { FirestoreService, AuthService } from "../../services/firebase";
+import { DataService } from "../../services/DataService";
+import { signOut } from "../../services/supabase";
 
 export default function SettingsScreen({ navigation }: any) {
   const { user, logout } = useAuthStore();

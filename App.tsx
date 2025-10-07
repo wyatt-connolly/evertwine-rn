@@ -5,9 +5,21 @@ import { NavigationContainer } from "@react-navigation/native";
 import AppNavigator from "./src/navigation/AppNavigator";
 import SplashScreen from "./src/components/SplashScreen";
 import ErrorBoundary from "./src/components/ErrorBoundary";
+import { initializeDeepLinking } from "./src/utils/linking";
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Initialize deep linking for OAuth redirects
+    const subscription = initializeDeepLinking();
+
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    };
+  }, []);
 
   const handleSplashFinish = () => {
     setIsLoading(false);

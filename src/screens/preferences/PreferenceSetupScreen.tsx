@@ -9,7 +9,6 @@ import {
   DEFAULT_PREFERENCES,
 } from "../../constants/preferences";
 import { useAuthStore } from "../../hooks/useAuthStore";
-import { FirestoreService } from "../../services/firebase";
 import { DataService } from "../../services/DataService";
 
 // Import preference step components

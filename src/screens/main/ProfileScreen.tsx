@@ -13,7 +13,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { Ionicons } from "@expo/vector-icons";
-import { FirestoreService } from "../../services/firebase";
 import { DataService } from "../../services/DataService";
 import * as ImagePicker from "expo-image-picker";
 import { getMockUserStats, mockUsers } from "../../data/mockData";

@@ -2,11 +2,11 @@ import { useState, useRef } from "react";
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   StyleSheet,
-  Alert,
+  TouchableOpacity,
+  TextInput,
   Image,
+  Alert,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";

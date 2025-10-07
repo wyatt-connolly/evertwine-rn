@@ -36,6 +36,10 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "scheme": "evertwine",
+    "linking": {
+      "prefixes": ["evertwine://", "https://lqrumkrfmhrstcjfloty.supabase.co"]
+    },
     "plugins": [
       [
         "expo-location",

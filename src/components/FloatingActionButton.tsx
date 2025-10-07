@@ -82,8 +82,8 @@ export default function FloatingActionButton({
             borderRadius: size / 2,
             backgroundColor: colors.primary,
             opacity: disabled ? 0.6 : 1,
-            borderWidth: 1,
-            borderColor: "rgba(255, 255, 255, 0.2)",
+            borderWidth: 2,
+            borderColor: "rgba(255, 255, 255, 0.3)",
           },
         ]}
         onPress={onPress}
@@ -106,11 +106,11 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 8,
+      height: 12,
     },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 16,
+    shadowOpacity: 0.5,
+    shadowRadius: 24,
+    elevation: 24,
   },
   button: {
     alignItems: "center",

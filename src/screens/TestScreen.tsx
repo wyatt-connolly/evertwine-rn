@@ -8,7 +8,8 @@ import {
   TextInput,
   ScrollView,
 } from "react-native";
-import { AuthService, FirestoreService } from "../services/firebase";
+import { signInWithGoogle, signInWithApple } from "../services/supabase";
+import { DataService } from "../services/DataService";
 
 export default function TestScreen() {
   const [phoneNumber, setPhoneNumber] = useState("+1234567890");

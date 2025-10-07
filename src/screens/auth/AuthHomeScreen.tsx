@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
-import { AuthService } from "../../services/firebase";
+import { signInWithApple, signInWithGoogle } from "../../services/supabase";
 import { DataService } from "../../services/DataService";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
@@ -34,53 +34,47 @@ export default function AuthHomeScreen({ navigation }: Props) {
   const { setUser, setAuthenticated, setOnboardingComplete } = useAuthStore();
   const { colors } = useThemeStore();
 
-  const handlePhoneSignIn = () => {
-    navigation.navigate("PhoneVerification");
-  };
-
   const handleAppleSignIn = async () => {
     setLoading(true);
     try {
-      // Use Firebase authentication (not developer mode)
-      DataService.setDeveloperMode(false);
-      const result = await AuthService.signInWithApple();
+      const result = await signInWithApple();
 
       if (result.error) {
         Alert.alert("Apple Sign-In Error", result.error);
         return;
       }
 
-      // Load user profile from Firebase
-      const profileResult = await DataService.loadUserProfile(
-        result.user?.uid || ""
-      );
+      if (result.user) {
+        // Check if user exists in database
+        const profileResult = await DataService.getUser(result.user.uid);
 
-      const user = {
-        uid: result.user?.uid || "",
-        phoneNumber: (result.user as any)?.phoneNumber || undefined,
-        displayName:
-          (result.user as any)?.displayName ||
-          profileResult.user?.displayName ||
-          "User",
-        email: (result.user as any)?.email || undefined,
-        photoURL: (result.user as any)?.photoURL || undefined,
-        onboardingComplete: profileResult.user?.onboardingComplete || false,
-        interests: profileResult.user?.interests || undefined,
-        location: profileResult.user?.location || undefined,
-        bio: profileResult.user?.bio || undefined,
-        about: profileResult.user?.about || undefined,
-      };
+        const user = {
+          uid: result.user.uid,
+          phoneNumber: result.user.phoneNumber || undefined,
+          displayName:
+            result.user.displayName ||
+            profileResult.user?.displayName ||
+            "User",
+          email: result.user.email || undefined,
+          photoURL: undefined, // Supabase user doesn't have photoURL in our interface
+          onboardingComplete: profileResult.user?.onboardingComplete || false,
+          interests: profileResult.user?.interests || undefined,
+          location: profileResult.user?.location || undefined,
+          bio: profileResult.user?.bio || undefined,
+          about: profileResult.user?.about || undefined,
+        };
 
-      setUser(user);
-      setAuthenticated(true);
+        setUser(user);
+        setAuthenticated(true);
 
-      // Also update the onboarding status in the store to ensure consistency
-      if (user.onboardingComplete) {
-        setOnboardingComplete(true);
-        // The AppNavigator will handle routing to MainTabs
-      } else {
-        setOnboardingComplete(false);
-        navigation.navigate("ProfileSetup");
+        // Also update the onboarding status in the store to ensure consistency
+        if (user.onboardingComplete) {
+          setOnboardingComplete(true);
+          // The AppNavigator will handle routing to MainTabs
+        } else {
+          setOnboardingComplete(false);
+          navigation.navigate("ProfileSetup");
+        }
       }
     } catch (error) {
       Alert.alert("Error", "Apple Sign-In failed. Please try again.");
@@ -92,130 +86,48 @@ export default function AuthHomeScreen({ navigation }: Props) {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      // Use Firebase authentication (not developer mode)
-      DataService.setDeveloperMode(false);
-      const result = await AuthService.signInWithGoogle();
+      const result = await signInWithGoogle();
 
       if (result.error) {
         Alert.alert("Google Sign-In Error", result.error);
         return;
       }
 
-      // Load user profile from Firebase
-      const profileResult = await DataService.loadUserProfile(
-        result.user?.uid || ""
-      );
+      if (result.user) {
+        // Check if user exists in database
+        const profileResult = await DataService.getUser(result.user.uid);
 
-      const user = {
-        uid: result.user?.uid || "",
-        phoneNumber: (result.user as any)?.phoneNumber || undefined,
-        displayName:
-          (result.user as any)?.displayName ||
-          profileResult.user?.displayName ||
-          "User",
-        email: (result.user as any)?.email || undefined,
-        photoURL: (result.user as any)?.photoURL || undefined,
-        onboardingComplete: profileResult.user?.onboardingComplete || false,
-        interests: profileResult.user?.interests || undefined,
-        location: profileResult.user?.location || undefined,
-        bio: profileResult.user?.bio || undefined,
-        about: profileResult.user?.about || undefined,
-      };
+        const user = {
+          uid: result.user.uid,
+          phoneNumber: result.user.phoneNumber || undefined,
+          displayName:
+            result.user.displayName ||
+            profileResult.user?.displayName ||
+            "User",
+          email: result.user.email || undefined,
+          photoURL: undefined, // Supabase user doesn't have photoURL in our interface
+          onboardingComplete: profileResult.user?.onboardingComplete || false,
+          interests: profileResult.user?.interests || undefined,
+          location: profileResult.user?.location || undefined,
+          bio: profileResult.user?.bio || undefined,
+          about: profileResult.user?.about || undefined,
+        };
 
-      setUser(user);
-      setAuthenticated(true);
+        setUser(user);
+        setAuthenticated(true);
 
-      // Also update the onboarding status in the store to ensure consistency
-      if (user.onboardingComplete) {
-        setOnboardingComplete(true);
-        // The AppNavigator will handle routing to MainTabs
-      } else {
-        setOnboardingComplete(false);
-        navigation.navigate("ProfileSetup");
+        // Also update the onboarding status in the store to ensure consistency
+        if (user.onboardingComplete) {
+          setOnboardingComplete(true);
+          // The AppNavigator will handle routing to MainTabs
+        } else {
+          setOnboardingComplete(false);
+          navigation.navigate("ProfileSetup");
+        }
       }
     } catch (error) {
       Alert.alert("Error", "Google Sign-In failed. Please try again.");
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeveloperLogin = async () => {
-    setLoading(true);
-
-    try {
-      // Enable developer mode to use mock data
-      DataService.setDeveloperMode(true);
-
-      // Create a developer user with complete data
-      const developerUser = {
-        uid: "developer_demo_user",
-        phoneNumber: "+1234567890",
-        displayName: "Demo User",
-        email: "demo@evertwine.app",
-        photoURL:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-        onboardingComplete: true,
-        interests: ["Technology", "Business", "Networking", "Coffee"],
-        location: { latitude: 37.7749, longitude: -122.4194 },
-        bio: "Demo user for showcasing Evertwine features",
-        about:
-          "This is a demo user account for showcasing all Evertwine features. Perfect for demonstrations, testing, and development.",
-      };
-
-      // Set user and authentication state
-      setUser(developerUser);
-      setAuthenticated(true);
-      setOnboardingComplete(true);
-
-      setTimeout(() => {
-        setLoading(false);
-        // The AppNavigator will handle routing to MainTabs
-      }, 1000);
-    } catch (error) {
-      setLoading(false);
-    }
-  };
-
-  const handleDeveloperOnboarding = async () => {
-    setLoading(true);
-
-    try {
-      // Enable developer mode to use mock data and disable Firebase
-      DataService.setDeveloperMode(true);
-
-      // Create a local user for onboarding testing (no Firebase)
-      const localUser = {
-        uid: "local_onboarding_user",
-        phoneNumber: "+1234567890",
-        displayName: "Local User",
-        email: "local@evertwine.app",
-        photoURL: null,
-        onboardingComplete: false,
-        interests: [],
-        location: null,
-        bio: "",
-        about: "",
-      };
-
-      // Set local authentication state (no Firebase connection)
-      setUser(localUser);
-      setAuthenticated(true);
-      setOnboardingComplete(false);
-
-      console.log("🔧 Developer Onboarding:", {
-        message: "Starting local onboarding flow (no Firebase)",
-        isAuthenticated: true,
-        onboardingComplete: false,
-        user: localUser,
-      });
-
-      // Navigate to ProfileSetup to start onboarding UI testing
-      setTimeout(() => {
-        setLoading(false);
-        navigation.navigate("ProfileSetup");
-      }, 500);
-    } catch (error) {
       setLoading(false);
     }
   };
@@ -301,18 +213,9 @@ export default function AuthHomeScreen({ navigation }: Props) {
           {/* Sign In Buttons */}
           <View style={styles.buttonContainer}>
             <AnimatedButton
-              title="Continue with Phone"
-              onPress={handlePhoneSignIn}
-              variant="primary"
-              disabled={loading}
-              style={styles.button}
-              icon="call"
-            />
-
-            <AnimatedButton
               title="Continue with Apple"
               onPress={handleAppleSignIn}
-              variant="secondary"
+              variant="primary"
               disabled={loading}
               style={styles.button}
               icon="logo-apple"
@@ -326,36 +229,6 @@ export default function AuthHomeScreen({ navigation }: Props) {
               style={styles.button}
               icon="logo-google"
             />
-
-            {/* Developer Login Button - Only show in development */}
-            {__DEV__ && (
-              <AnimatedButton
-                title="🔧 Developer Login"
-                onPress={handleDeveloperLogin}
-                variant="outline"
-                disabled={loading}
-                style={StyleSheet.flatten([
-                  styles.button,
-                  styles.developerButton,
-                ])}
-                icon="home"
-              />
-            )}
-
-            {/* Developer Onboarding Button - Only show in development */}
-            {__DEV__ && (
-              <AnimatedButton
-                title="🚀 Developer Onboarding"
-                onPress={handleDeveloperOnboarding}
-                variant="outline"
-                disabled={loading}
-                style={StyleSheet.flatten([
-                  styles.button,
-                  styles.developerButton,
-                ])}
-                icon="person-add"
-              />
-            )}
           </View>
 
           {/* Footer */}
@@ -458,6 +331,13 @@ const styles = StyleSheet.create({
   developerButton: {
     opacity: 0.8,
     borderStyle: "dashed",
+  },
+  infoText: {
+    fontSize: 14,
+    textAlign: "center",
+    marginTop: 12,
+    marginBottom: 8,
+    fontStyle: "italic",
   },
   footer: {
     alignItems: "center",

@@ -1,7 +1,6 @@
 import { User } from "../types";
 import { DataService } from "./DataService";
-import { AuthService } from "./firebase";
-import { addAppVersionInfo } from "../utils/firebaseAppFilter";
+import { getCurrentUser } from "./supabase";
 
 export class OnboardingService {
   // Complete user profile setup

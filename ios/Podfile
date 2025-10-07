@@ -14,6 +14,7 @@ prepare_react_native_project!
 
 target 'evertwinern' do
   use_expo_modules!
+  use_modular_headers!
 
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
     config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
@@ -48,5 +49,7 @@ target 'evertwinern' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => podfile_properties['apple.ccacheEnabled'] == 'true',
     )
+    
+    # No Firebase-specific configurations needed
   end
 end
