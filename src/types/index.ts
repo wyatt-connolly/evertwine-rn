@@ -401,6 +401,21 @@ export interface Event {
     isCheckedIn: boolean;
   }[]; // Who's going to the happy hour event
 
+  // Happy hour specific data
+  isHappyHour?: boolean;
+  happyHourDetails?: {
+    discount?: string; // e.g., "50% off", "Buy 1 Get 1 Free"
+    discountPercentage?: number;
+    dealTimeWindow: string; // e.g., "4pm-7pm daily"
+    specialMenuItems?: {
+      name: string;
+      originalPrice: number;
+      dealPrice: number;
+      description?: string;
+    }[];
+    dealHighlights?: string[]; // e.g., ["Half-price cocktails", "$5 appetizers"]
+  };
+
   // Timestamps
   createdAt: Date;
   updatedAt: Date;

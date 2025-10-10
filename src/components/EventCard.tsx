@@ -47,7 +47,30 @@ export default function EventCard({ event, onPress, style }: EventCardProps) {
       </View>
 
       {event.coverImage && (
-        <Image source={{ uri: event.coverImage }} style={styles.eventImage} />
+        <View style={styles.imageContainer}>
+          <Image source={{ uri: event.coverImage }} style={styles.eventImage} />
+
+          {/* Overlay discount badge on image for happy hours */}
+          {event.isHappyHour && event.happyHourDetails?.discountPercentage && (
+            <View style={styles.imageOverlay}>
+              <View
+                style={[
+                  styles.overlayDiscountBadge,
+                  { backgroundColor: colors.accent },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.overlayDiscountText,
+                    { color: colors.onAccent },
+                  ]}
+                >
+                  {event.happyHourDetails.discountPercentage}% OFF
+                </Text>
+              </View>
+            </View>
+          )}
+        </View>
       )}
 
       <View style={styles.eventContent}>
@@ -78,11 +101,25 @@ export default function EventCard({ event, onPress, style }: EventCardProps) {
           </View>
         </View>
 
-        <Text
-          style={[styles.eventDescription, { color: colors.textSecondary }]}
-        >
-          {event.description}
-        </Text>
+        {/* Show time window for happy hours, description for regular events */}
+        {event.isHappyHour && event.happyHourDetails?.dealTimeWindow ? (
+          <View style={styles.dealTimeRow}>
+            <Ionicons
+              name="time-outline"
+              size={16}
+              color={colors.textSecondary}
+            />
+            <Text style={[styles.dealTimeText, { color: colors.text }]}>
+              {event.happyHourDetails.dealTimeWindow}
+            </Text>
+          </View>
+        ) : !event.isHappyHour ? (
+          <Text
+            style={[styles.eventDescription, { color: colors.textSecondary }]}
+          >
+            {event.description}
+          </Text>
+        ) : null}
 
         <View style={styles.eventFooter}>
           <View style={styles.eventTime}>
@@ -101,19 +138,6 @@ export default function EventCard({ event, onPress, style }: EventCardProps) {
               {event.currentAttendees} going
             </Text>
           </View>
-        </View>
-
-        <View style={styles.eventTags}>
-          {event.tags.slice(0, 3).map((tag, index) => (
-            <View
-              key={index}
-              style={[styles.tag, { backgroundColor: colors.primary + "20" }]}
-            >
-              <Text style={[styles.tagText, { color: colors.primary }]}>
-                {tag}
-              </Text>
-            </View>
-          ))}
         </View>
       </View>
     </TouchableOpacity>
@@ -146,9 +170,34 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
+  imageContainer: {
+    position: "relative",
+    width: "100%",
+  },
   eventImage: {
     width: "100%",
     height: 240, // 3:4 aspect ratio (180 * 4/3 = 240)
+  },
+  imageOverlay: {
+    position: "absolute",
+    top: 16,
+    left: 16,
+  },
+  overlayDiscountBadge: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  overlayDiscountText: {
+    fontSize: 18,
+    fontWeight: "700",
+    letterSpacing: 0.5,
   },
   eventContent: {
     padding: 16,
@@ -199,11 +248,20 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 12,
   },
+  dealTimeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 12,
+  },
+  dealTimeText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
   eventFooter: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
   },
   eventTime: {
     flexDirection: "row",
@@ -221,20 +279,5 @@ const styles = StyleSheet.create({
   statsText: {
     fontSize: 12,
     marginLeft: 4,
-  },
-  eventTags: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-  tag: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginRight: 6,
-    marginBottom: 4,
-  },
-  tagText: {
-    fontSize: 10,
-    fontWeight: "500",
   },
 });

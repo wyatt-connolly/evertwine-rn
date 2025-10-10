@@ -86,6 +86,44 @@ export const getHappyHourEvents = (): Event[] => [
         isCheckedIn: false,
       },
     ],
+    isHappyHour: true,
+    happyHourDetails: {
+      discount: "30% off all wines",
+      discountPercentage: 30,
+      dealTimeWindow: "5pm-7pm Daily",
+      specialMenuItems: [
+        {
+          name: "House Red Wine",
+          originalPrice: 12,
+          dealPrice: 8,
+          description: "Smooth Cabernet Sauvignon from Napa Valley",
+        },
+        {
+          name: "House White Wine",
+          originalPrice: 12,
+          dealPrice: 8,
+          description: "Crisp Chardonnay with hints of oak",
+        },
+        {
+          name: "Cheese Board",
+          originalPrice: 18,
+          dealPrice: 12,
+          description: "Selection of artisanal cheeses with crackers",
+        },
+        {
+          name: "Charcuterie Plate",
+          originalPrice: 22,
+          dealPrice: 16,
+          description: "Cured meats, olives, and pickled vegetables",
+        },
+      ],
+      dealHighlights: [
+        "30% off all wines by the glass",
+        "Discounted cheese boards",
+        "Complimentary tasting notes",
+        "Live sommelier guidance",
+      ],
+    },
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -162,6 +200,44 @@ export const getHappyHourEvents = (): Event[] => [
         isCheckedIn: true,
       },
     ],
+    isHappyHour: true,
+    happyHourDetails: {
+      discount: "50% off all craft beers",
+      discountPercentage: 50,
+      dealTimeWindow: "4pm-7pm Mon-Fri",
+      specialMenuItems: [
+        {
+          name: "IPA Flight",
+          originalPrice: 16,
+          dealPrice: 8,
+          description: "4 local IPAs from Bay Area breweries",
+        },
+        {
+          name: "Lager Pint",
+          originalPrice: 8,
+          dealPrice: 4,
+          description: "Crisp house lager, refreshingly smooth",
+        },
+        {
+          name: "Stout Pint",
+          originalPrice: 9,
+          dealPrice: 4.5,
+          description: "Rich chocolate stout with coffee notes",
+        },
+        {
+          name: "Pretzels & Beer Cheese",
+          originalPrice: 10,
+          dealPrice: 5,
+          description: "Warm soft pretzels with house-made cheese",
+        },
+      ],
+      dealHighlights: [
+        "50% off all craft beers",
+        "$4 domestic pints",
+        "Half-price appetizers",
+        "Free brewery tour at 5pm",
+      ],
+    },
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -224,6 +300,44 @@ export const getHappyHourEvents = (): Event[] => [
         isCheckedIn: true,
       },
     ],
+    isHappyHour: true,
+    happyHourDetails: {
+      discount: "Buy 1 Get 1 Free",
+      discountPercentage: 50,
+      dealTimeWindow: "3pm-6pm Daily",
+      specialMenuItems: [
+        {
+          name: "Virgin Mojito",
+          originalPrice: 8,
+          dealPrice: 4,
+          description: "Fresh mint, lime, and sparkling water",
+        },
+        {
+          name: "Strawberry Basil Smash",
+          originalPrice: 9,
+          dealPrice: 4.5,
+          description: "Muddled strawberries with fresh basil",
+        },
+        {
+          name: "Cucumber Cooler",
+          originalPrice: 8,
+          dealPrice: 4,
+          description: "Cool cucumber with elderflower and mint",
+        },
+        {
+          name: "Ginger Fizz",
+          originalPrice: 7,
+          dealPrice: 3.5,
+          description: "Spicy ginger beer with fresh lime juice",
+        },
+      ],
+      dealHighlights: [
+        "Buy 1 Get 1 Free on all mocktails",
+        "Learn mixology techniques",
+        "Fresh organic ingredients",
+        "Recipes to take home",
+      ],
+    },
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -299,6 +413,44 @@ export const getHappyHourEvents = (): Event[] => [
         isCheckedIn: true,
       },
     ],
+    isHappyHour: true,
+    happyHourDetails: {
+      discount: "$5 Cocktails & Small Plates",
+      discountPercentage: 40,
+      dealTimeWindow: "5pm-7pm Daily",
+      specialMenuItems: [
+        {
+          name: "Sunset Spritz",
+          originalPrice: 14,
+          dealPrice: 5,
+          description: "Aperol, prosecco, and fresh orange",
+        },
+        {
+          name: "Sky Margarita",
+          originalPrice: 13,
+          dealPrice: 5,
+          description: "Premium tequila with fresh lime juice",
+        },
+        {
+          name: "Rooftop Old Fashioned",
+          originalPrice: 15,
+          dealPrice: 5,
+          description: "Bourbon, bitters, and orange twist",
+        },
+        {
+          name: "Truffle Fries",
+          originalPrice: 12,
+          dealPrice: 5,
+          description: "Crispy fries with parmesan and truffle oil",
+        },
+      ],
+      dealHighlights: [
+        "$5 signature cocktails",
+        "$5 small plates & appetizers",
+        "Best sunset views in the city",
+        "Live DJ from 6pm",
+      ],
+    },
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -382,6 +534,44 @@ export const getHappyHourEvents = (): Event[] => [
         isCheckedIn: false,
       },
     ],
+    isHappyHour: true,
+    happyHourDetails: {
+      discount: "3 Tapas + Sangria for $35",
+      discountPercentage: 35,
+      dealTimeWindow: "4pm-8pm Wed-Sun",
+      specialMenuItems: [
+        {
+          name: "Patatas Bravas",
+          originalPrice: 9,
+          dealPrice: 6,
+          description: "Crispy potatoes with spicy aioli",
+        },
+        {
+          name: "Gambas al Ajillo",
+          originalPrice: 14,
+          dealPrice: 9,
+          description: "Garlic shrimp sizzled in olive oil",
+        },
+        {
+          name: "Jamón Ibérico",
+          originalPrice: 18,
+          dealPrice: 12,
+          description: "Premium cured ham from Spain",
+        },
+        {
+          name: "House Sangria Pitcher",
+          originalPrice: 28,
+          dealPrice: 18,
+          description: "Red or white sangria with fresh fruit",
+        },
+      ],
+      dealHighlights: [
+        "3 tapas + sangria combo for $35",
+        "35% off all Spanish wines",
+        "Complimentary paella sample",
+        "Live flamenco music",
+      ],
+    },
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -390,9 +580,31 @@ export const getHappyHourEvents = (): Event[] => [
 export default function HappyHourCarousel({
   onEventPress,
 }: HappyHourCarouselProps) {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { colors } = useThemeStore();
   const happyHourEvents = getHappyHourEvents();
+
+  const handleEventPress = (event: Event) => {
+    // Serialize the event for navigation
+    const serializedEvent = {
+      ...event,
+      startTime: event.startTime?.toISOString(),
+      endTime: event.endTime?.toISOString(),
+      createdAt: event.createdAt?.toISOString(),
+      updatedAt: event.updatedAt?.toISOString(),
+    };
+
+    // Navigate to HappyHourDetails screen
+    navigation.navigate("HappyHourDetails", {
+      eventId: event.id,
+      event: serializedEvent,
+    });
+
+    // Call the optional onEventPress callback
+    if (onEventPress) {
+      onEventPress(event);
+    }
+  };
 
   const formatTime = (date: Date) => {
     const eventDate = new Date(date);
@@ -423,7 +635,7 @@ export default function HappyHourCarousel({
     return (
       <TouchableOpacity
         style={[styles.eventCard, { backgroundColor: colors.surface }]}
-        onPress={() => onEventPress?.(item)}
+        onPress={() => handleEventPress(item)}
         activeOpacity={0.8}
       >
         <View style={styles.eventImageContainer}>

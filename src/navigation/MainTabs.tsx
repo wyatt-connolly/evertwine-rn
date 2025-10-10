@@ -24,6 +24,7 @@ import EditMeetupScreen from "../screens/main/EditMeetupScreen";
 import GroupDetailsScreen from "../screens/main/GroupDetailsScreen";
 import UserProfileScreen from "../screens/main/UserProfileScreen";
 import EventDetailsScreen from "../screens/main/EventDetailsScreen";
+import HappyHourDetailsScreen from "../screens/main/HappyHourDetailsScreen";
 import PlaceDetailsScreen from "../screens/main/PlaceDetailsScreen";
 import PostDetailsScreen from "../screens/main/PostDetailsScreen";
 import NotificationsScreen from "../screens/main/NotificationsScreen";
@@ -68,6 +69,7 @@ export type MainStackParamList = {
   MeetupDetails: { meetupId: string };
   EditMeetup: { meetupId: string };
   EventDetails: { eventId: string; event?: any };
+  HappyHourDetails: { eventId: string; event?: any };
   PlaceDetails: { placeId: string; place?: any };
   PostDetails: { post: any };
   Favorites: undefined;
@@ -354,6 +356,10 @@ export default function MainTabs() {
       <MainStack.Screen name="MeetupDetails" component={MeetupDetailsScreen} />
       <MainStack.Screen name="EditMeetup" component={EditMeetupScreen} />
       <MainStack.Screen name="EventDetails" component={EventDetailsScreen} />
+      <MainStack.Screen
+        name="HappyHourDetails"
+        component={HappyHourDetailsScreen}
+      />
       <MainStack.Screen name="PlaceDetails" component={PlaceDetailsScreen} />
       <MainStack.Screen name="PostDetails" component={PostDetailsScreen} />
       <MainStack.Screen name="Favorites" component={FavoritesScreen} />
