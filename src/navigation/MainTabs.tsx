@@ -30,6 +30,7 @@ import PostDetailsScreen from "../screens/main/PostDetailsScreen";
 import NotificationsScreen from "../screens/main/NotificationsScreen";
 import AllHappyHourEventsScreen from "../screens/main/AllHappyHourEventsScreen";
 import AllMeetupsScreen from "../screens/main/AllMeetupsScreen";
+import FollowingScreen from "../screens/main/FollowingScreen";
 
 export type MainTabParamList = {
   Home: undefined;
@@ -73,6 +74,7 @@ export type MainStackParamList = {
   PlaceDetails: { placeId: string; place?: any };
   PostDetails: { post: any };
   Favorites: undefined;
+  Following: undefined;
   GroupDetails: { groupId: string; groupData?: any };
   UserProfile: { userId: string; userData?: any };
   AllHappyHourEvents: undefined;
@@ -363,6 +365,7 @@ export default function MainTabs() {
       <MainStack.Screen name="PlaceDetails" component={PlaceDetailsScreen} />
       <MainStack.Screen name="PostDetails" component={PostDetailsScreen} />
       <MainStack.Screen name="Favorites" component={FavoritesScreen} />
+      <MainStack.Screen name="Following" component={FollowingScreen} />
       <MainStack.Screen name="GroupDetails" component={GroupDetailsScreen} />
       <MainStack.Screen name="UserProfile" component={UserProfileScreen} />
       <MainStack.Screen

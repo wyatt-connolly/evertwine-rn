@@ -12,12 +12,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useFavoritesStore } from "../../hooks/useFavoritesStore";
-import {
-  getMockMeetups,
-  getMockEvents,
-  getMockPlaces,
-} from "../../data/mockData";
-import { Meetup, Event, Place } from "../../types";
+import { getMockMeetups, getMockEvents } from "../../data/mockData";
+import { Meetup, Event } from "../../types";
 import EventCard from "../../components/EventCard";
 
 export default function FavoritesScreen({ navigation }: any) {
@@ -25,29 +21,23 @@ export default function FavoritesScreen({ navigation }: any) {
   const {
     favoriteMeetups,
     favoriteEvents,
-    favoritePlaces,
     removeMeetupFromFavorites,
     removeEventFromFavorites,
-    removePlaceFromFavorites,
   } = useFavoritesStore();
 
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState<"meetups" | "events" | "places">(
+  const [activeTab, setActiveTab] = useState<"meetups" | "happy_hours">(
     "meetups"
   );
 
   const allMeetups = getMockMeetups();
   const allEvents = getMockEvents();
-  const allPlaces = getMockPlaces();
 
   const favoriteMeetupsData = allMeetups.filter((meetup) =>
     favoriteMeetups.includes(meetup.id)
   );
-  const favoriteEventsData = allEvents.filter((event) =>
+  const favoriteHappyHoursData = allEvents.filter((event) =>
     favoriteEvents.includes(event.id)
-  );
-  const favoritePlacesData = allPlaces.filter((place) =>
-    favoritePlaces.includes(place.id)
   );
 
   const onRefresh = () => {
@@ -104,53 +94,15 @@ export default function FavoritesScreen({ navigation }: any) {
     </TouchableOpacity>
   );
 
-  const renderEventCard = (event: Event) => (
+  const renderHappyHourCard = (event: Event) => (
     <EventCard
       key={event.id}
       event={event}
       style={{ backgroundColor: colors.surface }}
       onPress={() => {
-        navigation.navigate("EventDetails", { eventId: event.id, event });
+        navigation.navigate("HappyHourDetails", { eventId: event.id, event });
       }}
     />
-  );
-
-  const renderPlaceCard = (place: Place) => (
-    <TouchableOpacity
-      key={place.id}
-      style={[styles.card, { backgroundColor: colors.surface }]}
-    >
-      <View style={styles.cardHeader}>
-        <Text style={[styles.cardTitle, { color: colors.text }]}>
-          {place.name}
-        </Text>
-        <TouchableOpacity
-          onPress={() => removePlaceFromFavorites(place.id)}
-          style={styles.favoriteButton}
-        >
-          <Ionicons name="heart" size={20} color={colors.error} />
-        </TouchableOpacity>
-      </View>
-
-      <Text style={[styles.cardDescription, { color: colors.textSecondary }]}>
-        {place.description}
-      </Text>
-
-      <View style={styles.cardFooter}>
-        <View style={styles.cardInfo}>
-          <Ionicons name="location-outline" size={14} color={colors.primary} />
-          <Text style={[styles.cardLocation, { color: colors.textSecondary }]}>
-            {place.address}
-          </Text>
-        </View>
-        <View style={styles.cardInfo}>
-          <Ionicons name="star" size={14} color="#FFD700" />
-          <Text style={[styles.cardRating, { color: colors.textSecondary }]}>
-            {place.rating}
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
   );
 
   const renderEmptyState = (type: string) => (
@@ -169,10 +121,8 @@ export default function FavoritesScreen({ navigation }: any) {
     switch (tab) {
       case "meetups":
         return favoriteMeetups.length;
-      case "events":
+      case "happy_hours":
         return favoriteEvents.length;
-      case "places":
-        return favoritePlaces.length;
       default:
         return 0;
     }
@@ -197,7 +147,7 @@ export default function FavoritesScreen({ navigation }: any) {
 
       {/* Tab Navigation */}
       <View style={[styles.tabContainer, { backgroundColor: colors.surface }]}>
-        {(["meetups", "events", "places"] as const).map((tab) => (
+        {(["meetups", "happy_hours"] as const).map((tab) => (
           <TouchableOpacity
             key={tab}
             style={[
@@ -215,7 +165,11 @@ export default function FavoritesScreen({ navigation }: any) {
                 },
               ]}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)} ({getTabCount(tab)})
+              {tab === "happy_hours"
+                ? `Happy Hours (${getTabCount(tab)})`
+                : `${tab.charAt(0).toUpperCase() + tab.slice(1)} (${getTabCount(
+                    tab
+                  )})`}
             </Text>
           </TouchableOpacity>
         ))}
@@ -236,19 +190,11 @@ export default function FavoritesScreen({ navigation }: any) {
             </>
           )}
 
-          {activeTab === "events" && (
+          {activeTab === "happy_hours" && (
             <>
-              {favoriteEventsData.length > 0
-                ? favoriteEventsData.map(renderEventCard)
-                : renderEmptyState("events")}
-            </>
-          )}
-
-          {activeTab === "places" && (
-            <>
-              {favoritePlacesData.length > 0
-                ? favoritePlacesData.map(renderPlaceCard)
-                : renderEmptyState("places")}
+              {favoriteHappyHoursData.length > 0
+                ? favoriteHappyHoursData.map(renderHappyHourCard)
+                : renderEmptyState("happy hours")}
             </>
           )}
         </View>

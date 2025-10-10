@@ -119,7 +119,6 @@ export default function HomeScreen() {
   );
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
   const [showFilterModal, setShowFilterModal] = useState(false);
-  const [feedMode, setFeedMode] = useState<"for_you" | "favorites">("for_you");
   const [showFeedModeDropdown, setShowFeedModeDropdown] = useState(false);
 
   // Scroll animation state
@@ -1518,58 +1517,41 @@ export default function HomeScreen() {
             <TouchableOpacity
               style={[
                 styles.feedModeOption,
-                feedMode === "for_you" && {
+                {
                   backgroundColor: colors.primary + "10",
                 },
               ]}
               onPress={() => {
-                setFeedMode("for_you");
                 setShowFeedModeDropdown(false);
               }}
               activeOpacity={0.7}
             >
               <View style={styles.feedModeOptionLeft}>
-                <Ionicons
-                  name="people"
-                  size={18}
-                  color={
-                    feedMode === "for_you"
-                      ? colors.primary
-                      : colors.textSecondary
-                  }
-                />
+                <Ionicons name="people" size={18} color={colors.primary} />
                 <Text
                   style={[
                     styles.feedModeText,
                     {
-                      color:
-                        feedMode === "for_you" ? colors.primary : colors.text,
-                      fontWeight: feedMode === "for_you" ? "600" : "500",
+                      color: colors.primary,
+                      fontWeight: "600",
                     },
                   ]}
                 >
                   For You
                 </Text>
               </View>
-              {feedMode === "for_you" && (
-                <Ionicons
-                  name="checkmark"
-                  size={18}
-                  color={colors.accentQuaternary}
-                />
-              )}
+              <Ionicons
+                name="checkmark"
+                size={18}
+                color={colors.accentQuaternary}
+              />
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.feedModeOption,
-                feedMode === "favorites" && {
-                  backgroundColor: colors.primary + "10",
-                },
-              ]}
+              style={styles.feedModeOption}
               onPress={() => {
-                setFeedMode("favorites");
                 setShowFeedModeDropdown(false);
+                navigation.navigate("Favorites");
               }}
               activeOpacity={0.7}
             >
@@ -1577,32 +1559,20 @@ export default function HomeScreen() {
                 <Ionicons
                   name="star-outline"
                   size={18}
-                  color={
-                    feedMode === "favorites"
-                      ? colors.primary
-                      : colors.textSecondary
-                  }
+                  color={colors.textSecondary}
                 />
                 <Text
                   style={[
                     styles.feedModeText,
                     {
-                      color:
-                        feedMode === "favorites" ? colors.primary : colors.text,
-                      fontWeight: feedMode === "favorites" ? "600" : "500",
+                      color: colors.text,
+                      fontWeight: "500",
                     },
                   ]}
                 >
                   Favorites
                 </Text>
               </View>
-              {feedMode === "favorites" && (
-                <Ionicons
-                  name="checkmark"
-                  size={18}
-                  color={colors.accentQuaternary}
-                />
-              )}
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -1631,11 +1601,6 @@ export default function HomeScreen() {
                   Map View
                 </Text>
               </View>
-              <Ionicons
-                name="arrow-forward"
-                size={16}
-                color={colors.textTertiary}
-              />
             </TouchableOpacity>
           </View>
         )}
@@ -1664,7 +1629,7 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   appBarContainer: {
-    height: 80,
+    height: 60, // Reduce height to bring content closer
     zIndex: 200,
     position: "relative",
   },
@@ -1673,8 +1638,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 12,
+    paddingTop: 4, // Reduce top padding
+    paddingBottom: 8, // Reduce bottom padding
     borderBottomWidth: 0, // Remove the line under the app bar
     position: "relative",
     zIndex: 200,
@@ -1691,7 +1656,7 @@ const styles = StyleSheet.create({
   },
   feedModeDropdown: {
     position: "absolute",
-    top: 124, // Push down further to clear the Evertwine text completely
+    top: 110, // Adjust for shorter app bar (60px + status bar + padding)
     left: 16, // Align with the Evertwine text
     right: "auto",
     bottom: "auto",
@@ -1761,7 +1726,6 @@ const styles = StyleSheet.create({
   },
   feedContent: {
     paddingBottom: 120,
-    paddingTop: 8, // Reduce top padding to bring content closer to app bar
   },
   feedContentCompact: {
     paddingBottom: 20,

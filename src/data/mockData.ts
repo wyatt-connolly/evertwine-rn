@@ -2176,3 +2176,90 @@ export const mockPosts: Post[] = [
 export const getMockPosts = (limit?: number): Post[] => {
   return limit ? mockPosts.slice(0, limit) : mockPosts;
 };
+
+// Mock Following Data
+export const getMockFollowingUsers = (currentUserId: string): User[] => {
+  // Return a subset of users that the current user follows
+  // Exclude the current user and return 3-5 users
+  return mockUsers.filter((user) => user.uid !== currentUserId).slice(0, 4);
+};
+
+export const getFollowingActivity = (
+  followingUserIds: string[]
+): {
+  posts: Post[];
+  meetups: Meetup[];
+  activities: ActivityItem[];
+} => {
+  // Filter posts from followed users
+  const posts = mockPosts.filter((post) =>
+    followingUserIds.includes(post.userId)
+  );
+
+  // Filter meetups created by followed users
+  const meetups = mockMeetups.filter((meetup) =>
+    followingUserIds.includes(meetup.creatorId)
+  );
+
+  // Generate activity items for followed users
+  const activities: ActivityItem[] = [];
+
+  // Add some mock activities
+  followingUserIds.forEach((userId, index) => {
+    const user = mockUsers.find((u) => u.uid === userId);
+    if (!user) return;
+
+    // Activity: User joined a meetup
+    if (index % 2 === 0) {
+      const meetup = mockMeetups[index % mockMeetups.length];
+      activities.push({
+        id: `activity_${userId}_join_${index}`,
+        userId: userId,
+        type: "joined_meetup",
+        description: `joined "${meetup.title}"`,
+        timestamp: new Date(Date.now() - (index + 1) * 2 * 60 * 60 * 1000),
+        meetupId: meetup.id,
+        meetup: meetup,
+        user: user,
+      });
+    }
+
+    // Activity: User created a meetup
+    if (index % 3 === 0) {
+      const meetup = mockMeetups.find((m) => m.creatorId === userId);
+      if (meetup) {
+        activities.push({
+          id: `activity_${userId}_create_${index}`,
+          userId: userId,
+          type: "created_meetup",
+          description: `created a new meetup "${meetup.title}"`,
+          timestamp: new Date(Date.now() - (index + 2) * 3 * 60 * 60 * 1000),
+          meetupId: meetup.id,
+          meetup: meetup,
+          user: user,
+        });
+      }
+    }
+
+    // Activity: User liked a post
+    if (index % 4 === 1) {
+      activities.push({
+        id: `activity_${userId}_like_${index}`,
+        userId: userId,
+        type: "liked_post",
+        description: "liked a post",
+        timestamp: new Date(Date.now() - (index + 1) * 4 * 60 * 60 * 1000),
+        user: user,
+      });
+    }
+  });
+
+  // Sort activities by timestamp (most recent first)
+  activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+  return {
+    posts,
+    meetups,
+    activities: activities.slice(0, 10), // Return up to 10 activities
+  };
+};
