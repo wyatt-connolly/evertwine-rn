@@ -81,7 +81,7 @@ export const lightTheme: ThemeColors = {
   accent: "#FF6B35", // Orange accent
   accentVariant: "#E55A2B",
   accentSecondary: "#9C27B0", // Purple accent
-  accentTertiary: "#4CAF50", // Green accent
+  accentTertiary: "#2196F3", // Blue accent (meetups)
   accentQuaternary: "#FF9800", // Amber accent
   accentQuinary: "#F44336", // Red accent
   onAccent: "#FFFFFF",
@@ -105,8 +105,8 @@ export const lightTheme: ThemeColors = {
   gradientEnd: "#E0E0E0",
   gradientSecondary: "#BDBDBD",
 
-  // Special colors - Keep announcements blue
-  announcement: "#2196F3",
+  // Special colors - Announcements now magenta
+  announcement: "#9C27B0",
   onAnnouncement: "#FFFFFF",
 };
 
@@ -135,7 +135,7 @@ export const darkTheme: ThemeColors = {
   accent: "#FF6B35", // Vibrant orange
   accentVariant: "#FF5722",
   accentSecondary: "#E91E63", // Bright pink/magenta
-  accentTertiary: "#4CAF50", // Bright green
+  accentTertiary: "#42A5F5", // Bright blue (meetups)
   accentQuaternary: "#FFC107", // Bright amber
   accentQuinary: "#F44336", // Bright red
   onAccent: "#FFFFFF",
@@ -159,8 +159,8 @@ export const darkTheme: ThemeColors = {
   gradientEnd: "#E0E0E0",
   gradientSecondary: "#BDBDBD",
 
-  // Special colors - Keep announcements blue
-  announcement: "#42A5F5",
+  // Special colors - Announcements now magenta
+  announcement: "#E91E63",
   onAnnouncement: "#FFFFFF",
 };
 

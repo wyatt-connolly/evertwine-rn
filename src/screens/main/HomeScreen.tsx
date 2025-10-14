@@ -1557,7 +1557,7 @@ export default function HomeScreen() {
             >
               <View style={styles.feedModeOptionLeft}>
                 <Ionicons
-                  name="star-outline"
+                  name="calendar-outline"
                   size={18}
                   color={colors.textSecondary}
                 />
@@ -1570,7 +1570,7 @@ export default function HomeScreen() {
                     },
                   ]}
                 >
-                  Favorites
+                  My Events
                 </Text>
               </View>
             </TouchableOpacity>

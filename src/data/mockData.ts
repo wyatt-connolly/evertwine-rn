@@ -117,16 +117,16 @@ export const mockUsers: User[] = [
   {
     uid: "user3",
     email: "james@example.com",
-    displayName: "James Wilson",
+    displayName: "Jessica Wilson",
     age: 32,
-    gender: "Male",
-    pronouns: "he/him",
+    gender: "Female",
+    pronouns: "she/her",
     bio: "Entrepreneur 💼 Fitness enthusiast 💪 Always up for a challenge",
     about:
       "Serial entrepreneur and fitness enthusiast with a passion for building businesses and maintaining peak physical condition. I've founded two successful startups in the health tech space and believe that physical wellness directly correlates with professional success. I'm always up for a challenge, whether it's launching a new venture or pushing my limits in the gym. I love connecting with fellow entrepreneurs and fitness enthusiasts who share my drive for excellence. I believe in the power of networking and community to accelerate both personal and professional growth. When I'm not working on my latest venture, you'll find me at the gym, hiking, or planning my next business idea.",
     profilePictures: [
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
+      "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400",
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400",
     ],
     standoutPhotoIndex: 0,
     location: { latitude: 37.7649, longitude: -122.4294 },

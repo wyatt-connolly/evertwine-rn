@@ -8,9 +8,15 @@ interface EventCardProps {
   event: Event;
   onPress?: () => void;
   style?: any;
+  customActionButton?: React.ReactNode;
 }
 
-export default function EventCard({ event, onPress, style }: EventCardProps) {
+export default function EventCard({
+  event,
+  onPress,
+  style,
+  customActionButton,
+}: EventCardProps) {
   const { colors } = useThemeStore();
 
   const formatTime = (date: Date) => {
@@ -139,6 +145,11 @@ export default function EventCard({ event, onPress, style }: EventCardProps) {
             </Text>
           </View>
         </View>
+
+        {/* Custom Action Button */}
+        {customActionButton && (
+          <View style={styles.customActionContainer}>{customActionButton}</View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -279,5 +290,9 @@ const styles = StyleSheet.create({
   statsText: {
     fontSize: 12,
     marginLeft: 4,
+  },
+  customActionContainer: {
+    alignItems: "center",
+    marginTop: 12,
   },
 });

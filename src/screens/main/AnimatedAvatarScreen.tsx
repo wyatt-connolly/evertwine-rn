@@ -42,7 +42,7 @@ export default function AnimatedAvatarScreen({ navigation }: any) {
       "Ava",
       "William",
       "Sophia",
-      "James",
+      "Jessica",
       "Isabella",
       "Benjamin",
     ];
@@ -170,6 +170,10 @@ export default function AnimatedAvatarScreen({ navigation }: any) {
   );
   const [showMessageInput, setShowMessageInput] = useState<string | null>(null);
   const messageAnimations = useRef<Record<string, Animated.Value>>({}).current;
+  const [scrolledCards, setScrolledCards] = useState<Set<string>>(new Set());
+  const scrollIndicatorAnims = useRef<Record<string, Animated.Value>>(
+    {}
+  ).current;
 
   const handleSendMessage = (user: any) => {
     const message = messageInputs[user.uid]?.trim();
@@ -213,6 +217,41 @@ export default function AnimatedAvatarScreen({ navigation }: any) {
       messageAnimations[userId] = new Animated.Value(0);
     }
     return messageAnimations[userId];
+  };
+
+  const getScrollIndicatorAnimation = (userId: string) => {
+    if (!scrollIndicatorAnims[userId]) {
+      scrollIndicatorAnims[userId] = new Animated.Value(0);
+    }
+    return scrollIndicatorAnims[userId];
+  };
+
+  useEffect(() => {
+    // Start bouncing animation for all scroll indicators
+    users.forEach((user) => {
+      const anim = getScrollIndicatorAnimation(user.uid);
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(anim, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+          Animated.timing(anim, {
+            toValue: 0,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    });
+  }, [users]);
+
+  const handleCardScroll = (userId: string, event: any) => {
+    const scrollY = event.nativeEvent.contentOffset.y;
+    if (scrollY > 10 && !scrolledCards.has(userId)) {
+      setScrolledCards((prev) => new Set(prev).add(userId));
+    }
   };
 
   const handleToggleMessageInput = (userId: string) => {
@@ -260,6 +299,18 @@ export default function AnimatedAvatarScreen({ navigation }: any) {
       outputRange: [0, 1],
     });
 
+    const scrollIndicatorAnim = getScrollIndicatorAnimation(item.uid);
+    const scrollIndicatorTranslateY = scrollIndicatorAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0, -10],
+    });
+    const scrollIndicatorOpacity = scrollIndicatorAnim.interpolate({
+      inputRange: [0, 0.5, 1],
+      outputRange: [1, 0.5, 1],
+    });
+
+    const showScrollIndicator = !scrolledCards.has(item.uid);
+
     return (
       <View style={styles.cardWrapper}>
         <View style={[styles.userCard, { backgroundColor: colors.surface }]}>
@@ -269,6 +320,8 @@ export default function AnimatedAvatarScreen({ navigation }: any) {
             contentContainerStyle={styles.contentSection}
             showsVerticalScrollIndicator={true}
             bounces={true}
+            onScroll={(event) => handleCardScroll(item.uid, event)}
+            scrollEventThrottle={16}
           >
             {/* Large Profile Image with Gradient Overlay */}
             <View style={styles.imageContainer}>
@@ -392,7 +445,14 @@ export default function AnimatedAvatarScreen({ navigation }: any) {
                   ]}
                 >
                   <Ionicons name="checkmark-circle" size={18} color="#fff" />
-                  <Text style={styles.messageButtonText}>Message Sent!</Text>
+                  <Text
+                    style={[
+                      styles.messageButtonText,
+                      { color: colors.onPrimary },
+                    ]}
+                  >
+                    Message Sent!
+                  </Text>
                 </Animated.View>
               ) : (
                 <>
@@ -458,7 +518,14 @@ export default function AnimatedAvatarScreen({ navigation }: any) {
                           activeOpacity={0.8}
                         >
                           <Ionicons name="send" size={16} color="#fff" />
-                          <Text style={styles.sendButtonText}>Send</Text>
+                          <Text
+                            style={[
+                              styles.sendButtonText,
+                              { color: colors.onPrimary },
+                            ]}
+                          >
+                            Send
+                          </Text>
                         </TouchableOpacity>
                       </View>
                     </Animated.View>
@@ -472,7 +539,12 @@ export default function AnimatedAvatarScreen({ navigation }: any) {
                     activeOpacity={0.8}
                   >
                     <Ionicons name="chatbubble" size={18} color="#fff" />
-                    <Text style={styles.messageButtonText}>
+                    <Text
+                      style={[
+                        styles.messageButtonText,
+                        { color: colors.onPrimary },
+                      ]}
+                    >
                       {showMessageInput === item.uid
                         ? "Hide Message"
                         : "Send Message"}
@@ -556,6 +628,21 @@ export default function AnimatedAvatarScreen({ navigation }: any) {
               </View>
             </View>
           </ScrollView>
+
+          {/* Scroll Indicator */}
+          {showScrollIndicator && (
+            <Animated.View
+              style={[
+                styles.scrollIndicator,
+                {
+                  opacity: scrollIndicatorOpacity,
+                  transform: [{ translateY: scrollIndicatorTranslateY }],
+                },
+              ]}
+            >
+              <Ionicons name="chevron-down" size={24} color={colors.primary} />
+            </Animated.View>
+          )}
         </View>
       </View>
     );
@@ -690,18 +777,6 @@ export default function AnimatedAvatarScreen({ navigation }: any) {
           <Ionicons name="chevron-forward" size={24} color={colors.text} />
         </TouchableOpacity>
       )}
-
-      {/* Bottom Hint */}
-      <View style={styles.bottomHint}>
-        <Ionicons
-          name="swap-horizontal"
-          size={16}
-          color={colors.textTertiary}
-        />
-        <Text style={[styles.hintText, { color: colors.textTertiary }]}>
-          Swipe to discover more people
-        </Text>
-      </View>
     </SafeAreaView>
   );
 }
@@ -766,7 +841,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 12,
-    maxHeight: screenHeight - 180,
+    maxHeight: screenHeight - 285,
   },
   contentScrollView: {
     flex: 1,
@@ -792,7 +867,6 @@ const styles = StyleSheet.create({
     right: 0,
     height: 120,
     backgroundColor: "transparent",
-    backgroundImage: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.7))",
   },
   infoBadge: {
     position: "absolute",
@@ -910,7 +984,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   sendButtonText: {
-    color: "#fff",
     fontSize: 14,
     fontWeight: "700",
   },
@@ -925,7 +998,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   messageButtonText: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "700",
   },
@@ -965,16 +1037,15 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  bottomHint: {
-    flexDirection: "row",
-    alignItems: "center",
+  scrollIndicator: {
+    position: "absolute",
+    bottom: 16,
+    left: "50%",
+    marginLeft: -12,
+    width: 24,
+    height: 24,
     justifyContent: "center",
-    paddingVertical: 12,
-    gap: 6,
-  },
-  hintText: {
-    fontSize: 12,
-    fontWeight: "500",
+    alignItems: "center",
   },
   emptyContainer: {
     flex: 1,

@@ -16,6 +16,8 @@ interface EnhancedMeetupCardProps {
   isInterested?: boolean;
   timeLabel?: string;
   isUpcoming?: boolean;
+  hideActionButtons?: boolean;
+  customActionButton?: React.ReactNode;
 }
 
 export default function EnhancedMeetupCard({
@@ -28,6 +30,8 @@ export default function EnhancedMeetupCard({
   isInterested = false,
   timeLabel,
   isUpcoming = false,
+  hideActionButtons = false,
+  customActionButton,
 }: EnhancedMeetupCardProps) {
   const { colors } = useThemeStore();
   const { user: currentUser } = useAuthStore();
@@ -176,71 +180,77 @@ export default function EnhancedMeetupCard({
         </View>
 
         {/* Action Buttons */}
-        <View style={styles.actionButtons}>
-          <TouchableOpacity
-            style={[
-              styles.actionButton,
-              styles.interestedButton,
-              {
-                backgroundColor: localInterested
-                  ? colors.primary + "15"
-                  : colors.background,
-                borderColor: localInterested ? colors.primary : colors.border,
-              },
-            ]}
-            onPress={handleInterestedToggle}
-          >
-            <Ionicons
-              name={localInterested ? "star" : "star-outline"}
-              size={16}
-              color={localInterested ? colors.primary : colors.textSecondary}
-            />
-            <Text
+        {customActionButton ? (
+          <View style={styles.customActionContainer}>{customActionButton}</View>
+        ) : !hideActionButtons ? (
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
               style={[
-                styles.actionButtonText,
+                styles.actionButton,
+                styles.interestedButton,
                 {
-                  color: localInterested
-                    ? colors.primary
-                    : colors.textSecondary,
+                  backgroundColor: localInterested
+                    ? colors.primary + "15"
+                    : colors.background,
+                  borderColor: localInterested ? colors.primary : colors.border,
                 },
               ]}
+              onPress={handleInterestedToggle}
             >
-              {localInterested ? "Interested" : "Interested?"}
-            </Text>
-          </TouchableOpacity>
+              <Ionicons
+                name={localInterested ? "star" : "star-outline"}
+                size={16}
+                color={localInterested ? colors.primary : colors.textSecondary}
+              />
+              <Text
+                style={[
+                  styles.actionButtonText,
+                  {
+                    color: localInterested
+                      ? colors.primary
+                      : colors.textSecondary,
+                  },
+                ]}
+              >
+                {localInterested ? "Interested" : "Interested?"}
+              </Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[
-              styles.actionButton,
-              styles.joinButton,
-              {
-                backgroundColor: isJoined ? colors.background : colors.primary,
-                borderColor: isJoined ? colors.border : colors.primary,
-              },
-            ]}
-            onPress={(e) => {
-              e.stopPropagation();
-              // Handle join logic
-            }}
-          >
-            <Ionicons
-              name={isJoined ? "checkmark-circle" : "add-circle-outline"}
-              size={16}
-              color={isJoined ? colors.primary : colors.onPrimary}
-            />
-            <Text
+            <TouchableOpacity
               style={[
-                styles.actionButtonText,
+                styles.actionButton,
+                styles.joinButton,
                 {
-                  color: isJoined ? colors.primary : colors.onPrimary,
-                  fontWeight: "600",
+                  backgroundColor: isJoined
+                    ? colors.background
+                    : colors.primary,
+                  borderColor: isJoined ? colors.border : colors.primary,
                 },
               ]}
+              onPress={(e) => {
+                e.stopPropagation();
+                // Handle join logic
+              }}
             >
-              {isJoined ? "Joined" : "Join"}
-            </Text>
-          </TouchableOpacity>
-        </View>
+              <Ionicons
+                name={isJoined ? "checkmark-circle" : "add-circle-outline"}
+                size={16}
+                color={isJoined ? colors.primary : colors.onPrimary}
+              />
+              <Text
+                style={[
+                  styles.actionButtonText,
+                  {
+                    color: isJoined ? colors.primary : colors.onPrimary,
+                    fontWeight: "600",
+                  },
+                ]}
+              >
+                {isJoined ? "Joined" : "Join"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </View>
     </TouchableOpacity>
   );
@@ -371,6 +381,9 @@ const styles = StyleSheet.create({
   actionButtons: {
     flexDirection: "row",
     gap: 8,
+  },
+  customActionContainer: {
+    alignItems: "center",
   },
   actionButton: {
     flex: 1,

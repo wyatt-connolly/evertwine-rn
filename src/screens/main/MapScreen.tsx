@@ -479,7 +479,7 @@ export default function MapScreen({ navigation }: any) {
           <MapView
             style={styles.map}
             initialRegion={getInitialRegion()}
-            showsUserLocation={true}
+            showsUserLocation={false}
             showsMyLocationButton={true}
             showsCompass={true}
             showsScale={true}
@@ -496,7 +496,7 @@ export default function MapScreen({ navigation }: any) {
                         latitude: meetup.location.latitude,
                         longitude: meetup.location.longitude,
                       }}
-                      pinColor={colors.primary}
+                      pinColor={colors.accentTertiary}
                       tracksViewChanges={false}
                       onPress={() => {
                         console.log("🗺️ Marker pressed for meetup:", meetup.id);
@@ -514,7 +514,7 @@ export default function MapScreen({ navigation }: any) {
                         latitude: event.location.latitude,
                         longitude: event.location.longitude,
                       }}
-                      pinColor="#FFB800"
+                      pinColor={colors.accentQuaternary}
                       tracksViewChanges={false}
                       onPress={() => {
                         console.log(
@@ -1007,7 +1007,10 @@ export default function MapScreen({ navigation }: any) {
         <View style={styles.legend}>
           <View style={styles.legendItem}>
             <View
-              style={[styles.legendMarker, { backgroundColor: colors.primary }]}
+              style={[
+                styles.legendMarker,
+                { backgroundColor: colors.accentTertiary },
+              ]}
             />
             <Text style={[styles.legendText, { color: colors.textSecondary }]}>
               Meetups ({meetups.length})
@@ -1015,7 +1018,10 @@ export default function MapScreen({ navigation }: any) {
           </View>
           <View style={styles.legendItem}>
             <View
-              style={[styles.legendMarker, { backgroundColor: "#FFB800" }]}
+              style={[
+                styles.legendMarker,
+                { backgroundColor: colors.accentQuaternary },
+              ]}
             />
             <Text style={[styles.legendText, { color: colors.textSecondary }]}>
               Happy Hours ({happyHours.length})
