@@ -1515,12 +1515,7 @@ export default function HomeScreen() {
             ]}
           >
             <TouchableOpacity
-              style={[
-                styles.feedModeOption,
-                {
-                  backgroundColor: colors.primary + "10",
-                },
-              ]}
+              style={styles.feedModeOption}
               onPress={() => {
                 setShowFeedModeDropdown(false);
               }}
@@ -1540,11 +1535,6 @@ export default function HomeScreen() {
                   For You
                 </Text>
               </View>
-              <Ionicons
-                name="checkmark"
-                size={18}
-                color={colors.accentQuaternary}
-              />
             </TouchableOpacity>
 
             <TouchableOpacity
