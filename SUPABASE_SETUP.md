@@ -40,33 +40,32 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 
 ## Step 4: Set Up Database Schema
 
-### Option A: Fresh Setup (Recommended for New Projects)
+### 🚀 Quick Setup (Recommended)
+
+**Use this if you want a completely fresh database:**
 
 1. Go to your Supabase dashboard
 2. Click on **SQL Editor** in the left sidebar
 3. Click **New Query**
-4. Copy the entire contents of `supabase-schema.sql` from the project root
+4. Copy the **entire contents** of **`supabase-fresh-setup.sql`** from the project root
 5. Paste it into the SQL editor
-6. Click **Run** to execute the schema creation
+6. Click **Run**
 
-This will create all the necessary tables, indexes, and Row Level Security (RLS) policies.
+✅ This single script will:
+- Drop any existing tables (if they exist)
+- Create all tables fresh
+- Enable Row Level Security
+- Create all policies
+- Create all indexes
+- Show you a success message with next steps
 
-### Option B: If Tables Already Exist
+⚠️ **WARNING**: This will delete all existing data in these tables!
 
-If you get an error that tables already exist, you have two options:
-
-**Option 1: Drop and Recreate (⚠️ WARNING: Deletes all data)**
-1. Run the contents of `supabase-drop-tables.sql` first
-2. Then run `supabase-schema.sql`
-
-**Option 2: Safe Update (Preserves existing data)**
-1. Run the contents of `supabase-schema-safe.sql` instead
-2. This will skip creating tables that already exist and add missing policies/indexes
-
-### Files Available:
-- `supabase-schema.sql` - Standard schema creation
-- `supabase-schema-safe.sql` - Safe version that won't error on re-run
-- `supabase-drop-tables.sql` - Drops all tables (use with caution!)
+**The script includes:**
+- 8 database tables (users, posts, meetups, happy_hours, etc.)
+- Row Level Security policies for data protection
+- Performance indexes
+- Proper foreign key relationships
 
 ## Step 5: Enable Phone Authentication (Optional)
 

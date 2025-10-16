@@ -1,5 +1,22 @@
--- Supabase Database Schema for Evertwine
--- Run this in your Supabase SQL Editor
+-- ============================================================================
+-- EVERTWINE SUPABASE DATABASE SETUP - FRESH INSTALL
+-- ============================================================================
+-- This script will DROP all existing tables and recreate them from scratch
+-- WARNING: This will DELETE ALL DATA in the database!
+-- Only run this if you want a completely fresh start
+-- ============================================================================
+
+-- Step 1: Drop all existing tables (CASCADE removes all dependencies)
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS messages CASCADE;
+DROP TABLE IF EXISTS message_rooms CASCADE;
+DROP TABLE IF EXISTS post_comments CASCADE;
+DROP TABLE IF EXISTS posts CASCADE;
+DROP TABLE IF EXISTS meetups CASCADE;
+DROP TABLE IF EXISTS happy_hours CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
+-- Step 2: Create all tables
 
 -- Users Table
 CREATE TABLE users (
@@ -199,7 +216,7 @@ CREATE TABLE notifications (
   scheduled_for TIMESTAMP WITH TIME ZONE
 );
 
--- Enable Row Level Security
+-- Step 3: Enable Row Level Security on all tables
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE post_comments ENABLE ROW LEVEL SECURITY;
@@ -209,40 +226,42 @@ ALTER TABLE message_rooms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
--- Create policies for users table
+-- Step 4: Create RLS Policies
+
+-- Users Table Policies
 CREATE POLICY "Users can view all profiles" ON users FOR SELECT USING (true);
 CREATE POLICY "Users can update own profile" ON users FOR UPDATE USING (auth.uid() = uid);
 CREATE POLICY "Users can insert own profile" ON users FOR INSERT WITH CHECK (auth.uid() = uid);
 
--- Create policies for posts table
+-- Posts Table Policies
 CREATE POLICY "Posts are viewable by everyone" ON posts FOR SELECT USING (true);
 CREATE POLICY "Users can insert own posts" ON posts FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update own posts" ON posts FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete own posts" ON posts FOR DELETE USING (auth.uid() = user_id);
 
--- Create policies for post_comments table
+-- Post Comments Table Policies
 CREATE POLICY "Comments are viewable by everyone" ON post_comments FOR SELECT USING (true);
 CREATE POLICY "Users can insert own comments" ON post_comments FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update own comments" ON post_comments FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete own comments" ON post_comments FOR DELETE USING (auth.uid() = user_id);
 
--- Create policies for meetups table
+-- Meetups Table Policies
 CREATE POLICY "Meetups are viewable by everyone" ON meetups FOR SELECT USING (true);
 CREATE POLICY "Users can insert own meetups" ON meetups FOR INSERT WITH CHECK (auth.uid() = creator_id);
 CREATE POLICY "Users can update own meetups" ON meetups FOR UPDATE USING (auth.uid() = creator_id);
 CREATE POLICY "Users can delete own meetups" ON meetups FOR DELETE USING (auth.uid() = creator_id);
 
--- Create policies for happy_hours table
+-- Happy Hours Table Policies
 CREATE POLICY "Happy hours are viewable by everyone" ON happy_hours FOR SELECT USING (true);
 CREATE POLICY "Organizers can insert happy hours" ON happy_hours FOR INSERT WITH CHECK (auth.uid() = organizer_id OR organizer_id IS NULL);
 CREATE POLICY "Organizers can update happy hours" ON happy_hours FOR UPDATE USING (auth.uid() = organizer_id OR organizer_id IS NULL);
 
--- Create policies for message_rooms table
+-- Message Rooms Table Policies
 CREATE POLICY "Users can view their message rooms" ON message_rooms FOR SELECT USING (auth.uid()::text = ANY(participants));
 CREATE POLICY "Users can insert message rooms they participate in" ON message_rooms FOR INSERT WITH CHECK (auth.uid()::text = ANY(participants));
 CREATE POLICY "Admins can update their message rooms" ON message_rooms FOR UPDATE USING (auth.uid()::text = ANY(admins));
 
--- Create policies for messages table
+-- Messages Table Policies
 CREATE POLICY "Users can view messages in their rooms" ON messages FOR SELECT USING (
   EXISTS (
     SELECT 1 FROM message_rooms 
@@ -258,26 +277,43 @@ CREATE POLICY "Users can insert messages in their rooms" ON messages FOR INSERT 
   ) AND auth.uid() = sender_ref
 );
 
--- Create policies for notifications table
+-- Notifications Table Policies
 CREATE POLICY "Users can view their notifications" ON notifications FOR SELECT USING (auth.uid() = receiver_ref);
 CREATE POLICY "Users can update their notifications" ON notifications FOR UPDATE USING (auth.uid() = receiver_ref);
 
--- Create indexes for better performance
+-- Step 5: Create Indexes for Better Performance
 CREATE INDEX idx_posts_user_id ON posts(user_id);
 CREATE INDEX idx_posts_created_at ON posts(created_at DESC);
 CREATE INDEX idx_post_comments_post_id ON post_comments(post_id);
+CREATE INDEX idx_post_comments_user_id ON post_comments(user_id);
 CREATE INDEX idx_meetups_creator_id ON meetups(creator_id);
 CREATE INDEX idx_meetups_time ON meetups(time);
+CREATE INDEX idx_meetups_status ON meetups(status);
 CREATE INDEX idx_happy_hours_start_time ON happy_hours(start_time);
+CREATE INDEX idx_happy_hours_organizer ON happy_hours(organizer_id);
 CREATE INDEX idx_messages_room_ref ON messages(message_room_ref);
+CREATE INDEX idx_messages_sender ON messages(sender_ref);
 CREATE INDEX idx_messages_created_time ON messages(created_time);
 CREATE INDEX idx_notifications_receiver ON notifications(receiver_ref);
 CREATE INDEX idx_notifications_created_at ON notifications(created_at DESC);
+CREATE INDEX idx_notifications_is_read ON notifications(is_read);
 
--- Storage buckets (run these commands in Supabase Dashboard > Storage)
--- Create buckets:
--- 1. profile-pictures (public)
--- 2. post-images (public)
--- 3. meetup-images (public)
--- 4. happy-hour-images (public)
+-- Step 6: Success Message
+DO $$
+BEGIN
+  RAISE NOTICE '✅ Database setup complete!';
+  RAISE NOTICE '📊 Tables created: users, posts, post_comments, meetups, happy_hours, message_rooms, messages, notifications';
+  RAISE NOTICE '🔒 Row Level Security enabled on all tables';
+  RAISE NOTICE '📋 All policies and indexes created successfully';
+  RAISE NOTICE '';
+  RAISE NOTICE '⚠️  Next steps:';
+  RAISE NOTICE '   1. Create storage buckets in Supabase Dashboard > Storage:';
+  RAISE NOTICE '      - profile-pictures (public)';
+  RAISE NOTICE '      - post-images (public)';
+  RAISE NOTICE '      - meetup-images (public)';
+  RAISE NOTICE '      - happy-hour-images (public)';
+  RAISE NOTICE '   2. Configure phone authentication if needed (Authentication > Providers > Phone)';
+  RAISE NOTICE '   3. Add your credentials to .env file';
+  RAISE NOTICE '   4. Run the app!';
+END $$;
 
