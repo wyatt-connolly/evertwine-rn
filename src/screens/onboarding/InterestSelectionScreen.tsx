@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  StatusBar,
+  Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -14,9 +16,9 @@ import { SupabaseDataService } from "../../services/SupabaseDataService";
 import { DataService } from "../../services/DataService";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import OnboardingButton from "../../components/OnboardingButton";
+import SelectableOption from "../../components/SelectableOption";
 import GradientBackground from "../../components/GradientBackground";
-import AnimatedButton from "../../components/AnimatedButton";
-import AnimatedCard from "../../components/AnimatedCard";
 
 type InterestSelectionScreenNavigationProp = StackNavigationProp<
   OnboardingStackParamList,
@@ -28,30 +30,30 @@ interface Props {
 }
 
 const INTERESTS = [
-  "Technology",
-  "Sports",
-  "Music",
-  "Art",
-  "Travel",
-  "Food",
-  "Fitness",
-  "Photography",
-  "Reading",
-  "Gaming",
-  "Movies",
-  "Dancing",
-  "Cooking",
-  "Hiking",
-  "Yoga",
-  "Fashion",
-  "Business",
-  "Science",
-  "Nature",
-  "Volunteering",
-  "Learning",
-  "Socializing",
-  "Creativity",
-  "Adventure",
+  { name: "Technology", icon: "💻" },
+  { name: "Sports", icon: "⚽" },
+  { name: "Music", icon: "🎵" },
+  { name: "Art", icon: "🎨" },
+  { name: "Travel", icon: "✈️" },
+  { name: "Food", icon: "🍕" },
+  { name: "Fitness", icon: "💪" },
+  { name: "Photography", icon: "📸" },
+  { name: "Reading", icon: "📚" },
+  { name: "Gaming", icon: "🎮" },
+  { name: "Movies", icon: "🎬" },
+  { name: "Dancing", icon: "💃" },
+  { name: "Cooking", icon: "👨‍🍳" },
+  { name: "Hiking", icon: "🥾" },
+  { name: "Yoga", icon: "🧘" },
+  { name: "Fashion", icon: "👗" },
+  { name: "Business", icon: "💼" },
+  { name: "Science", icon: "🔬" },
+  { name: "Nature", icon: "🌿" },
+  { name: "Volunteering", icon: "🤝" },
+  { name: "Learning", icon: "📖" },
+  { name: "Socializing", icon: "👥" },
+  { name: "Creativity", icon: "✨" },
+  { name: "Adventure", icon: "🗺️" },
 ];
 
 export default function InterestSelectionScreen({ navigation }: Props) {
@@ -60,6 +62,60 @@ export default function InterestSelectionScreen({ navigation }: Props) {
 
   const { user, updateUserProfile } = useAuthStore();
   const { colors } = useThemeStore();
+
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const titleAnim = useRef(new Animated.Value(0)).current;
+  const subtitleAnim = useRef(new Animated.Value(0)).current;
+  const interestsAnim = useRef(new Animated.Value(0)).current;
+  const buttonAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Start the animation sequence
+    const startAnimations = () => {
+      // Fade in the entire screen
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }).start();
+
+      // Stagger the animations
+      setTimeout(() => {
+        Animated.timing(titleAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }).start();
+      }, 200);
+
+      setTimeout(() => {
+        Animated.timing(subtitleAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }).start();
+      }, 400);
+
+      setTimeout(() => {
+        Animated.timing(interestsAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }).start();
+      }, 600);
+
+      setTimeout(() => {
+        Animated.timing(buttonAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }).start();
+      }, 800);
+    };
+
+    startAnimations();
+  }, []);
 
   const toggleInterest = (interest: string) => {
     setSelectedInterests((prev) => {
@@ -112,79 +168,142 @@ export default function InterestSelectionScreen({ navigation }: Props) {
   };
 
   return (
-    <GradientBackground variant="primary">
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.content}
-        >
-          <AnimatedCard delay={200} direction="up">
+    <GradientBackground variant="dark">
+      <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor="transparent"
+          translucent
+        />
+        <SafeAreaView style={styles.safeArea}>
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.content}
+          >
             <View style={styles.header}>
-              <Text style={[styles.title, { color: colors.text }]}>
+              <Animated.Text
+                style={[
+                  styles.title,
+                  {
+                    opacity: titleAnim,
+                    color: colors.text,
+                    transform: [
+                      {
+                        translateY: titleAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [30, 0],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
                 What are you interested in?
-              </Text>
-              <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+              </Animated.Text>
+              <Animated.Text
+                style={[
+                  styles.subtitle,
+                  {
+                    opacity: subtitleAnim,
+                    color: colors.textSecondary,
+                    transform: [
+                      {
+                        translateY: subtitleAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [20, 0],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
                 Select at least 3 interests to help us find better meetups for
                 you
-              </Text>
-              <Text style={[styles.count, { color: colors.textSecondary }]}>
-                {selectedInterests.length} selected (minimum 3)
-              </Text>
-            </View>
-          </AnimatedCard>
-
-          <AnimatedCard delay={400} direction="up">
-            <View style={styles.interestsGrid}>
-              {INTERESTS.map((interest) => (
-                <TouchableOpacity
-                  key={interest}
-                  style={[
-                    styles.interestButton,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: colors.border,
-                    },
-                    selectedInterests.includes(interest) && {
-                      backgroundColor: colors.primary,
-                      borderColor: colors.primary,
-                    },
-                  ]}
-                  onPress={() => toggleInterest(interest)}
-                >
-                  <Text
-                    style={[
-                      styles.interestText,
-                      { color: colors.text },
-                      selectedInterests.includes(interest) && {
-                        color: colors.onPrimary,
+              </Animated.Text>
+              <Animated.Text
+                style={[
+                  styles.count,
+                  {
+                    opacity: subtitleAnim,
+                    color: colors.textSecondary,
+                    transform: [
+                      {
+                        translateY: subtitleAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [20, 0],
+                        }),
                       },
-                    ]}
-                  >
-                    {interest}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    ],
+                  },
+                ]}
+              >
+                {selectedInterests.length} selected (minimum 3)
+              </Animated.Text>
             </View>
-          </AnimatedCard>
 
-          <AnimatedButton
-            title={loading ? "Saving..." : "Continue"}
-            onPress={handleContinue}
-            variant="primary"
-            disabled={loading || selectedInterests.length < 3}
-            loading={loading}
-            style={styles.button}
-          />
-        </ScrollView>
-      </SafeAreaView>
+            <Animated.View
+              style={[
+                styles.interestsGrid,
+                {
+                  opacity: interestsAnim,
+                  transform: [
+                    {
+                      translateY: interestsAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [20, 0],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            >
+              {INTERESTS.map((interest, index) => (
+                <SelectableOption
+                  key={interest.name}
+                  icon={interest.icon}
+                  text={interest.name}
+                  selected={selectedInterests.includes(interest.name)}
+                  onPress={() => toggleInterest(interest.name)}
+                  style={styles.interestOption}
+                />
+              ))}
+            </Animated.View>
+
+            <Animated.View
+              style={[
+                styles.buttonContainer,
+                {
+                  opacity: buttonAnim,
+                  transform: [
+                    {
+                      translateY: buttonAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [30, 0],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            >
+              <OnboardingButton
+                title={loading ? "Saving..." : "Continue"}
+                onPress={handleContinue}
+                variant="primary"
+                disabled={loading || selectedInterests.length < 3}
+              />
+            </Animated.View>
+          </ScrollView>
+        </SafeAreaView>
+      </Animated.View>
     </GradientBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  safeArea: {
     flex: 1,
   },
   scrollView: {
@@ -221,26 +340,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 20,
   },
-  interestButton: {
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    marginBottom: 12,
+  interestOption: {
     width: "48%",
-    alignItems: "center",
+    marginBottom: 12,
   },
-  interestButtonSelected: {
-    // backgroundColor and borderColor will be set dynamically
-  },
-  interestText: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  interestTextSelected: {
-    // color will be set dynamically
-  },
-  button: {
+  buttonContainer: {
     marginTop: 20,
+    paddingBottom: 40,
   },
 });

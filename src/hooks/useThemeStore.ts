@@ -111,56 +111,56 @@ export const lightTheme: ThemeColors = {
 };
 
 export const darkTheme: ThemeColors = {
-  // Background colors
-  background: "#1A1A1A", // Dark grey instead of pure black
-  surface: "#2A2A2A",
-  surfaceVariant: "#3A3A3A",
+  // Background colors - Evertwine dark theme
+  background: "#1A1A2E", // Dark blue-gray from Evertwine
+  surface: "rgba(255, 255, 255, 0.05)", // Semi-transparent dark
+  surfaceVariant: "rgba(255, 255, 255, 0.1)",
 
   // Text colors
   text: "#FFFFFF",
   textSecondary: "#B0B0B0",
   textTertiary: "#808080",
 
-  // Primary colors - White
-  primary: "#FFFFFF",
-  primaryVariant: "#F5F5F5",
-  onPrimary: "#000000",
+  // Primary colors - Purple/Pink gradient from Evertwine
+  primary: "#8B5CF6", // Purple
+  primaryVariant: "#EC4899", // Pink
+  onPrimary: "#FFFFFF",
 
-  // Secondary colors - Light Grey
-  secondary: "#E0E0E0",
-  secondaryVariant: "#BDBDBD",
-  onSecondary: "#000000",
+  // Secondary colors - Blue accent for buttons
+  secondary: "#3B82F6", // Professional blue
+  secondaryVariant: "#2563EB",
+  onSecondary: "#FFFFFF",
 
-  // Accent colors - More vibrant for dark mode
-  accent: "#FF6B35", // Vibrant orange
-  accentVariant: "#FF5722",
-  accentSecondary: "#E91E63", // Bright pink/magenta
-  accentTertiary: "#42A5F5", // Bright blue (meetups)
-  accentQuaternary: "#FFC107", // Bright amber
-  accentQuinary: "#F44336", // Bright red
+  // Accent colors - Evertwine palette
+  accent: "#3B82F6", // Blue for call-to-action buttons
+  accentVariant: "#2563EB",
+  accentSecondary: "#8B5CF6", // Purple for primary branding
+  accentTertiary: "#10B981", // Green for success states
+  accentQuaternary: "#EC4899", // Pink for secondary branding
+  accentQuinary: "#F44336", // Red for errors
   onAccent: "#FFFFFF",
 
   // Status colors
-  success: "#66BB6A",
-  warning: "#FFB74D",
-  error: "#EF5350",
-  info: "#FFFFFF",
+  success: "#10B981", // Green from Evertwine
+  warning: "#F59E0B", // Amber
+  error: "#F44336",
+  info: "#8B5CF6", // Purple
 
   // Border and divider colors
-  border: "#404040",
-  divider: "#3A3A3A",
+  border: "rgba(255, 255, 255, 0.1)",
+  divider: "rgba(255, 255, 255, 0.05)",
 
   // Overlay colors
   overlay: "rgba(0, 0, 0, 0.8)",
   backdrop: "rgba(0, 0, 0, 0.6)",
 
-  // Gradient colors - White to Light Grey
-  gradientStart: "#FFFFFF",
-  gradientEnd: "#E0E0E0",
-  gradientSecondary: "#BDBDBD",
+  // Gradient colors - Purple to Pink
+  gradientStart: "#8B5CF6",
+  gradientEnd: "#EC4899",
+  gradientSecondary: "#10B981",
 
-  // Special colors - Announcements now magenta
-  announcement: "#E91E63",
+  // Special colors - Announcements
+  announcement: "#8B5CF6",
   onAnnouncement: "#FFFFFF",
 };
 

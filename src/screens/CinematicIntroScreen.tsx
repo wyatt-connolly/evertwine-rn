@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, StatusBar, Animated } from "react-native";
+import {
+  View,
+  StyleSheet,
+  StatusBar,
+  Animated,
+  TouchableOpacity,
+  Text,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuthStore } from "../hooks/useAuthStore";
 
 interface FadingTextProps {
   text: string;
@@ -85,6 +94,7 @@ const FadingText: React.FC<FadingTextProps> = ({
 
 const CinematicIntroScreen: React.FC = () => {
   const navigation = useNavigation();
+  const { setHasSeenIntro } = useAuthStore();
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const fadeAnim = new Animated.Value(0);
@@ -167,14 +177,30 @@ const CinematicIntroScreen: React.FC = () => {
         duration: 600,
         useNativeDriver: true,
       }).start(() => {
+        setHasSeenIntro(true);
         navigation.navigate("Welcome" as never);
       });
     }
   };
 
+  const handleSkip = () => {
+    setHasSeenIntro(true);
+    navigation.navigate("Welcome" as never);
+  };
+
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
       <StatusBar hidden />
+      <SafeAreaView style={styles.safeArea}>
+        {/* Skip Button */}
+        <TouchableOpacity
+          style={styles.skipButton}
+          onPress={handleSkip}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.skipText}>Skip</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
       <View style={styles.content}>
         {isVisible && (
           <FadingText
@@ -196,6 +222,30 @@ const styles = StyleSheet.create({
     backgroundColor: "#000000",
     justifyContent: "center",
     alignItems: "center",
+  },
+  safeArea: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    left: 0,
+    zIndex: 10,
+  },
+  skipButton: {
+    alignSelf: "flex-end",
+    marginTop: 20,
+    marginRight: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+  },
+  skipText: {
+    color: "rgba(255, 255, 255, 0.7)",
+    fontSize: 14,
+    fontWeight: "500",
+    letterSpacing: 0.5,
   },
   content: {
     flex: 1,

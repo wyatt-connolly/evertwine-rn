@@ -136,7 +136,7 @@ export default function ExpandableFAB({ options }: ExpandableFABProps) {
 const styles = StyleSheet.create({
   fab: {
     position: "absolute",
-    bottom: 100,
+    bottom: 140, // Increased from 100 to clear the bottom navigation (60px height + 20px bottom + 60px clearance)
     right: 24,
     width: 60,
     height: 60,
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     position: "absolute",
-    bottom: 24,
+    bottom: 64, // Adjusted to match new FAB position (140 - 60 - 16 for clearance)
     right: 24,
     zIndex: 1001,
   },

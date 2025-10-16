@@ -10,11 +10,15 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   onboardingComplete: boolean;
+  hasSeenIntro: boolean;
   isLoading: boolean;
+  isHydrated: boolean;
   setUser: (user: User | null) => void;
   setAuthenticated: (isAuthenticated: boolean) => void;
   setOnboardingComplete: (completed: boolean) => void;
+  setHasSeenIntro: (seen: boolean) => void;
   setLoading: (loading: boolean) => void;
+  setHydrated: (hydrated: boolean) => void;
   updateUserProfile: (updates: Partial<User>) => void;
   logout: () => void;
 }
@@ -25,16 +29,27 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       onboardingComplete: false,
+      hasSeenIntro: false,
       isLoading: false,
+      isHydrated: false,
 
       setUser: (user) => set({ user }),
 
       setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
 
-      setOnboardingComplete: (onboardingComplete) =>
-        set({ onboardingComplete }),
+      setOnboardingComplete: (onboardingComplete) => {
+        console.log("🎯 Setting onboarding complete:", onboardingComplete);
+        set({ onboardingComplete });
+      },
+
+      setHasSeenIntro: (hasSeenIntro) => {
+        console.log("🎬 Setting has seen intro:", hasSeenIntro);
+        set({ hasSeenIntro });
+      },
 
       setLoading: (isLoading) => set({ isLoading }),
+
+      setHydrated: (isHydrated) => set({ isHydrated }),
 
       updateUserProfile: (updates) => {
         const currentUser = get().user;
@@ -56,13 +71,21 @@ export const useAuthStore = create<AuthState>()(
           user: null,
           isAuthenticated: false,
           onboardingComplete: false,
+          hasSeenIntro: false,
           isLoading: false,
+          isHydrated: true,
         });
       },
     }),
     {
       name: "auth-storage",
       storage: createJSONStorage(() => AsyncStorage),
+      onRehydrateStorage: () => (state) => {
+        console.log("🔄 Auth store hydrated");
+        if (state) {
+          state.setHydrated(true);
+        }
+      },
     }
   )
 );

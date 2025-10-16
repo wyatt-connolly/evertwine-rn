@@ -1715,7 +1715,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   feedContent: {
-    paddingBottom: 120,
+    paddingBottom: 180, // Increased from 120 to account for higher FAB position (140 + 40 clearance)
   },
   feedContentCompact: {
     paddingBottom: 20,

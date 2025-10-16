@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  StatusBar,
+  Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -17,9 +19,8 @@ import { OnboardingService } from "../../services/OnboardingService";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { Ionicons } from "@expo/vector-icons";
+import OnboardingButton from "../../components/OnboardingButton";
 import GradientBackground from "../../components/GradientBackground";
-import AnimatedButton from "../../components/AnimatedButton";
-import AnimatedCard from "../../components/AnimatedCard";
 import * as ImagePicker from "expo-image-picker";
 
 type ProfileSetupScreenNavigationProp = StackNavigationProp<
@@ -43,6 +44,69 @@ export default function ProfileSetupScreen({ navigation }: Props) {
   // Refs for input fields
   const displayNameRef = useRef<TextInput>(null);
   const headlineRef = useRef<TextInput>(null);
+
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const titleAnim = useRef(new Animated.Value(0)).current;
+  const subtitleAnim = useRef(new Animated.Value(0)).current;
+  const imageAnim = useRef(new Animated.Value(0)).current;
+  const formAnim = useRef(new Animated.Value(0)).current;
+  const buttonAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Start the animation sequence
+    const startAnimations = () => {
+      // Fade in the entire screen
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }).start();
+
+      // Stagger the animations
+      setTimeout(() => {
+        Animated.timing(titleAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }).start();
+      }, 200);
+
+      setTimeout(() => {
+        Animated.timing(subtitleAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }).start();
+      }, 400);
+
+      setTimeout(() => {
+        Animated.timing(imageAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }).start();
+      }, 600);
+
+      setTimeout(() => {
+        Animated.timing(formAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }).start();
+      }, 800);
+
+      setTimeout(() => {
+        Animated.timing(buttonAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }).start();
+      }, 1000);
+    };
+
+    startAnimations();
+  }, []);
 
   const pickImage = async () => {
     try {
@@ -121,16 +185,19 @@ export default function ProfileSetupScreen({ navigation }: Props) {
   };
 
   return (
-    <GradientBackground variant="primary">
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.keyboardAvoidingView}
-        >
-          {/* Header */}
-          <AnimatedCard delay={200} direction="up">
+    <GradientBackground variant="dark">
+      <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor="transparent"
+          translucent
+        />
+        <SafeAreaView style={styles.safeArea}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.keyboardAvoidingView}
+          >
+            {/* Header */}
             <View style={styles.header}>
               <TouchableOpacity
                 onPress={() => navigation.goBack()}
@@ -140,124 +207,201 @@ export default function ProfileSetupScreen({ navigation }: Props) {
               </TouchableOpacity>
 
               <View style={styles.headerContent}>
-                <Text style={[styles.title, { color: colors.text }]}>
+                <Animated.Text
+                  style={[
+                    styles.title,
+                    {
+                      opacity: titleAnim,
+                      color: colors.text,
+                      transform: [
+                        {
+                          translateY: titleAnim.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [30, 0],
+                          }),
+                        },
+                      ],
+                    },
+                  ]}
+                >
                   Set Up Your Profile
-                </Text>
-                <Text
-                  style={[styles.subtitle, { color: colors.textSecondary }]}
+                </Animated.Text>
+                <Animated.Text
+                  style={[
+                    styles.subtitle,
+                    {
+                      opacity: subtitleAnim,
+                      color: colors.textSecondary,
+                      transform: [
+                        {
+                          translateY: subtitleAnim.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [20, 0],
+                          }),
+                        },
+                      ],
+                    },
+                  ]}
                 >
                   Tell us a bit about yourself
-                </Text>
+                </Animated.Text>
               </View>
             </View>
-          </AnimatedCard>
 
-          {/* Main Content */}
-          <View style={styles.mainContent}>
-            {/* Profile Image */}
-            <View style={styles.profileImageContainer}>
-              <TouchableOpacity
-                style={styles.profileImageButton}
-                onPress={pickImage}
+            {/* Main Content */}
+            <View style={styles.mainContent}>
+              {/* Profile Image */}
+              <Animated.View
+                style={[
+                  styles.profileImageContainer,
+                  {
+                    opacity: imageAnim,
+                    transform: [
+                      {
+                        translateY: imageAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [20, 0],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
               >
-                {profileImage ? (
-                  <Image
-                    source={{ uri: profileImage }}
-                    style={styles.profileImage}
-                  />
-                ) : (
-                  <View
+                <TouchableOpacity
+                  style={styles.profileImageButton}
+                  onPress={pickImage}
+                >
+                  {profileImage ? (
+                    <Image
+                      source={{ uri: profileImage }}
+                      style={styles.profileImage}
+                    />
+                  ) : (
+                    <View
+                      style={[
+                        styles.profileImagePlaceholder,
+                        { backgroundColor: colors.surfaceVariant },
+                      ]}
+                    >
+                      <Ionicons
+                        name="camera"
+                        size={32}
+                        color={colors.primary}
+                      />
+                    </View>
+                  )}
+                </TouchableOpacity>
+                <Text
+                  style={[styles.imageLabel, { color: colors.textSecondary }]}
+                >
+                  Add a photo
+                </Text>
+              </Animated.View>
+
+              {/* Form Fields */}
+              <Animated.View
+                style={[
+                  styles.formContainer,
+                  {
+                    opacity: formAnim,
+                    transform: [
+                      {
+                        translateY: formAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [20, 0],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                <View style={styles.inputContainer}>
+                  <Text style={[styles.inputLabel, { color: colors.text }]}>
+                    What's your name? *
+                  </Text>
+                  <TextInput
+                    ref={displayNameRef}
                     style={[
-                      styles.profileImagePlaceholder,
-                      { backgroundColor: colors.surfaceVariant },
+                      styles.textInput,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                        color: colors.text,
+                      },
                     ]}
-                  >
-                    <Ionicons name="camera" size={32} color={colors.primary} />
-                  </View>
-                )}
-              </TouchableOpacity>
-              <Text
-                style={[styles.imageLabel, { color: colors.textSecondary }]}
-              >
-                Add a photo
-              </Text>
+                    value={displayName}
+                    onChangeText={setDisplayName}
+                    placeholder="Enter your name"
+                    placeholderTextColor={colors.textTertiary}
+                    returnKeyType="next"
+                    onSubmitEditing={() => headlineRef.current?.focus()}
+                    autoFocus
+                  />
+                </View>
+
+                <View style={styles.inputContainer}>
+                  <Text style={[styles.inputLabel, { color: colors.text }]}>
+                    Add a headline (optional)
+                  </Text>
+                  <TextInput
+                    ref={headlineRef}
+                    style={[
+                      styles.textInput,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                        color: colors.text,
+                      },
+                    ]}
+                    value={headline}
+                    onChangeText={setHeadline}
+                    placeholder="e.g., Software Engineer at Tech Corp"
+                    placeholderTextColor={colors.textTertiary}
+                    returnKeyType="done"
+                    onSubmitEditing={handleContinue}
+                    multiline
+                    numberOfLines={2}
+                  />
+                </View>
+              </Animated.View>
             </View>
 
-            {/* Form Fields */}
-            <View style={styles.formContainer}>
-              <View style={styles.inputContainer}>
-                <Text style={[styles.inputLabel, { color: colors.text }]}>
-                  What's your name? *
-                </Text>
-                <TextInput
-                  ref={displayNameRef}
-                  style={[
-                    styles.textInput,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: colors.border,
-                      color: colors.text,
-                    },
-                  ]}
-                  value={displayName}
-                  onChangeText={setDisplayName}
-                  placeholder="Enter your name"
-                  placeholderTextColor={colors.textTertiary}
-                  returnKeyType="next"
-                  onSubmitEditing={() => headlineRef.current?.focus()}
-                  autoFocus
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Text style={[styles.inputLabel, { color: colors.text }]}>
-                  Add a headline (optional)
-                </Text>
-                <TextInput
-                  ref={headlineRef}
-                  style={[
-                    styles.textInput,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: colors.border,
-                      color: colors.text,
-                    },
-                  ]}
-                  value={headline}
-                  onChangeText={setHeadline}
-                  placeholder="e.g., Software Engineer at Tech Corp"
-                  placeholderTextColor={colors.textTertiary}
-                  returnKeyType="done"
-                  onSubmitEditing={handleContinue}
-                  multiline
-                  numberOfLines={2}
-                />
-              </View>
-            </View>
-          </View>
-
-          {/* Continue Button */}
-          <View style={styles.buttonContainer}>
-            <AnimatedButton
-              title={loading ? "Setting up..." : "Continue"}
-              onPress={handleContinue}
-              variant="primary"
-              disabled={loading || !displayName.trim()}
-              icon="arrow-forward"
+            {/* Continue Button */}
+            <Animated.View
               style={[
-                styles.continueButton,
-                (!displayName.trim() || loading) && styles.disabledButton,
+                styles.buttonContainer,
+                {
+                  opacity: buttonAnim,
+                  transform: [
+                    {
+                      translateY: buttonAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [30, 0],
+                      }),
+                    },
+                  ],
+                },
               ]}
-            />
-          </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+            >
+              <OnboardingButton
+                title={loading ? "Setting up..." : "Continue"}
+                onPress={handleContinue}
+                variant="primary"
+                disabled={loading || !displayName.trim()}
+              />
+            </Animated.View>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Animated.View>
     </GradientBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  safeArea: {
     flex: 1,
   },
   keyboardAvoidingView: {
@@ -341,12 +485,5 @@ const styles = StyleSheet.create({
   buttonContainer: {
     paddingHorizontal: 24,
     paddingBottom: 20,
-  },
-  continueButton: {
-    height: 56,
-    borderRadius: 16,
-  },
-  disabledButton: {
-    opacity: 0.6,
   },
 });

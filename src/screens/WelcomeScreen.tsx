@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   StatusBar,
   Dimensions,
   ImageBackground,
+  Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -27,68 +28,193 @@ const { width, height } = Dimensions.get("window");
 export default function WelcomeScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
 
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const titleAnim = useRef(new Animated.Value(0)).current;
+  const descriptionAnim = useRef(new Animated.Value(0)).current;
+  const questionAnim = useRef(new Animated.Value(0)).current;
+  const buttonAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Start the animation sequence
+    const startAnimations = () => {
+      // Fade in the entire screen
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }).start();
+
+      // Stagger the text animations
+      setTimeout(() => {
+        Animated.timing(titleAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }).start();
+      }, 200);
+
+      setTimeout(() => {
+        Animated.timing(descriptionAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }).start();
+      }, 400);
+
+      setTimeout(() => {
+        Animated.timing(questionAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }).start();
+      }, 600);
+
+      setTimeout(() => {
+        Animated.timing(buttonAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }).start();
+      }, 800);
+    };
+
+    startAnimations();
+  }, []);
+
   const handleBeginJourney = () => {
-    navigation.navigate("PhoneVerification");
+    navigation.navigate("NameInput");
   };
 
   const handleAlreadyHaveAccount = () => {
-    // For now, navigate to phone verification as well
-    // In a real app, this might go to a sign-in screen
-    navigation.navigate("PhoneVerification");
+    // Skip to the end of onboarding since they already have an account
+    navigation.navigate("BuildingProfile");
   };
 
   return (
-    <ImageBackground
-      source={require("../../assets/auth.png")}
-      style={styles.container}
-      resizeMode="cover"
-    >
-      <StatusBar
-        barStyle="light-content"
-        backgroundColor="transparent"
-        translucent
-      />
-      <View style={styles.overlay} />
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.content}>
-          {/* Main Content */}
-          <View style={styles.textContainer}>
-            <Text style={styles.title}>Welcome to Evertwine</Text>
+    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+      <ImageBackground
+        source={require("../../assets/auth.png")}
+        style={styles.container}
+        resizeMode="cover"
+      >
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor="transparent"
+          translucent
+        />
+        <View style={styles.overlay} />
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.content}>
+            {/* Main Content */}
+            <View style={styles.textContainer}>
+              <Animated.Text
+                style={[
+                  styles.title,
+                  {
+                    opacity: titleAnim,
+                    transform: [
+                      {
+                        translateY: titleAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [30, 0],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                Welcome to Evertwine
+              </Animated.Text>
 
-            <Text style={styles.description}>
-              Making new friends can be hard. Build real friendships through
-              local meetups and events.
-            </Text>
+              <Animated.Text
+                style={[
+                  styles.description,
+                  {
+                    opacity: descriptionAnim,
+                    transform: [
+                      {
+                        translateY: descriptionAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [20, 0],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                Making new friends can be hard. Build real friendships through
+                local meetups and events.
+              </Animated.Text>
 
-            <Text style={styles.question}>Ready to do more, together?</Text>
-          </View>
+              <Animated.Text
+                style={[
+                  styles.question,
+                  {
+                    opacity: questionAnim,
+                    transform: [
+                      {
+                        translateY: questionAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [20, 0],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                Ready to do more, together?
+              </Animated.Text>
+            </View>
 
-          {/* Buttons */}
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.primaryButton, { backgroundColor: "#FF7F27" }]}
-              onPress={handleBeginJourney}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.primaryButtonText}>Start Connecting</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
+            {/* Buttons */}
+            <Animated.View
               style={[
-                styles.secondaryButton,
-                { backgroundColor: "rgba(255, 255, 255, 0.2)" },
+                styles.buttonContainer,
+                {
+                  opacity: buttonAnim,
+                  transform: [
+                    {
+                      translateY: buttonAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [30, 0],
+                      }),
+                    },
+                  ],
+                },
               ]}
-              onPress={handleAlreadyHaveAccount}
-              activeOpacity={0.8}
             >
-              <Text style={styles.secondaryButtonText}>
-                I already have an account
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.primaryButton,
+                  {
+                    backgroundColor: colors.accent,
+                    shadowColor: colors.accent,
+                  },
+                ]}
+                onPress={handleBeginJourney}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.primaryButtonText}>Start Connecting</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.secondaryButton,
+                  { backgroundColor: "rgba(255, 255, 255, 0.2)" },
+                ]}
+                onPress={handleAlreadyHaveAccount}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.secondaryButtonText}>
+                  I already have an account
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
           </View>
-        </View>
-      </SafeAreaView>
-    </ImageBackground>
+        </SafeAreaView>
+      </ImageBackground>
+    </Animated.View>
   );
 }
 
@@ -158,7 +284,6 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#FF7F27",
     shadowOffset: {
       width: 0,
       height: 4,

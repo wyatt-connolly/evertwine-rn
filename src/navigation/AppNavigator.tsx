@@ -10,6 +10,8 @@ export default function AppNavigator() {
     isAuthenticated,
     user,
     onboardingComplete,
+    hasSeenIntro,
+    isHydrated,
     setOnboardingComplete,
     setUser,
     setAuthenticated,
@@ -59,6 +61,8 @@ export default function AppNavigator() {
     const {
       data: { subscription },
     } = SupabaseAuthService.onAuthStateChange(async (supabaseUser) => {
+      console.log("🔄 Auth state changed:", { supabaseUser: !!supabaseUser });
+
       if (supabaseUser) {
         // User is signed in, load their profile data from database
         try {
@@ -66,11 +70,15 @@ export default function AppNavigator() {
             supabaseUser.uid
           );
           if (fullProfile) {
+            console.log("👤 Loaded full profile:", {
+              onboardingComplete: fullProfile.onboardingComplete,
+            });
             setUser(fullProfile as any);
             setAuthenticated(true);
             setOnboardingComplete(fullProfile.onboardingComplete || false);
           } else {
             // User exists in auth but not in database yet
+            console.log("👤 User in auth but not in database yet");
             setUser(supabaseUser);
             setAuthenticated(true);
             setOnboardingComplete(supabaseUser.onboardingComplete || false);
@@ -83,6 +91,7 @@ export default function AppNavigator() {
         }
       } else {
         // User is signed out
+        console.log("👤 User signed out");
         setAuthenticated(false);
         setUser(null);
         setOnboardingComplete(false);
@@ -106,10 +115,6 @@ export default function AppNavigator() {
     }
   }, [isAuthenticated, user, onboardingComplete, setOnboardingComplete]);
 
-  if (!isAuthenticated) {
-    return <OnboardingStack />;
-  }
-
   // Prioritize user profile data over store state
   const userOnboardingComplete =
     user?.onboardingComplete !== undefined
@@ -118,14 +123,22 @@ export default function AppNavigator() {
 
   console.log("🧭 AppNavigator Routing:", {
     isAuthenticated,
+    hasSeenIntro,
+    isHydrated,
     userOnboardingComplete,
     userOnboardingStatus: user?.onboardingComplete,
     storeOnboardingStatus: onboardingComplete,
     willShowOnboarding: !userOnboardingComplete,
   });
 
+  // Show loading screen while store is hydrating to prevent flash
+  if (!isHydrated) {
+    return null; // or a loading component
+  }
+
+  // Show onboarding only if onboarding is not complete (ignore authentication for now)
   if (!userOnboardingComplete) {
-    return <OnboardingStack />;
+    return <OnboardingStack key="onboarding" hasSeenIntro={hasSeenIntro} />;
   }
 
   return <MainTabs />;

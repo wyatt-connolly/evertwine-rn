@@ -1,62 +1,69 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import CinematicIntroScreen from "../screens/CinematicIntroScreen";
 import WelcomeScreen from "../screens/WelcomeScreen";
-import PhoneVerificationScreen from "../screens/onboarding/PhoneVerificationScreen";
-import AgeVerificationScreen from "../screens/onboarding/AgeVerificationScreen";
-import ProfileSetupScreen from "../screens/onboarding/ProfileSetupScreen";
-import InterestSelectionScreen from "../screens/onboarding/InterestSelectionScreen";
-import AppFeaturesScreen from "../screens/onboarding/AppFeaturesScreen";
-import LocationPermissionScreen from "../screens/onboarding/LocationPermissionScreen";
-import OnboardingCompleteScreen from "../screens/onboarding/OnboardingCompleteScreen";
-import PreferenceSetupScreen from "../screens/preferences/PreferenceSetupScreen";
+import NameInputScreen from "../screens/onboarding/NameInputScreen";
+import AgeSelectionScreen from "../screens/onboarding/AgeSelectionScreen";
+import GenderSelectionScreen from "../screens/onboarding/GenderSelectionScreen";
+import GoalsSelectionScreen from "../screens/onboarding/GoalsSelectionScreen";
+import ObstaclesScreen from "../screens/onboarding/ObstaclesScreen";
+import RoutineSetupScreen from "../screens/onboarding/RoutineSetupScreen";
+import FeatureIntroScreen from "../screens/onboarding/FeatureIntroScreen";
+import SocialBenefitsScreen from "../screens/onboarding/SocialBenefitsScreen";
+import CommitmentScreen from "../screens/onboarding/CommitmentScreen";
+import BuildingProfileScreen from "../screens/onboarding/BuildingProfileScreen";
+// Removed old onboarding screens - now navigating directly to Home
 import { useAuthStore } from "../hooks/useAuthStore";
 
 export type OnboardingStackParamList = {
   CinematicIntro: undefined;
   Welcome: undefined;
-  PhoneVerification: undefined;
-  AgeVerification: undefined;
-  ProfileSetup: undefined;
-  InterestSelection: undefined;
-  AppFeatures: undefined;
-  LocationPermission: undefined;
-  OnboardingComplete: undefined;
-  PreferenceSetup: undefined;
+  NameInput: undefined;
+  AgeSelection: undefined;
+  GenderSelection: undefined;
+  GoalsSelection: undefined;
+  ObstaclesSelection: undefined;
+  RoutineSetup: undefined;
+  FeatureIntro: undefined;
+  SocialBenefits: undefined;
+  Commitment: undefined;
+  BuildingProfile: undefined;
 };
 
 const Stack = createStackNavigator<OnboardingStackParamList>();
 
-export default function OnboardingStack() {
+interface OnboardingStackProps {
+  hasSeenIntro: boolean;
+}
+
+export default function OnboardingStack({
+  hasSeenIntro,
+}: OnboardingStackProps) {
+  useEffect(() => {
+    console.log("🚀 OnboardingStack mounted - this should only happen once");
+  }, []);
+
   return (
     <Stack.Navigator
-      initialRouteName="CinematicIntro"
+      initialRouteName={hasSeenIntro ? "Welcome" : "CinematicIntro"}
       screenOptions={{
         headerShown: false,
+        gestureEnabled: false, // Disable swipe back gestures
+        animationEnabled: true,
       }}
     >
       <Stack.Screen name="CinematicIntro" component={CinematicIntroScreen} />
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
-      <Stack.Screen
-        name="PhoneVerification"
-        component={PhoneVerificationScreen}
-      />
-      <Stack.Screen name="AgeVerification" component={AgeVerificationScreen} />
-      <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
-      <Stack.Screen
-        name="InterestSelection"
-        component={InterestSelectionScreen}
-      />
-      <Stack.Screen name="AppFeatures" component={AppFeaturesScreen} />
-      <Stack.Screen
-        name="LocationPermission"
-        component={LocationPermissionScreen}
-      />
-      <Stack.Screen
-        name="OnboardingComplete"
-        component={OnboardingCompleteScreen}
-      />
-      <Stack.Screen name="PreferenceSetup" component={PreferenceSetupScreen} />
+      <Stack.Screen name="NameInput" component={NameInputScreen} />
+      <Stack.Screen name="AgeSelection" component={AgeSelectionScreen} />
+      <Stack.Screen name="GenderSelection" component={GenderSelectionScreen} />
+      <Stack.Screen name="GoalsSelection" component={GoalsSelectionScreen} />
+      <Stack.Screen name="ObstaclesSelection" component={ObstaclesScreen} />
+      <Stack.Screen name="RoutineSetup" component={RoutineSetupScreen} />
+      <Stack.Screen name="FeatureIntro" component={FeatureIntroScreen} />
+      <Stack.Screen name="SocialBenefits" component={SocialBenefitsScreen} />
+      <Stack.Screen name="Commitment" component={CommitmentScreen} />
+      <Stack.Screen name="BuildingProfile" component={BuildingProfileScreen} />
     </Stack.Navigator>
   );
 }
