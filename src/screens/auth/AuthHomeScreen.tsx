@@ -11,7 +11,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
-import { AuthService } from "../../services/firebase";
 import { DataService } from "../../services/DataService";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
@@ -22,7 +21,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 type AuthHomeScreenNavigationProp = StackNavigationProp<
   OnboardingStackParamList,
-  "AuthHome"
+  "Welcome"
 >;
 
 interface Props {
@@ -75,10 +74,10 @@ export default function AuthHomeScreen({ navigation }: Props) {
     setLoading(true);
 
     try {
-      // Enable developer mode to use mock data and disable Firebase
+      // Enable developer mode to use mock data
       DataService.setDeveloperMode(true);
 
-      // Create a local user for onboarding testing (no Firebase)
+      // Create a local user for onboarding testing (no backend)
       const localUser = {
         uid: "local_onboarding_user",
         phoneNumber: "+1234567890",
@@ -92,13 +91,13 @@ export default function AuthHomeScreen({ navigation }: Props) {
         about: "",
       };
 
-      // Set local authentication state (no Firebase connection)
+      // Set local authentication state (no backend connection)
       setUser(localUser);
       setAuthenticated(true);
       setOnboardingComplete(false);
 
       console.log("🔧 Developer Onboarding:", {
-        message: "Starting local onboarding flow (no Firebase)",
+        message: "Starting local onboarding flow (no backend)",
         isAuthenticated: true,
         onboardingComplete: false,
         user: localUser,

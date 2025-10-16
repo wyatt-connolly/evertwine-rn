@@ -8,7 +8,7 @@ import {
   TextInput,
   ScrollView,
 } from "react-native";
-import { AuthService, FirestoreService } from "../services/firebase";
+import { SupabaseAuthService, SupabaseDataService } from "../services/supabase";
 
 export default function TestScreen() {
   const [phoneNumber, setPhoneNumber] = useState("+1234567890");
@@ -21,7 +21,7 @@ export default function TestScreen() {
     setLoading(true);
     try {
       console.log("🧪 TESTING PHONE AUTH...");
-      const result = await AuthService.signInWithPhone(phoneNumber);
+      const result = await SupabaseAuthService.signInWithPhone(phoneNumber);
 
       if (result.error) {
         Alert.alert("Error", result.error);
@@ -51,7 +51,7 @@ export default function TestScreen() {
     setLoading(true);
     try {
       console.log("🧪 TESTING CODE VERIFICATION...");
-      const result = await AuthService.verifyPhoneCode(
+      const result = await SupabaseAuthService.verifyPhoneOTP(
         verificationId,
         verificationCode
       );
@@ -61,14 +61,14 @@ export default function TestScreen() {
         return;
       }
 
-      console.log("🧪 TESTING USER CREATION IN FIRESTORE...");
+      console.log("🧪 TESTING USER CREATION IN SUPABASE...");
       const userData = {
         displayName: "Test User",
         bio: "This is a test user created from the test screen",
         phoneNumber: result.user.phoneNumber,
       };
 
-      const createResult = await FirestoreService.createUser(userData);
+      const createResult = await SupabaseDataService.createUser(userData);
 
       if (createResult.error) {
         Alert.alert("Error", `Failed to create user: ${createResult.error}`);
@@ -77,7 +77,7 @@ export default function TestScreen() {
 
       Alert.alert(
         "Success!",
-        `User created successfully!\n\nUID: ${result.user.uid}\nEmail: ${result.user.email}\nPhone: ${result.user.phoneNumber}\n\nCheck Firebase Console to see the user!`
+        `User created successfully!\n\nUID: ${result.user.uid}\nEmail: ${result.user.email}\nPhone: ${result.user.phoneNumber}\n\nCheck Supabase Dashboard to see the user!`
       );
 
       // Reset form
@@ -92,14 +92,14 @@ export default function TestScreen() {
     }
   };
 
-  const testFirestoreConnection = async () => {
+  const testSupabaseConnection = async () => {
     setLoading(true);
     try {
-      console.log("🧪 TESTING FIRESTORE CONNECTION...");
-      const result = await FirestoreService.testConnection();
+      console.log("🧪 TESTING SUPABASE CONNECTION...");
+      const result = await SupabaseDataService.testConnection();
 
       if (result.success) {
-        Alert.alert("Success", "Firestore connection is working!");
+        Alert.alert("Success", "Supabase connection is working!");
       } else {
         Alert.alert("Error", result.error || "Connection failed");
       }
@@ -113,17 +113,17 @@ export default function TestScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Firebase Test Screen</Text>
+      <Text style={styles.title}>Supabase Test Screen</Text>
       <Text style={styles.subtitle}>
-        This screen helps you test Firebase authentication and Firestore
+        This screen helps you test Supabase authentication and database
         integration. Check the console logs for detailed information.
       </Text>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>1. Test Firestore Connection</Text>
+        <Text style={styles.sectionTitle}>1. Test Supabase Connection</Text>
         <TouchableOpacity
           style={styles.button}
-          onPress={testFirestoreConnection}
+          onPress={testSupabaseConnection}
           disabled={loading}
         >
           <Text style={styles.buttonText}>Test Connection</Text>
@@ -172,7 +172,7 @@ export default function TestScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Instructions:</Text>
         <Text style={styles.instruction}>
-          • Click "Test Connection" to verify Firestore is working
+          • Click "Test Connection" to verify Supabase is working
         </Text>
         <Text style={styles.instruction}>
           • Enter any phone number and click "Send Verification Code"
@@ -181,10 +181,10 @@ export default function TestScreen() {
           • Use any 6-digit code (like 123456) to verify
         </Text>
         <Text style={styles.instruction}>
-          • The app will create a REAL Firebase user and save it to Firestore
+          • The app will create a REAL Supabase user and save it to the database
         </Text>
         <Text style={styles.instruction}>
-          • Check your Firebase Console to see the created user
+          • Check your Supabase Dashboard to see the created user
         </Text>
         <Text style={styles.instruction}>
           • Watch the console logs for detailed information

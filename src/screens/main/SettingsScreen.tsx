@@ -14,7 +14,10 @@ import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { usePreferenceStore } from "../../hooks/usePreferenceStore";
 import { getPreferenceCompletionPercentage } from "../../constants/preferences";
-import { FirestoreService, AuthService } from "../../services/firebase";
+import {
+  SupabaseDataService,
+  SupabaseAuthService,
+} from "../../services/supabase";
 
 export default function SettingsScreen({ navigation }: any) {
   const { user, logout } = useAuthStore();
@@ -91,12 +94,12 @@ export default function SettingsScreen({ navigation }: any) {
         "Please wait while we delete your account and all associated data..."
       );
 
-      // Delete all user data from Firestore
-      const firestoreResult = await FirestoreService.deleteUserAccount(
+      // Delete all user data from Supabase
+      const supabaseResult = await SupabaseDataService.deleteUserAccount(
         user.uid
       );
 
-      if (firestoreResult.error) {
+      if (supabaseResult.error) {
         Alert.alert(
           "Delete Failed",
           `Unable to delete your account data. Please try again later.`
@@ -104,8 +107,8 @@ export default function SettingsScreen({ navigation }: any) {
         return;
       }
 
-      // Delete the account from Firebase Auth
-      const authResult = await AuthService.deleteAccount();
+      // Delete the account from Supabase Auth
+      const authResult = await SupabaseAuthService.deleteAccount();
 
       if (authResult.error) {
         Alert.alert(

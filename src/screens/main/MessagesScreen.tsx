@@ -110,7 +110,7 @@ export default function MessagesScreen({ navigation }: any) {
         if (DataService.isInDeveloperMode()) {
           setMessageRooms(mockMessageRooms);
         }
-        // In Firebase mode, keep empty to show empty state
+        // In production mode, keep empty to show empty state
       } finally {
         setIsLoading(false);
       }

@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
-import { FirestoreService } from "../../services/firebase";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
 import { DataService } from "../../services/DataService";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
@@ -87,21 +87,19 @@ export default function InterestSelectionScreen({ navigation }: Props) {
         interests: selectedInterests,
       });
 
-      // Only connect to Firebase if not in developer mode
+      // Only connect to Supabase if not in developer mode
       if (!DataService.isInDeveloperMode() && user?.uid) {
-        const result = await FirestoreService.updateUser(user.uid, {
+        const result = await SupabaseDataService.updateUser(user.uid, {
           interests: selectedInterests,
         });
 
         if (result.error) {
           Alert.alert("Error", "Failed to save interests. Please try again.");
-          console.error("Firestore error:", result.error);
+          console.error("Supabase error:", result.error);
           return;
         }
       } else {
-        console.log(
-          "🔧 Developer Mode: Skipping Firebase, using local storage only"
-        );
+        console.log("🔧 Developer Mode: Using local storage only");
       }
 
       navigation.navigate("AppFeatures");

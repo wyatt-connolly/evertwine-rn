@@ -52,6 +52,7 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 6. Click **Run**
 
 ✅ This single script will:
+
 - Drop any existing tables (if they exist)
 - Create all tables fresh
 - Enable Row Level Security
@@ -62,6 +63,7 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 ⚠️ **WARNING**: This will delete all existing data in these tables!
 
 **The script includes:**
+
 - 8 database tables (users, posts, meetups, happy_hours, etc.)
 - Row Level Security policies for data protection
 - Performance indexes

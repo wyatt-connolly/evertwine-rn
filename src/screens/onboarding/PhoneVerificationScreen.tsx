@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
-import { AuthService } from "../../services/firebase";
+import { SupabaseAuthService } from "../../services/supabase";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import GradientBackground from "../../components/GradientBackground";
@@ -79,7 +79,7 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
     try {
       const fullPhoneNumber = `+1${cleanPhone}`;
 
-      const result = await AuthService.signInWithPhone(fullPhoneNumber);
+      const result = await SupabaseAuthService.signInWithPhone(fullPhoneNumber);
 
       if (result.error) {
         Alert.alert("Error", result.error);
@@ -124,13 +124,13 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
         DataService.isInDeveloperMode()
       );
 
-      console.log("📞 Verifying phone code with Firebase Auth...");
-      const result = await AuthService.verifyPhoneCode(
+      console.log("📞 Verifying phone code with Supabase Auth...");
+      const result = await SupabaseAuthService.verifyPhoneOTP(
         verificationId,
         verificationCode
       );
 
-      console.log("📞 Firebase Auth verification result:", {
+      console.log("📞 Supabase Auth verification result:", {
         success: !result.error,
         error: result.error,
         userExists: !!result.user,
@@ -146,7 +146,7 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
 
       console.log("✅ Phone verification successful, loading user profile...");
 
-      // Try to load user profile from Firebase
+      // Try to load user profile from Supabase
       let userProfile = null;
       try {
         console.log("📖 Loading user profile data for:", result.user.uid);

@@ -9,8 +9,8 @@ import {
   DEFAULT_PREFERENCES,
 } from "../../constants/preferences";
 import { useAuthStore } from "../../hooks/useAuthStore";
-import { FirestoreService } from "../../services/firebase";
 import { DataService } from "../../services/DataService";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
 
 // Import preference step components
 import AgeRangeStep from "./steps/AgeRangeStep";
@@ -99,24 +99,22 @@ export default function PreferenceSetupScreen({
           style: "destructive",
           onPress: async () => {
             try {
-              // Save default preferences to Firebase (only if not in developer mode)
+              // Save default preferences to Supabase (only if not in developer mode)
               if (!DataService.isInDeveloperMode() && user?.uid) {
-                const result = await FirestoreService.updateUser(user.uid, {
+                const result = await SupabaseDataService.updateUser(user.uid, {
                   preferences: DEFAULT_PREFERENCES,
                 });
 
                 if (result.error) {
                   console.error(
-                    "Failed to save default preferences to Firebase:",
+                    "Failed to save default preferences to Supabase:",
                     result.error
                   );
                 } else {
-                  console.log("✅ Default preferences saved to Firebase!");
+                  console.log("✅ Default preferences saved to Supabase!");
                 }
               } else {
-                console.log(
-                  "🔧 Developer Mode: Skipping Firebase, using local storage only"
-                );
+                console.log("🔧 Developer Mode: Using local storage only");
                 console.log("✅ Default preferences saved locally!");
               }
 
@@ -147,24 +145,22 @@ export default function PreferenceSetupScreen({
       await markPreferencesComplete();
       await savePreferences();
 
-      // Save preferences to Firebase (only if not in developer mode)
+      // Save preferences to Supabase (only if not in developer mode)
       if (!DataService.isInDeveloperMode() && user?.uid) {
-        const result = await FirestoreService.updateUser(user.uid, {
+        const result = await SupabaseDataService.updateUser(user.uid, {
           preferences: preferences,
         });
 
         if (result.error) {
           console.error(
-            "Failed to save preferences to Firebase:",
+            "Failed to save preferences to Supabase:",
             result.error
           );
         } else {
-          console.log("✅ Preferences saved to Firebase successfully!");
+          console.log("✅ Preferences saved to Supabase successfully!");
         }
       } else {
-        console.log(
-          "🔧 Developer Mode: Skipping Firebase, using local storage only"
-        );
+        console.log("🔧 Developer Mode: Using local storage only");
         console.log("✅ Preferences saved locally!");
       }
 

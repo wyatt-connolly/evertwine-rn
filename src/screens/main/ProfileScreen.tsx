@@ -13,7 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { Ionicons } from "@expo/vector-icons";
-import { FirestoreService } from "../../services/firebase";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
 import { DataService } from "../../services/DataService";
 import * as ImagePicker from "expo-image-picker";
 import { getMockUserStats, mockUsers } from "../../data/mockData";
@@ -150,9 +150,9 @@ export default function ProfileScreen({ navigation, route }: any) {
           photoURL: result.assets[0].uri,
         });
 
-        // Update in Firestore
+        // Update in Supabase
         if (user?.uid) {
-          await FirestoreService.updateUser(user.uid, {
+          await SupabaseDataService.updateUser(user.uid, {
             photoURL: result.assets[0].uri,
           });
         }

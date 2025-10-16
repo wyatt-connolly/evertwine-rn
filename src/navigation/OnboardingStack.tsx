@@ -1,5 +1,6 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
+import CinematicIntroScreen from "../screens/CinematicIntroScreen";
 import AuthHomeScreen from "../screens/auth/AuthHomeScreen";
 import PhoneVerificationScreen from "../screens/onboarding/PhoneVerificationScreen";
 import AgeVerificationScreen from "../screens/onboarding/AgeVerificationScreen";
@@ -12,7 +13,8 @@ import PreferenceSetupScreen from "../screens/preferences/PreferenceSetupScreen"
 import { useAuthStore } from "../hooks/useAuthStore";
 
 export type OnboardingStackParamList = {
-  AuthHome: undefined;
+  CinematicIntro: undefined;
+  Welcome: undefined;
   PhoneVerification: undefined;
   AgeVerification: undefined;
   ProfileSetup: undefined;
@@ -28,12 +30,13 @@ const Stack = createStackNavigator<OnboardingStackParamList>();
 export default function OnboardingStack() {
   return (
     <Stack.Navigator
-      initialRouteName="AuthHome"
+      initialRouteName="CinematicIntro"
       screenOptions={{
         headerShown: false,
       }}
     >
-      <Stack.Screen name="AuthHome" component={AuthHomeScreen} />
+      <Stack.Screen name="CinematicIntro" component={CinematicIntroScreen} />
+      <Stack.Screen name="Welcome" component={AuthHomeScreen} />
       <Stack.Screen
         name="PhoneVerification"
         component={PhoneVerificationScreen}

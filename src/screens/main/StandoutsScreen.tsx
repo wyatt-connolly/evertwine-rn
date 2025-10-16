@@ -46,7 +46,7 @@ export default function StandoutsScreen({ navigation }: any) {
           );
           setStandouts(mockStandouts);
         } else {
-          // In Firebase mode, we don't have standouts data yet
+          // In production mode, we don't have standouts data yet
           // For now, keep empty to show empty state
           setStandouts([]);
         }

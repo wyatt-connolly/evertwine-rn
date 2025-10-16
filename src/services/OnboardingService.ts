@@ -1,7 +1,5 @@
 import { User } from "../types";
 import { DataService } from "./DataService";
-import { AuthService } from "./firebase";
-import { addAppVersionInfo } from "../utils/firebaseAppFilter";
 
 export class OnboardingService {
   // Complete user profile setup
@@ -59,16 +57,13 @@ export class OnboardingService {
         updatedTime: new Date(),
       };
 
-      // Add app version info before saving
-      const appUserData = addAppVersionInfo(userData);
-
       let result;
       if (existingUser.user) {
         // User exists, update them
-        result = await DataService.updateUser(uid, appUserData);
+        result = await DataService.updateUser(uid, userData);
       } else {
         // User doesn't exist, create them
-        result = await DataService.createUser(appUserData, uid);
+        result = await DataService.createUser(userData, uid);
       }
 
       if (result.success) {

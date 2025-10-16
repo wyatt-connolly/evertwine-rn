@@ -125,17 +125,17 @@ export function testNavigation(navigation: any, route: string, params?: any) {
 }
 
 /**
- * Test Firebase data scenarios
+ * Test backend data scenarios
  */
-export function testFirebaseData(data: any, dataType: string) {
-  console.log(`🧪 Testing Firebase ${dataType} data:`, data);
+export function testBackendData(data: any, dataType: string) {
+  console.log(`🧪 Testing ${dataType} data:`, data);
 
   const issues: string[] = [];
 
   if (!data) {
     issues.push(`${dataType} data is null or undefined`);
   } else {
-    // Check for common Firebase data issues
+    // Check for common data issues
     if (dataType === "user" && data) {
       if (!data.uid) issues.push("User missing uid");
       if (!data.displayName) issues.push("User missing displayName");
@@ -157,9 +157,9 @@ export function testFirebaseData(data: any, dataType: string) {
   }
 
   if (issues.length > 0) {
-    console.warn(`⚠️ Firebase ${dataType} data has issues:`, issues);
+    console.warn(`⚠️ ${dataType} data has issues:`, issues);
   } else {
-    console.log(`✅ Firebase ${dataType} data looks good`);
+    console.log(`✅ ${dataType} data looks good`);
   }
 
   return issues;

@@ -1,6 +1,4 @@
 import { User, Meetup, MessageRoom, ActivityItem } from "../types";
-import { AuthService, FirestoreService } from "./firebase";
-import { FirebaseDataService } from "./FirebaseDataService";
 import {
   getMockUsers,
   getMockMeetups,
@@ -11,7 +9,7 @@ import {
 export class DataService {
   private static isDeveloperMode = true;
 
-  // Set developer mode (bypasses Firebase)
+  // Set developer mode
   static setDeveloperMode(enabled: boolean) {
     this.isDeveloperMode = enabled;
   }
@@ -31,8 +29,8 @@ export class DataService {
       return { user, error: null };
     }
 
-    // Use Firebase for real authentication - NEVER return mock data
-    return await FirestoreService.getUser(uid);
+    // TODO: Implement with Supabase
+    return { user: null, error: "Not implemented" };
   }
 
   static async createUser(
@@ -44,8 +42,8 @@ export class DataService {
       return { success: true, error: null };
     }
 
-    // Use Firebase
-    return await FirestoreService.createUser(userData, userUid);
+    // TODO: Implement with Supabase
+    return { success: false, error: "Not implemented" };
   }
 
   static async updateUser(
@@ -57,8 +55,8 @@ export class DataService {
       return { success: true, error: null };
     }
 
-    // Use Firebase
-    return await FirestoreService.updateUser(uid, updates);
+    // TODO: Implement with Supabase
+    return { success: false, error: "Not implemented" };
   }
 
   // Meetup Data Methods
@@ -72,8 +70,8 @@ export class DataService {
       return { meetups, error: null };
     }
 
-    // Use Firebase for real data - NEVER return mock data
-    return await FirebaseDataService.getMeetups();
+    // TODO: Implement with Supabase
+    return { meetups: [], error: "Not implemented" };
   }
 
   static async createMeetup(
@@ -84,8 +82,8 @@ export class DataService {
       return { success: true, error: null };
     }
 
-    // Use Firebase
-    return await FirebaseDataService.createMeetup(meetupData);
+    // TODO: Implement with Supabase
+    return { success: false, error: "Not implemented" };
   }
 
   // Message Data Methods
@@ -97,8 +95,8 @@ export class DataService {
       return { rooms: mockMessageRooms, error: null };
     }
 
-    // Use Firebase
-    return await FirebaseDataService.getMessageRooms(userId);
+    // TODO: Implement with Supabase
+    return { rooms: [], error: "Not implemented" };
   }
 
   // Activity Feed Methods
@@ -112,8 +110,8 @@ export class DataService {
       return { activities, error: null };
     }
 
-    // Use Firebase - NEVER return mock data
-    return await FirebaseDataService.getActivityFeed(page, limit);
+    // TODO: Implement with Supabase
+    return { activities: [], error: "Not implemented" };
   }
 
   // Authentication Methods
@@ -126,8 +124,8 @@ export class DataService {
       };
     }
 
-    // Use Firebase
-    return await AuthService.signInWithPhone(phoneNumber);
+    // TODO: Implement with Supabase
+    return { confirmationResult: null, error: "Not implemented" };
   }
 
   static async signInWithGoogle() {
@@ -136,8 +134,8 @@ export class DataService {
       return { user: null, error: "Use Developer Login for mock data" };
     }
 
-    // Use Firebase
-    return await AuthService.signInWithGoogle();
+    // TODO: Implement with Supabase
+    return { user: null, error: "Not implemented" };
   }
 
   static async signInWithApple() {
@@ -146,8 +144,8 @@ export class DataService {
       return { user: null, error: "Use Developer Login for mock data" };
     }
 
-    // Use Firebase
-    return await AuthService.signInWithApple();
+    // TODO: Implement with Supabase
+    return { user: null, error: "Not implemented" };
   }
 
   static async loadUserProfile(uid: string) {
@@ -158,8 +156,8 @@ export class DataService {
       return { user, error: null };
     }
 
-    // Use Firebase
-    return await AuthService.loadUserProfile(uid);
+    // TODO: Implement with Supabase
+    return { user: null, error: "Not implemented" };
   }
 
   // Real-time Data Listeners
@@ -169,8 +167,8 @@ export class DataService {
       return () => {}; // Return unsubscribe function
     }
 
-    // Use Firebase real-time listeners
-    return FirebaseDataService.setupUserListener(uid, callback);
+    // TODO: Implement with Supabase
+    return () => {}; // Return unsubscribe function
   }
 
   static setupMeetupsListener(callback: (meetups: Meetup[]) => void) {
@@ -179,8 +177,8 @@ export class DataService {
       return () => {}; // Return unsubscribe function
     }
 
-    // Use Firebase real-time listeners
-    return FirebaseDataService.setupMeetupsListener(callback);
+    // TODO: Implement with Supabase
+    return () => {}; // Return unsubscribe function
   }
 
   static setupMessagesListener(
@@ -192,8 +190,8 @@ export class DataService {
       return () => {}; // Return unsubscribe function
     }
 
-    // Use Firebase real-time listeners
-    return FirebaseDataService.setupMessagesListener(userId, callback);
+    // TODO: Implement with Supabase
+    return () => {}; // Return unsubscribe function
   }
 
   static setupActivityListener(callback: (activities: ActivityItem[]) => void) {
@@ -202,8 +200,8 @@ export class DataService {
       return () => {}; // Return unsubscribe function
     }
 
-    // Use Firebase real-time listeners
-    return FirebaseDataService.setupActivityListener(callback);
+    // TODO: Implement with Supabase
+    return () => {}; // Return unsubscribe function
   }
 
   // Notifications Methods
@@ -217,8 +215,8 @@ export class DataService {
       return { notifications, error: null };
     }
 
-    // Use Firebase for real data
-    return await FirebaseDataService.getNotifications(uid);
+    // TODO: Implement with Supabase
+    return { notifications: [], error: "Not implemented" };
   }
 
   // User Stats Methods
@@ -232,7 +230,7 @@ export class DataService {
       return { stats, error: null };
     }
 
-    // Use Firebase for real data
-    return await FirebaseDataService.getUserStats(uid);
+    // TODO: Implement with Supabase
+    return { stats: null, error: "Not implemented" };
   }
 }
