@@ -1,7 +1,7 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import CinematicIntroScreen from "../screens/CinematicIntroScreen";
-import AuthHomeScreen from "../screens/auth/AuthHomeScreen";
+import WelcomeScreen from "../screens/WelcomeScreen";
 import PhoneVerificationScreen from "../screens/onboarding/PhoneVerificationScreen";
 import AgeVerificationScreen from "../screens/onboarding/AgeVerificationScreen";
 import ProfileSetupScreen from "../screens/onboarding/ProfileSetupScreen";
@@ -36,7 +36,7 @@ export default function OnboardingStack() {
       }}
     >
       <Stack.Screen name="CinematicIntro" component={CinematicIntroScreen} />
-      <Stack.Screen name="Welcome" component={AuthHomeScreen} />
+      <Stack.Screen name="Welcome" component={WelcomeScreen} />
       <Stack.Screen
         name="PhoneVerification"
         component={PhoneVerificationScreen}
