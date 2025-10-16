@@ -38,7 +38,9 @@ export const useMeetupStore = create<MeetupState>()(
       createMeetup: async (meetupData) => {
         set({ isLoading: true });
         try {
-          const newMeetup = await SupabaseDataService.createMeetup(meetupData as Partial<Meetup>);
+          const newMeetup = await SupabaseDataService.createMeetup(
+            meetupData as Partial<Meetup>
+          );
           set((state) => ({
             meetups: [newMeetup, ...state.meetups],
             isLoading: false,
@@ -54,7 +56,10 @@ export const useMeetupStore = create<MeetupState>()(
       updateMeetup: async (id, updates) => {
         set({ isLoading: true });
         try {
-          const updatedMeetup = await SupabaseDataService.updateMeetup(id, updates);
+          const updatedMeetup = await SupabaseDataService.updateMeetup(
+            id,
+            updates
+          );
           set((state) => ({
             meetups: state.meetups.map((meetup) =>
               meetup.id === id ? updatedMeetup : meetup

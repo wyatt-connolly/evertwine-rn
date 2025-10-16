@@ -73,9 +73,7 @@ export class SupabaseStorageService {
     postId: string,
     uris: string[]
   ): Promise<string[]> {
-    const uploadPromises = uris.map((uri) =>
-      this.uploadPostImage(postId, uri)
-    );
+    const uploadPromises = uris.map((uri) => this.uploadPostImage(postId, uri));
     return Promise.all(uploadPromises);
   }
 
@@ -186,4 +184,3 @@ export class SupabaseStorageService {
     return publicUrl;
   }
 }
-

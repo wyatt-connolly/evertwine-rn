@@ -25,7 +25,9 @@ export default function AppNavigator() {
         const currentUser = await SupabaseAuthService.getCurrentUser();
         if (currentUser) {
           // Load full user profile from database
-          const fullProfile = await SupabaseDataService.getUser(currentUser.uid);
+          const fullProfile = await SupabaseDataService.getUser(
+            currentUser.uid
+          );
           if (fullProfile) {
             setUser(fullProfile as any);
             setAuthenticated(true);
@@ -54,36 +56,38 @@ export default function AppNavigator() {
     checkSession();
 
     // Subscribe to auth state changes
-    const { data: { subscription } } = SupabaseAuthService.onAuthStateChange(
-      async (supabaseUser) => {
-        if (supabaseUser) {
-          // User is signed in, load their profile data from database
-          try {
-            const fullProfile = await SupabaseDataService.getUser(supabaseUser.uid);
-            if (fullProfile) {
-              setUser(fullProfile as any);
-              setAuthenticated(true);
-              setOnboardingComplete(fullProfile.onboardingComplete || false);
-            } else {
-              // User exists in auth but not in database yet
-              setUser(supabaseUser);
-              setAuthenticated(true);
-              setOnboardingComplete(supabaseUser.onboardingComplete || false);
-            }
-          } catch (error) {
-            console.error("Error loading user profile:", error);
+    const {
+      data: { subscription },
+    } = SupabaseAuthService.onAuthStateChange(async (supabaseUser) => {
+      if (supabaseUser) {
+        // User is signed in, load their profile data from database
+        try {
+          const fullProfile = await SupabaseDataService.getUser(
+            supabaseUser.uid
+          );
+          if (fullProfile) {
+            setUser(fullProfile as any);
+            setAuthenticated(true);
+            setOnboardingComplete(fullProfile.onboardingComplete || false);
+          } else {
+            // User exists in auth but not in database yet
             setUser(supabaseUser);
             setAuthenticated(true);
             setOnboardingComplete(supabaseUser.onboardingComplete || false);
           }
-        } else {
-          // User is signed out
-          setAuthenticated(false);
-          setUser(null);
-          setOnboardingComplete(false);
+        } catch (error) {
+          console.error("Error loading user profile:", error);
+          setUser(supabaseUser);
+          setAuthenticated(true);
+          setOnboardingComplete(supabaseUser.onboardingComplete || false);
         }
+      } else {
+        // User is signed out
+        setAuthenticated(false);
+        setUser(null);
+        setOnboardingComplete(false);
       }
-    );
+    });
 
     return () => {
       subscription?.unsubscribe();

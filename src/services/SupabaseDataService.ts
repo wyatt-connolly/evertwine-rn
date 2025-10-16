@@ -26,7 +26,7 @@ export class SupabaseDataService {
   }
 
   static async createUser(user: Partial<User>) {
-    const { data, error} = await supabase
+    const { data, error } = await supabase
       .from("users")
       .insert([this.mapUserToDB(user)])
       .select()
@@ -38,7 +38,10 @@ export class SupabaseDataService {
   static async updateUser(uid: string, updates: Partial<User>) {
     const { data, error } = await supabase
       .from("users")
-      .update({ ...this.mapUserToDB(updates), updated_time: new Date().toISOString() })
+      .update({
+        ...this.mapUserToDB(updates),
+        updated_time: new Date().toISOString(),
+      })
       .eq("uid", uid)
       .select()
       .single();
@@ -60,10 +63,12 @@ export class SupabaseDataService {
   static async getPosts(limit = 50): Promise<Post[]> {
     const { data, error } = await supabase
       .from("posts")
-      .select(`
+      .select(
+        `
         *,
         user:users!posts_user_id_fkey(uid, display_name, profile_pictures)
-      `)
+      `
+      )
       .order("created_at", { ascending: false })
       .limit(limit);
     if (error) throw error;
@@ -73,10 +78,12 @@ export class SupabaseDataService {
   static async getPost(id: string): Promise<Post | null> {
     const { data, error } = await supabase
       .from("posts")
-      .select(`
+      .select(
+        `
         *,
         user:users!posts_user_id_fkey(uid, display_name, profile_pictures)
-      `)
+      `
+      )
       .eq("id", id)
       .single();
     if (error) {
@@ -116,10 +123,12 @@ export class SupabaseDataService {
   static async getPostComments(postId: string): Promise<PostComment[]> {
     const { data, error } = await supabase
       .from("post_comments")
-      .select(`
+      .select(
+        `
         *,
         user:users!post_comments_user_id_fkey(uid, display_name, profile_pictures)
-      `)
+      `
+      )
       .eq("post_id", postId)
       .order("created_at", { ascending: true });
     if (error) throw error;
@@ -173,7 +182,10 @@ export class SupabaseDataService {
   static async updateMeetup(id: string, updates: Partial<Meetup>) {
     const { data, error } = await supabase
       .from("meetups")
-      .update({ ...this.mapMeetupToDB(updates), updated_at: new Date().toISOString() })
+      .update({
+        ...this.mapMeetupToDB(updates),
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", id)
       .select()
       .single();
@@ -223,7 +235,10 @@ export class SupabaseDataService {
   static async updateHappyHour(id: string, updates: Partial<Event>) {
     const { data, error } = await supabase
       .from("happy_hours")
-      .update({ ...this.mapHappyHourToDB(updates), updated_at: new Date().toISOString() })
+      .update({
+        ...this.mapHappyHourToDB(updates),
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", id)
       .select()
       .single();
@@ -268,7 +283,10 @@ export class SupabaseDataService {
   static async updateMessageRoom(id: string, updates: Partial<MessageRoom>) {
     const { data, error } = await supabase
       .from("message_rooms")
-      .update({ ...this.mapMessageRoomToDB(updates), updated_time: new Date().toISOString() })
+      .update({
+        ...this.mapMessageRoomToDB(updates),
+        updated_time: new Date().toISOString(),
+      })
       .eq("id", id)
       .select()
       .single();
@@ -301,7 +319,10 @@ export class SupabaseDataService {
   static async updateMessage(id: string, updates: Partial<Message>) {
     const { data, error } = await supabase
       .from("messages")
-      .update({ ...this.mapMessageToDB(updates), updated_time: new Date().toISOString() })
+      .update({
+        ...this.mapMessageToDB(updates),
+        updated_time: new Date().toISOString(),
+      })
       .eq("id", id)
       .select()
       .single();
@@ -310,7 +331,10 @@ export class SupabaseDataService {
   }
 
   // ==================== NOTIFICATIONS ====================
-  static async getNotifications(userId: string, limit = 50): Promise<Notification[]> {
+  static async getNotifications(
+    userId: string,
+    limit = 50
+  ): Promise<Notification[]> {
     const { data, error } = await supabase
       .from("notifications")
       .select("*")
@@ -394,29 +418,40 @@ export class SupabaseDataService {
     if (user.pronouns !== undefined) mapped.pronouns = user.pronouns;
     if (user.bio !== undefined) mapped.bio = user.bio;
     if (user.about !== undefined) mapped.about = user.about;
-    if (user.profilePictures !== undefined) mapped.profile_pictures = user.profilePictures;
-    if (user.standoutPhotoIndex !== undefined) mapped.standout_photo_index = user.standoutPhotoIndex;
+    if (user.profilePictures !== undefined)
+      mapped.profile_pictures = user.profilePictures;
+    if (user.standoutPhotoIndex !== undefined)
+      mapped.standout_photo_index = user.standoutPhotoIndex;
     if (user.location !== undefined) mapped.location = user.location;
-    if (user.locationName !== undefined) mapped.location_name = user.locationName;
+    if (user.locationName !== undefined)
+      mapped.location_name = user.locationName;
     if (user.phoneNumber !== undefined) mapped.phone_number = user.phoneNumber;
     if (user.school !== undefined) mapped.school = user.school;
     if (user.jobTitle !== undefined) mapped.job_title = user.jobTitle;
     if (user.jobCompany !== undefined) mapped.job_company = user.jobCompany;
-    if (user.professionalLevel !== undefined) mapped.professional_level = user.professionalLevel;
+    if (user.professionalLevel !== undefined)
+      mapped.professional_level = user.professionalLevel;
     if (user.hometown !== undefined) mapped.hometown = user.hometown;
     if (user.starSign !== undefined) mapped.star_sign = user.starSign;
     if (user.hobbies !== undefined) mapped.hobbies = user.hobbies;
     if (user.interests !== undefined) mapped.interests = user.interests;
     if (user.lookingFor !== undefined) mapped.looking_for = user.lookingFor;
-    if (user.onboardingComplete !== undefined) mapped.onboarding_complete = user.onboardingComplete;
+    if (user.onboardingComplete !== undefined)
+      mapped.onboarding_complete = user.onboardingComplete;
     if (user.isVerified !== undefined) mapped.is_verified = user.isVerified;
     if (user.isPaused !== undefined) mapped.is_paused = user.isPaused;
-    if (user.lastActive !== undefined) mapped.last_active = user.lastActive.toISOString();
-    if (user.verifiedAt !== undefined) mapped.verified_at = user.verifiedAt.toISOString();
-    if (user.profileViews !== undefined) mapped.profile_views = user.profileViews;
-    if (user.uniqueViewers !== undefined) mapped.unique_viewers = user.uniqueViewers;
-    if (user.viewsThisWeek !== undefined) mapped.views_this_week = user.viewsThisWeek;
-    if (user.averageViewDuration !== undefined) mapped.average_view_duration = user.averageViewDuration;
+    if (user.lastActive !== undefined)
+      mapped.last_active = user.lastActive.toISOString();
+    if (user.verifiedAt !== undefined)
+      mapped.verified_at = user.verifiedAt.toISOString();
+    if (user.profileViews !== undefined)
+      mapped.profile_views = user.profileViews;
+    if (user.uniqueViewers !== undefined)
+      mapped.unique_viewers = user.uniqueViewers;
+    if (user.viewsThisWeek !== undefined)
+      mapped.views_this_week = user.viewsThisWeek;
+    if (user.averageViewDuration !== undefined)
+      mapped.average_view_duration = user.averageViewDuration;
     if (user.preferences !== undefined) mapped.preferences = user.preferences;
     return mapped;
   }
@@ -445,7 +480,8 @@ export class SupabaseDataService {
     if (post.message !== undefined) mapped.message = post.message;
     if (post.images !== undefined) mapped.images = post.images;
     if (post.likes !== undefined) mapped.likes = post.likes;
-    if (post.isAnnouncement !== undefined) mapped.is_announcement = post.isAnnouncement;
+    if (post.isAnnouncement !== undefined)
+      mapped.is_announcement = post.isAnnouncement;
     return mapped;
   }
 
@@ -509,33 +545,47 @@ export class SupabaseDataService {
     const mapped: any = {};
     if (meetup.id !== undefined) mapped.id = meetup.id;
     if (meetup.title !== undefined) mapped.title = meetup.title;
-    if (meetup.description !== undefined) mapped.description = meetup.description;
+    if (meetup.description !== undefined)
+      mapped.description = meetup.description;
     if (meetup.creatorId !== undefined) mapped.creator_id = meetup.creatorId;
     if (meetup.location !== undefined) mapped.location = meetup.location;
-    if (meetup.locationName !== undefined) mapped.location_name = meetup.locationName;
+    if (meetup.locationName !== undefined)
+      mapped.location_name = meetup.locationName;
     if (meetup.address !== undefined) mapped.address = meetup.address;
     if (meetup.time !== undefined) mapped.time = meetup.time.toISOString();
     if (meetup.duration !== undefined) mapped.duration = meetup.duration;
     if (meetup.timezone !== undefined) mapped.timezone = meetup.timezone;
     if (meetup.activity !== undefined) mapped.activity = meetup.activity;
-    if (meetup.activityCategory !== undefined) mapped.activity_category = meetup.activityCategory;
+    if (meetup.activityCategory !== undefined)
+      mapped.activity_category = meetup.activityCategory;
     if (meetup.tags !== undefined) mapped.tags = meetup.tags;
-    if (meetup.maxParticipants !== undefined) mapped.max_participants = meetup.maxParticipants;
-    if (meetup.currentParticipants !== undefined) mapped.current_participants = meetup.currentParticipants;
-    if (meetup.participants !== undefined) mapped.participants = meetup.participants;
+    if (meetup.maxParticipants !== undefined)
+      mapped.max_participants = meetup.maxParticipants;
+    if (meetup.currentParticipants !== undefined)
+      mapped.current_participants = meetup.currentParticipants;
+    if (meetup.participants !== undefined)
+      mapped.participants = meetup.participants;
     if (meetup.waitlist !== undefined) mapped.waitlist = meetup.waitlist;
-    if (meetup.declinedUsers !== undefined) mapped.declined_users = meetup.declinedUsers;
+    if (meetup.declinedUsers !== undefined)
+      mapped.declined_users = meetup.declinedUsers;
     if (meetup.status !== undefined) mapped.status = meetup.status;
-    if (meetup.isRecurring !== undefined) mapped.is_recurring = meetup.isRecurring;
-    if (meetup.recurringPattern !== undefined) mapped.recurring_pattern = meetup.recurringPattern;
-    if (meetup.requirements !== undefined) mapped.requirements = meetup.requirements;
+    if (meetup.isRecurring !== undefined)
+      mapped.is_recurring = meetup.isRecurring;
+    if (meetup.recurringPattern !== undefined)
+      mapped.recurring_pattern = meetup.recurringPattern;
+    if (meetup.requirements !== undefined)
+      mapped.requirements = meetup.requirements;
     if (meetup.coverImage !== undefined) mapped.cover_image = meetup.coverImage;
     if (meetup.images !== undefined) mapped.images = meetup.images;
     if (meetup.views !== undefined) mapped.views = meetup.views;
-    if (meetup.joinRequests !== undefined) mapped.join_requests = meetup.joinRequests;
-    if (meetup.completionRate !== undefined) mapped.completion_rate = meetup.completionRate;
-    if (meetup.engagementScore !== undefined) mapped.engagement_score = meetup.engagementScore;
-    if (meetup.completedAt !== undefined) mapped.completed_at = meetup.completedAt.toISOString();
+    if (meetup.joinRequests !== undefined)
+      mapped.join_requests = meetup.joinRequests;
+    if (meetup.completionRate !== undefined)
+      mapped.completion_rate = meetup.completionRate;
+    if (meetup.engagementScore !== undefined)
+      mapped.engagement_score = meetup.engagementScore;
+    if (meetup.completedAt !== undefined)
+      mapped.completed_at = meetup.completedAt.toISOString();
     return mapped;
   }
 
@@ -595,39 +645,49 @@ export class SupabaseDataService {
     if (event.id !== undefined) mapped.id = event.id;
     if (event.title !== undefined) mapped.title = event.title;
     if (event.description !== undefined) mapped.description = event.description;
-    if (event.organizerId !== undefined) mapped.organizer_id = event.organizerId;
+    if (event.organizerId !== undefined)
+      mapped.organizer_id = event.organizerId;
     if (event.venue !== undefined) mapped.venue = event.venue;
     if (event.venueType !== undefined) mapped.venue_type = event.venueType;
     if (event.location !== undefined) mapped.location = event.location;
-    if (event.locationName !== undefined) mapped.location_name = event.locationName;
+    if (event.locationName !== undefined)
+      mapped.location_name = event.locationName;
     if (event.address !== undefined) mapped.address = event.address;
-    if (event.startTime !== undefined) mapped.start_time = event.startTime.toISOString();
-    if (event.endTime !== undefined) mapped.end_time = event.endTime.toISOString();
+    if (event.startTime !== undefined)
+      mapped.start_time = event.startTime.toISOString();
+    if (event.endTime !== undefined)
+      mapped.end_time = event.endTime.toISOString();
     if (event.timezone !== undefined) mapped.timezone = event.timezone;
     if (event.category !== undefined) mapped.category = event.category;
     if (event.subcategory !== undefined) mapped.subcategory = event.subcategory;
     if (event.tags !== undefined) mapped.tags = event.tags;
     if (event.price !== undefined) mapped.price = event.price;
     if (event.currency !== undefined) mapped.currency = event.currency;
-    if (event.maxAttendees !== undefined) mapped.max_attendees = event.maxAttendees;
-    if (event.currentAttendees !== undefined) mapped.current_attendees = event.currentAttendees;
+    if (event.maxAttendees !== undefined)
+      mapped.max_attendees = event.maxAttendees;
+    if (event.currentAttendees !== undefined)
+      mapped.current_attendees = event.currentAttendees;
     if (event.coverImage !== undefined) mapped.cover_image = event.coverImage;
     if (event.images !== undefined) mapped.images = event.images;
     if (event.videoUrl !== undefined) mapped.video_url = event.videoUrl;
     if (event.status !== undefined) mapped.status = event.status;
-    if (event.isRecurring !== undefined) mapped.is_recurring = event.isRecurring;
-    if (event.recurringPattern !== undefined) mapped.recurring_pattern = event.recurringPattern;
+    if (event.isRecurring !== undefined)
+      mapped.is_recurring = event.isRecurring;
+    if (event.recurringPattern !== undefined)
+      mapped.recurring_pattern = event.recurringPattern;
     if (event.features !== undefined) mapped.features = event.features;
     if (event.views !== undefined) mapped.views = event.views;
     if (event.shares !== undefined) mapped.shares = event.shares;
     if (event.likes !== undefined) mapped.likes = event.likes;
     if (event.attendees !== undefined) mapped.attendees = event.attendees;
     if (event.waitlist !== undefined) mapped.waitlist = event.waitlist;
-    if (event.interestedUsers !== undefined) mapped.interested_users = event.interestedUsers;
+    if (event.interestedUsers !== undefined)
+      mapped.interested_users = event.interestedUsers;
     if (event.checkIns !== undefined) mapped.check_ins = event.checkIns;
     if (event.whosGoing !== undefined) mapped.whos_going = event.whosGoing;
     if (event.happyHourDetails) {
-      if (event.happyHourDetails.discount !== undefined) mapped.discount = event.happyHourDetails.discount;
+      if (event.happyHourDetails.discount !== undefined)
+        mapped.discount = event.happyHourDetails.discount;
       if (event.happyHourDetails.discountPercentage !== undefined)
         mapped.discount_percentage = event.happyHourDetails.discountPercentage;
       if (event.happyHourDetails.dealTimeWindow !== undefined)
@@ -661,7 +721,8 @@ export class SupabaseDataService {
     const mapped: any = {};
     if (room.id !== undefined) mapped.id = room.id;
     if (room.type !== undefined) mapped.type = room.type;
-    if (room.participants !== undefined) mapped.participants = room.participants;
+    if (room.participants !== undefined)
+      mapped.participants = room.participants;
     if (room.admins !== undefined) mapped.admins = room.admins;
     if (room.name !== undefined) mapped.name = room.name;
     if (room.description !== undefined) mapped.description = room.description;
@@ -699,22 +760,28 @@ export class SupabaseDataService {
   private static mapMessageToDB(message: Partial<Message>): any {
     const mapped: any = {};
     if (message.id !== undefined) mapped.id = message.id;
-    if (message.messageRoomRef !== undefined) mapped.message_room_ref = message.messageRoomRef;
+    if (message.messageRoomRef !== undefined)
+      mapped.message_room_ref = message.messageRoomRef;
     if (message.senderRef !== undefined) mapped.sender_ref = message.senderRef;
     if (message.text !== undefined) mapped.text = message.text;
-    if (message.messageType !== undefined) mapped.message_type = message.messageType;
+    if (message.messageType !== undefined)
+      mapped.message_type = message.messageType;
     if (message.mediaUrl !== undefined) mapped.media_url = message.mediaUrl;
-    if (message.mediaThumbnail !== undefined) mapped.media_thumbnail = message.mediaThumbnail;
+    if (message.mediaThumbnail !== undefined)
+      mapped.media_thumbnail = message.mediaThumbnail;
     if (message.mediaSize !== undefined) mapped.media_size = message.mediaSize;
-    if (message.mediaDuration !== undefined) mapped.media_duration = message.mediaDuration;
+    if (message.mediaDuration !== undefined)
+      mapped.media_duration = message.mediaDuration;
     if (message.isEdited !== undefined) mapped.is_edited = message.isEdited;
-    if (message.editedAt !== undefined) mapped.edited_at = message.editedAt.toISOString();
+    if (message.editedAt !== undefined)
+      mapped.edited_at = message.editedAt.toISOString();
     if (message.replyTo !== undefined) mapped.reply_to = message.replyTo;
     if (message.reactions !== undefined) mapped.reactions = message.reactions;
     if (message.isRead !== undefined) mapped.is_read = message.isRead;
     if (message.readBy !== undefined) mapped.read_by = message.readBy;
     if (message.isDeleted !== undefined) mapped.is_deleted = message.isDeleted;
-    if (message.deletedAt !== undefined) mapped.deleted_at = message.deletedAt.toISOString();
+    if (message.deletedAt !== undefined)
+      mapped.deleted_at = message.deletedAt.toISOString();
     return mapped;
   }
 
@@ -735,28 +802,41 @@ export class SupabaseDataService {
       actionTaken: data.action_taken,
       metadata: data.metadata,
       createdAt: new Date(data.created_at),
-      scheduledFor: data.scheduled_for ? new Date(data.scheduled_for) : undefined,
+      scheduledFor: data.scheduled_for
+        ? new Date(data.scheduled_for)
+        : undefined,
     };
   }
 
   private static mapNotificationToDB(notification: Partial<Notification>): any {
     const mapped: any = {};
     if (notification.id !== undefined) mapped.id = notification.id;
-    if (notification.receiverRef !== undefined) mapped.receiver_ref = notification.receiverRef;
-    if (notification.senderRef !== undefined) mapped.sender_ref = notification.senderRef;
-    if (notification.meetupRef !== undefined) mapped.meetup_ref = notification.meetupRef;
-    if (notification.postRef !== undefined) mapped.post_ref = notification.postRef;
-    if (notification.eventRef !== undefined) mapped.happy_hour_ref = notification.eventRef;
+    if (notification.receiverRef !== undefined)
+      mapped.receiver_ref = notification.receiverRef;
+    if (notification.senderRef !== undefined)
+      mapped.sender_ref = notification.senderRef;
+    if (notification.meetupRef !== undefined)
+      mapped.meetup_ref = notification.meetupRef;
+    if (notification.postRef !== undefined)
+      mapped.post_ref = notification.postRef;
+    if (notification.eventRef !== undefined)
+      mapped.happy_hour_ref = notification.eventRef;
     if (notification.title !== undefined) mapped.title = notification.title;
-    if (notification.message !== undefined) mapped.message = notification.message;
-    if (notification.notificationType !== undefined) mapped.notification_type = notification.notificationType;
+    if (notification.message !== undefined)
+      mapped.message = notification.message;
+    if (notification.notificationType !== undefined)
+      mapped.notification_type = notification.notificationType;
     if (notification.isRead !== undefined) mapped.is_read = notification.isRead;
-    if (notification.readAt !== undefined) mapped.read_at = notification.readAt.toISOString();
-    if (notification.actionRequired !== undefined) mapped.action_required = notification.actionRequired;
-    if (notification.actionTaken !== undefined) mapped.action_taken = notification.actionTaken;
-    if (notification.metadata !== undefined) mapped.metadata = notification.metadata;
-    if (notification.scheduledFor !== undefined) mapped.scheduled_for = notification.scheduledFor.toISOString();
+    if (notification.readAt !== undefined)
+      mapped.read_at = notification.readAt.toISOString();
+    if (notification.actionRequired !== undefined)
+      mapped.action_required = notification.actionRequired;
+    if (notification.actionTaken !== undefined)
+      mapped.action_taken = notification.actionTaken;
+    if (notification.metadata !== undefined)
+      mapped.metadata = notification.metadata;
+    if (notification.scheduledFor !== undefined)
+      mapped.scheduled_for = notification.scheduledFor.toISOString();
     return mapped;
   }
 }
-

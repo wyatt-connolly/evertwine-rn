@@ -40,6 +40,8 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 
 ## Step 4: Set Up Database Schema
 
+### Option A: Fresh Setup (Recommended for New Projects)
+
 1. Go to your Supabase dashboard
 2. Click on **SQL Editor** in the left sidebar
 3. Click **New Query**
@@ -48,6 +50,23 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 6. Click **Run** to execute the schema creation
 
 This will create all the necessary tables, indexes, and Row Level Security (RLS) policies.
+
+### Option B: If Tables Already Exist
+
+If you get an error that tables already exist, you have two options:
+
+**Option 1: Drop and Recreate (⚠️ WARNING: Deletes all data)**
+1. Run the contents of `supabase-drop-tables.sql` first
+2. Then run `supabase-schema.sql`
+
+**Option 2: Safe Update (Preserves existing data)**
+1. Run the contents of `supabase-schema-safe.sql` instead
+2. This will skip creating tables that already exist and add missing policies/indexes
+
+### Files Available:
+- `supabase-schema.sql` - Standard schema creation
+- `supabase-schema-safe.sql` - Safe version that won't error on re-run
+- `supabase-drop-tables.sql` - Drops all tables (use with caution!)
 
 ## Step 5: Enable Phone Authentication (Optional)
 
@@ -74,6 +93,7 @@ If you want to use phone authentication:
    - `happy-hour-images`
 
 For each bucket:
+
 - Name: (use the names above)
 - Public bucket: **checked** ✓
 - Click **Create Bucket**
@@ -89,6 +109,7 @@ For each bucket, you need to set up policies:
 5. Add the following policies:
 
 **Upload Policy:**
+
 ```sql
 CREATE POLICY "Allow authenticated uploads"
 ON storage.objects FOR INSERT
@@ -97,6 +118,7 @@ WITH CHECK (bucket_id = 'bucket-name-here');
 ```
 
 **Download Policy (for public buckets):**
+
 ```sql
 CREATE POLICY "Allow public downloads"
 ON storage.objects FOR SELECT
@@ -125,6 +147,7 @@ npm start
 The following tables are created:
 
 ### Core Tables
+
 - **users**: User profiles and authentication data
 - **posts**: User posts and updates
 - **post_comments**: Comments on posts
@@ -137,6 +160,7 @@ The following tables are created:
 ### Row Level Security (RLS)
 
 All tables have RLS enabled with appropriate policies:
+
 - Users can view all public data
 - Users can only modify their own data
 - Messages are only visible to participants
@@ -176,60 +200,60 @@ All tables have RLS enabled with appropriate policies:
 
 ```typescript
 // Sign in with phone
-SupabaseAuthService.signInWithPhone(phoneNumber)
-SupabaseAuthService.verifyPhoneOTP(phone, token)
+SupabaseAuthService.signInWithPhone(phoneNumber);
+SupabaseAuthService.verifyPhoneOTP(phone, token);
 
 // Sign in with email
-SupabaseAuthService.signInWithEmail(email, password)
-SupabaseAuthService.signUpWithEmail(email, password)
+SupabaseAuthService.signInWithEmail(email, password);
+SupabaseAuthService.signUpWithEmail(email, password);
 
 // Get current user
-SupabaseAuthService.getCurrentUser()
+SupabaseAuthService.getCurrentUser();
 
 // Sign out
-SupabaseAuthService.signOut()
+SupabaseAuthService.signOut();
 ```
 
 ### Data Service (`SupabaseDataService`)
 
 ```typescript
 // Users
-SupabaseDataService.getUser(uid)
-SupabaseDataService.createUser(user)
-SupabaseDataService.updateUser(uid, updates)
+SupabaseDataService.getUser(uid);
+SupabaseDataService.createUser(user);
+SupabaseDataService.updateUser(uid, updates);
 
 // Posts
-SupabaseDataService.getPosts()
-SupabaseDataService.createPost(post)
-SupabaseDataService.updatePost(id, updates)
+SupabaseDataService.getPosts();
+SupabaseDataService.createPost(post);
+SupabaseDataService.updatePost(id, updates);
 
 // Meetups
-SupabaseDataService.getMeetups()
-SupabaseDataService.createMeetup(meetup)
-SupabaseDataService.updateMeetup(id, updates)
+SupabaseDataService.getMeetups();
+SupabaseDataService.createMeetup(meetup);
+SupabaseDataService.updateMeetup(id, updates);
 
 // Happy Hours
-SupabaseDataService.getHappyHours()
-SupabaseDataService.createHappyHour(event)
+SupabaseDataService.getHappyHours();
+SupabaseDataService.createHappyHour(event);
 
 // Messages
-SupabaseDataService.getMessages(roomId)
-SupabaseDataService.sendMessage(message)
+SupabaseDataService.getMessages(roomId);
+SupabaseDataService.sendMessage(message);
 
 // Notifications
-SupabaseDataService.getNotifications(userId)
+SupabaseDataService.getNotifications(userId);
 ```
 
 ### Storage Service (`SupabaseStorageService`)
 
 ```typescript
 // Upload images
-SupabaseStorageService.uploadProfilePicture(userId, uri, index)
-SupabaseStorageService.uploadPostImage(postId, uri)
-SupabaseStorageService.uploadMeetupImage(meetupId, uri)
+SupabaseStorageService.uploadProfilePicture(userId, uri, index);
+SupabaseStorageService.uploadPostImage(postId, uri);
+SupabaseStorageService.uploadMeetupImage(meetupId, uri);
 
 // Delete files
-SupabaseStorageService.deleteFile(bucket, path)
+SupabaseStorageService.deleteFile(bucket, path);
 ```
 
 ## Migration from Firebase
@@ -246,6 +270,7 @@ All Firebase dependencies have been removed.
 ## Support
 
 For issues or questions:
+
 - Check the [Supabase Documentation](https://supabase.com/docs)
 - Review the RLS policies in the SQL Editor
 - Check the browser console for errors
@@ -259,4 +284,3 @@ For issues or questions:
 - [ ] Configure rate limiting
 - [ ] Add database indexes for performance
 - [ ] Set up monitoring and alerts
-
