@@ -7,7 +7,6 @@ import {
   TextInput,
   ScrollView,
   Platform,
-  Switch,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -280,8 +279,7 @@ export default function CreateMeetupStep2Screen({
           {renderInput(
             "Max Participants",
             "maxParticipants",
-            "e.g., 10",
-            "numeric"
+            "e.g., 10"
           )}
         </View>
       </ScrollView>

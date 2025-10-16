@@ -2,8 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthUser } from "../types";
-import { signOut } from "firebase/auth";
-import { auth } from "../../firebase.config";
+import { SupabaseAuthService } from "../services/supabase";
 
 export type User = AuthUser;
 
@@ -46,9 +45,11 @@ export const useAuthStore = create<AuthState>()(
 
       logout: async () => {
         try {
-          // Sign out from Firebase Auth
-          await signOut(auth);
-        } catch (error) {}
+          // Sign out from Supabase Auth
+          await SupabaseAuthService.signOut();
+        } catch (error) {
+          console.error("Error signing out:", error);
+        }
 
         // Clear local state
         set({

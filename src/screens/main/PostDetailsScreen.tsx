@@ -117,13 +117,6 @@ export default function PostDetailsScreen({
                 {formatTime(post.createdAt)}
               </Text>
             </View>
-            <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
-              <Ionicons
-                name="share-outline"
-                size={22}
-                color={colors.textSecondary}
-              />
-            </TouchableOpacity>
           </View>
 
           {/* Post Content */}

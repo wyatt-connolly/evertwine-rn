@@ -1,55 +1,86 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Meetup } from "../types";
+import { SupabaseDataService } from "../services/SupabaseDataService";
 
 interface MeetupState {
   meetups: Meetup[];
+  isLoading: boolean;
+  fetchMeetups: () => Promise<void>;
   createMeetup: (
     meetup: Omit<Meetup, "id" | "createdAt" | "updatedAt">
-  ) => void;
-  updateMeetup: (id: string, updates: Partial<Meetup>) => void;
-  deleteMeetup: (id: string) => void;
+  ) => Promise<Meetup>;
+  updateMeetup: (id: string, updates: Partial<Meetup>) => Promise<void>;
+  deleteMeetup: (id: string) => Promise<void>;
   getMeetup: (id: string) => Meetup | undefined;
   getUserMeetups: (userId: string) => Meetup[];
   clearAllMeetups: () => void;
+  setMeetups: (meetups: Meetup[]) => void;
 }
-
-// Generate a simple ID for local storage
-const generateId = () =>
-  `meetup_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
 export const useMeetupStore = create<MeetupState>()(
   persist(
     (set, get) => ({
       meetups: [],
+      isLoading: false,
 
-      createMeetup: (meetupData) => {
-        const newMeetup: Meetup = {
-          ...meetupData,
-          id: generateId(),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-
-        set((state) => ({
-          meetups: [newMeetup, ...state.meetups],
-        }));
+      fetchMeetups: async () => {
+        set({ isLoading: true });
+        try {
+          const meetups = await SupabaseDataService.getMeetups();
+          set({ meetups, isLoading: false });
+        } catch (error) {
+          console.error("Error fetching meetups:", error);
+          set({ isLoading: false });
+        }
       },
 
-      updateMeetup: (id, updates) => {
-        set((state) => ({
-          meetups: state.meetups.map((meetup) =>
-            meetup.id === id
-              ? { ...meetup, ...updates, updatedAt: new Date() }
-              : meetup
-          ),
-        }));
+      createMeetup: async (meetupData) => {
+        set({ isLoading: true });
+        try {
+          const newMeetup = await SupabaseDataService.createMeetup(meetupData as Partial<Meetup>);
+          set((state) => ({
+            meetups: [newMeetup, ...state.meetups],
+            isLoading: false,
+          }));
+          return newMeetup;
+        } catch (error) {
+          console.error("Error creating meetup:", error);
+          set({ isLoading: false });
+          throw error;
+        }
       },
 
-      deleteMeetup: (id) => {
-        set((state) => ({
-          meetups: state.meetups.filter((meetup) => meetup.id !== id),
-        }));
+      updateMeetup: async (id, updates) => {
+        set({ isLoading: true });
+        try {
+          const updatedMeetup = await SupabaseDataService.updateMeetup(id, updates);
+          set((state) => ({
+            meetups: state.meetups.map((meetup) =>
+              meetup.id === id ? updatedMeetup : meetup
+            ),
+            isLoading: false,
+          }));
+        } catch (error) {
+          console.error("Error updating meetup:", error);
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+
+      deleteMeetup: async (id) => {
+        set({ isLoading: true });
+        try {
+          await SupabaseDataService.deleteMeetup(id);
+          set((state) => ({
+            meetups: state.meetups.filter((meetup) => meetup.id !== id),
+            isLoading: false,
+          }));
+        } catch (error) {
+          console.error("Error deleting meetup:", error);
+          set({ isLoading: false });
+          throw error;
+        }
       },
 
       getMeetup: (id) => {
@@ -62,6 +93,10 @@ export const useMeetupStore = create<MeetupState>()(
 
       clearAllMeetups: () => {
         set({ meetups: [] });
+      },
+
+      setMeetups: (meetups) => {
+        set({ meetups });
       },
     }),
     {

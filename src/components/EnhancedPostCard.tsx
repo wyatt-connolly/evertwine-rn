@@ -36,96 +36,112 @@ export default function EnhancedPostCard({ post }: EnhancedPostCardProps) {
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: colors.surface,
-          borderColor: colors.border,
-        },
-      ]}
+    <TouchableOpacity
+      activeOpacity={0.95}
+      onPress={() => {
+        navigation.navigate("PostDetails", { post });
+      }}
     >
-      {/* Announcement Badge */}
-      {post.isAnnouncement && (
-        <View
-          style={[
-            styles.announcementBadge,
-            { backgroundColor: colors.announcement },
-          ]}
-        >
-          <Ionicons name="megaphone" size={12} color={colors.onAnnouncement} />
-          <Text
-            style={[styles.announcementText, { color: colors.onAnnouncement }]}
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+          },
+        ]}
+      >
+        {/* Announcement Badge */}
+        {post.isAnnouncement && (
+          <View
+            style={[
+              styles.announcementBadge,
+              { backgroundColor: colors.announcement },
+            ]}
           >
-            Announcement
-          </Text>
-        </View>
-      )}
-
-      {/* Header */}
-      <View style={styles.header}>
-        <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
-        <View style={styles.headerInfo}>
-          <Text style={[styles.userName, { color: colors.text }]}>
-            {post.userName}
-          </Text>
-          <Text style={[styles.timestamp, { color: colors.textSecondary }]}>
-            {formatTime(post.createdAt)}
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.shareButton}>
-          <Ionicons
-            name="share-outline"
-            size={22}
-            color={colors.textSecondary}
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* Content */}
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>{post.title}</Text>
-        <Text style={[styles.message, { color: colors.textSecondary }]}>
-          {post.message}
-        </Text>
-      </View>
-
-      {/* Images */}
-      {post.images && post.images.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.imagesContainer}
-        >
-          {post.images.map((image, index) => (
-            <Image
-              key={index}
-              source={{ uri: image }}
-              style={styles.postImage}
+            <Ionicons
+              name="megaphone"
+              size={12}
+              color={colors.onAnnouncement}
             />
-          ))}
-        </ScrollView>
-      )}
+            <Text
+              style={[
+                styles.announcementText,
+                { color: colors.onAnnouncement },
+              ]}
+            >
+              Announcement
+            </Text>
+          </View>
+        )}
 
-      {/* Actions */}
-      <View style={[styles.actions, { borderTopColor: colors.border }]}>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => {
-            navigation.navigate("PostDetails", { post });
-          }}
-        >
-          <Ionicons
-            name="chatbubble-outline"
-            size={20}
-            color={colors.textSecondary}
-          />
-          <Text style={[styles.actionText, { color: colors.textSecondary }]}>
-            Comments
+        {/* Header */}
+        <View style={styles.header}>
+          <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
+          <View style={styles.headerInfo}>
+            <Text style={[styles.userName, { color: colors.text }]}>
+              {post.userName}
+            </Text>
+            <Text style={[styles.timestamp, { color: colors.textSecondary }]}>
+              {formatTime(post.createdAt)}
+            </Text>
+          </View>
+          <TouchableOpacity style={styles.shareButton}>
+            <Ionicons
+              name="share-outline"
+              size={22}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Content */}
+        <View style={styles.content}>
+          <Text style={[styles.title, { color: colors.text }]}>
+            {post.title}
           </Text>
-        </TouchableOpacity>
+          <Text style={[styles.message, { color: colors.textSecondary }]}>
+            {post.message}
+          </Text>
+        </View>
+
+        {/* Images */}
+        {post.images && post.images.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.imagesContainer}
+          >
+            {post.images.map((image, index) => (
+              <Image
+                key={index}
+                source={{ uri: image }}
+                style={styles.postImage}
+              />
+            ))}
+          </ScrollView>
+        )}
+
+        {/* Actions */}
+        <View style={[styles.actions, { borderTopColor: colors.border }]}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => {
+              navigation.navigate("PostDetails", { post });
+            }}
+          >
+            <Ionicons
+              name="chatbubble-outline"
+              size={20}
+              color={colors.textSecondary}
+            />
+            <Text style={[styles.actionText, { color: colors.textSecondary }]}>
+              Comments
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 

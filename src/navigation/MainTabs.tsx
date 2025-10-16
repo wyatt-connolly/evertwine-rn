@@ -27,6 +27,7 @@ import EventDetailsScreen from "../screens/main/EventDetailsScreen";
 import HappyHourDetailsScreen from "../screens/main/HappyHourDetailsScreen";
 import PlaceDetailsScreen from "../screens/main/PlaceDetailsScreen";
 import PostDetailsScreen from "../screens/main/PostDetailsScreen";
+import CreatePostScreen from "../screens/main/CreatePostScreen";
 import NotificationsScreen from "../screens/main/NotificationsScreen";
 import AllHappyHourEventsScreen from "../screens/main/AllHappyHourEventsScreen";
 import AllMeetupsScreen from "../screens/main/AllMeetupsScreen";
@@ -83,6 +84,7 @@ export type MainStackParamList = {
   CreateMeetupStep2: { formData: any; onUpdate: (data: any) => void };
   CreateMeetupStep4: { formData: any; onUpdate: (data: any) => void };
   CreateMeetupConfirmation: { formData: any; onUpdate: (data: any) => void };
+  CreatePost: undefined;
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -388,6 +390,14 @@ export default function MainTabs() {
       <MainStack.Screen
         name="CreateMeetupConfirmation"
         component={CreateMeetupConfirmationScreen}
+      />
+      <MainStack.Screen
+        name="CreatePost"
+        component={CreatePostScreen}
+        options={{
+          presentation: "modal",
+          gestureEnabled: true,
+        }}
       />
     </MainStack.Navigator>
   );

@@ -109,7 +109,7 @@ export default function CreateMeetupStep1Screen({
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [16, 9],
+      aspect: [3, 2],
       quality: 1,
     });
 
@@ -122,7 +122,7 @@ export default function CreateMeetupStep1Screen({
   const takePhoto = async (type: string) => {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
-      aspect: [16, 9],
+      aspect: [3, 2],
       quality: 1,
     });
 
