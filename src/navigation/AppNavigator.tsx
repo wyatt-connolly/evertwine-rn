@@ -9,13 +9,13 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import { useThemeStore } from "../hooks/useThemeStore";
 
 export default function AppNavigator() {
-  const { colors } = useThemeStore();
+  const { colors, isHydrated: themeHydrated } = useThemeStore();
   const {
     isAuthenticated,
     user,
     onboardingComplete,
     hasSeenIntro,
-    isHydrated,
+    isHydrated: authHydrated,
     setOnboardingComplete,
     setUser,
     setAuthenticated,
@@ -201,7 +201,8 @@ export default function AppNavigator() {
   console.log("🧭 AppNavigator Routing:", {
     isAuthenticated,
     hasSeenIntro,
-    isHydrated,
+    authHydrated,
+    themeHydrated,
     userOnboardingComplete,
     userOnboardingStatus: user?.onboardingComplete,
     storeOnboardingStatus: onboardingComplete,
@@ -210,10 +211,15 @@ export default function AppNavigator() {
     currentRoute: !userOnboardingComplete ? "OnboardingStack" : "MainTabs",
   });
 
-  // Show loading screen while store is hydrating to prevent flash
-  if (!isHydrated) {
+  // Show loading screen while stores are hydrating to prevent flash
+  if (!authHydrated || !themeHydrated) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+      <View
+        style={[
+          styles.loadingContainer,
+          { backgroundColor: colors.background },
+        ]}
+      >
         <LoadingIndicator size="large" text="Loading..." />
       </View>
     );

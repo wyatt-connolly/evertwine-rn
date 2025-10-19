@@ -167,8 +167,10 @@ export const darkTheme: ThemeColors = {
 interface ThemeState {
   isDarkMode: boolean;
   colors: ThemeColors;
+  isHydrated: boolean;
   toggleTheme: () => void;
   setTheme: (isDark: boolean) => void;
+  setHydrated: (hydrated: boolean) => void;
 }
 
 export const useThemeStore = create<ThemeState>()(
@@ -176,6 +178,7 @@ export const useThemeStore = create<ThemeState>()(
     (set, get) => ({
       isDarkMode: true, // Default to dark mode
       colors: darkTheme,
+      isHydrated: false,
 
       toggleTheme: () => {
         const newIsDarkMode = !get().isDarkMode;
@@ -191,10 +194,18 @@ export const useThemeStore = create<ThemeState>()(
           colors: isDark ? darkTheme : lightTheme,
         });
       },
+
+      setHydrated: (isHydrated: boolean) => set({ isHydrated }),
     }),
     {
       name: "theme-storage",
       storage: createJSONStorage(() => AsyncStorage),
+      onRehydrateStorage: () => (state) => {
+        console.log("🎨 Theme store hydrated");
+        if (state) {
+          state.setHydrated(true);
+        }
+      },
     }
   )
 );
