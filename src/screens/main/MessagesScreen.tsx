@@ -225,12 +225,28 @@ export default function MessagesScreen({ navigation }: any) {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: colors.background,
+            borderBottomColor: colors.border,
+          },
+        ]}
+      >
         <Text style={[styles.title, { color: colors.text }]}>Messages</Text>
       </View>
 
       {/* Tab Navigation */}
-      <View style={[styles.tabContainer, { backgroundColor: colors.surface }]}>
+      <View
+        style={[
+          styles.tabContainer,
+          {
+            backgroundColor: colors.surface,
+            borderBottomColor: colors.border,
+          },
+        ]}
+      >
         {(["all", "groups"] as const).map((tab) => (
           <TouchableOpacity
             key={tab}

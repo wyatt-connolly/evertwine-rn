@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { SupabaseDataService } from "../../services/SupabaseDataService";
+import { SupabaseStorageService } from "../../services/SupabaseStorageService";
 import { DataService } from "../../services/DataService";
 import { getMockUserStats, mockUsers } from "../../data/mockData";
 import { UserStats, User } from "../../types";
@@ -58,6 +59,31 @@ export default function EditProfileScreen({ navigation }: any) {
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [tempData, setTempData] = useState<any>({});
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
+
+  // Image upload function
+  const uploadProfileImage = async (imageUri: string) => {
+    try {
+      setUploadingPhotos(true);
+
+      // Upload to Supabase Storage
+      const result = await SupabaseStorageService.uploadProfileImage(
+        user?.uid || "",
+        imageUri
+      );
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      return result.url; // Public URL of uploaded image
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      Alert.alert("Error", "Failed to upload image");
+      return null;
+    } finally {
+      setUploadingPhotos(false);
+    }
+  };
 
   // Load profile data using DataService
   useEffect(() => {
@@ -243,46 +269,76 @@ export default function EditProfileScreen({ navigation }: any) {
     }));
   };
 
-  const handleSaveEdit = () => {
-    if (!editingSection) return;
+  const handleSaveEdit = async () => {
+    if (!editingSection || !user?.uid) return;
 
-    // Update profile data based on section
-    switch (editingSection) {
-      case "Photo":
-        setProfileData((prev) => ({
-          ...prev,
-          profilePictures: [
-            tempData.profileImage,
-            ...prev.profilePictures.slice(1),
-          ],
-        }));
-        break;
-      case "Basic Info":
-        setProfileData((prev) => ({
-          ...prev,
-          displayName: tempData.displayName,
-          bio: tempData.bio,
-          locationName: tempData.locationName,
-        }));
-        break;
-      case "Professional Info":
-        setProfileData((prev) => ({
-          ...prev,
-          school: tempData.school,
-          jobTitle: tempData.jobTitle,
-          jobCompany: tempData.jobCompany,
-        }));
-        break;
-      case "Interests":
-        setProfileData((prev) => ({
-          ...prev,
-          hobbies: tempData.hobbies,
-        }));
-        break;
+    setLoading(true);
+    try {
+      let updates: Partial<User> = {};
+
+      switch (editingSection) {
+        case "Photo":
+          if (tempData.profileImage) {
+            const uploadedUrl = await uploadProfileImage(tempData.profileImage);
+            if (uploadedUrl) {
+              updates = {
+                profilePictures: [
+                  uploadedUrl,
+                  ...(profileData?.profilePictures?.slice(1) || []),
+                ],
+              };
+
+              // Update auth store
+              updateUserProfile({ photoURL: uploadedUrl });
+            }
+          }
+          break;
+        case "Basic Info":
+          updates = {
+            displayName: tempData.displayName,
+            bio: tempData.bio,
+            locationName: tempData.locationName,
+          };
+          break;
+        case "Professional Info":
+          updates = {
+            school: tempData.school,
+            jobTitle: tempData.jobTitle,
+            jobCompany: tempData.jobCompany,
+          };
+          break;
+        case "Interests":
+          updates = {
+            hobbies: tempData.hobbies,
+          };
+          break;
+      }
+
+      // Save to Supabase (or local storage in dev mode)
+      if (!DataService.isInDeveloperMode()) {
+        const result = await SupabaseDataService.updateUser(user.uid, updates);
+        if (result.error) {
+          throw new Error(result.error);
+        }
+      }
+
+      // Update local state
+      setProfileData((prev) => (prev ? { ...prev, ...updates } : null));
+
+      // Update auth store if name changed
+      if (updates.displayName) {
+        updateUserProfile({ displayName: updates.displayName });
+      }
+
+      setEditingSection(null);
+      setTempData({});
+      Alert.alert("Success", "Profile updated successfully");
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      Alert.alert("Error", "Failed to save changes. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    setEditingSection(null);
-    setTempData({});
   };
 
   const handleCancelEdit = () => {

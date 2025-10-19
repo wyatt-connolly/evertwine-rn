@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import { getPreferenceCompletionPercentage } from "../../constants/preferences";
 import { SupabaseAuthService } from "../../services/supabase";
 import { SupabaseDataService } from "../../services/SupabaseDataService";
 import { SupabaseStorageService } from "../../services/SupabaseStorageService";
+import { DataService } from "../../services/DataService";
 
 export default function SettingsScreen({ navigation }: any) {
   const { user, logout } = useAuthStore();
@@ -24,6 +25,65 @@ export default function SettingsScreen({ navigation }: any) {
   const { preferences, getCompletionPercentage } = usePreferenceStore();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [locationEnabled, setLocationEnabled] = useState(true);
+
+  // Load user settings from Supabase on mount
+  useEffect(() => {
+    loadUserSettings();
+  }, []);
+
+  const loadUserSettings = async () => {
+    if (!user?.uid) return;
+
+    try {
+      const userData = await DataService.getUser(user.uid);
+      if (userData.user) {
+        // Load notification settings, location settings, etc.
+        setNotificationsEnabled(userData.user.notificationsEnabled ?? true);
+        setLocationEnabled(userData.user.locationEnabled ?? true);
+      }
+    } catch (error) {
+      console.error("Error loading settings:", error);
+    }
+  };
+
+  // Save notification settings changes
+  const handleNotificationToggle = async (value: boolean) => {
+    setNotificationsEnabled(value);
+
+    if (user?.uid) {
+      try {
+        if (!DataService.isInDeveloperMode()) {
+          await SupabaseDataService.updateUser(user.uid, {
+            notificationsEnabled: value,
+          });
+        }
+      } catch (error) {
+        console.error("Error saving notification setting:", error);
+        // Revert on error
+        setNotificationsEnabled(!value);
+        Alert.alert("Error", "Failed to save setting");
+      }
+    }
+  };
+
+  // Save location settings
+  const handleLocationToggle = async (value: boolean) => {
+    setLocationEnabled(value);
+
+    if (user?.uid) {
+      try {
+        if (!DataService.isInDeveloperMode()) {
+          await SupabaseDataService.updateUser(user.uid, {
+            locationEnabled: value,
+          });
+        }
+      } catch (error) {
+        console.error("Error saving location setting:", error);
+        setLocationEnabled(!value);
+        Alert.alert("Error", "Failed to save setting");
+      }
+    }
+  };
 
   const handlePrivacy = () => {
     Alert.alert("Privacy Policy", "Privacy policy content coming soon!");
@@ -288,7 +348,7 @@ export default function SettingsScreen({ navigation }: any) {
             </Text>
             <Switch
               value={notificationsEnabled}
-              onValueChange={setNotificationsEnabled}
+              onValueChange={handleNotificationToggle}
               trackColor={{ false: colors.border, true: colors.primary }}
               thumbColor={colors.surface}
             />
@@ -301,7 +361,7 @@ export default function SettingsScreen({ navigation }: any) {
             </Text>
             <Switch
               value={notificationsEnabled}
-              onValueChange={setNotificationsEnabled}
+              onValueChange={handleNotificationToggle}
               trackColor={{ false: colors.border, true: colors.primary }}
               thumbColor={colors.surface}
             />
@@ -325,7 +385,7 @@ export default function SettingsScreen({ navigation }: any) {
             </Text>
             <Switch
               value={locationEnabled}
-              onValueChange={setLocationEnabled}
+              onValueChange={handleLocationToggle}
               trackColor={{ false: colors.border, true: colors.primary }}
               thumbColor={colors.surface}
             />

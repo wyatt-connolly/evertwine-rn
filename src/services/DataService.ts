@@ -5,9 +5,10 @@ import {
   getActivityFeed,
   mockMessageRooms,
 } from "../data/mockData";
+import { SupabaseDataService } from "./SupabaseDataService";
 
 export class DataService {
-  private static isDeveloperMode = true;
+  private static isDeveloperMode = false;
 
   // Set developer mode
   static setDeveloperMode(enabled: boolean) {
@@ -29,8 +30,17 @@ export class DataService {
       return { user, error: null };
     }
 
-    // TODO: Implement with Supabase
-    return { user: null, error: "Not implemented" };
+    // Use Supabase in production mode
+    try {
+      const user = await SupabaseDataService.getUser(uid);
+      return { user, error: null };
+    } catch (error) {
+      console.error("Error getting user from Supabase:", error);
+      return {
+        user: null,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
   }
 
   static async createUser(
@@ -42,8 +52,17 @@ export class DataService {
       return { success: true, error: null };
     }
 
-    // TODO: Implement with Supabase
-    return { success: false, error: "Not implemented" };
+    // Use Supabase in production mode
+    try {
+      const result = await SupabaseDataService.createUser(userData);
+      return { success: true, error: null };
+    } catch (error) {
+      console.error("Error creating user in Supabase:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
   }
 
   static async updateUser(
@@ -55,8 +74,17 @@ export class DataService {
       return { success: true, error: null };
     }
 
-    // TODO: Implement with Supabase
-    return { success: false, error: "Not implemented" };
+    // Use Supabase in production mode
+    try {
+      const result = await SupabaseDataService.updateUser(uid, updates);
+      return { success: true, error: null };
+    } catch (error) {
+      console.error("Error updating user in Supabase:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
   }
 
   // Meetup Data Methods

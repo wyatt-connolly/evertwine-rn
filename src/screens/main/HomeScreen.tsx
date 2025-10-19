@@ -881,19 +881,12 @@ export default function HomeScreen() {
         />
 
         {/* App Bar */}
-        <Animated.View
-          style={[
-            styles.appBarContainer,
-            {
-              backgroundColor: colors.background,
-              borderBottomColor: colors.border,
-            },
-          ]}
-        >
+        <Animated.View style={[styles.appBarContainer]}>
           <View
             style={[
               styles.appBar,
               {
+                backgroundColor: colors.background,
                 borderBottomColor: colors.border,
               },
             ]}
@@ -1008,7 +1001,6 @@ export default function HomeScreen() {
           >
             <View
               style={[styles.modalContent, { backgroundColor: colors.surface }]}
-              onStartShouldSetResponder={() => true}
             >
               <View
                 style={[
@@ -1650,15 +1642,8 @@ const styles = StyleSheet.create({
     left: 16, // Align with the Evertwine text
     right: "auto",
     bottom: "auto",
-    borderRadius: 16, // More rounded like Instagram
-    borderWidth: 0.5,
-    borderColor: "rgba(0, 0, 0, 0.08)",
     paddingVertical: 8,
     minWidth: 180, // Slightly wider
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 30,
     zIndex: 400, // Higher than overlay
     // Ensure it doesn't affect layout
     width: "auto",
@@ -1715,7 +1700,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   feedContent: {
-    paddingBottom: 180, // Increased from 120 to account for higher FAB position (140 + 40 clearance)
+    paddingBottom: 200, // Increased to account for taller navbar (80px + 20px bottom + 100px clearance)
   },
   feedContentCompact: {
     paddingBottom: 20,
@@ -1796,11 +1781,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     paddingBottom: 32,
     height: "80%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 12,
   },
   modalScrollView: {
     flex: 1,

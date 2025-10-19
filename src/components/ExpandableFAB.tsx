@@ -82,7 +82,10 @@ export default function ExpandableFAB({ options }: ExpandableFABProps) {
                   <View
                     style={[
                       styles.labelContainer,
-                      { backgroundColor: colors.surface },
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                      },
                     ]}
                   >
                     <Text style={[styles.optionLabel, { color: colors.text }]}>
@@ -113,22 +116,24 @@ export default function ExpandableFAB({ options }: ExpandableFABProps) {
       )}
 
       {/* Main FAB */}
-      <TouchableOpacity
-        style={[
-          styles.fab,
-          {
-            backgroundColor: colors.primary,
-            borderWidth: 1,
-            borderColor: "rgba(255, 255, 255, 0.2)",
-          },
-        ]}
-        onPress={toggleExpand}
-        activeOpacity={0.8}
-      >
-        <Animated.View style={{ transform: [{ rotate: rotation }] }}>
-          <Ionicons name="add" size={28} color={colors.onPrimary} />
-        </Animated.View>
-      </TouchableOpacity>
+      <View style={styles.fab}>
+        <TouchableOpacity
+          style={[
+            styles.fabButton,
+            {
+              backgroundColor: colors.primary,
+              borderWidth: 1,
+              borderColor: "rgba(255, 255, 255, 0.2)",
+            },
+          ]}
+          onPress={toggleExpand}
+          activeOpacity={0.8}
+        >
+          <Animated.View style={{ transform: [{ rotate: rotation }] }}>
+            <Ionicons name="add" size={28} color={colors.onPrimary} />
+          </Animated.View>
+        </TouchableOpacity>
+      </View>
     </>
   );
 }
@@ -136,22 +141,18 @@ export default function ExpandableFAB({ options }: ExpandableFABProps) {
 const styles = StyleSheet.create({
   fab: {
     position: "absolute",
-    bottom: 100, // Moved down a bit from 140 to 120
+    bottom: 100, // Adjusted for taller navbar (80px + 20px clearance)
     right: 24,
+    width: 60,
+    height: 60,
+    zIndex: 1000,
+  },
+  fabButton: {
     width: 60,
     height: 60,
     borderRadius: 30,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
-    elevation: 20,
-    zIndex: 1000,
   },
   backdrop: {
     flex: 1,
@@ -159,7 +160,7 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     position: "absolute",
-    bottom: 24, // Adjusted to match new FAB position (120 - 60 - 16 for clearance)
+    bottom: 24, // Adjusted to match new FAB position (100 - 60 - 16 for clearance)
     right: 24,
     zIndex: 1001,
   },
@@ -172,16 +173,14 @@ const styles = StyleSheet.create({
   labelContainer: {
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 12,
     marginRight: 16,
+    borderRadius: 12,
+    borderWidth: 1,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
-    elevation: 5,
+    elevation: 8,
   },
   optionLabel: {
     fontSize: 14,

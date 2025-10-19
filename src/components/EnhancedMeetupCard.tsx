@@ -68,17 +68,14 @@ export default function EnhancedMeetupCard({
       ]}
       onPress={onPress}
     >
-      {/* Meetup Banner */}
+      {/* Meetup Icon Badge */}
       <View
         style={[
-          styles.meetupBanner,
-          { backgroundColor: colors.accentTertiary },
+          styles.meetupIconBadge,
+          { backgroundColor: colors.accentTertiary + "40" },
         ]}
       >
-        <Ionicons name="people" size={12} color={colors.onAccent} />
-        <Text style={[styles.meetupBannerText, { color: colors.onAccent }]}>
-          Meetup
-        </Text>
+        <Ionicons name="people" size={16} color={colors.accentTertiary} />
       </View>
 
       {meetup.coverImage && (
@@ -269,18 +266,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 12,
   },
-  meetupBanner: {
-    flexDirection: "row",
+  meetupIconBadge: {
+    position: "absolute",
+    top: 12,
+    left: 12,
+    zIndex: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    gap: 6,
-  },
-  meetupBannerText: {
-    fontSize: 12,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
   },
   meetupImage: {
     width: "100%",

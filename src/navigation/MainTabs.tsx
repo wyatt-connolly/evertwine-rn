@@ -3,6 +3,8 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../hooks/useThemeStore";
+import AnimatedTabIcon from "../components/AnimatedTabIcon";
+import CustomTabBar from "../components/CustomTabBar";
 import HomeScreen from "../screens/main/HomeScreen";
 import AnimatedAvatarScreen from "../screens/main/AnimatedAvatarScreen";
 import MessagesScreen from "../screens/main/MessagesScreen";
@@ -176,6 +178,7 @@ function MainTabsNavigator() {
 
   return (
     <Tab.Navigator
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap;
@@ -192,159 +195,26 @@ function MainTabsNavigator() {
             iconName = "help-outline";
           }
 
-          return <Ionicons name={iconName} size={size} color={color} />;
+          return (
+            <AnimatedTabIcon
+              name={iconName}
+              focused={focused}
+              size={size}
+              color={color}
+              activeColor={colors.primary}
+              inactiveColor={colors.textTertiary}
+            />
+          );
         },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textTertiary,
         headerShown: false,
-        tabBarStyle: {
-          position: "absolute",
-          bottom: 20,
-          backgroundColor: colors.surface,
-          borderRadius: 30,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
-          paddingHorizontal: 16,
-          borderTopWidth: 0,
-          borderWidth: 1,
-          borderColor: "rgba(255, 255, 255, 0.1)",
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.3,
-          shadowRadius: 16,
-          elevation: 16,
-          marginHorizontal: 40,
-        },
       })}
     >
-      <Tab.Screen
-        name="Home"
-        component={HomeStackNavigator}
-        options={({ route }) => {
-          const routeName = getFocusedRouteNameFromRoute(route) ?? "HomeMain";
-          const shouldShowTabBar = ["HomeMain"].includes(routeName);
-          return {
-            tabBarStyle: shouldShowTabBar
-              ? {
-                  position: "absolute",
-                  bottom: 20,
-                  backgroundColor: colors.surface,
-                  borderRadius: 30,
-                  height: 60,
-                  paddingBottom: 8,
-                  paddingTop: 8,
-                  paddingHorizontal: 16,
-                  borderTopWidth: 0,
-                  borderWidth: 1,
-                  borderColor: "rgba(255, 255, 255, 0.1)",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 16,
-                  elevation: 16,
-                  marginHorizontal: 40,
-                }
-              : { display: "none" },
-          };
-        }}
-      />
-      <Tab.Screen
-        name="Community"
-        component={CommunityStackNavigator}
-        options={({ route }) => {
-          const routeName =
-            getFocusedRouteNameFromRoute(route) ?? "CommunityMain";
-          const shouldShowTabBar = ["CommunityMain"].includes(routeName);
-          return {
-            tabBarStyle: shouldShowTabBar
-              ? {
-                  position: "absolute",
-                  bottom: 20,
-                  backgroundColor: colors.surface,
-                  borderRadius: 30,
-                  height: 60,
-                  paddingBottom: 8,
-                  paddingTop: 8,
-                  paddingHorizontal: 16,
-                  borderTopWidth: 0,
-                  borderWidth: 1,
-                  borderColor: "rgba(255, 255, 255, 0.1)",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 16,
-                  elevation: 16,
-                  marginHorizontal: 40,
-                }
-              : { display: "none" },
-          };
-        }}
-      />
-      <Tab.Screen
-        name="Messages"
-        component={MessagesStackNavigator}
-        options={({ route }) => {
-          const routeName =
-            getFocusedRouteNameFromRoute(route) ?? "MessagesMain";
-          const shouldShowTabBar = ["MessagesMain"].includes(routeName);
-          return {
-            tabBarStyle: shouldShowTabBar
-              ? {
-                  position: "absolute",
-                  bottom: 20,
-                  backgroundColor: colors.surface,
-                  borderRadius: 30,
-                  height: 60,
-                  paddingBottom: 8,
-                  paddingTop: 8,
-                  paddingHorizontal: 16,
-                  borderTopWidth: 0,
-                  borderWidth: 1,
-                  borderColor: "rgba(255, 255, 255, 0.1)",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 16,
-                  elevation: 16,
-                  marginHorizontal: 40,
-                }
-              : { display: "none" },
-          };
-        }}
-      />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileStackNavigator}
-        options={({ route }) => {
-          const routeName =
-            getFocusedRouteNameFromRoute(route) ?? "ProfileMain";
-          const shouldShowTabBar = ["ProfileMain"].includes(routeName);
-          return {
-            tabBarStyle: shouldShowTabBar
-              ? {
-                  position: "absolute",
-                  bottom: 20,
-                  backgroundColor: colors.surface,
-                  borderRadius: 30,
-                  height: 60,
-                  paddingBottom: 8,
-                  paddingTop: 8,
-                  paddingHorizontal: 16,
-                  borderTopWidth: 0,
-                  borderWidth: 1,
-                  borderColor: "rgba(255, 255, 255, 0.1)",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 16,
-                  elevation: 16,
-                  marginHorizontal: 40,
-                }
-              : { display: "none" },
-          };
-        }}
-      />
+      <Tab.Screen name="Home" component={HomeStackNavigator} />
+      <Tab.Screen name="Community" component={CommunityStackNavigator} />
+      <Tab.Screen name="Messages" component={MessagesStackNavigator} />
+      <Tab.Screen name="Profile" component={ProfileStackNavigator} />
     </Tab.Navigator>
   );
 }

@@ -51,30 +51,6 @@ export default function EnhancedPostCard({ post }: EnhancedPostCardProps) {
           },
         ]}
       >
-        {/* Announcement Badge */}
-        {post.isAnnouncement && (
-          <View
-            style={[
-              styles.announcementBadge,
-              { backgroundColor: colors.announcement },
-            ]}
-          >
-            <Ionicons
-              name="megaphone"
-              size={12}
-              color={colors.onAnnouncement}
-            />
-            <Text
-              style={[
-                styles.announcementText,
-                { color: colors.onAnnouncement },
-              ]}
-            >
-              Announcement
-            </Text>
-          </View>
-        )}
-
         {/* Header */}
         <View style={styles.header}>
           <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
@@ -152,19 +128,6 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     borderWidth: 1,
     overflow: "hidden",
-  },
-  announcementBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    gap: 6,
-  },
-  announcementText: {
-    fontSize: 12,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
   },
   header: {
     flexDirection: "row",

@@ -39,17 +39,14 @@ export default function EventCard({
       ]}
       onPress={onPress}
     >
-      {/* Happy Hour Banner */}
+      {/* Happy Hour Icon Badge */}
       <View
         style={[
-          styles.happyHourBanner,
-          { backgroundColor: colors.accentQuaternary },
+          styles.happyHourIconBadge,
+          { backgroundColor: colors.accentQuaternary + "40" },
         ]}
       >
-        <Ionicons name="wine" size={12} color="#FFFFFF" />
-        <Text style={[styles.happyHourBannerText, { color: "#FFFFFF" }]}>
-          Happy Hour
-        </Text>
+        <Ionicons name="wine" size={16} color={colors.accentQuaternary} />
       </View>
 
       {event.coverImage && (
@@ -168,18 +165,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 12,
   },
-  happyHourBanner: {
-    flexDirection: "row",
+  happyHourIconBadge: {
+    position: "absolute",
+    top: 12,
+    left: 12,
+    zIndex: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    gap: 6,
-  },
-  happyHourBannerText: {
-    fontSize: 12,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
   },
   imageContainer: {
     position: "relative",
@@ -192,7 +187,7 @@ const styles = StyleSheet.create({
   imageOverlay: {
     position: "absolute",
     top: 16,
-    left: 16,
+    right: 16,
   },
   overlayDiscountBadge: {
     alignSelf: "flex-start",

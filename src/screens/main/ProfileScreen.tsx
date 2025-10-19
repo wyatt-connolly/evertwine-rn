@@ -54,9 +54,59 @@ export default function ProfileScreen({ navigation, route }: any) {
         } else if (route?.params?.userData) {
           setProfileUserData(route.params.userData);
           console.log("✅ Using route params data");
-        } else if (user) {
-          setProfileUserData(user);
-          console.log("✅ Using current user data");
+        } else if (user && profileUserId === user.uid) {
+          // If viewing own profile but no data in Supabase, create user record
+          console.log("🔄 No user data found, creating user record...");
+          try {
+            const createResult = await DataService.createUser({
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName || "User",
+              age: 25,
+              gender: "Prefer not to say",
+              pronouns: "they/them",
+              bio: "",
+              about: "",
+              profilePictures: [
+                user.photoURL ||
+                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+              ],
+              standoutPhotoIndex: 0,
+              location: { latitude: 0, longitude: 0 },
+              locationName: "",
+              phoneNumber: user.phoneNumber || "",
+              school: "",
+              jobTitle: "",
+              jobCompany: "",
+              professionalLevel: "",
+              hometown: "",
+              starSign: "",
+              hobbies: [],
+              interests: [],
+              lookingFor: [],
+              onboardingComplete: user.onboardingComplete || false,
+              notificationsEnabled: true,
+              locationEnabled: true,
+            });
+
+            if (createResult.success) {
+              // Reload the user data
+              const newUserResult = await DataService.getUser(profileUserId);
+              if (newUserResult.user) {
+                setProfileUserData(newUserResult.user);
+                console.log("✅ User record created and loaded");
+              }
+            } else {
+              console.error(
+                "❌ Failed to create user record:",
+                createResult.error
+              );
+              setProfileUserData(user);
+            }
+          } catch (error) {
+            console.error("❌ Error creating user record:", error);
+            setProfileUserData(user);
+          }
         } else {
           console.log("❌ No profile data available");
         }
@@ -213,7 +263,15 @@ export default function ProfileScreen({ navigation, route }: any) {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: colors.background,
+            borderBottomColor: colors.border,
+          },
+        ]}
+      >
         <Text style={[styles.title, { color: colors.text }]}>
           {isViewingOtherProfile ? "Profile" : "Profile"}
         </Text>
