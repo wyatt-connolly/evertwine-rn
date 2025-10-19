@@ -96,7 +96,6 @@ export default function AuthSignInScreen({ navigation }: Props) {
     }
   };
 
-
   const handleBack = () => {
     navigation.goBack();
   };
@@ -145,7 +144,6 @@ export default function AuthSignInScreen({ navigation }: Props) {
               loading={loading === "apple"}
               disabled={loading !== null}
             />
-
           </View>
 
           {/* Back Button */}
