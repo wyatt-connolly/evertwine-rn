@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { useAuthStore } from "../../hooks/useAuthStore";
 import OnboardingButton from "../../components/OnboardingButton";
 import GradientBackground from "../../components/GradientBackground";
 
@@ -38,6 +39,7 @@ const routineOptions = [
 
 export default function RoutineSetupScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
+  const { setOnboardingData } = useAuthStore();
   const [selectedRoutine, setSelectedRoutine] = useState<string>("");
 
   // Animation values
@@ -90,6 +92,8 @@ export default function RoutineSetupScreen({ navigation }: Props) {
 
   const handleContinue = () => {
     if (selectedRoutine) {
+      // Save routine to onboarding data
+      setOnboardingData({ routine: selectedRoutine });
       navigation.navigate("FeatureIntro");
     }
   };

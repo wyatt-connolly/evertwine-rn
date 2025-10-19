@@ -6,6 +6,15 @@ import { SupabaseAuthService } from "../services/supabase";
 
 export type User = AuthUser;
 
+interface OnboardingData {
+  name?: string;
+  age?: number;
+  gender?: string;
+  goals?: string[];
+  obstacles?: string[];
+  routine?: string;
+}
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -13,6 +22,7 @@ interface AuthState {
   hasSeenIntro: boolean;
   isLoading: boolean;
   isHydrated: boolean;
+  onboardingData: OnboardingData;
   setUser: (user: User | null) => void;
   setAuthenticated: (isAuthenticated: boolean) => void;
   setOnboardingComplete: (completed: boolean) => void;
@@ -20,6 +30,9 @@ interface AuthState {
   setLoading: (loading: boolean) => void;
   setHydrated: (hydrated: boolean) => void;
   updateUserProfile: (updates: Partial<User>) => void;
+  setOnboardingData: (data: Partial<OnboardingData>) => void;
+  clearOnboardingData: () => void;
+  resetOnboardingState: () => void;
   logout: () => void;
 }
 
@@ -32,6 +45,7 @@ export const useAuthStore = create<AuthState>()(
       hasSeenIntro: false,
       isLoading: false,
       isHydrated: false,
+      onboardingData: {},
 
       setUser: (user) => set({ user }),
 
@@ -58,22 +72,44 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      setOnboardingData: (data) => {
+        const currentData = get().onboardingData;
+        set({ onboardingData: { ...currentData, ...data } });
+      },
+
+      clearOnboardingData: () => {
+        set({ onboardingData: {} });
+      },
+
       logout: async () => {
         try {
           // Sign out from Supabase Auth
           await SupabaseAuthService.signOut();
+          // Clear browser session to allow account switching
+          await SupabaseAuthService.clearBrowserSession();
         } catch (error) {
           console.error("Error signing out:", error);
         }
 
-        // Clear local state
+        // Clear local state but preserve hasSeenIntro
+        const currentState = get();
         set({
           user: null,
           isAuthenticated: false,
           onboardingComplete: false,
-          hasSeenIntro: false,
+          hasSeenIntro: currentState.hasSeenIntro, // Preserve hasSeenIntro across logout
           isLoading: false,
           isHydrated: true,
+          onboardingData: {},
+        });
+      },
+
+      // Reset onboarding state for new user (but keep hasSeenIntro)
+      resetOnboardingState: () => {
+        set({
+          onboardingComplete: false,
+          onboardingData: {},
+          // Don't reset hasSeenIntro - it should persist across app sessions
         });
       },
     }),

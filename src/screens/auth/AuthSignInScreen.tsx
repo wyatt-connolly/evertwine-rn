@@ -1,0 +1,276 @@
+import { useState, useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  StatusBar,
+  Animated,
+  Alert,
+  SafeAreaView,
+  TouchableOpacity,
+} from "react-native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { useThemeStore } from "../../hooks/useThemeStore";
+import { useAuthStore } from "../../hooks/useAuthStore";
+import GradientBackground from "../../components/GradientBackground";
+import OAuthButton from "../../components/OAuthButton";
+import { SupabaseAuthService } from "../../services/supabase";
+import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
+import { Ionicons } from "@expo/vector-icons";
+
+type Props = {
+  navigation: StackNavigationProp<OnboardingStackParamList, "AuthSignIn">;
+};
+
+export default function AuthSignInScreen({ navigation }: Props) {
+  const { colors } = useThemeStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const [loading, setLoading] = useState<"google" | "apple" | null>(null);
+
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+
+  useEffect(() => {
+    // Fade in animation
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  // Watch for authentication changes and navigate to next onboarding step
+  useEffect(() => {
+    if (isAuthenticated && user && !user.onboardingComplete) {
+      console.log("✅ User authenticated, navigating to NameInput");
+      // Small delay to ensure the auth state is fully processed
+      setTimeout(() => {
+        navigation.navigate("NameInput");
+      }, 500);
+    }
+  }, [isAuthenticated, user, navigation]);
+
+  const handleOAuthSignIn = async (provider: "google" | "apple") => {
+    try {
+      console.log(`🔵 Starting ${provider} OAuth...`);
+      setLoading(provider);
+
+      let authData;
+      if (provider === "google") {
+        console.log("🔵 Calling signInWithGoogle...");
+        authData = await SupabaseAuthService.signInWithGoogle();
+      } else {
+        console.log("🔵 Calling signInWithApple...");
+        authData = await SupabaseAuthService.signInWithApple();
+      }
+
+      console.log(`✅ ${provider} OAuth completed:`, authData);
+
+      // The auth state change listener in AppNavigator will handle navigation
+      // based on onboardingComplete status - no manual navigation needed
+    } catch (error: any) {
+      console.error(`❌ ${provider} sign-in error:`, error);
+
+      // Handle specific error cases
+      if (
+        error.message?.includes("cancelled") ||
+        error.message?.includes("canceled")
+      ) {
+        console.log(`ℹ️ User cancelled ${provider} OAuth`);
+        return;
+      }
+
+      Alert.alert(
+        "Sign In Failed",
+        `Unable to sign in with ${provider}. Please try again.\n\nError: ${error.message}`,
+        [{ text: "OK" }]
+      );
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  const handleSwitchAccount = async () => {
+    try {
+      console.log("🔄 Switching Google account...");
+      setLoading("google");
+
+      // Clear browser session first to force account selection
+      await SupabaseAuthService.clearBrowserSession();
+
+      // Then start Google OAuth with account selection
+      const authData = await SupabaseAuthService.signInWithGoogle();
+      console.log("✅ Account switch completed:", authData);
+    } catch (error: any) {
+      console.error("❌ Account switch error:", error);
+
+      if (
+        error.message?.includes("cancelled") ||
+        error.message?.includes("canceled")
+      ) {
+        console.log("ℹ️ User cancelled account switch");
+        return;
+      }
+
+      Alert.alert(
+        "Account Switch Failed",
+        "Unable to switch accounts. Please try again.",
+        [{ text: "OK" }]
+      );
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  const handleBack = () => {
+    navigation.goBack();
+  };
+
+  return (
+    <GradientBackground variant="dark">
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="transparent"
+        translucent
+      />
+      <SafeAreaView style={styles.safeArea}>
+        <Animated.View
+          style={[
+            styles.container,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={[styles.title, { color: colors.text }]}>
+              Welcome Back
+            </Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+              Choose your sign-in method
+            </Text>
+          </View>
+
+          {/* OAuth Buttons */}
+          <View style={styles.buttonContainer}>
+            <OAuthButton
+              provider="google"
+              onPress={() => handleOAuthSignIn("google")}
+              loading={loading === "google"}
+              disabled={loading !== null}
+            />
+
+            <View style={styles.buttonSpacing} />
+
+            <OAuthButton
+              provider="apple"
+              onPress={() => handleOAuthSignIn("apple")}
+              loading={loading === "apple"}
+              disabled={loading !== null}
+            />
+
+            <View style={styles.buttonSpacing} />
+
+            {/* Switch Account Button */}
+            <TouchableOpacity
+              style={[
+                styles.switchAccountButton,
+                { borderColor: colors.border },
+              ]}
+              onPress={handleSwitchAccount}
+              disabled={loading !== null}
+            >
+              <Ionicons
+                name="swap-horizontal-outline"
+                size={20}
+                color={colors.textSecondary}
+              />
+              <Text
+                style={[
+                  styles.switchAccountText,
+                  { color: colors.textSecondary },
+                ]}
+              >
+                Switch Google Account
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Back Button */}
+          <View style={styles.footer}>
+            <Text
+              style={[styles.backText, { color: colors.textSecondary }]}
+              onPress={handleBack}
+            >
+              ← Back
+            </Text>
+          </View>
+        </Animated.View>
+      </SafeAreaView>
+    </GradientBackground>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: "center",
+  },
+  header: {
+    alignItems: "center",
+    marginBottom: 60,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  subtitle: {
+    fontSize: 16,
+    textAlign: "center",
+    lineHeight: 24,
+  },
+  buttonContainer: {
+    marginBottom: 40,
+  },
+  buttonSpacing: {
+    height: 16,
+  },
+  switchAccountButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderRadius: 12,
+    backgroundColor: "transparent",
+  },
+  switchAccountText: {
+    fontSize: 16,
+    fontWeight: "500",
+    marginLeft: 8,
+  },
+  footer: {
+    alignItems: "center",
+  },
+  backText: {
+    fontSize: 16,
+    fontWeight: "500",
+  },
+});

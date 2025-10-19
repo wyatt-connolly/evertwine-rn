@@ -36,6 +36,9 @@ export class SupabaseDataService {
   }
 
   static async updateUser(uid: string, updates: Partial<User>) {
+    console.log("🔄 Updating user with UID:", uid);
+    console.log("📝 Update data:", updates);
+
     const { data, error } = await supabase
       .from("users")
       .update({
@@ -45,7 +48,13 @@ export class SupabaseDataService {
       .eq("uid", uid)
       .select()
       .single();
-    if (error) throw error;
+
+    if (error) {
+      console.error("❌ Update user error:", error);
+      throw error;
+    }
+
+    console.log("✅ User updated successfully:", data);
     return this.mapUserFromDB(data);
   }
 
@@ -453,6 +462,10 @@ export class SupabaseDataService {
     if (user.averageViewDuration !== undefined)
       mapped.average_view_duration = user.averageViewDuration;
     if (user.preferences !== undefined) mapped.preferences = user.preferences;
+    if (user.createdTime !== undefined)
+      mapped.created_time = user.createdTime.toISOString();
+    if (user.updatedTime !== undefined)
+      mapped.updated_time = user.updatedTime.toISOString();
     return mapped;
   }
 

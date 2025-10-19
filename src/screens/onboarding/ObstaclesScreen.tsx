@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { useAuthStore } from "../../hooks/useAuthStore";
 import OnboardingButton from "../../components/OnboardingButton";
 import SelectableOption from "../../components/SelectableOption";
 import GradientBackground from "../../components/GradientBackground";
@@ -37,6 +38,7 @@ const obstacleOptions = [
 
 export default function ObstaclesScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
+  const { setOnboardingData } = useAuthStore();
   const [selectedObstacle, setSelectedObstacle] = useState<string>("");
 
   // Animation values
@@ -80,6 +82,8 @@ export default function ObstaclesScreen({ navigation }: Props) {
 
   const handleContinue = () => {
     if (selectedObstacle) {
+      // Save obstacle to onboarding data (convert single selection to array)
+      setOnboardingData({ obstacles: [selectedObstacle] });
       navigation.navigate("RoutineSetup");
     }
   };

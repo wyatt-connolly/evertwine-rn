@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { useAuthStore } from "../../hooks/useAuthStore";
 import OnboardingButton from "../../components/OnboardingButton";
 import GradientBackground from "../../components/GradientBackground";
 
@@ -28,6 +29,7 @@ const { width, height } = Dimensions.get("window");
 
 export default function NameInputScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
+  const { setOnboardingData } = useAuthStore();
   const [name, setName] = useState("");
 
   // Animation values
@@ -71,6 +73,8 @@ export default function NameInputScreen({ navigation }: Props) {
 
   const handleContinue = () => {
     if (name.trim()) {
+      // Save name to onboarding data
+      setOnboardingData({ name: name.trim() });
       navigation.navigate("AgeSelection");
     }
   };

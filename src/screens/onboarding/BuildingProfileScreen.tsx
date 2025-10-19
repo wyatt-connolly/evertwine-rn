@@ -6,12 +6,14 @@ import {
   StatusBar,
   Dimensions,
   Animated,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
 import AnimatedCheckmark from "../../components/AnimatedCheckmark";
 import GradientBackground from "../../components/GradientBackground";
 
@@ -34,10 +36,67 @@ const tasks = [
 
 export default function BuildingProfileScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
-  const { setOnboardingComplete } = useAuthStore();
+  const { user, onboardingData, setOnboardingComplete, clearOnboardingData } =
+    useAuthStore();
   const [currentProgress, setCurrentProgress] = useState(0);
 
-  // Remove the console.log that's causing infinite re-renders
+  // Save all onboarding data to database
+  const saveOnboardingData = async () => {
+    if (!user?.uid) {
+      Alert.alert("Error", "User not found. Please sign in again.");
+      return;
+    }
+
+    try {
+      console.log("💾 Saving onboarding data:", onboardingData);
+      console.log("👤 Current user UID:", user.uid);
+
+      // Prepare user data with onboarding information
+      const userUpdateData = {
+        displayName: onboardingData.name || user.displayName,
+        age: onboardingData.age || (user as any).age,
+        gender: onboardingData.gender || (user as any).gender,
+        bio: `Hi! I'm ${onboardingData.name || user.displayName}`,
+        about: `I'm ${
+          onboardingData.name || user.displayName
+        } and I'm excited to meet new people through Evertwine!`,
+        interests: onboardingData.goals || user.interests || [],
+        onboardingComplete: true,
+        updatedTime: new Date(),
+      };
+
+      // Save to database
+      const result = await SupabaseDataService.updateUser(
+        user.uid,
+        userUpdateData
+      );
+
+      if ((result as any).error) {
+        // Show error and don't mark complete
+        Alert.alert(
+          "Error Saving Profile",
+          "Failed to save your profile. Please try again.",
+          [{ text: "Retry", onPress: () => saveOnboardingData() }]
+        );
+        return; // Don't mark complete
+      }
+
+      console.log("✅ Onboarding data saved successfully");
+
+      // Only mark complete on success
+      clearOnboardingData();
+      setOnboardingComplete(true);
+
+      // Update the local user object to reflect the completion
+      const { updateUserProfile } = useAuthStore.getState();
+      updateUserProfile({ onboardingComplete: true });
+    } catch (error) {
+      console.error("❌ Error saving onboarding data:", error);
+      Alert.alert("Error", "An unexpected error occurred. Please try again.", [
+        { text: "Retry", onPress: () => saveOnboardingData() },
+      ]);
+    }
+  };
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -102,10 +161,10 @@ export default function BuildingProfileScreen({ navigation }: Props) {
         setCurrentProgress(100);
         // Remove listener to prevent memory leaks
         progressAnim.removeListener(listener);
-        // All done, mark onboarding as complete after 1 second
-        setTimeout(() => {
-          console.log("🚀 Setting onboarding complete, navigating to homepage");
-          setOnboardingComplete(true);
+        // All done, save onboarding data and mark complete after 1 second
+        setTimeout(async () => {
+          console.log("🚀 Saving onboarding data and completing onboarding");
+          await saveOnboardingData();
         }, 1000);
       }
     });

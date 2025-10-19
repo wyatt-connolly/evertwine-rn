@@ -83,12 +83,11 @@ export default function WelcomeScreen({ navigation }: Props) {
   }, []);
 
   const handleBeginJourney = () => {
-    navigation.navigate("NameInput");
+    navigation.navigate("AuthSignIn");
   };
 
   const handleAlreadyHaveAccount = () => {
-    // Skip to the end of onboarding since they already have an account
-    navigation.navigate("BuildingProfile");
+    navigation.navigate("AuthSignIn");
   };
 
   return (

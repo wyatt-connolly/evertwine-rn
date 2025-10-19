@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { useAuthStore } from "../../hooks/useAuthStore";
 import OnboardingButton from "../../components/OnboardingButton";
 import SelectableOption from "../../components/SelectableOption";
 import GradientBackground from "../../components/GradientBackground";
@@ -38,6 +39,7 @@ const goalOptions = [
 
 export default function GoalsSelectionScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
+  const { setOnboardingData } = useAuthStore();
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
 
   // Animation values
@@ -91,6 +93,8 @@ export default function GoalsSelectionScreen({ navigation }: Props) {
 
   const handleContinue = () => {
     if (selectedGoals.length > 0) {
+      // Save goals to onboarding data
+      setOnboardingData({ goals: selectedGoals });
       navigation.navigate("ObstaclesSelection");
     }
   };

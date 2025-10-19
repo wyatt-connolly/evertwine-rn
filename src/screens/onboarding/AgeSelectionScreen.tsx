@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { useAuthStore } from "../../hooks/useAuthStore";
 import OnboardingButton from "../../components/OnboardingButton";
 import GradientBackground from "../../components/GradientBackground";
 
@@ -36,6 +37,7 @@ const ageRanges = [
 
 export default function AgeSelectionScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
+  const { setOnboardingData } = useAuthStore();
   const [selectedAge, setSelectedAge] = useState<string>("");
 
   // Animation values
@@ -77,8 +79,29 @@ export default function AgeSelectionScreen({ navigation }: Props) {
     }, 800);
   }, []);
 
+  // Convert age range to midpoint number
+  const getAgeFromRange = (ageRange: string): number => {
+    switch (ageRange) {
+      case "18-24":
+        return 21;
+      case "25-34":
+        return 29;
+      case "35-44":
+        return 39;
+      case "45-54":
+        return 49;
+      case "55+":
+        return 57;
+      default:
+        return 29; // Default to 25-34 range
+    }
+  };
+
   const handleContinue = () => {
     if (selectedAge) {
+      // Convert age range to number and save to onboarding data
+      const age = getAgeFromRange(selectedAge);
+      setOnboardingData({ age });
       navigation.navigate("GenderSelection");
     }
   };
