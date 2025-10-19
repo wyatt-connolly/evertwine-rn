@@ -1,12 +1,15 @@
 import React, { useEffect } from "react";
-import { Linking } from "react-native";
+import { Linking, View, StyleSheet } from "react-native";
 import { useAuthStore } from "../hooks/useAuthStore";
 import OnboardingStack from "./OnboardingStack";
 import MainTabs from "./MainTabs";
 import { SupabaseAuthService } from "../services/supabase";
 import { SupabaseDataService } from "../services/SupabaseDataService";
+import LoadingIndicator from "../components/LoadingIndicator";
+import { useThemeStore } from "../hooks/useThemeStore";
 
 export default function AppNavigator() {
+  const { colors } = useThemeStore();
   const {
     isAuthenticated,
     user,
@@ -209,7 +212,11 @@ export default function AppNavigator() {
 
   // Show loading screen while store is hydrating to prevent flash
   if (!isHydrated) {
-    return null; // or a loading component
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <LoadingIndicator size="large" text="Loading..." />
+      </View>
+    );
   }
 
   // Show onboarding only if onboarding is not complete
@@ -219,3 +226,11 @@ export default function AppNavigator() {
 
   return <MainTabs />;
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
