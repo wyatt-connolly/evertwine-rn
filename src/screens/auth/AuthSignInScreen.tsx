@@ -7,7 +7,6 @@ import {
   Animated,
   Alert,
   SafeAreaView,
-  TouchableOpacity,
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useThemeStore } from "../../hooks/useThemeStore";
@@ -16,7 +15,6 @@ import GradientBackground from "../../components/GradientBackground";
 import OAuthButton from "../../components/OAuthButton";
 import { SupabaseAuthService } from "../../services/supabase";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
-import { Ionicons } from "@expo/vector-icons";
 
 type Props = {
   navigation: StackNavigationProp<OnboardingStackParamList, "AuthSignIn">;
@@ -98,37 +96,6 @@ export default function AuthSignInScreen({ navigation }: Props) {
     }
   };
 
-  const handleSwitchAccount = async () => {
-    try {
-      console.log("🔄 Switching Google account...");
-      setLoading("google");
-
-      // Clear browser session first to force account selection
-      await SupabaseAuthService.clearBrowserSession();
-
-      // Then start Google OAuth with account selection
-      const authData = await SupabaseAuthService.signInWithGoogle();
-      console.log("✅ Account switch completed:", authData);
-    } catch (error: any) {
-      console.error("❌ Account switch error:", error);
-
-      if (
-        error.message?.includes("cancelled") ||
-        error.message?.includes("canceled")
-      ) {
-        console.log("ℹ️ User cancelled account switch");
-        return;
-      }
-
-      Alert.alert(
-        "Account Switch Failed",
-        "Unable to switch accounts. Please try again.",
-        [{ text: "OK" }]
-      );
-    } finally {
-      setLoading(null);
-    }
-  };
 
   const handleBack = () => {
     navigation.goBack();
@@ -179,31 +146,6 @@ export default function AuthSignInScreen({ navigation }: Props) {
               disabled={loading !== null}
             />
 
-            <View style={styles.buttonSpacing} />
-
-            {/* Switch Account Button */}
-            <TouchableOpacity
-              style={[
-                styles.switchAccountButton,
-                { borderColor: colors.border },
-              ]}
-              onPress={handleSwitchAccount}
-              disabled={loading !== null}
-            >
-              <Ionicons
-                name="swap-horizontal-outline"
-                size={20}
-                color={colors.textSecondary}
-              />
-              <Text
-                style={[
-                  styles.switchAccountText,
-                  { color: colors.textSecondary },
-                ]}
-              >
-                Switch Google Account
-              </Text>
-            </TouchableOpacity>
           </View>
 
           {/* Back Button */}
@@ -250,21 +192,6 @@ const styles = StyleSheet.create({
   },
   buttonSpacing: {
     height: 16,
-  },
-  switchAccountButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderWidth: 1,
-    borderRadius: 12,
-    backgroundColor: "transparent",
-  },
-  switchAccountText: {
-    fontSize: 16,
-    fontWeight: "500",
-    marginLeft: 8,
   },
   footer: {
     alignItems: "center",
