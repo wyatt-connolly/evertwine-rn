@@ -1,6 +1,4 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface ThemeColors {
   // Background colors
@@ -56,70 +54,16 @@ export interface ThemeColors {
   onAnnouncement: string;
 }
 
-export const lightTheme: ThemeColors = {
-  // Background colors
-  background: "#FFFFFF",
-  surface: "#F8F9FA",
-  surfaceVariant: "#E9ECEF",
-
-  // Text colors
-  text: "#212529",
-  textSecondary: "#6C757D",
-  textTertiary: "#ADB5BD",
-
-  // Primary colors - White
-  primary: "#FFFFFF",
-  primaryVariant: "#F5F5F5",
-  onPrimary: "#000000",
-
-  // Secondary colors - Light Grey
-  secondary: "#E0E0E0",
-  secondaryVariant: "#BDBDBD",
-  onSecondary: "#000000",
-
-  // Accent colors
-  accent: "#FF6B35", // Orange accent
-  accentVariant: "#E55A2B",
-  accentSecondary: "#9C27B0", // Purple accent
-  accentTertiary: "#2196F3", // Blue accent (meetups)
-  accentQuaternary: "#FF9800", // Amber accent
-  accentQuinary: "#F44336", // Red accent
-  onAccent: "#FFFFFF",
-
-  // Status colors
-  success: "#4CAF50",
-  warning: "#FF9800",
-  error: "#F44336",
-  info: "#FFFFFF",
-
-  // Border and divider colors
-  border: "#DEE2E6",
-  divider: "#E9ECEF",
-
-  // Overlay colors
-  overlay: "rgba(0, 0, 0, 0.5)",
-  backdrop: "rgba(0, 0, 0, 0.3)",
-
-  // Gradient colors - White to Light Grey
-  gradientStart: "#FFFFFF",
-  gradientEnd: "#E0E0E0",
-  gradientSecondary: "#BDBDBD",
-
-  // Special colors - Announcements now magenta
-  announcement: "#9C27B0",
-  onAnnouncement: "#FFFFFF",
-};
-
 export const darkTheme: ThemeColors = {
   // Background colors - Evertwine dark theme
   background: "#1A1A2E", // Dark blue-gray from Evertwine
-  surface: "rgba(255, 255, 255, 0.05)", // Semi-transparent dark
+  surface: "rgba(26, 26, 46, 0.95)", // More opaque dark surface for navbar
   surfaceVariant: "rgba(255, 255, 255, 0.1)",
 
-  // Text colors
+  // Text colors - All white for consistency
   text: "#FFFFFF",
-  textSecondary: "#B0B0B0",
-  textTertiary: "#808080",
+  textSecondary: "#FFFFFF",
+  textTertiary: "#FFFFFF",
 
   // Primary colors - Purple/Pink gradient from Evertwine
   primary: "#8B5CF6", // Purple
@@ -146,9 +90,9 @@ export const darkTheme: ThemeColors = {
   error: "#F44336",
   info: "#8B5CF6", // Purple
 
-  // Border and divider colors
-  border: "rgba(255, 255, 255, 0.1)",
-  divider: "rgba(255, 255, 255, 0.05)",
+  // Border and divider colors - More visible
+  border: "rgba(255, 255, 255, 0.3)",
+  divider: "rgba(255, 255, 255, 0.2)",
 
   // Overlay colors
   overlay: "rgba(0, 0, 0, 0.8)",
@@ -165,47 +109,9 @@ export const darkTheme: ThemeColors = {
 };
 
 interface ThemeState {
-  isDarkMode: boolean;
   colors: ThemeColors;
-  isHydrated: boolean;
-  toggleTheme: () => void;
-  setTheme: (isDark: boolean) => void;
-  setHydrated: (hydrated: boolean) => void;
 }
 
-export const useThemeStore = create<ThemeState>()(
-  persist(
-    (set, get) => ({
-      isDarkMode: true, // Default to dark mode
-      colors: darkTheme,
-      isHydrated: false,
-
-      toggleTheme: () => {
-        const newIsDarkMode = !get().isDarkMode;
-        set({
-          isDarkMode: newIsDarkMode,
-          colors: newIsDarkMode ? darkTheme : lightTheme,
-        });
-      },
-
-      setTheme: (isDark: boolean) => {
-        set({
-          isDarkMode: isDark,
-          colors: isDark ? darkTheme : lightTheme,
-        });
-      },
-
-      setHydrated: (isHydrated: boolean) => set({ isHydrated }),
-    }),
-    {
-      name: "theme-storage",
-      storage: createJSONStorage(() => AsyncStorage),
-      onRehydrateStorage: () => (state) => {
-        console.log("🎨 Theme store hydrated");
-        if (state) {
-          state.setHydrated(true);
-        }
-      },
-    }
-  )
-);
+export const useThemeStore = create<ThemeState>()((set, get) => ({
+  colors: darkTheme,
+}));

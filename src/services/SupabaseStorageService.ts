@@ -183,4 +183,148 @@ export class SupabaseStorageService {
     } = supabase.storage.from(bucket).getPublicUrl(path);
     return publicUrl;
   }
+
+  /**
+   * Delete all profile pictures for a user
+   */
+  static async deleteUserProfilePictures(userId: string): Promise<void> {
+    try {
+      console.log(`🗑️ Deleting profile pictures for user: ${userId}`);
+
+      // List all files in the user's profile pictures folder
+      const { data: files, error: listError } = await supabase.storage
+        .from("profile-pictures")
+        .list(userId);
+
+      if (listError) {
+        console.error("Error listing profile pictures:", listError);
+        throw listError;
+      }
+
+      if (files && files.length > 0) {
+        // Delete all files in the user's folder
+        const filePaths = files.map((file) => `${userId}/${file.name}`);
+        const { error: deleteError } = await supabase.storage
+          .from("profile-pictures")
+          .remove(filePaths);
+
+        if (deleteError) {
+          console.error("Error deleting profile pictures:", deleteError);
+          throw deleteError;
+        }
+
+        console.log(
+          `✅ Deleted ${files.length} profile pictures for user: ${userId}`
+        );
+      } else {
+        console.log(`ℹ️ No profile pictures found for user: ${userId}`);
+      }
+    } catch (error) {
+      console.error("Error in deleteUserProfilePictures:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete all post images for a user
+   */
+  static async deleteUserPostImages(userId: string): Promise<void> {
+    try {
+      console.log(`🗑️ Deleting post images for user: ${userId}`);
+
+      // List all files in the user's post images folder
+      const { data: files, error: listError } = await supabase.storage
+        .from("post-images")
+        .list(userId);
+
+      if (listError) {
+        console.error("Error listing post images:", listError);
+        throw listError;
+      }
+
+      if (files && files.length > 0) {
+        // Delete all files in the user's folder
+        const filePaths = files.map((file) => `${userId}/${file.name}`);
+        const { error: deleteError } = await supabase.storage
+          .from("post-images")
+          .remove(filePaths);
+
+        if (deleteError) {
+          console.error("Error deleting post images:", deleteError);
+          throw deleteError;
+        }
+
+        console.log(
+          `✅ Deleted ${files.length} post images for user: ${userId}`
+        );
+      } else {
+        console.log(`ℹ️ No post images found for user: ${userId}`);
+      }
+    } catch (error) {
+      console.error("Error in deleteUserPostImages:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete all meetup images for a user
+   */
+  static async deleteUserMeetupImages(userId: string): Promise<void> {
+    try {
+      console.log(`🗑️ Deleting meetup images for user: ${userId}`);
+
+      // List all files in the user's meetup images folder
+      const { data: files, error: listError } = await supabase.storage
+        .from("meetup-images")
+        .list(userId);
+
+      if (listError) {
+        console.error("Error listing meetup images:", listError);
+        throw listError;
+      }
+
+      if (files && files.length > 0) {
+        // Delete all files in the user's folder
+        const filePaths = files.map((file) => `${userId}/${file.name}`);
+        const { error: deleteError } = await supabase.storage
+          .from("meetup-images")
+          .remove(filePaths);
+
+        if (deleteError) {
+          console.error("Error deleting meetup images:", deleteError);
+          throw deleteError;
+        }
+
+        console.log(
+          `✅ Deleted ${files.length} meetup images for user: ${userId}`
+        );
+      } else {
+        console.log(`ℹ️ No meetup images found for user: ${userId}`);
+      }
+    } catch (error) {
+      console.error("Error in deleteUserMeetupImages:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete all files for a user across all buckets
+   */
+  static async deleteAllUserFiles(userId: string): Promise<void> {
+    try {
+      console.log(`🗑️ Deleting all files for user: ${userId}`);
+
+      // Delete from all storage buckets
+      await Promise.all([
+        this.deleteUserProfilePictures(userId),
+        this.deleteUserPostImages(userId),
+        this.deleteUserMeetupImages(userId),
+      ]);
+
+      console.log(`✅ Successfully deleted all files for user: ${userId}`);
+    } catch (error) {
+      console.error("Error in deleteAllUserFiles:", error);
+      throw error;
+    }
+  }
 }

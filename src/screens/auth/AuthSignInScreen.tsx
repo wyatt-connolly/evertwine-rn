@@ -22,7 +22,7 @@ type Props = {
 
 export default function AuthSignInScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, setOnboardingStep } = useAuthStore();
   const [loading, setLoading] = useState<"google" | "apple" | null>(null);
 
   // Animation values
@@ -51,6 +51,7 @@ export default function AuthSignInScreen({ navigation }: Props) {
       console.log("✅ User authenticated, navigating to NameInput");
       // Small delay to ensure the auth state is fully processed
       setTimeout(() => {
+        setOnboardingStep("NameInput");
         navigation.navigate("NameInput");
       }, 500);
     }

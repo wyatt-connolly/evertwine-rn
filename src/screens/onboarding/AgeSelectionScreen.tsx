@@ -37,7 +37,7 @@ const ageRanges = [
 
 export default function AgeSelectionScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
-  const { setOnboardingData } = useAuthStore();
+  const { setOnboardingData, setOnboardingStep } = useAuthStore();
   const [selectedAge, setSelectedAge] = useState<string>("");
 
   // Animation values
@@ -102,6 +102,7 @@ export default function AgeSelectionScreen({ navigation }: Props) {
       // Convert age range to number and save to onboarding data
       const age = getAgeFromRange(selectedAge);
       setOnboardingData({ age });
+      setOnboardingStep("GenderSelection");
       navigation.navigate("GenderSelection");
     }
   };

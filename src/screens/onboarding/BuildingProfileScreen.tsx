@@ -36,8 +36,13 @@ const tasks = [
 
 export default function BuildingProfileScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
-  const { user, onboardingData, setOnboardingComplete, clearOnboardingData } =
-    useAuthStore();
+  const {
+    user,
+    onboardingData,
+    setOnboardingComplete,
+    clearOnboardingData,
+    setOnboardingStep,
+  } = useAuthStore();
   const [currentProgress, setCurrentProgress] = useState(0);
 
   // Save all onboarding data to database
@@ -86,6 +91,7 @@ export default function BuildingProfileScreen({ navigation }: Props) {
       // Only mark complete on success
       clearOnboardingData();
       setOnboardingComplete(true);
+      setOnboardingStep("BuildingProfile"); // Mark as completed
 
       // Update the local user object to reflect the completion
       const { updateUserProfile } = useAuthStore.getState();

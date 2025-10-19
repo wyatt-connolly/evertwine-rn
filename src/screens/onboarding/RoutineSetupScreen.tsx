@@ -39,7 +39,7 @@ const routineOptions = [
 
 export default function RoutineSetupScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
-  const { setOnboardingData } = useAuthStore();
+  const { setOnboardingData, setOnboardingStep } = useAuthStore();
   const [selectedRoutine, setSelectedRoutine] = useState<string>("");
 
   // Animation values
@@ -94,6 +94,7 @@ export default function RoutineSetupScreen({ navigation }: Props) {
     if (selectedRoutine) {
       // Save routine to onboarding data
       setOnboardingData({ routine: selectedRoutine });
+      setOnboardingStep("FeatureIntro");
       navigation.navigate("FeatureIntro");
     }
   };

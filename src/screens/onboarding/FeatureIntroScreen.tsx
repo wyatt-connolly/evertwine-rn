@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { useAuthStore } from "../../hooks/useAuthStore";
 import OnboardingButton from "../../components/OnboardingButton";
 import GradientBackground from "../../components/GradientBackground";
 
@@ -124,6 +125,7 @@ const AnimatedFeatureItem: React.FC<AnimatedFeatureItemProps> = ({
 
 export default function FeatureIntroScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
+  const { setOnboardingStep } = useAuthStore();
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -174,6 +176,7 @@ export default function FeatureIntroScreen({ navigation }: Props) {
   }, []);
 
   const handleGetStarted = () => {
+    setOnboardingStep("SocialBenefits");
     navigation.navigate("SocialBenefits");
   };
 

@@ -38,7 +38,7 @@ const obstacleOptions = [
 
 export default function ObstaclesScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
-  const { setOnboardingData } = useAuthStore();
+  const { setOnboardingData, setOnboardingStep } = useAuthStore();
   const [selectedObstacle, setSelectedObstacle] = useState<string>("");
 
   // Animation values
@@ -84,6 +84,7 @@ export default function ObstaclesScreen({ navigation }: Props) {
     if (selectedObstacle) {
       // Save obstacle to onboarding data (convert single selection to array)
       setOnboardingData({ obstacles: [selectedObstacle] });
+      setOnboardingStep("RoutineSetup");
       navigation.navigate("RoutineSetup");
     }
   };

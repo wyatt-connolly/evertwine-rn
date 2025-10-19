@@ -14,10 +14,9 @@ import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { usePreferenceStore } from "../../hooks/usePreferenceStore";
 import { getPreferenceCompletionPercentage } from "../../constants/preferences";
-import {
-  SupabaseDataService,
-  SupabaseAuthService,
-} from "../../services/supabase";
+import { SupabaseAuthService } from "../../services/supabase";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
+import { SupabaseStorageService } from "../../services/SupabaseStorageService";
 
 export default function SettingsScreen({ navigation }: any) {
   const { user, logout } = useAuthStore();
@@ -94,7 +93,17 @@ export default function SettingsScreen({ navigation }: any) {
         "Please wait while we delete your account and all associated data..."
       );
 
-      // Delete all user data from Supabase
+      // Delete all user files from storage first
+      console.log("🗑️ Deleting user files from storage...");
+      try {
+        await SupabaseStorageService.deleteAllUserFiles(user.uid);
+        console.log("✅ Successfully deleted all user files from storage");
+      } catch (storageError) {
+        console.error("Error deleting user files from storage:", storageError);
+        // Continue with database deletion even if storage deletion fails
+      }
+
+      // Delete all user data from Supabase database
       const supabaseResult = await SupabaseDataService.deleteUserAccount(
         user.uid
       );
@@ -107,13 +116,13 @@ export default function SettingsScreen({ navigation }: any) {
         return;
       }
 
-      // Delete the account from Supabase Auth
+      // Delete the account from Supabase Auth (signs out user)
       const authResult = await SupabaseAuthService.deleteAccount();
 
       if (authResult.error) {
         Alert.alert(
           "Delete Failed",
-          `Unable to delete your account. Please try again later.`
+          `Unable to complete account deletion. Please try again later.`
         );
         return;
       }
@@ -124,7 +133,7 @@ export default function SettingsScreen({ navigation }: any) {
       // Show success message
       Alert.alert(
         "Account Deleted",
-        "Your account has been successfully deleted. You will now be redirected to the login screen.",
+        "Your account data has been successfully deleted from our database. You have been signed out and will be redirected to the login screen.",
         [{ text: "OK" }]
       );
     } catch (error: any) {

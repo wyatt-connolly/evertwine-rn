@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { useAuthStore } from "../../hooks/useAuthStore";
 import { Ionicons } from "@expo/vector-icons";
 import GradientBackground from "../../components/GradientBackground";
 
@@ -28,6 +29,7 @@ const { width, height } = Dimensions.get("window");
 
 export default function CommitmentScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
+  const { setOnboardingStep } = useAuthStore();
   const [isHolding, setIsHolding] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -97,6 +99,7 @@ export default function CommitmentScreen({ navigation }: Props) {
           clearInterval(interval);
           // Use setTimeout to avoid setState-in-render error
           setTimeout(() => {
+            setOnboardingStep("BuildingProfile");
             navigation.navigate("BuildingProfile");
           }, 0);
           return 100;

@@ -36,7 +36,7 @@ const genderOptions = [
 
 export default function GenderSelectionScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
-  const { setOnboardingData } = useAuthStore();
+  const { setOnboardingData, setOnboardingStep } = useAuthStore();
   const [selectedGender, setSelectedGender] = useState<string>("");
 
   // Animation values
@@ -82,6 +82,7 @@ export default function GenderSelectionScreen({ navigation }: Props) {
     if (selectedGender) {
       // Save gender to onboarding data
       setOnboardingData({ gender: selectedGender });
+      setOnboardingStep("GoalsSelection");
       navigation.navigate("GoalsSelection");
     }
   };

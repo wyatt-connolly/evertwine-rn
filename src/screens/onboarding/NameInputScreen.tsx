@@ -7,6 +7,7 @@ import {
   StatusBar,
   Dimensions,
   Animated,
+  Keyboard,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -29,7 +30,7 @@ const { width, height } = Dimensions.get("window");
 
 export default function NameInputScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
-  const { setOnboardingData } = useAuthStore();
+  const { setOnboardingData, setOnboardingStep } = useAuthStore();
   const [name, setName] = useState("");
 
   // Animation values
@@ -75,8 +76,13 @@ export default function NameInputScreen({ navigation }: Props) {
     if (name.trim()) {
       // Save name to onboarding data
       setOnboardingData({ name: name.trim() });
+      setOnboardingStep("AgeSelection");
       navigation.navigate("AgeSelection");
     }
+  };
+
+  const handleKeyboardDismiss = () => {
+    Keyboard.dismiss();
   };
 
   return (
@@ -133,9 +139,8 @@ export default function NameInputScreen({ navigation }: Props) {
                 placeholderTextColor={colors.textTertiary}
                 value={name}
                 onChangeText={setName}
-                autoFocus
                 returnKeyType="done"
-                onSubmitEditing={handleContinue}
+                onSubmitEditing={handleKeyboardDismiss}
               />
               <View
                 style={[styles.underline, { backgroundColor: colors.text }]}

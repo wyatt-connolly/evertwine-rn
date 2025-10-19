@@ -13,6 +13,7 @@ import FeatureIntroScreen from "../screens/onboarding/FeatureIntroScreen";
 import SocialBenefitsScreen from "../screens/onboarding/SocialBenefitsScreen";
 import CommitmentScreen from "../screens/onboarding/CommitmentScreen";
 import BuildingProfileScreen from "../screens/onboarding/BuildingProfileScreen";
+import { useAuthStore } from "../hooks/useAuthStore";
 // Removed old onboarding screens - now navigating directly to Home
 
 export type OnboardingStackParamList = {
@@ -40,18 +41,34 @@ interface OnboardingStackProps {
 export default function OnboardingStack({
   hasSeenIntro,
 }: OnboardingStackProps) {
+  const { isAuthenticated, getCurrentOnboardingStep } = useAuthStore();
+
+  // Determine the initial route based on authentication and progress
+  const getInitialRoute = () => {
+    if (!hasSeenIntro) {
+      return "CinematicIntro";
+    }
+
+    if (!isAuthenticated) {
+      return "Welcome";
+    }
+
+    // User is authenticated, resume from where they left off
+    const currentStep = getCurrentOnboardingStep();
+    console.log("📍 Resuming onboarding from step:", currentStep);
+    return currentStep;
+  };
+
   useEffect(() => {
     console.log("🚀 OnboardingStack mounted - this should only happen once");
     console.log("🎬 OnboardingStack hasSeenIntro:", hasSeenIntro);
-    console.log(
-      "🎬 OnboardingStack initialRouteName:",
-      hasSeenIntro ? "Welcome" : "CinematicIntro"
-    );
-  }, [hasSeenIntro]);
+    console.log("🔐 OnboardingStack isAuthenticated:", isAuthenticated);
+    console.log("📍 OnboardingStack initialRouteName:", getInitialRoute());
+  }, [hasSeenIntro, isAuthenticated]);
 
   return (
     <Stack.Navigator
-      initialRouteName={hasSeenIntro ? "Welcome" : "CinematicIntro"}
+      initialRouteName={getInitialRoute()}
       screenOptions={{
         headerShown: false,
         gestureEnabled: false, // Disable swipe back gestures

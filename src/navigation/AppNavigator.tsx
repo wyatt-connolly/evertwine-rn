@@ -9,7 +9,7 @@ import LoadingIndicator from "../components/LoadingIndicator";
 import { useThemeStore } from "../hooks/useThemeStore";
 
 export default function AppNavigator() {
-  const { colors, isHydrated: themeHydrated } = useThemeStore();
+  const { colors } = useThemeStore();
   const {
     isAuthenticated,
     user,
@@ -202,17 +202,17 @@ export default function AppNavigator() {
     isAuthenticated,
     hasSeenIntro,
     authHydrated,
-    themeHydrated,
     userOnboardingComplete,
     userOnboardingStatus: user?.onboardingComplete,
     storeOnboardingStatus: onboardingComplete,
     willShowOnboarding: !userOnboardingComplete,
     userUID: user?.uid,
     currentRoute: !userOnboardingComplete ? "OnboardingStack" : "MainTabs",
+    showingLoadingScreen: !authHydrated,
   });
 
-  // Show loading screen while stores are hydrating to prevent flash
-  if (!authHydrated || !themeHydrated) {
+  // Show loading screen while auth store is hydrating to prevent flash
+  if (!authHydrated) {
     return (
       <View
         style={[

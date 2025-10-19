@@ -23,6 +23,7 @@ interface AuthState {
   isLoading: boolean;
   isHydrated: boolean;
   onboardingData: OnboardingData;
+  onboardingStep: string;
   setUser: (user: User | null) => void;
   setAuthenticated: (isAuthenticated: boolean) => void;
   setOnboardingComplete: (completed: boolean) => void;
@@ -31,6 +32,8 @@ interface AuthState {
   setHydrated: (hydrated: boolean) => void;
   updateUserProfile: (updates: Partial<User>) => void;
   setOnboardingData: (data: Partial<OnboardingData>) => void;
+  setOnboardingStep: (step: string) => void;
+  getCurrentOnboardingStep: () => string;
   clearOnboardingData: () => void;
   resetOnboardingState: () => void;
   logout: () => void;
@@ -46,6 +49,7 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       isHydrated: false,
       onboardingData: {},
+      onboardingStep: "NameInput",
 
       setUser: (user) => set({ user }),
 
@@ -75,6 +79,28 @@ export const useAuthStore = create<AuthState>()(
       setOnboardingData: (data) => {
         const currentData = get().onboardingData;
         set({ onboardingData: { ...currentData, ...data } });
+      },
+
+      setOnboardingStep: (onboardingStep) => {
+        console.log("📍 Setting onboarding step:", onboardingStep);
+        set({ onboardingStep });
+      },
+
+      // Determine current onboarding step based on existing data
+      getCurrentOnboardingStep: () => {
+        const { onboardingData } = get();
+
+        if (!onboardingData.name) return "NameInput";
+        if (!onboardingData.age) return "AgeSelection";
+        if (!onboardingData.gender) return "GenderSelection";
+        if (!onboardingData.goals || onboardingData.goals.length === 0)
+          return "GoalsSelection";
+        if (!onboardingData.obstacles || onboardingData.obstacles.length === 0)
+          return "ObstaclesSelection";
+        if (!onboardingData.routine) return "RoutineSetup";
+
+        // If all data is present, go to BuildingProfile
+        return "BuildingProfile";
       },
 
       clearOnboardingData: () => {
@@ -109,6 +135,7 @@ export const useAuthStore = create<AuthState>()(
         set({
           onboardingComplete: false,
           onboardingData: {},
+          onboardingStep: "NameInput",
           // Don't reset hasSeenIntro - it should persist across app sessions
         });
       },

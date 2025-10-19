@@ -39,7 +39,7 @@ const goalOptions = [
 
 export default function GoalsSelectionScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
-  const { setOnboardingData } = useAuthStore();
+  const { setOnboardingData, setOnboardingStep } = useAuthStore();
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
 
   // Animation values
@@ -95,6 +95,7 @@ export default function GoalsSelectionScreen({ navigation }: Props) {
     if (selectedGoals.length > 0) {
       // Save goals to onboarding data
       setOnboardingData({ goals: selectedGoals });
+      setOnboardingStep("ObstaclesSelection");
       navigation.navigate("ObstaclesSelection");
     }
   };
