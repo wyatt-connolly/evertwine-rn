@@ -137,7 +137,7 @@ export default function SocialBenefitsScreen({ navigation }: Props) {
                   ]}
                 />
               </View>
-              <Text style={[styles.progressText, { color: colors.text }]}>
+              <Text style={[styles.progressText, { color: "#FFFFFF" }]}>
                 Last step
               </Text>
             </View>
@@ -150,7 +150,7 @@ export default function SocialBenefitsScreen({ navigation }: Props) {
                 styles.title,
                 {
                   opacity: titleAnim,
-                  color: colors.text,
+                  color: "#FFFFFF",
                   transform: [
                     {
                       translateY: titleAnim.interpolate({
@@ -198,7 +198,7 @@ export default function SocialBenefitsScreen({ navigation }: Props) {
                 styles.citation,
                 {
                   opacity: benefitsAnim,
-                  color: colors.textTertiary,
+                  color: "#AEAEB2",
                 },
               ]}
             >

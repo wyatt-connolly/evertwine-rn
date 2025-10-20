@@ -142,7 +142,7 @@ export default function AgeSelectionScreen({ navigation }: Props) {
             },
           ]}
         >
-          <Text style={[styles.optionText, { color: colors.text }]}>
+          <Text style={[styles.optionText, { color: "#FFFFFF" }]}>
             {age.label}
           </Text>
         </Animated.View>
@@ -218,7 +218,7 @@ export default function AgeSelectionScreen({ navigation }: Props) {
                     onPress={() => setSelectedAge(age.value)}
                     activeOpacity={0.7}
                   >
-                    <Text style={[styles.optionText, { color: colors.text }]}>
+                    <Text style={[styles.optionText, { color: "#FFFFFF" }]}>
                       {age.label}
                     </Text>
                   </TouchableOpacity>

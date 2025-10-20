@@ -115,7 +115,7 @@ export default function RoutineSetupScreen({ navigation }: Props) {
                 styles.title,
                 {
                   opacity: titleAnim,
-                  color: colors.text,
+                  color: "#FFFFFF",
                   transform: [
                     {
                       translateY: titleAnim.interpolate({
@@ -136,7 +136,7 @@ export default function RoutineSetupScreen({ navigation }: Props) {
                 styles.question,
                 {
                   opacity: questionAnim,
-                  color: colors.text,
+                  color: "#FFFFFF",
                   transform: [
                     {
                       translateY: questionAnim.interpolate({
@@ -188,13 +188,13 @@ export default function RoutineSetupScreen({ navigation }: Props) {
                     onPress={() => setSelectedRoutine(option.value)}
                     activeOpacity={0.7}
                   >
-                    <Text style={[styles.optionText, { color: colors.text }]}>
+                    <Text style={[styles.optionText, { color: "#FFFFFF" }]}>
                       {option.time}
                     </Text>
                     <Text
                       style={[
                         styles.optionLabel,
-                        { color: colors.textSecondary },
+                        { color: "#E5E5EA" },
                       ]}
                     >
                       {option.label}

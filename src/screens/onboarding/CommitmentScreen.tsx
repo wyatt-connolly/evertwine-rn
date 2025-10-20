@@ -125,7 +125,7 @@ export default function CommitmentScreen({ navigation }: Props) {
                 styles.title,
                 {
                   opacity: titleAnim,
-                  color: colors.text,
+                  color: "#FFFFFF",
                   transform: [
                     {
                       translateY: titleAnim.interpolate({
@@ -146,7 +146,7 @@ export default function CommitmentScreen({ navigation }: Props) {
                 styles.subtitle,
                 {
                   opacity: subtitleAnim,
-                  color: colors.text,
+                  color: "#FFFFFF",
                   transform: [
                     {
                       translateY: subtitleAnim.interpolate({
@@ -181,7 +181,7 @@ export default function CommitmentScreen({ navigation }: Props) {
                 },
               ]}
             >
-              <Text style={[styles.commitmentText, { color: colors.text }]}>
+              <Text style={[styles.commitmentText, { color: "#FFFFFF" }]}>
                 I commit to investing time in building real connections. I
                 understand that meaningful relationships come through consistent
                 effort, and I'm ready to take the first step towards expanding
@@ -222,7 +222,7 @@ export default function CommitmentScreen({ navigation }: Props) {
                 styles.holdText,
                 {
                   opacity: fingerprintAnim,
-                  color: colors.text,
+                  color: "#FFFFFF",
                 },
               ]}
             >
@@ -238,7 +238,7 @@ export default function CommitmentScreen({ navigation }: Props) {
                     { backgroundColor: colors.accent },
                   ]}
                 />
-                <Text style={[styles.progressText, { color: colors.text }]}>
+                <Text style={[styles.progressText, { color: "#FFFFFF" }]}>
                   Creating your profile...
                 </Text>
               </Animated.View>
