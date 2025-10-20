@@ -9,7 +9,6 @@ import {
   SafeAreaView,
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import GradientBackground from "../../components/GradientBackground";
 import OAuthButton from "../../components/OAuthButton";
@@ -21,7 +20,6 @@ type Props = {
 };
 
 export default function AuthSignInScreen({ navigation }: Props) {
-  const { colors } = useThemeStore();
   const { isAuthenticated, user, setOnboardingStep } = useAuthStore();
   const [loading, setLoading] = useState<"google" | "apple" | null>(null);
 
@@ -120,10 +118,10 @@ export default function AuthSignInScreen({ navigation }: Props) {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.text }]}>
+            <Text style={[styles.title, { color: "#FFFFFF" }]}>
               Welcome Back
             </Text>
-            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            <Text style={[styles.subtitle, { color: "#E5E5EA" }]}>
               Choose your sign-in method
             </Text>
           </View>
@@ -150,7 +148,7 @@ export default function AuthSignInScreen({ navigation }: Props) {
           {/* Back Button */}
           <View style={styles.footer}>
             <Text
-              style={[styles.backText, { color: colors.textSecondary }]}
+              style={[styles.backText, { color: "#E5E5EA" }]}
               onPress={handleBack}
             >
               ← Back

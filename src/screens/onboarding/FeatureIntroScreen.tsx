@@ -11,7 +11,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
-import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import OnboardingButton from "../../components/OnboardingButton";
 import GradientBackground from "../../components/GradientBackground";
@@ -45,7 +44,6 @@ const AnimatedFeatureItem: React.FC<AnimatedFeatureItemProps> = ({
   feature,
   delay,
 }) => {
-  const { colors } = useThemeStore();
   const [isLoaded, setIsLoaded] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -116,7 +114,7 @@ const AnimatedFeatureItem: React.FC<AnimatedFeatureItemProps> = ({
           </Animated.View>
         )}
       </View>
-      <Text style={[styles.featureText, { color: colors.text }]}>
+      <Text style={[styles.featureText, { color: "#FFFFFF" }]}>
         {feature.text}
       </Text>
     </Animated.View>
@@ -124,7 +122,6 @@ const AnimatedFeatureItem: React.FC<AnimatedFeatureItemProps> = ({
 };
 
 export default function FeatureIntroScreen({ navigation }: Props) {
-  const { colors } = useThemeStore();
   const { setOnboardingStep } = useAuthStore();
 
   // Animation values
@@ -196,7 +193,7 @@ export default function FeatureIntroScreen({ navigation }: Props) {
                 styles.title,
                 {
                   opacity: titleAnim,
-                  color: colors.text,
+                  color: "#FFFFFF",
                   transform: [
                     {
                       translateY: titleAnim.interpolate({
@@ -217,7 +214,7 @@ export default function FeatureIntroScreen({ navigation }: Props) {
                 styles.subtitle,
                 {
                   opacity: subtitleAnim,
-                  color: colors.text,
+                  color: "#FFFFFF",
                   transform: [
                     {
                       translateY: subtitleAnim.interpolate({

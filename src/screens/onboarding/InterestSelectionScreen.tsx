@@ -186,7 +186,7 @@ export default function InterestSelectionScreen({ navigation }: Props) {
                   styles.title,
                   {
                     opacity: titleAnim,
-                    color: colors.text,
+                    color: "#FFFFFF",
                     transform: [
                       {
                         translateY: titleAnim.interpolate({
@@ -205,7 +205,7 @@ export default function InterestSelectionScreen({ navigation }: Props) {
                   styles.subtitle,
                   {
                     opacity: subtitleAnim,
-                    color: colors.textSecondary,
+                    color: "#E5E5EA",
                     transform: [
                       {
                         translateY: subtitleAnim.interpolate({

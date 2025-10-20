@@ -103,7 +103,7 @@ export default function GenderSelectionScreen({ navigation }: Props) {
                 styles.title,
                 {
                   opacity: titleAnim,
-                  color: colors.text,
+                  color: "#FFFFFF",
                   transform: [
                     {
                       translateY: titleAnim.interpolate({

@@ -101,7 +101,7 @@ export default function NameInputScreen({ navigation }: Props) {
                 styles.title,
                 {
                   opacity: titleAnim,
-                  color: colors.text,
+                  color: "#FFFFFF",
                   transform: [
                     {
                       translateY: titleAnim.interpolate({
@@ -134,16 +134,16 @@ export default function NameInputScreen({ navigation }: Props) {
               ]}
             >
               <TextInput
-                style={[styles.input, { color: colors.text }]}
+                style={[styles.input, { color: "#FFFFFF" }]}
                 placeholder="Enter your name"
-                placeholderTextColor={colors.textTertiary}
+                placeholderTextColor="#AEAEB2"
                 value={name}
                 onChangeText={setName}
                 returnKeyType="done"
                 onSubmitEditing={handleKeyboardDismiss}
               />
               <View
-                style={[styles.underline, { backgroundColor: colors.text }]}
+                style={[styles.underline, { backgroundColor: "#FFFFFF" }]}
               />
             </Animated.View>
 

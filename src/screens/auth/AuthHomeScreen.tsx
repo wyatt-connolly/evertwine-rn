@@ -134,10 +134,10 @@ export default function AuthHomeScreen({ navigation }: Props) {
                   color={colors.primary}
                 />
               </View>
-              <Text style={[styles.title, { color: colors.text }]}>
+              <Text style={[styles.title, { color: "#FFFFFF" }]}>
                 Welcome to Evertwine
               </Text>
-              <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+              <Text style={[styles.subtitle, { color: "#E5E5EA" }]}>
                 Connect with people who share your interests through amazing
                 meetups
               </Text>
@@ -156,7 +156,7 @@ export default function AuthHomeScreen({ navigation }: Props) {
                 >
                   <Ionicons name="people" size={24} color={colors.primary} />
                 </View>
-                <Text style={[styles.featureText, { color: colors.text }]}>
+                <Text style={[styles.featureText, { color: "#FFFFFF" }]}>
                   Meet New People
                 </Text>
               </View>
@@ -170,7 +170,7 @@ export default function AuthHomeScreen({ navigation }: Props) {
                 >
                   <Ionicons name="location" size={24} color={colors.primary} />
                 </View>
-                <Text style={[styles.featureText, { color: colors.text }]}>
+                <Text style={[styles.featureText, { color: "#FFFFFF" }]}>
                   Local Events
                 </Text>
               </View>
@@ -184,7 +184,7 @@ export default function AuthHomeScreen({ navigation }: Props) {
                 >
                   <Ionicons name="heart" size={24} color={colors.primary} />
                 </View>
-                <Text style={[styles.featureText, { color: colors.text }]}>
+                <Text style={[styles.featureText, { color: "#FFFFFF" }]}>
                   Shared Interests
                 </Text>
               </View>
@@ -215,13 +215,13 @@ export default function AuthHomeScreen({ navigation }: Props) {
           {/* Footer */}
           <AnimatedCard delay={800} direction="up">
             <View style={styles.footer}>
-              <Text style={[styles.footerText, { color: colors.textTertiary }]}>
+              <Text style={[styles.footerText, { color: "#AEAEB2" }]}>
                 By continuing, you agree to our{" "}
-                <Text style={[styles.linkText, { color: colors.primary }]}>
+                <Text style={[styles.linkText, { color: "#FFFFFF" }]}>
                   Terms of Service
                 </Text>{" "}
                 and{" "}
-                <Text style={[styles.linkText, { color: colors.primary }]}>
+                <Text style={[styles.linkText, { color: "#FFFFFF" }]}>
                   Privacy Policy
                 </Text>
               </Text>
