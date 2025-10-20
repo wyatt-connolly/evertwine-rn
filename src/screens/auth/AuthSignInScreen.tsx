@@ -63,6 +63,16 @@ export default function AuthSignInScreen({ navigation }: Props) {
         setOnboardingStep("NameInput");
         navigation.navigate("NameInput");
       }, 500);
+    } else if (isAuthenticated && user && user.onboardingComplete) {
+      console.log("✅ User authenticated and onboarding complete, letting AppNavigator handle routing");
+      console.log("👤 User onboarding status:", {
+        uid: user.uid,
+        email: user.email,
+        onboardingComplete: user.onboardingComplete,
+      });
+      // User is authenticated and has completed onboarding
+      // Let AppNavigator handle the routing automatically
+      // Don't navigate manually - the AppNavigator will route to MainTabs
     }
   }, [isAuthenticated, user, navigation, isOAuthInProgress]);
 
