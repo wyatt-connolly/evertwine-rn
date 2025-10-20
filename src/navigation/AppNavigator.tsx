@@ -89,12 +89,20 @@ export default function AppNavigator() {
 
         // User is signed in, load their profile data from database
         try {
+          console.log("🔍 Loading user profile from database for UID:", supabaseUser.uid);
           const fullProfile = await SupabaseDataService.getUser(
             supabaseUser.uid
           );
           if (fullProfile) {
             console.log("👤 Loaded full profile:", {
+              uid: fullProfile.uid,
+              email: fullProfile.email,
               onboardingComplete: fullProfile.onboardingComplete,
+            });
+            console.log("🔧 Setting auth state:", {
+              setUser: true,
+              setAuthenticated: true,
+              setOnboardingComplete: fullProfile.onboardingComplete || false,
             });
             setUser(fullProfile as any);
             setAuthenticated(true);

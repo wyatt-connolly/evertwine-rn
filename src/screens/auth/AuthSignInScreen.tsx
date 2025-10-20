@@ -46,6 +46,14 @@ export default function AuthSignInScreen({ navigation }: Props) {
 
   // Watch for authentication changes and navigate to next onboarding step
   useEffect(() => {
+    console.log("🔍 AuthSignInScreen useEffect triggered:", {
+      isAuthenticated,
+      hasUser: !!user,
+      userUID: user?.uid,
+      userOnboardingComplete: user?.onboardingComplete,
+      isOAuthInProgress,
+    });
+
     if (
       isAuthenticated &&
       user &&
@@ -60,11 +68,14 @@ export default function AuthSignInScreen({ navigation }: Props) {
       });
       // Small delay to ensure the auth state is fully processed
       setTimeout(() => {
+        console.log("🚀 Navigating to NameInput after timeout");
         setOnboardingStep("NameInput");
         navigation.navigate("NameInput");
       }, 500);
     } else if (isAuthenticated && user && user.onboardingComplete) {
-      console.log("✅ User authenticated and onboarding complete, letting AppNavigator handle routing");
+      console.log(
+        "✅ User authenticated and onboarding complete, letting AppNavigator handle routing"
+      );
       console.log("👤 User onboarding status:", {
         uid: user.uid,
         email: user.email,
@@ -73,6 +84,13 @@ export default function AuthSignInScreen({ navigation }: Props) {
       // User is authenticated and has completed onboarding
       // Let AppNavigator handle the routing automatically
       // Don't navigate manually - the AppNavigator will route to MainTabs
+    } else {
+      console.log("⏳ AuthSignInScreen waiting for conditions:", {
+        isAuthenticated,
+        hasUser: !!user,
+        userOnboardingComplete: user?.onboardingComplete,
+        isOAuthInProgress,
+      });
     }
   }, [isAuthenticated, user, navigation, isOAuthInProgress]);
 
@@ -98,6 +116,11 @@ export default function AuthSignInScreen({ navigation }: Props) {
         console.log(
           "🎉 OAuth successful, auth state change will handle navigation"
         );
+        console.log("🔍 OAuth success details:", {
+          type: authData.type,
+          hasUrl: !!authData.url,
+          urlLength: authData.url?.length,
+        });
         // The auth state change listener in AppNavigator will handle navigation
         // based on onboardingComplete status - no manual navigation needed
       } else if (authData?.type === "cancel") {
