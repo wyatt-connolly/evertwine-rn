@@ -99,14 +99,14 @@ export default function EditProfileScreen({ navigation }: any) {
 
         // Load user profile data
         const userResult = await DataService.getUser(user.uid);
-        
+
         if (userResult.user) {
           setProfileData(userResult.user);
           console.log("✅ Profile data loaded");
         } else {
           // User doesn't exist in Supabase - create them
           console.log("🔄 No user data found, creating user record...");
-          
+
           const createResult = await DataService.createUser({
             uid: user.uid,
             email: user.email,
@@ -137,7 +137,7 @@ export default function EditProfileScreen({ navigation }: any) {
             notificationsEnabled: true,
             locationEnabled: true,
           });
-          
+
           if (createResult.success) {
             // Reload the user data from Supabase
             const newUserResult = await DataService.getUser(user.uid);
@@ -146,7 +146,10 @@ export default function EditProfileScreen({ navigation }: any) {
               console.log("✅ User record created and loaded");
             }
           } else {
-            console.error("❌ Failed to create user record:", createResult.error);
+            console.error(
+              "❌ Failed to create user record:",
+              createResult.error
+            );
           }
         }
 
@@ -740,7 +743,10 @@ export default function EditProfileScreen({ navigation }: any) {
                 </Text>
                 {profileData.school ? (
                   <Text
-                    style={[styles.professionalItemValue, { color: colors.text }]}
+                    style={[
+                      styles.professionalItemValue,
+                      { color: colors.text },
+                    ]}
                   >
                     {profileData.school}
                   </Text>
@@ -776,7 +782,10 @@ export default function EditProfileScreen({ navigation }: any) {
                 {profileData.jobTitle ? (
                   <>
                     <Text
-                      style={[styles.professionalItemValue, { color: colors.text }]}
+                      style={[
+                        styles.professionalItemValue,
+                        { color: colors.text },
+                      ]}
                     >
                       {profileData.jobTitle}
                     </Text>
@@ -847,7 +856,11 @@ export default function EditProfileScreen({ navigation }: any) {
               <Text
                 style={[
                   styles.emptyFieldText,
-                  { color: colors.textTertiary, textAlign: 'center', marginTop: 8 },
+                  {
+                    color: colors.textTertiary,
+                    textAlign: "center",
+                    marginTop: 8,
+                  },
                 ]}
               >
                 Tap to add your interests and hobbies
@@ -1924,12 +1937,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   emptyFieldText: {
-    fontStyle: 'italic',
+    fontStyle: "italic",
     fontSize: 14,
     lineHeight: 20,
   },
   emptyFieldPrompt: {
-    fontStyle: 'italic',
+    fontStyle: "italic",
     fontSize: 13,
     opacity: 0.6,
   },

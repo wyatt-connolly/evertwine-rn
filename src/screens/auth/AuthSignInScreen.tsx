@@ -22,6 +22,7 @@ type Props = {
 export default function AuthSignInScreen({ navigation }: Props) {
   const { isAuthenticated, user, setOnboardingStep } = useAuthStore();
   const [loading, setLoading] = useState<"google" | "apple" | null>(null);
+  const [isOAuthInProgress, setIsOAuthInProgress] = useState(false);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -45,20 +46,31 @@ export default function AuthSignInScreen({ navigation }: Props) {
 
   // Watch for authentication changes and navigate to next onboarding step
   useEffect(() => {
-    if (isAuthenticated && user && !user.onboardingComplete) {
+    if (
+      isAuthenticated &&
+      user &&
+      !user.onboardingComplete &&
+      !isOAuthInProgress
+    ) {
       console.log("✅ User authenticated, navigating to NameInput");
+      console.log("👤 User data:", {
+        uid: user.uid,
+        email: user.email,
+        onboardingComplete: user.onboardingComplete,
+      });
       // Small delay to ensure the auth state is fully processed
       setTimeout(() => {
         setOnboardingStep("NameInput");
         navigation.navigate("NameInput");
       }, 500);
     }
-  }, [isAuthenticated, user, navigation]);
+  }, [isAuthenticated, user, navigation, isOAuthInProgress]);
 
   const handleOAuthSignIn = async (provider: "google" | "apple") => {
     try {
       console.log(`🔵 Starting ${provider} OAuth...`);
       setLoading(provider);
+      setIsOAuthInProgress(true);
 
       let authData;
       if (provider === "google") {
@@ -71,8 +83,19 @@ export default function AuthSignInScreen({ navigation }: Props) {
 
       console.log(`✅ ${provider} OAuth completed:`, authData);
 
-      // The auth state change listener in AppNavigator will handle navigation
-      // based on onboardingComplete status - no manual navigation needed
+      // Check if the OAuth was successful
+      if (authData?.type === "success") {
+        console.log(
+          "🎉 OAuth successful, auth state change will handle navigation"
+        );
+        // The auth state change listener in AppNavigator will handle navigation
+        // based on onboardingComplete status - no manual navigation needed
+      } else if (authData?.type === "cancel") {
+        console.log(`ℹ️ User cancelled ${provider} OAuth`);
+        return;
+      } else {
+        console.log(`⚠️ OAuth completed with unexpected result:`, authData);
+      }
     } catch (error: any) {
       console.error(`❌ ${provider} sign-in error:`, error);
 
@@ -92,6 +115,7 @@ export default function AuthSignInScreen({ navigation }: Props) {
       );
     } finally {
       setLoading(null);
+      setIsOAuthInProgress(false);
     }
   };
 

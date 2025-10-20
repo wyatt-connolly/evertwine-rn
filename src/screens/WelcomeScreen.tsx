@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../navigation/OnboardingStack";
 import { useThemeStore } from "../hooks/useThemeStore";
+import { useAuthStore } from "../hooks/useAuthStore";
 
 type WelcomeScreenNavigationProp = StackNavigationProp<
   OnboardingStackParamList,
@@ -27,6 +28,7 @@ const { width, height } = Dimensions.get("window");
 
 export default function WelcomeScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
+  const { setHasSeenIntro } = useAuthStore();
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -88,6 +90,11 @@ export default function WelcomeScreen({ navigation }: Props) {
 
   const handleAlreadyHaveAccount = () => {
     navigation.navigate("AuthSignIn");
+  };
+
+  const handleResetIntro = () => {
+    setHasSeenIntro(false);
+    navigation.navigate("CinematicIntro" as never);
   };
 
   return (
@@ -194,7 +201,9 @@ export default function WelcomeScreen({ navigation }: Props) {
                 onPress={handleBeginJourney}
                 activeOpacity={0.8}
               >
-                <Text style={[styles.primaryButtonText, { color: "#000000" }]}>Start Connecting</Text>
+                <Text style={[styles.primaryButtonText, { color: "#000000" }]}>
+                  Start Connecting
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -207,6 +216,20 @@ export default function WelcomeScreen({ navigation }: Props) {
               >
                 <Text style={styles.secondaryButtonText}>
                   I already have an account
+                </Text>
+              </TouchableOpacity>
+
+              {/* Debug Button - Remove this in production */}
+              <TouchableOpacity
+                style={[
+                  styles.debugButton,
+                  { backgroundColor: "rgba(255, 0, 0, 0.3)" },
+                ]}
+                onPress={handleResetIntro}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.debugButtonText}>
+                  🎬 Reset Cinematic Intro
                 </Text>
               </TouchableOpacity>
             </Animated.View>
@@ -309,6 +332,21 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "700",
+    textAlign: "center",
+  },
+  debugButton: {
+    height: 48,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255, 0, 0, 0.5)",
+    marginTop: 8,
+  },
+  debugButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
     textAlign: "center",
   },
 });

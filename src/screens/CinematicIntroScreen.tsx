@@ -168,7 +168,7 @@ const CinematicIntroScreen: React.FC = () => {
         useNativeDriver: true,
       }).start(() => {
         // Move to next step (will trigger fade in via useEffect)
-        setCurrentStep((prev) => prev + 1);
+        setCurrentStep((prev) => Math.min(prev + 1, introSteps.length - 1));
       });
     } else {
       // Fade out text, then navigate directly (no screen fade)
@@ -178,14 +178,16 @@ const CinematicIntroScreen: React.FC = () => {
         useNativeDriver: true,
       }).start(() => {
         setHasSeenIntro(true);
-        navigation.navigate("Welcome" as never);
+        // Let AppNavigator handle routing based on auth state
+        // Don't navigate manually - the auth state change will trigger the correct route
       });
     }
   };
 
   const handleSkip = () => {
     setHasSeenIntro(true);
-    navigation.navigate("Welcome" as never);
+    // Let AppNavigator handle routing based on auth state
+    // Don't navigate manually - the auth state change will trigger the correct route
   };
 
   return (
@@ -202,7 +204,7 @@ const CinematicIntroScreen: React.FC = () => {
         </TouchableOpacity>
       </SafeAreaView>
       <View style={styles.content}>
-        {isVisible && (
+        {isVisible && introSteps[currentStep] && (
           <FadingText
             key={currentStep}
             text={introSteps[currentStep].text}

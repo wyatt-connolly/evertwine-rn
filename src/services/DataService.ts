@@ -4,6 +4,8 @@ import {
   getMockMeetups,
   getActivityFeed,
   mockMessageRooms,
+  getUserNotifications,
+  getMockUserStats,
 } from "../data/mockData";
 import { SupabaseDataService } from "./SupabaseDataService";
 
@@ -238,7 +240,6 @@ export class DataService {
   ): Promise<{ notifications: any[]; error: string | null }> {
     if (this.isDeveloperMode) {
       // Return mock notifications in developer mode
-      const { getUserNotifications } = await import("../data/mockData");
       const notifications = getUserNotifications(uid);
       return { notifications, error: null };
     }
@@ -253,7 +254,6 @@ export class DataService {
   ): Promise<{ stats: any | null; error: string | null }> {
     if (this.isDeveloperMode) {
       // Return mock stats in developer mode
-      const { getMockUserStats } = await import("../data/mockData");
       const stats = getMockUserStats(uid);
       return { stats, error: null };
     }

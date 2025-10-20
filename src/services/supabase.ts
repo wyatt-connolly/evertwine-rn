@@ -111,12 +111,11 @@ export class SupabaseAuthService {
     try {
       console.log("🚀 Starting Google OAuth...");
 
-      // First, let's try to get the OAuth URL from Supabase
+      // Use the standard OAuth flow without skipBrowserRedirect
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: "evertwine://auth/callback",
-          skipBrowserRedirect: true,
           queryParams: {
             prompt: "select_account", // Force account selection
           },
@@ -137,7 +136,7 @@ export class SupabaseAuthService {
 
       console.log("✅ OAuth URL generated:", data.url);
 
-      // Now open the URL in the browser
+      // Open the URL in the browser - Supabase will handle the redirect automatically
       const result = await WebBrowser.openAuthSessionAsync(
         data.url,
         "evertwine://auth/callback"
@@ -145,37 +144,8 @@ export class SupabaseAuthService {
 
       console.log("🔙 OAuth result:", result);
 
-      // If we got a successful result with a URL, we need to handle the session
-      if (result.type === "success" && result.url) {
-        console.log("🔄 Processing OAuth callback URL...");
-
-        // Extract the URL fragment (everything after #)
-        const urlFragment = result.url.split("#")[1];
-        if (urlFragment) {
-          // Parse the URL parameters
-          const params = new URLSearchParams(urlFragment);
-          const accessToken = params.get("access_token");
-          const refreshToken = params.get("refresh_token");
-
-          if (accessToken) {
-            console.log("🔑 Setting session with access token...");
-            // Set the session manually
-            const { data: sessionData, error: sessionError } =
-              await supabase.auth.setSession({
-                access_token: accessToken,
-                refresh_token: refreshToken || "",
-              });
-
-            if (sessionError) {
-              console.error("❌ Error setting session:", sessionError);
-              throw sessionError;
-            }
-
-            console.log("✅ Session set successfully:", !!sessionData.session);
-          }
-        }
-      }
-
+      // The session should be automatically set by Supabase when the redirect happens
+      // We just need to return the result
       return result;
     } catch (error) {
       console.error("❌ Google sign-in error:", error);
