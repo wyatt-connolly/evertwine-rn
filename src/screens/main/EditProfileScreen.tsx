@@ -88,16 +88,26 @@ export default function EditProfileScreen({ navigation }: any) {
   // Load profile data using DataService
   useEffect(() => {
     const loadProfileData = async () => {
+      console.log("🔄 EditProfileScreen loading data for:", user?.uid);
       try {
         setIsLoading(true);
 
+        if (!user?.uid) {
+          console.error("❌ No user UID available");
+          return;
+        }
+
         // Load user profile data
-        const userResult = await DataService.getUser(user?.uid || "");
+        const userResult = await DataService.getUser(user.uid);
+        
         if (userResult.user) {
           setProfileData(userResult.user);
-        } else if (user) {
-          // Convert AuthUser to User type
-          const userData: User = {
+          console.log("✅ Profile data loaded");
+        } else {
+          // User doesn't exist in Supabase - create them
+          console.log("🔄 No user data found, creating user record...");
+          
+          const createResult = await DataService.createUser({
             uid: user.uid,
             email: user.email,
             displayName: user.displayName || "User",
@@ -124,32 +134,28 @@ export default function EditProfileScreen({ navigation }: any) {
             interests: [],
             lookingFor: [],
             onboardingComplete: user.onboardingComplete || false,
-            isVerified: "pending",
-            isPaused: false,
-            lastActive: new Date(),
-            verifiedAt: undefined,
-            profileViews: 0,
-            uniqueViewers: 0,
-            viewsThisWeek: 0,
-            averageViewDuration: 0,
-            preferences: undefined,
-            createdTime: new Date(),
-            updatedTime: new Date(),
-          };
-          setProfileData(userData);
+            notificationsEnabled: true,
+            locationEnabled: true,
+          });
+          
+          if (createResult.success) {
+            // Reload the user data from Supabase
+            const newUserResult = await DataService.getUser(user.uid);
+            if (newUserResult.user) {
+              setProfileData(newUserResult.user);
+              console.log("✅ User record created and loaded");
+            }
+          } else {
+            console.error("❌ Failed to create user record:", createResult.error);
+          }
         }
 
-        // Load user stats (fallback to mock for now)
+        // Load user stats (always use mock for now)
         if (DataService.isInDeveloperMode()) {
-          setUserStats(getMockUserStats(user?.uid || "user1"));
+          setUserStats(getMockUserStats(user.uid));
         }
       } catch (error) {
-        console.error("Error loading profile data:", error);
-        // In developer mode, fallback to mock data
-        if (DataService.isInDeveloperMode()) {
-          setProfileData(mockUsers[0]);
-          setUserStats(getMockUserStats("user1"));
-        }
+        console.error("❌ Error loading profile data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -595,55 +601,75 @@ export default function EditProfileScreen({ navigation }: any) {
               </View>
             </View>
 
-            {profileData.bio && (
-              <View style={styles.basicInfoItem}>
-                <Ionicons
-                  name="chatbubble-outline"
-                  size={20}
-                  color={colors.primary}
-                />
-                <View style={styles.basicInfoItemContent}>
-                  <Text
-                    style={[
-                      styles.basicInfoItemLabel,
-                      { color: colors.textSecondary },
-                    ]}
-                  >
-                    Bio
-                  </Text>
+            <View style={styles.basicInfoItem}>
+              <Ionicons
+                name="chatbubble-outline"
+                size={20}
+                color={colors.primary}
+              />
+              <View style={styles.basicInfoItemContent}>
+                <Text
+                  style={[
+                    styles.basicInfoItemLabel,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Bio
+                </Text>
+                {profileData.bio ? (
                   <Text
                     style={[styles.basicInfoItemValue, { color: colors.text }]}
                   >
                     {profileData.bio}
                   </Text>
-                </View>
-              </View>
-            )}
-
-            {profileData.locationName && (
-              <View style={styles.basicInfoItem}>
-                <Ionicons
-                  name="location-outline"
-                  size={20}
-                  color={colors.primary}
-                />
-                <View style={styles.basicInfoItemContent}>
+                ) : (
                   <Text
                     style={[
-                      styles.basicInfoItemLabel,
-                      { color: colors.textSecondary },
+                      styles.basicInfoItemValue,
+                      styles.emptyFieldText,
+                      { color: colors.textTertiary },
                     ]}
                   >
-                    Location
+                    Tap to add a bio and tell others about yourself
                   </Text>
+                )}
+              </View>
+            </View>
+
+            <View style={styles.basicInfoItem}>
+              <Ionicons
+                name="location-outline"
+                size={20}
+                color={colors.primary}
+              />
+              <View style={styles.basicInfoItemContent}>
+                <Text
+                  style={[
+                    styles.basicInfoItemLabel,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Location
+                </Text>
+                {profileData.locationName ? (
                   <Text
                     style={[styles.basicInfoItemValue, { color: colors.text }]}
                   >
                     {profileData.locationName}
                   </Text>
-                </View>
+                ) : (
+                  <Text
+                    style={[
+                      styles.basicInfoItemValue,
+                      styles.emptyFieldText,
+                      { color: colors.textTertiary },
+                    ]}
+                  >
+                    Add your current location
+                  </Text>
+                )}
               </View>
-            )}
+            </View>
 
             {userStats && (
               <View style={styles.basicInfoItem}>
@@ -712,11 +738,23 @@ export default function EditProfileScreen({ navigation }: any) {
                 >
                   Education
                 </Text>
-                <Text
-                  style={[styles.professionalItemValue, { color: colors.text }]}
-                >
-                  {profileData.school}
-                </Text>
+                {profileData.school ? (
+                  <Text
+                    style={[styles.professionalItemValue, { color: colors.text }]}
+                  >
+                    {profileData.school}
+                  </Text>
+                ) : (
+                  <Text
+                    style={[
+                      styles.professionalItemValue,
+                      styles.emptyFieldText,
+                      { color: colors.textTertiary },
+                    ]}
+                  >
+                    Add your school or university
+                  </Text>
+                )}
               </View>
             </View>
 
@@ -735,19 +773,33 @@ export default function EditProfileScreen({ navigation }: any) {
                 >
                   Current Job
                 </Text>
-                <Text
-                  style={[styles.professionalItemValue, { color: colors.text }]}
-                >
-                  {profileData.jobTitle}
-                </Text>
-                <Text
-                  style={[
-                    styles.professionalItemSubtext,
-                    { color: colors.textSecondary },
-                  ]}
-                >
-                  {profileData.jobCompany}
-                </Text>
+                {profileData.jobTitle ? (
+                  <>
+                    <Text
+                      style={[styles.professionalItemValue, { color: colors.text }]}
+                    >
+                      {profileData.jobTitle}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.professionalItemSubtext,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      {profileData.jobCompany}
+                    </Text>
+                  </>
+                ) : (
+                  <Text
+                    style={[
+                      styles.professionalItemValue,
+                      styles.emptyFieldText,
+                      { color: colors.textTertiary },
+                    ]}
+                  >
+                    Add your job title and company
+                  </Text>
+                )}
               </View>
             </View>
           </View>
@@ -772,24 +824,35 @@ export default function EditProfileScreen({ navigation }: any) {
           </View>
 
           <View style={styles.interestsList}>
-            {profileData.hobbies.slice(0, 6).map((hobby, index) => (
-              <View
-                key={`interest-${index}`}
+            {profileData.hobbies && profileData.hobbies.length > 0 ? (
+              profileData.hobbies.slice(0, 6).map((hobby, index) => (
+                <View
+                  key={`interest-${index}`}
+                  style={[
+                    styles.interestTag,
+                    {
+                      backgroundColor: colors.primary + "20",
+                      borderColor: colors.primary + "40",
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[styles.interestTagText, { color: colors.primary }]}
+                  >
+                    {hobby}
+                  </Text>
+                </View>
+              ))
+            ) : (
+              <Text
                 style={[
-                  styles.interestTag,
-                  {
-                    backgroundColor: colors.primary + "20",
-                    borderColor: colors.primary + "40",
-                  },
+                  styles.emptyFieldText,
+                  { color: colors.textTertiary, textAlign: 'center', marginTop: 8 },
                 ]}
               >
-                <Text
-                  style={[styles.interestTagText, { color: colors.primary }]}
-                >
-                  {hobby}
-                </Text>
-              </View>
-            ))}
+                Tap to add your interests and hobbies
+              </Text>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -1859,5 +1922,15 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     textAlign: "center",
+  },
+  emptyFieldText: {
+    fontStyle: 'italic',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  emptyFieldPrompt: {
+    fontStyle: 'italic',
+    fontSize: 13,
+    opacity: 0.6,
   },
 });
