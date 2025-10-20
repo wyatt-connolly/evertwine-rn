@@ -277,9 +277,7 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
                     ? "Enter Verification Code"
                     : "Enter Your Phone Number"}
                 </Text>
-                <Text
-                  style={[styles.subtitle, { color: "#E5E5EA" }]}
-                >
+                <Text style={[styles.subtitle, { color: "#E5E5EA" }]}>
                   {isCodeSent
                     ? `We sent a 6-digit code to ${phoneNumber}`
                     : "We'll send you a verification code to confirm your number"}
@@ -296,7 +294,7 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
                       {
                         backgroundColor: colors.surface,
                         borderColor: colors.border,
-                        color: colors.text,
+                        color: "#FFFFFF",
                       },
                     ]}
                     value={phoneNumber}
@@ -304,7 +302,7 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
                       setPhoneNumber(formatPhoneNumber(text))
                     }
                     placeholder="(555) 123-4567"
-                    placeholderTextColor={colors.textTertiary}
+                    placeholderTextColor="#AEAEB2"
                     keyboardType="phone-pad"
                     maxLength={14}
                     autoFocus
@@ -316,13 +314,13 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
                       {
                         backgroundColor: colors.surface,
                         borderColor: colors.border,
-                        color: colors.text,
+                        color: "#FFFFFF",
                       },
                     ]}
                     value={verificationCode}
                     onChangeText={setVerificationCode}
                     placeholder="123456"
-                    placeholderTextColor={colors.textTertiary}
+                    placeholderTextColor="#AEAEB2"
                     keyboardType="number-pad"
                     maxLength={6}
                     autoFocus
@@ -355,10 +353,7 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
                   {countdown > 0 ? (
                     <AnimatedCard delay={600} direction="up">
                       <Text
-                        style={[
-                          styles.countdownText,
-                          { color: "#E5E5EA" },
-                        ]}
+                        style={[styles.countdownText, { color: "#E5E5EA" }]}
                       >
                         Resend code in {countdown}s
                       </Text>

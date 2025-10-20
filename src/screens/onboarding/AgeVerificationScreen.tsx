@@ -84,7 +84,7 @@ export default function AgeVerificationScreen({
             onPress={() => navigation.goBack()}
             style={styles.backButton}
           >
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
+            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
 
           <View style={styles.headerContent}>
@@ -126,13 +126,13 @@ export default function AgeVerificationScreen({
                 {
                   backgroundColor: colors.surface,
                   borderColor: colors.border,
-                  color: colors.text,
+                  color: "#FFFFFF",
                 },
               ]}
               value={age}
               onChangeText={setAge}
               placeholder="Enter your age"
-              placeholderTextColor={colors.textTertiary}
+              placeholderTextColor="#AEAEB2"
               keyboardType="numeric"
               maxLength={3}
               autoFocus

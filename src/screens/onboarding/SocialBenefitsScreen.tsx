@@ -123,7 +123,7 @@ export default function SocialBenefitsScreen({ navigation }: Props) {
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
-              <Ionicons name="arrow-back" size={24} color={colors.text} />
+              <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
             </TouchableOpacity>
 
             <View style={styles.progressContainer}>

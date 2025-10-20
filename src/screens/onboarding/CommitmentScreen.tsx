@@ -212,7 +212,7 @@ export default function CommitmentScreen({ navigation }: Props) {
                 onPressOut={handlePressOut}
                 activeOpacity={0.8}
               >
-                <Ionicons name="finger-print" size={80} color={colors.text} />
+                <Ionicons name="finger-print" size={80} color="#FFFFFF" />
               </TouchableOpacity>
             </Animated.View>
 

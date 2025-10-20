@@ -127,9 +127,7 @@ export default function AppFeaturesScreen({
           {item.title}
         </Text>
 
-        <Text
-          style={[styles.featureDescription, { color: "#E5E5EA" }]}
-        >
+        <Text style={[styles.featureDescription, { color: "#E5E5EA" }]}>
           {item.description}
         </Text>
       </View>
@@ -163,7 +161,7 @@ export default function AppFeaturesScreen({
               onPress={() => navigation.goBack()}
               style={styles.backButton}
             >
-              <Ionicons name="arrow-back" size={24} color={colors.text} />
+              <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
 

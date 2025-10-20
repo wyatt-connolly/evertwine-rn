@@ -28,13 +28,13 @@ const SelectableOption: React.FC<SelectableOptionProps> = ({
       baseStyle.push({
         backgroundColor: "rgba(255, 255, 255, 0.1)",
         borderWidth: 2,
-        borderColor: colors.accentSecondary, // Purple border for selected
+        borderColor: "#FF6B35", // Orange border for selected
       });
     } else {
       baseStyle.push({
         backgroundColor: "rgba(255, 255, 255, 0.05)",
         borderWidth: 1,
-        borderColor: colors.border,
+        borderColor: "rgba(255, 255, 255, 0.3)",
       });
     }
 
@@ -52,7 +52,7 @@ const SelectableOption: React.FC<SelectableOptionProps> = ({
       activeOpacity={0.7}
     >
       <Text style={styles.icon}>{icon}</Text>
-      <Text style={[styles.text, { color: colors.text }]}>{text}</Text>
+      <Text style={[styles.text, { color: "#FFFFFF" }]}>{text}</Text>
     </TouchableOpacity>
   );
 };

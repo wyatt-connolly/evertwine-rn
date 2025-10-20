@@ -292,7 +292,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
                   )}
                 </TouchableOpacity>
                 <Text
-                  style={[styles.imageLabel, { color: colors.textSecondary }]}
+                  style={[styles.imageLabel, { color: "#E5E5EA" }]}
                 >
                   Add a photo
                 </Text>
@@ -316,7 +316,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
                 ]}
               >
                 <View style={styles.inputContainer}>
-                  <Text style={[styles.inputLabel, { color: colors.text }]}>
+                  <Text style={[styles.inputLabel, { color: "#FFFFFF" }]}>
                     What's your name? *
                   </Text>
                   <TextInput
@@ -332,7 +332,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
                     value={displayName}
                     onChangeText={setDisplayName}
                     placeholder="Enter your name"
-                    placeholderTextColor={colors.textTertiary}
+                    placeholderTextColor="#AEAEB2"
                     returnKeyType="next"
                     onSubmitEditing={() => headlineRef.current?.focus()}
                     autoFocus
@@ -340,7 +340,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
                 </View>
 
                 <View style={styles.inputContainer}>
-                  <Text style={[styles.inputLabel, { color: colors.text }]}>
+                  <Text style={[styles.inputLabel, { color: "#FFFFFF" }]}>
                     Add a headline (optional)
                   </Text>
                   <TextInput
@@ -356,7 +356,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
                     value={headline}
                     onChangeText={setHeadline}
                     placeholder="e.g., Software Engineer at Tech Corp"
-                    placeholderTextColor={colors.textTertiary}
+                    placeholderTextColor="#AEAEB2"
                     returnKeyType="done"
                     onSubmitEditing={handleContinue}
                     multiline

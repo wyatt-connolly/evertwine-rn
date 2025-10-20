@@ -225,7 +225,7 @@ export default function InterestSelectionScreen({ navigation }: Props) {
                   styles.count,
                   {
                     opacity: subtitleAnim,
-                    color: colors.textSecondary,
+                    color: "#E5E5EA",
                     transform: [
                       {
                         translateY: subtitleAnim.interpolate({
