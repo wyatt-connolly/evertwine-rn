@@ -137,7 +137,7 @@ export default function AgeSelectionScreen({ navigation }: Props) {
               backgroundColor: isSelected
                 ? "rgba(255, 255, 255, 0.1)"
                 : "rgba(255, 255, 255, 0.05)",
-              borderColor: isSelected ? colors.accentSecondary : colors.border,
+              borderColor: isSelected ? "#FF6B35" : "rgba(255, 255, 255, 0.3)",
               borderWidth: isSelected ? 2 : 1,
             },
           ]}
@@ -166,7 +166,7 @@ export default function AgeSelectionScreen({ navigation }: Props) {
                 styles.title,
                 {
                   opacity: titleAnim,
-                  color: colors.text,
+                  color: "#FFFFFF",
                   transform: [
                     {
                       translateY: titleAnim.interpolate({
@@ -210,8 +210,8 @@ export default function AgeSelectionScreen({ navigation }: Props) {
                             : "rgba(255, 255, 255, 0.05)",
                         borderColor:
                           selectedAge === age.value
-                            ? colors.accentSecondary
-                            : colors.border,
+                            ? "#FF6B35"
+                            : "rgba(255, 255, 255, 0.3)",
                         borderWidth: selectedAge === age.value ? 2 : 1,
                       },
                     ]}
