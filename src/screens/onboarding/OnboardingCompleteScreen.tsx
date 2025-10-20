@@ -80,10 +80,8 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
   };
 
   return (
-    <GradientBackground variant="primary">
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
+    <GradientBackground variant="dark">
+      <SafeAreaView style={styles.container}>
         <View style={styles.content}>
           <AnimatedCard delay={200} direction="up">
             <View style={styles.iconContainer}>
@@ -95,10 +93,10 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
             </View>
 
             <View style={styles.header}>
-              <Text style={[styles.title, { color: colors.text }]}>
+              <Text style={[styles.title, { color: "#FFFFFF" }]}>
                 You're All Set!
               </Text>
-              <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+              <Text style={[styles.subtitle, { color: "#E5E5EA" }]}>
                 Welcome to Evertwine! You're ready to start connecting with
                 people who share your interests.
               </Text>
@@ -109,19 +107,19 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
             <View style={styles.features}>
               <View style={styles.featureItem}>
                 <Ionicons name="people" size={24} color={colors.primary} />
-                <Text style={[styles.featureText, { color: colors.text }]}>
+                <Text style={[styles.featureText, { color: "#FFFFFF" }]}>
                   Discover meetups
                 </Text>
               </View>
               <View style={styles.featureItem}>
                 <Ionicons name="chatbubbles" size={24} color={colors.primary} />
-                <Text style={[styles.featureText, { color: colors.text }]}>
+                <Text style={[styles.featureText, { color: "#FFFFFF" }]}>
                   Connect with others
                 </Text>
               </View>
               <View style={styles.featureItem}>
                 <Ionicons name="heart" size={24} color={colors.primary} />
-                <Text style={[styles.featureText, { color: colors.text }]}>
+                <Text style={[styles.featureText, { color: "#FFFFFF" }]}>
                   Build meaningful relationships
                 </Text>
               </View>

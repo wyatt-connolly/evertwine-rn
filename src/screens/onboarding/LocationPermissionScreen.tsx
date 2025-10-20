@@ -101,10 +101,8 @@ export default function LocationPermissionScreen({ navigation }: Props) {
   };
 
   return (
-    <GradientBackground variant="primary">
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
+    <GradientBackground variant="dark">
+      <SafeAreaView style={styles.container}>
         <View style={styles.content}>
           <AnimatedCard delay={200} direction="up">
             <View style={styles.iconContainer}>
@@ -112,10 +110,10 @@ export default function LocationPermissionScreen({ navigation }: Props) {
             </View>
 
             <View style={styles.header}>
-              <Text style={[styles.title, { color: colors.text }]}>
+              <Text style={[styles.title, { color: "#FFFFFF" }]}>
                 Enable Location Services
               </Text>
-              <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+              <Text style={[styles.subtitle, { color: "#E5E5EA" }]}>
                 Allow Evertwine to access your location to show you nearby
                 meetups and events
               </Text>
@@ -126,19 +124,19 @@ export default function LocationPermissionScreen({ navigation }: Props) {
             <View style={styles.benefits}>
               <View style={styles.benefitItem}>
                 <Ionicons name="people" size={20} color={colors.primary} />
-                <Text style={[styles.benefitText, { color: colors.text }]}>
+                <Text style={[styles.benefitText, { color: "#FFFFFF" }]}>
                   Find meetups near you
                 </Text>
               </View>
               <View style={styles.benefitItem}>
                 <Ionicons name="map" size={20} color={colors.primary} />
-                <Text style={[styles.benefitText, { color: colors.text }]}>
+                <Text style={[styles.benefitText, { color: "#FFFFFF" }]}>
                   Discover local events
                 </Text>
               </View>
               <View style={styles.benefitItem}>
                 <Ionicons name="time" size={20} color={colors.primary} />
-                <Text style={[styles.benefitText, { color: colors.text }]}>
+                <Text style={[styles.benefitText, { color: "#FFFFFF" }]}>
                   Get location-based recommendations
                 </Text>
               </View>
@@ -165,7 +163,7 @@ export default function LocationPermissionScreen({ navigation }: Props) {
           </View>
 
           <AnimatedCard delay={600} direction="up">
-            <Text style={[styles.privacyText, { color: colors.textSecondary }]}>
+            <Text style={[styles.privacyText, { color: "#E5E5EA" }]}>
               Your location data is only used to show you relevant meetups and
               is never shared with other users without your permission.
             </Text>

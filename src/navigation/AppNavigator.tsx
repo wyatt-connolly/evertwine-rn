@@ -89,7 +89,10 @@ export default function AppNavigator() {
 
         // User is signed in, load their profile data from database
         try {
-          console.log("🔍 Loading user profile from database for UID:", supabaseUser.uid);
+          console.log(
+            "🔍 Loading user profile from database for UID:",
+            supabaseUser.uid
+          );
           const fullProfile = await SupabaseDataService.getUser(
             supabaseUser.uid
           );

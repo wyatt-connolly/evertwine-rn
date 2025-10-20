@@ -64,7 +64,7 @@ const OnboardingButton: React.FC<OnboardingButtonProps> = ({
       });
     } else {
       baseTextStyle.push({
-        color: colors.text,
+        color: "#FFFFFF",
       });
     }
 

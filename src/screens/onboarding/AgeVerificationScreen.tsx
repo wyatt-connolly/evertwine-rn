@@ -76,10 +76,8 @@ export default function AgeVerificationScreen({
   };
 
   return (
-    <GradientBackground variant="primary">
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
+    <GradientBackground variant="dark">
+      <SafeAreaView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
@@ -90,10 +88,10 @@ export default function AgeVerificationScreen({
           </TouchableOpacity>
 
           <View style={styles.headerContent}>
-            <Text style={[styles.title, { color: colors.text }]}>
+            <Text style={[styles.title, { color: "#FFFFFF" }]}>
               Age Verification
             </Text>
-            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            <Text style={[styles.subtitle, { color: "#E5E5EA" }]}>
               You must be 18 or older to use Evertwine
             </Text>
           </View>
@@ -119,7 +117,7 @@ export default function AgeVerificationScreen({
 
           {/* Age Input */}
           <View style={styles.inputContainer}>
-            <Text style={[styles.inputLabel, { color: colors.text }]}>
+            <Text style={[styles.inputLabel, { color: "#FFFFFF" }]}>
               How old are you?
             </Text>
             <TextInput
@@ -148,7 +146,7 @@ export default function AgeVerificationScreen({
               size={20}
               color={colors.warning || "#FFA500"}
             />
-            <Text style={[styles.warningText, { color: colors.textSecondary }]}>
+            <Text style={[styles.warningText, { color: "#E5E5EA" }]}>
               You must be 18 or older to use Evertwine
             </Text>
           </View>

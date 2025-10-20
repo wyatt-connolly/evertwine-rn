@@ -191,12 +191,7 @@ export default function RoutineSetupScreen({ navigation }: Props) {
                     <Text style={[styles.optionText, { color: "#FFFFFF" }]}>
                       {option.time}
                     </Text>
-                    <Text
-                      style={[
-                        styles.optionLabel,
-                        { color: "#E5E5EA" },
-                      ]}
-                    >
+                    <Text style={[styles.optionLabel, { color: "#E5E5EA" }]}>
                       {option.label}
                     </Text>
                   </TouchableOpacity>

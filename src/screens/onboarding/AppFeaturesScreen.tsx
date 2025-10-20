@@ -123,12 +123,12 @@ export default function AppFeaturesScreen({
           <Ionicons name={item.icon as any} size={32} color={item.color} />
         </View>
 
-        <Text style={[styles.featureTitle, { color: colors.text }]}>
+        <Text style={[styles.featureTitle, { color: "#FFFFFF" }]}>
           {item.title}
         </Text>
 
         <Text
-          style={[styles.featureDescription, { color: colors.textSecondary }]}
+          style={[styles.featureDescription, { color: "#E5E5EA" }]}
         >
           {item.description}
         </Text>
@@ -154,10 +154,8 @@ export default function AppFeaturesScreen({
   );
 
   return (
-    <GradientBackground variant="primary">
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
+    <GradientBackground variant="dark">
+      <SafeAreaView style={styles.container}>
         <View style={styles.content}>
           {/* Header */}
           <View style={styles.header}>
@@ -171,10 +169,10 @@ export default function AppFeaturesScreen({
 
           {/* Title */}
           <View style={styles.titleContainer}>
-            <Text style={[styles.title, { color: colors.text }]}>
+            <Text style={[styles.title, { color: "#FFFFFF" }]}>
               What you can do on Evertwine
             </Text>
-            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            <Text style={[styles.subtitle, { color: "#E5E5EA" }]}>
               Discover all the ways to connect and grow your network
             </Text>
           </View>

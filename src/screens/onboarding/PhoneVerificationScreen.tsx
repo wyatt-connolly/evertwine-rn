@@ -251,10 +251,8 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
   };
 
   return (
-    <GradientBackground variant="primary">
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
+    <GradientBackground variant="dark">
+      <SafeAreaView style={styles.container}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.keyboardView}
@@ -274,13 +272,13 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
                     color={colors.primary}
                   />
                 </View>
-                <Text style={[styles.title, { color: colors.text }]}>
+                <Text style={[styles.title, { color: "#FFFFFF" }]}>
                   {isCodeSent
                     ? "Enter Verification Code"
                     : "Enter Your Phone Number"}
                 </Text>
                 <Text
-                  style={[styles.subtitle, { color: colors.textSecondary }]}
+                  style={[styles.subtitle, { color: "#E5E5EA" }]}
                 >
                   {isCodeSent
                     ? `We sent a 6-digit code to ${phoneNumber}`
@@ -359,7 +357,7 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
                       <Text
                         style={[
                           styles.countdownText,
-                          { color: colors.textSecondary },
+                          { color: "#E5E5EA" },
                         ]}
                       >
                         Resend code in {countdown}s

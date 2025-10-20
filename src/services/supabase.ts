@@ -147,33 +147,36 @@ export class SupabaseAuthService {
       // Process the OAuth callback URL to set the session
       if (result.type === "success" && result.url) {
         console.log("🔄 Processing OAuth callback URL...");
-        
+
         // Extract the URL fragment (everything after #)
         const urlFragment = result.url.split("#")[1];
         if (urlFragment) {
           console.log("🔑 Setting session with access token...");
-          
+
           // Parse the URL fragment to extract tokens
           const params = new URLSearchParams(urlFragment);
           const accessToken = params.get("access_token");
           const refreshToken = params.get("refresh_token");
-          
+
           if (accessToken && refreshToken) {
             // Set the session manually
-            const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
-            });
-            
+            const { data: sessionData, error: sessionError } =
+              await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+
             if (sessionError) {
               console.error("❌ Error setting session:", sessionError);
               throw new Error(`Failed to set session: ${sessionError.message}`);
             }
-            
+
             console.log("✅ Session set successfully:", !!sessionData.session);
           } else {
             console.error("❌ Missing tokens in OAuth callback");
-            throw new Error("Missing access or refresh token in OAuth callback");
+            throw new Error(
+              "Missing access or refresh token in OAuth callback"
+            );
           }
         } else {
           console.error("❌ No URL fragment in OAuth callback");

@@ -355,7 +355,6 @@ export default function EditProfileScreen({ navigation }: any) {
     setTempData({});
   };
 
-
   // Show loading state - removed loading text for better UX
   if (isLoading) {
     return (
@@ -397,7 +396,6 @@ export default function EditProfileScreen({ navigation }: any) {
         style={styles.scrollView}
         contentContainerStyle={styles.content}
       >
-
         {/* Profile Header - How it looks to others */}
         <View
           style={[styles.profileHeader, { backgroundColor: colors.surface }]}
