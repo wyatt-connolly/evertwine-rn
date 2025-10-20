@@ -187,14 +187,14 @@ export default function WelcomeScreen({ navigation }: Props) {
                 style={[
                   styles.primaryButton,
                   {
-                    backgroundColor: colors.accent,
-                    shadowColor: colors.accent,
+                    backgroundColor: "#FFFFFF",
+                    shadowColor: "#000000",
                   },
                 ]}
                 onPress={handleBeginJourney}
                 activeOpacity={0.8}
               >
-                <Text style={styles.primaryButtonText}>Start Connecting</Text>
+                <Text style={[styles.primaryButtonText, { color: "#000000" }]}>Start Connecting</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
