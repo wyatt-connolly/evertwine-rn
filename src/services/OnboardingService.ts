@@ -1,7 +1,5 @@
 import { User } from "../types";
 import { DataService } from "./DataService";
-import { AuthService } from "./firebase";
-import { addAppVersionInfo } from "../utils/firebaseAppFilter";
 
 export class OnboardingService {
   // Complete user profile setup
@@ -59,8 +57,8 @@ export class OnboardingService {
         updatedTime: new Date(),
       };
 
-      // Add app version info before saving
-      const appUserData = addAppVersionInfo(userData);
+      // Use user data directly (no app version info in mock mode)
+      const appUserData = userData;
 
       let result;
       if (existingUser.user) {

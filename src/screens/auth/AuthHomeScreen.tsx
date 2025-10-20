@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
-import { AuthService } from "../../services/firebase";
+// import { AuthService } from "../../services/firebase"; // Removed Firebase
 import { DataService } from "../../services/DataService";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";

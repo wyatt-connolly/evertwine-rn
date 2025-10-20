@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
-import { FirestoreService } from "../../services/firebase";
+// import { FirestoreService } from "../../services/firebase"; // Removed Firebase
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import GradientBackground from "../../components/GradientBackground";

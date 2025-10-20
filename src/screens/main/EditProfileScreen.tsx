@@ -13,7 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
-import { FirestoreService } from "../../services/firebase";
+// import { FirestoreService } from "../../services/firebase"; // Removed Firebase
 import { DataService } from "../../services/DataService";
 import { getMockUserStats, mockUsers } from "../../data/mockData";
 import { UserStats, User } from "../../types";

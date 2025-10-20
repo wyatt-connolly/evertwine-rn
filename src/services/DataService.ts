@@ -1,6 +1,4 @@
 import { User, Meetup, MessageRoom, ActivityItem } from "../types";
-import { AuthService, FirestoreService } from "./firebase";
-import { FirebaseDataService } from "./FirebaseDataService";
 import {
   getMockUsers,
   getMockMeetups,
@@ -9,56 +7,30 @@ import {
 } from "../data/mockData";
 
 export class DataService {
-  private static isDeveloperMode = true;
-
-  // Set developer mode (bypasses Firebase)
-  static setDeveloperMode(enabled: boolean) {
-    this.isDeveloperMode = enabled;
-  }
-
-  static isInDeveloperMode(): boolean {
-    return this.isDeveloperMode;
-  }
-
   // User Data Methods
   static async getUser(
     uid: string
   ): Promise<{ user: User | null; error: string | null }> {
-    if (this.isDeveloperMode) {
-      // Return mock user data in developer mode
-      const mockUsers = getMockUsers();
-      const user = mockUsers.find((u) => u.uid === uid) || mockUsers[0];
-      return { user, error: null };
-    }
-
-    // Use Firebase for real authentication - NEVER return mock data
-    return await FirestoreService.getUser(uid);
+    // Return mock user data
+    const mockUsers = getMockUsers();
+    const user = mockUsers.find((u) => u.uid === uid) || mockUsers[0];
+    return { user, error: null };
   }
 
   static async createUser(
     userData: Partial<User>,
     userUid?: string
   ): Promise<{ success: boolean; error: string | null }> {
-    if (this.isDeveloperMode) {
-      // Simulate user creation in developer mode
-      return { success: true, error: null };
-    }
-
-    // Use Firebase
-    return await FirestoreService.createUser(userData, userUid);
+    // Simulate user creation
+    return { success: true, error: null };
   }
 
   static async updateUser(
     uid: string,
     updates: Partial<User>
   ): Promise<{ success: boolean; error: string | null }> {
-    if (this.isDeveloperMode) {
-      // Simulate user update in developer mode
-      return { success: true, error: null };
-    }
-
-    // Use Firebase
-    return await FirestoreService.updateUser(uid, updates);
+    // Simulate user update
+    return { success: true, error: null };
   }
 
   // Meetup Data Methods
@@ -66,39 +38,24 @@ export class DataService {
     meetups: Meetup[];
     error: string | null;
   }> {
-    if (this.isDeveloperMode) {
-      // Return mock meetup data in developer mode
-      const meetups = getMockMeetups();
-      return { meetups, error: null };
-    }
-
-    // Use Firebase for real data - NEVER return mock data
-    return await FirebaseDataService.getMeetups();
+    // Return mock meetup data
+    const meetups = getMockMeetups();
+    return { meetups, error: null };
   }
 
   static async createMeetup(
     meetupData: Partial<Meetup>
   ): Promise<{ success: boolean; error: string | null }> {
-    if (this.isDeveloperMode) {
-      // Simulate meetup creation in developer mode
-      return { success: true, error: null };
-    }
-
-    // Use Firebase
-    return await FirebaseDataService.createMeetup(meetupData);
+    // Simulate meetup creation
+    return { success: true, error: null };
   }
 
   // Message Data Methods
   static async getMessageRooms(
     userId: string
   ): Promise<{ rooms: MessageRoom[]; error: string | null }> {
-    if (this.isDeveloperMode) {
-      // Return mock message rooms
-      return { rooms: mockMessageRooms, error: null };
-    }
-
-    // Use Firebase
-    return await FirebaseDataService.getMessageRooms(userId);
+    // Return mock message rooms
+    return { rooms: mockMessageRooms, error: null };
   }
 
   // Activity Feed Methods
@@ -106,133 +63,80 @@ export class DataService {
     page: number = 0,
     limit: number = 5
   ): Promise<{ activities: ActivityItem[]; error: string | null }> {
-    if (this.isDeveloperMode) {
-      // Return mock activity feed
-      const activities = getActivityFeed(page, limit);
-      return { activities, error: null };
-    }
-
-    // Use Firebase - NEVER return mock data
-    return await FirebaseDataService.getActivityFeed(page, limit);
+    // Return mock activity feed
+    const activities = getActivityFeed(page, limit);
+    return { activities, error: null };
   }
 
-  // Authentication Methods
+  // Authentication Methods (mock only)
   static async signInWithPhone(phoneNumber: string) {
-    if (this.isDeveloperMode) {
-      // Return mock phone auth for developer mode
-      return {
-        confirmationResult: null,
-        error: "Use Developer Login for mock data",
-      };
-    }
-
-    // Use Firebase
-    return await AuthService.signInWithPhone(phoneNumber);
+    return {
+      confirmationResult: null,
+      error: "Phone auth not available in mock mode",
+    };
   }
 
   static async signInWithGoogle() {
-    if (this.isDeveloperMode) {
-      // Return mock Google auth for developer mode
-      return { user: null, error: "Use Developer Login for mock data" };
-    }
-
-    // Use Firebase
-    return await AuthService.signInWithGoogle();
+    return { user: null, error: "Google auth not available in mock mode" };
   }
 
   static async signInWithApple() {
-    if (this.isDeveloperMode) {
-      // Return mock Apple auth for developer mode
-      return { user: null, error: "Use Developer Login for mock data" };
-    }
-
-    // Use Firebase
-    return await AuthService.signInWithApple();
+    return { user: null, error: "Apple auth not available in mock mode" };
   }
 
   static async loadUserProfile(uid: string) {
-    if (this.isDeveloperMode) {
-      // Return mock user profile for developer mode
-      const mockUsers = getMockUsers();
-      const user = mockUsers.find((u) => u.uid === uid) || mockUsers[0];
-      return { user, error: null };
-    }
-
-    // Use Firebase
-    return await AuthService.loadUserProfile(uid);
+    // Return mock user profile
+    const mockUsers = getMockUsers();
+    const user = mockUsers.find((u) => u.uid === uid) || mockUsers[0];
+    return { user, error: null };
   }
 
-  // Real-time Data Listeners
+  // Real-time Data Listeners (mock only)
   static setupUserListener(uid: string, callback: (user: User | null) => void) {
-    if (this.isDeveloperMode) {
-      // Simulate real-time updates in developer mode
-      return () => {}; // Return unsubscribe function
-    }
-
-    // Use Firebase real-time listeners
-    return FirebaseDataService.setupUserListener(uid, callback);
+    // Simulate real-time updates
+    return () => {}; // Return unsubscribe function
   }
 
   static setupMeetupsListener(callback: (meetups: Meetup[]) => void) {
-    if (this.isDeveloperMode) {
-      // Simulate real-time updates in developer mode
-      return () => {}; // Return unsubscribe function
-    }
-
-    // Use Firebase real-time listeners
-    return FirebaseDataService.setupMeetupsListener(callback);
+    // Simulate real-time updates
+    return () => {}; // Return unsubscribe function
   }
 
   static setupMessagesListener(
     userId: string,
     callback: (rooms: MessageRoom[]) => void
   ) {
-    if (this.isDeveloperMode) {
-      // Simulate real-time updates in developer mode
-      return () => {}; // Return unsubscribe function
-    }
-
-    // Use Firebase real-time listeners
-    return FirebaseDataService.setupMessagesListener(userId, callback);
+    // Simulate real-time updates
+    return () => {}; // Return unsubscribe function
   }
 
   static setupActivityListener(callback: (activities: ActivityItem[]) => void) {
-    if (this.isDeveloperMode) {
-      // Simulate real-time updates in developer mode
-      return () => {}; // Return unsubscribe function
-    }
-
-    // Use Firebase real-time listeners
-    return FirebaseDataService.setupActivityListener(callback);
+    // Simulate real-time updates
+    return () => {}; // Return unsubscribe function
   }
 
   // Notifications Methods
   static async getNotifications(
     uid: string
   ): Promise<{ notifications: any[]; error: string | null }> {
-    if (this.isDeveloperMode) {
-      // Return mock notifications in developer mode
-      const { getUserNotifications } = await import("../data/mockData");
-      const notifications = getUserNotifications(uid);
-      return { notifications, error: null };
-    }
-
-    // Use Firebase for real data
-    return await FirebaseDataService.getNotifications(uid);
+    // Return mock notifications
+    const { getUserNotifications } = await import("../data/mockData");
+    const notifications = getUserNotifications(uid);
+    return { notifications, error: null };
   }
 
   // User Stats Methods
   static async getUserStats(
     uid: string
   ): Promise<{ stats: any | null; error: string | null }> {
-    if (this.isDeveloperMode) {
-      // Return mock stats in developer mode
-      const { getMockUserStats } = await import("../data/mockData");
-      const stats = getMockUserStats(uid);
-      return { stats, error: null };
-    }
+    // Return mock stats
+    const { getMockUserStats } = await import("../data/mockData");
+    const stats = getMockUserStats(uid);
+    return { stats, error: null };
+  }
 
-    // Use Firebase for real data
-    return await FirebaseDataService.getUserStats(uid);
+  // Developer mode check
+  static isInDeveloperMode(): boolean {
+    return true; // Always in mock mode
   }
 }
