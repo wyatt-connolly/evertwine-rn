@@ -355,9 +355,6 @@ export default function EditProfileScreen({ navigation }: any) {
     setTempData({});
   };
 
-  const handleLinkedInImport = () => {
-    Alert.alert("LinkedIn Import", "LinkedIn integration coming soon!");
-  };
 
   // Show loading state - removed loading text for better UX
   if (isLoading) {
@@ -400,35 +397,6 @@ export default function EditProfileScreen({ navigation }: any) {
         style={styles.scrollView}
         contentContainerStyle={styles.content}
       >
-        {/* LinkedIn Import Banner */}
-        <TouchableOpacity
-          style={[styles.linkedinBanner, { backgroundColor: colors.surface }]}
-          onPress={handleLinkedInImport}
-        >
-          <View style={styles.linkedinBannerContent}>
-            <Ionicons name="logo-linkedin" size={24} color="#0077B5" />
-            <View style={styles.linkedinBannerText}>
-              <Text
-                style={[styles.linkedinBannerTitle, { color: colors.text }]}
-              >
-                Import from LinkedIn
-              </Text>
-              <Text
-                style={[
-                  styles.linkedinBannerSubtitle,
-                  { color: colors.textSecondary },
-                ]}
-              >
-                Auto-fill your professional information
-              </Text>
-            </View>
-          </View>
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color={colors.textTertiary}
-          />
-        </TouchableOpacity>
 
         {/* Profile Header - How it looks to others */}
         <View
@@ -1454,35 +1422,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     flex: 1,
-  },
-  // LinkedIn Import Banner
-  linkedinBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#0077B5",
-  },
-  linkedinBannerContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  linkedinBannerText: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  linkedinBannerTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 2,
-  },
-  linkedinBannerSubtitle: {
-    fontSize: 14,
   },
   scrollView: {
     flex: 1,
