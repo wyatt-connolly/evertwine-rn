@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import GradientBackground from "../../components/GradientBackground";
 
 type CommitmentScreenNavigationProp = StackNavigationProp<
@@ -25,13 +26,13 @@ interface Props {
   navigation: CommitmentScreenNavigationProp;
 }
 
-const { width, height } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 
 export default function CommitmentScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
   const { setOnboardingStep } = useAuthStore();
   const [isHolding, setIsHolding] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [, setProgress] = useState(0);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -39,7 +40,6 @@ export default function CommitmentScreen({ navigation }: Props) {
   const subtitleAnim = useRef(new Animated.Value(0)).current;
   const commitmentAnim = useRef(new Animated.Value(0)).current;
   const fingerprintAnim = useRef(new Animated.Value(0)).current;
-  const progressAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Start animation sequence
@@ -84,12 +84,16 @@ export default function CommitmentScreen({ navigation }: Props) {
 
   const handlePressIn = () => {
     setIsHolding(true);
+    // Light haptic feedback when starting to hold
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     startProgress();
   };
 
   const handlePressOut = () => {
     setIsHolding(false);
     setProgress(0);
+    // Medium haptic feedback when releasing
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
 
   const startProgress = () => {
@@ -97,6 +101,8 @@ export default function CommitmentScreen({ navigation }: Props) {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(interval);
+          // Strong haptic feedback when commitment is complete
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           // Use setTimeout to avoid setState-in-render error
           setTimeout(() => {
             setOnboardingStep("BuildingProfile");

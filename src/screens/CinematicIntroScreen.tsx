@@ -7,8 +7,8 @@ import {
   TouchableOpacity,
   Text,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Audio } from "expo-av";
 import { useAuthStore } from "../hooks/useAuthStore";
 
 interface FadingTextProps {
@@ -93,12 +93,59 @@ const FadingText: React.FC<FadingTextProps> = ({
 };
 
 const CinematicIntroScreen: React.FC = () => {
-  const navigation = useNavigation();
   const { setHasSeenIntro } = useAuthStore();
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
   const fadeAnim = new Animated.Value(0);
   const textFadeAnim = new Animated.Value(0);
+
+  // Load and play background music
+  useEffect(() => {
+    const loadSound = async () => {
+      try {
+        // Option 1: Use a free ambient music URL
+        const { sound: audioSound } = await Audio.Sound.createAsync(
+          {
+            uri: "https://www.bensound.com/bensound-music/bensound-ukulele.mp3",
+          }, // Free ambient music
+          { shouldPlay: true, isLooping: true, volume: 0.2 }
+        );
+        setSound(audioSound);
+      } catch (error) {
+        console.log("Error loading audio:", error);
+        // Option 2: If URL fails, you can use a local file or continue without audio
+        // Uncomment the lines below to use a local file instead:
+        // try {
+        //   const { sound: audioSound } = await Audio.Sound.createAsync(
+        //     require('../../assets/intro-music.mp3'),
+        //     { shouldPlay: true, isLooping: true, volume: 0.2 }
+        //   );
+        //   setSound(audioSound);
+        // } catch (localError) {
+        //   console.log("No audio file found, continuing without music");
+        // }
+      }
+    };
+
+    loadSound();
+
+    // Cleanup function
+    return () => {
+      if (sound) {
+        sound.unloadAsync();
+      }
+    };
+  }, []);
+
+  // Cleanup sound when component unmounts
+  useEffect(() => {
+    return () => {
+      if (sound) {
+        sound.unloadAsync();
+      }
+    };
+  }, [sound]);
 
   const introSteps = [
     {
@@ -130,6 +177,35 @@ const CinematicIntroScreen: React.FC = () => {
       delay: 400,
     },
   ];
+
+  // Load and play soothing background music
+  useEffect(() => {
+    const loadAudio = async () => {
+      try {
+        // For now, we'll use a placeholder. You can replace this with:
+        // 1. A local audio file: require('../../assets/audio/soothing-intro.mp3')
+        // 2. A remote URL: { uri: 'https://example.com/soothing-intro.mp3' }
+        // 3. Or remove this section if you don't want background music
+        
+        // Placeholder - replace with actual audio source
+        const { sound } = await Audio.Sound.createAsync(
+          { uri: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav' }, // Placeholder URL
+          { shouldPlay: false, isLooping: false, volume: 0.1 } // Disabled for now
+        );
+        setSound(sound);
+      } catch (error) {
+        console.log('Error loading audio:', error);
+      }
+    };
+
+    loadAudio();
+
+    return () => {
+      if (sound) {
+        sound.unloadAsync();
+      }
+    };
+  }, []);
 
   // Fade in animation on mount
   useEffect(() => {
@@ -177,6 +253,10 @@ const CinematicIntroScreen: React.FC = () => {
         duration: 600,
         useNativeDriver: true,
       }).start(() => {
+        // Stop the music before completing
+        if (sound) {
+          sound.stopAsync();
+        }
         setHasSeenIntro(true);
         // Let AppNavigator handle routing based on auth state
         // Don't navigate manually - the auth state change will trigger the correct route
@@ -185,6 +265,10 @@ const CinematicIntroScreen: React.FC = () => {
   };
 
   const handleSkip = () => {
+    // Stop the music before skipping
+    if (sound) {
+      sound.stopAsync();
+    }
     setHasSeenIntro(true);
     // Let AppNavigator handle routing based on auth state
     // Don't navigate manually - the auth state change will trigger the correct route

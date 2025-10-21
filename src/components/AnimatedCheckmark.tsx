@@ -124,7 +124,7 @@ const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
           styles.text,
           {
             opacity: textAnim,
-            color: colors.text,
+            color: "#FFFFFF", // Force white text for better visibility
           },
         ]}
       >

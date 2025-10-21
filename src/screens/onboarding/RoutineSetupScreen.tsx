@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
 import { useThemeStore } from "../../hooks/useThemeStore";
@@ -174,13 +175,10 @@ export default function RoutineSetupScreen({ navigation }: Props) {
                     style={[
                       styles.option,
                       {
-                        backgroundColor:
-                          selectedRoutine === option.value
-                            ? "rgba(255, 255, 255, 0.1)"
-                            : "rgba(255, 255, 255, 0.05)",
+                        backgroundColor: "rgba(255, 255, 255, 0.05)",
                         borderColor:
                           selectedRoutine === option.value
-                            ? colors.accentSecondary
+                            ? "#8B5CF6"
                             : colors.border,
                         borderWidth: selectedRoutine === option.value ? 2 : 1,
                       },
@@ -268,6 +266,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     minHeight: 70,
     justifyContent: "center",
+  },
+  gradientBorder: {
+    padding: 2, // This creates the border width
+    borderRadius: 18, // Slightly larger to account for padding
+  },
+  selectedOption: {
+    backgroundColor: "transparent",
+    borderWidth: 0,
+    shadowColor: "#8B5CF6",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   optionText: {
     fontSize: 18,

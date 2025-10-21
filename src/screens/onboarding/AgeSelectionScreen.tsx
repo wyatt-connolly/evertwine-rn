@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
 import { useThemeStore } from "../../hooks/useThemeStore";
@@ -204,13 +205,10 @@ export default function AgeSelectionScreen({ navigation }: Props) {
                     style={[
                       styles.option,
                       {
-                        backgroundColor:
-                          selectedAge === age.value
-                            ? "rgba(255, 255, 255, 0.1)"
-                            : "rgba(255, 255, 255, 0.05)",
+                        backgroundColor: "rgba(255, 255, 255, 0.05)",
                         borderColor:
                           selectedAge === age.value
-                            ? "#FF6B35"
+                            ? "#8B5CF6"
                             : "rgba(255, 255, 255, 0.3)",
                         borderWidth: selectedAge === age.value ? 2 : 1,
                       },
