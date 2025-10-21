@@ -66,22 +66,21 @@ export default function EditProfileScreen({ navigation }: any) {
       console.log("📤 Starting image upload:", imageUri);
       setUploadingPhotos(true);
 
-      console.log("📤 Calling SupabaseStorageService.uploadProfilePicture with UID:", user?.uid);
+      console.log(
+        "📤 Calling SupabaseStorageService.uploadProfilePicture with UID:",
+        user?.uid
+      );
       // Upload to Supabase Storage
-      const result = await SupabaseStorageService.uploadProfilePicture(
+      // Generate a unique index based on timestamp
+      const imageIndex = Date.now();
+      const uploadedUrl = await SupabaseStorageService.uploadProfilePicture(
         user?.uid || "",
-        imageUri
+        imageUri,
+        imageIndex
       );
 
-      console.log("📤 Upload result:", result);
-
-      if (result.error) {
-        console.error("❌ Upload error:", result.error);
-        throw new Error(result.error);
-      }
-
-      console.log("✅ Image uploaded successfully:", result.url);
-      return result.url; // Public URL of uploaded image
+      console.log("✅ Image uploaded successfully:", uploadedUrl);
+      return uploadedUrl; // Public URL of uploaded image
     } catch (error) {
       console.error("❌ Error uploading image:", error);
       Alert.alert("Error", "Failed to upload image");
@@ -239,9 +238,16 @@ export default function EditProfileScreen({ navigation }: any) {
 
         try {
           // Upload each photo to Supabase
-          console.log("📤 Starting upload of", result.assets.length, "photo(s)...");
+          console.log(
+            "📤 Starting upload of",
+            result.assets.length,
+            "photo(s)..."
+          );
           const uploadPromises = result.assets.map(async (asset, idx) => {
-            console.log(`📤 Uploading photo ${idx + 1}/${result.assets.length}:`, asset.uri);
+            console.log(
+              `📤 Uploading photo ${idx + 1}/${result.assets.length}:`,
+              asset.uri
+            );
             const uploadedUrl = await uploadProfileImage(asset.uri);
             console.log(`✅ Photo ${idx + 1} uploaded:`, uploadedUrl);
             return uploadedUrl;
@@ -252,7 +258,12 @@ export default function EditProfileScreen({ navigation }: any) {
             (url) => url !== null
           ) as string[];
 
-          console.log("✅ Successfully uploaded", validUrls.length, "photo(s):", validUrls);
+          console.log(
+            "✅ Successfully uploaded",
+            validUrls.length,
+            "photo(s):",
+            validUrls
+          );
 
           if (validUrls.length > 0) {
             const updatedPhotos = [
@@ -260,13 +271,19 @@ export default function EditProfileScreen({ navigation }: any) {
               ...validUrls,
             ].slice(0, 6);
 
-            console.log("💾 Saving to Supabase. Updated photos array:", updatedPhotos);
+            console.log(
+              "💾 Saving to Supabase. Updated photos array:",
+              updatedPhotos
+            );
 
             // Update Supabase
             if (profileData?.uid) {
-              const updateResult = await SupabaseDataService.updateUser(profileData.uid, {
-                profilePictures: updatedPhotos,
-              });
+              const updateResult = await SupabaseDataService.updateUser(
+                profileData.uid,
+                {
+                  profilePictures: updatedPhotos,
+                }
+              );
 
               console.log("💾 Supabase update result:", updateResult);
 
@@ -275,7 +292,10 @@ export default function EditProfileScreen({ navigation }: any) {
                 prev ? { ...prev, profilePictures: updatedPhotos } : null
               );
 
-              console.log("✅ Local state updated. New profile data:", { ...profileData, profilePictures: updatedPhotos });
+              console.log("✅ Local state updated. New profile data:", {
+                ...profileData,
+                profilePictures: updatedPhotos,
+              });
 
               Alert.alert(
                 "Success",
@@ -325,9 +345,12 @@ export default function EditProfileScreen({ navigation }: any) {
           console.log("💾 Updating Supabase with photos:", updatedPhotos);
 
           // Update Supabase
-          const updateResult = await SupabaseDataService.updateUser(profileData.uid, {
-            profilePictures: updatedPhotos,
-          });
+          const updateResult = await SupabaseDataService.updateUser(
+            profileData.uid,
+            {
+              profilePictures: updatedPhotos,
+            }
+          );
 
           console.log("💾 Photo removal update result:", updateResult);
 
