@@ -1,19 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { usePreferenceStore } from "../../hooks/usePreferenceStore";
-import {
-  getPreferenceCompletionPercentage,
-  DEFAULT_PREFERENCES,
-} from "../../constants/preferences";
-import { useAuthStore } from "../../hooks/useAuthStore";
-import { DataService } from "../../services/DataService";
-import { SupabaseDataService } from "../../services/SupabaseDataService";
 
 // Import preference step components
-import AgeRangeStep from "./steps/AgeRangeStep";
 import GenderPreferenceStep from "./steps/GenderPreferenceStep";
 import TimePreferenceStep from "./steps/TimePreferenceStep";
 import LocationPreferenceStep from "./steps/LocationPreferenceStep";
@@ -28,7 +20,6 @@ interface PreferenceSetupScreenProps {
 }
 
 const PREFERENCE_STEPS = [
-  { id: "ageRange", title: "Age Range", component: AgeRangeStep },
   {
     id: "genderPreference",
     title: "Gender Preference",
@@ -63,8 +54,7 @@ export default function PreferenceSetupScreen({
   onSkip,
 }: PreferenceSetupScreenProps) {
   const { colors } = useThemeStore();
-  const { user } = useAuthStore();
-  const { preferences, markPreferencesComplete, savePreferences, isLoading } =
+  const { markPreferencesComplete, savePreferences, isLoading } =
     usePreferenceStore();
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -99,24 +89,7 @@ export default function PreferenceSetupScreen({
           style: "destructive",
           onPress: async () => {
             try {
-              // Save default preferences to Supabase (only if not in developer mode)
-              if (!DataService.isInDeveloperMode() && user?.uid) {
-                const result = await SupabaseDataService.updateUser(user.uid, {
-                  preferences: DEFAULT_PREFERENCES,
-                });
-
-                if (result.error) {
-                  console.error(
-                    "Failed to save default preferences to Supabase:",
-                    result.error
-                  );
-                } else {
-                  console.log("✅ Default preferences saved to Supabase!");
-                }
-              } else {
-                console.log("🔧 Developer Mode: Using local storage only");
-                console.log("✅ Default preferences saved locally!");
-              }
+              console.log("✅ Default preferences saved locally!");
 
               if (onSkip) {
                 onSkip();
@@ -145,24 +118,7 @@ export default function PreferenceSetupScreen({
       await markPreferencesComplete();
       await savePreferences();
 
-      // Save preferences to Supabase (only if not in developer mode)
-      if (!DataService.isInDeveloperMode() && user?.uid) {
-        const result = await SupabaseDataService.updateUser(user.uid, {
-          preferences: preferences,
-        });
-
-        if (result.error) {
-          console.error(
-            "Failed to save preferences to Supabase:",
-            result.error
-          );
-        } else {
-          console.log("✅ Preferences saved to Supabase successfully!");
-        }
-      } else {
-        console.log("🔧 Developer Mode: Using local storage only");
-        console.log("✅ Preferences saved locally!");
-      }
+      console.log("✅ Preferences saved locally!");
 
       if (onComplete) {
         onComplete();
@@ -200,8 +156,6 @@ export default function PreferenceSetupScreen({
     }
     return Math.round((currentStep / (PREFERENCE_STEPS.length - 1)) * 100);
   };
-
-  const completionPercentage = getPreferenceCompletionPercentage(preferences);
 
   return (
     <SafeAreaView

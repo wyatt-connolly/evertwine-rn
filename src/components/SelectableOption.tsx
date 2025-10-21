@@ -72,8 +72,8 @@ const styles = StyleSheet.create({
   selectedOption: {
     backgroundColor: "rgba(255, 255, 255, 0.05)",
     borderWidth: 2,
-    borderColor: "#8B5CF6",
-    shadowColor: "#8B5CF6",
+    borderColor: "#E5E5EA",
+    shadowColor: "#E5E5EA",
     shadowOffset: {
       width: 0,
       height: 4,

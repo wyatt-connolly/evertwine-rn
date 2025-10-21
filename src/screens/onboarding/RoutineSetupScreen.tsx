@@ -178,7 +178,7 @@ export default function RoutineSetupScreen({ navigation }: Props) {
                         backgroundColor: "rgba(255, 255, 255, 0.05)",
                         borderColor:
                           selectedRoutine === option.value
-                            ? "#8B5CF6"
+                            ? "#E5E5EA"
                             : colors.border,
                         borderWidth: selectedRoutine === option.value ? 2 : 1,
                       },

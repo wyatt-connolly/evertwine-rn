@@ -6,6 +6,7 @@ interface AnimatedCheckmarkProps {
   delay?: number;
   onComplete?: () => void;
   style?: any;
+  color?: string;
 }
 
 const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
@@ -13,6 +14,7 @@ const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
   delay = 0,
   onComplete,
   style,
+  color = "#8B5CF6",
 }) => {
   const spinnerAnim = useRef(new Animated.Value(0)).current;
   const lineAnim = useRef(new Animated.Value(0)).current;
@@ -82,7 +84,7 @@ const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
             },
           ]}
         >
-          <View style={[styles.spinnerCircle, { borderColor: "#8B5CF6" }]} />
+          <View style={[styles.spinnerCircle, { borderColor: color }]} />
         </Animated.View>
 
         {/* Checkmark */}
@@ -95,11 +97,7 @@ const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
             },
           ]}
         >
-          <View
-            style={[styles.checkmarkCircle, { backgroundColor: "#8B5CF6" }]}
-          >
-            <Text style={styles.checkmarkIcon}>✓</Text>
-          </View>
+          <Text style={[styles.checkmarkIcon, { color }]}>✓</Text>
         </Animated.View>
 
         {/* Line below icon */}
@@ -108,7 +106,7 @@ const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
             styles.line,
             {
               opacity: lineAnim,
-              backgroundColor: "#8B5CF6",
+              backgroundColor: color,
             },
           ]}
         />
@@ -159,17 +157,11 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: 20,
     height: 20,
-  },
-  checkmarkCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
   },
   checkmarkIcon: {
-    color: "#FFFFFF",
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: "bold",
   },
   line: {

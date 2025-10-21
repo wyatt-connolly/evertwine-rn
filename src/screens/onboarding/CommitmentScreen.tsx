@@ -32,7 +32,7 @@ export default function CommitmentScreen({ navigation }: Props) {
   const { colors } = useThemeStore();
   const { setOnboardingStep } = useAuthStore();
   const [isHolding, setIsHolding] = useState(false);
-  const [, setProgress] = useState(0);
+  const [progress, setProgress] = useState(0);
   const hapticIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Animation values
@@ -82,7 +82,7 @@ export default function CommitmentScreen({ navigation }: Props) {
       }).start();
     }, 800);
 
-    // Cleanup haptic feedback on unmount
+    // Cleanup haptic feedback and animations on unmount
     return () => {
       if (hapticIntervalRef.current) {
         clearInterval(hapticIntervalRef.current);
@@ -93,13 +93,20 @@ export default function CommitmentScreen({ navigation }: Props) {
 
   const handlePressIn = () => {
     setIsHolding(true);
-    // Light haptic feedback when starting to hold
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    // Medium haptic feedback when starting to hold (stronger initial feedback)
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    // Start continuous haptic feedback
+    // Start continuous haptic feedback with alternating intensity
+    let hapticCounter = 0;
     hapticIntervalRef.current = setInterval(() => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }, 200); // Haptic feedback every 200ms
+      // Alternate between Light and Medium impacts for rhythmic feedback
+      const intensity =
+        hapticCounter % 2 === 0
+          ? Haptics.ImpactFeedbackStyle.Light
+          : Haptics.ImpactFeedbackStyle.Medium;
+      Haptics.impactAsync(intensity);
+      hapticCounter++;
+    }, 200);
 
     startProgress();
   };
@@ -114,14 +121,21 @@ export default function CommitmentScreen({ navigation }: Props) {
       hapticIntervalRef.current = null;
     }
 
-    // Medium haptic feedback when releasing
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    // Heavy haptic feedback when releasing (more pronounced cancellation feedback)
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
   };
 
   const startProgress = () => {
     const interval = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) {
+        const newProgress = prev + 2;
+
+        // Milestone haptic feedback at 50% progress
+        if (newProgress >= 50 && prev < 50) {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+        }
+
+        if (newProgress >= 100) {
           clearInterval(interval);
 
           // Stop continuous haptic feedback when completing
@@ -130,16 +144,31 @@ export default function CommitmentScreen({ navigation }: Props) {
             hapticIntervalRef.current = null;
           }
 
-          // Strong haptic feedback when commitment is complete
+          // Enhanced completion haptic feedback
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+          // Celebration pattern: 3 quick heavy impacts
+          setTimeout(
+            () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy),
+            0
+          );
+          setTimeout(
+            () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy),
+            100
+          );
+          setTimeout(
+            () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy),
+            200
+          );
+
           // Use setTimeout to avoid setState-in-render error
           setTimeout(() => {
             setOnboardingStep("BuildingProfile");
             navigation.navigate("BuildingProfile");
-          }, 0);
+          }, 500); // Slightly longer delay to let celebration haptics complete
           return 100;
         }
-        return prev + 2;
+        return newProgress;
       });
     }, 50);
   };

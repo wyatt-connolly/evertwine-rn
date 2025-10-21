@@ -20,9 +20,9 @@ import GradientBackground from "../../components/GradientBackground";
 const { height } = Dimensions.get("window");
 
 const tasks = [
-  "Analyzing your preferences",
-  "Finding nearby meetups",
-  "Personalizing your feed",
+  { text: "Analyzing your preferences", color: "#8B5CF6" },
+  { text: "Finding nearby meetups", color: "#3B82F6" },
+  { text: "Personalizing your feed", color: "#10B981" },
 ];
 
 export default function BuildingProfileScreen() {
@@ -294,7 +294,8 @@ export default function BuildingProfileScreen() {
               {tasks.map((task, index) => (
                 <AnimatedCheckmark
                   key={index}
-                  text={task}
+                  text={task.text}
+                  color={task.color}
                   delay={1000 + index * 400}
                   style={styles.taskItem}
                 />

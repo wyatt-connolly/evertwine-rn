@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
-import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import OnboardingButton from "../../components/OnboardingButton";
 import GradientBackground from "../../components/GradientBackground";
@@ -26,12 +25,12 @@ interface Props {
   navigation: NameInputScreenNavigationProp;
 }
 
-const { width, height } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 
 export default function NameInputScreen({ navigation }: Props) {
-  const { colors } = useThemeStore();
   const { setOnboardingData, setOnboardingStep } = useAuthStore();
   const [name, setName] = useState("");
+  const [hasError, setHasError] = useState(false);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -72,8 +71,15 @@ export default function NameInputScreen({ navigation }: Props) {
     }, 600);
   }, []);
 
+  const handleNameChange = (text: string) => {
+    setName(text);
+    // Check if name contains special characters or numbers
+    const hasSpecialChars = /[^a-zA-Z\s]/.test(text);
+    setHasError(hasSpecialChars);
+  };
+
   const handleContinue = () => {
-    if (name.trim()) {
+    if (name.trim() && !hasError) {
       // Save name to onboarding data
       setOnboardingData({ name: name.trim() });
       setOnboardingStep("AgeSelection");
@@ -138,12 +144,15 @@ export default function NameInputScreen({ navigation }: Props) {
                 placeholder="Enter your name"
                 placeholderTextColor="#AEAEB2"
                 value={name}
-                onChangeText={setName}
+                onChangeText={handleNameChange}
                 returnKeyType="done"
                 onSubmitEditing={handleKeyboardDismiss}
               />
               <View
-                style={[styles.underline, { backgroundColor: "#FFFFFF" }]}
+                style={[
+                  styles.underline,
+                  { backgroundColor: hasError ? "#FF3B30" : "#FFFFFF" },
+                ]}
               />
             </Animated.View>
 
@@ -164,10 +173,15 @@ export default function NameInputScreen({ navigation }: Props) {
                 },
               ]}
             >
+              {hasError && (
+                <Text style={styles.errorText}>
+                  Please use only letters and spaces
+                </Text>
+              )}
               <OnboardingButton
                 title="Continue"
                 onPress={handleContinue}
-                disabled={!name.trim()}
+                disabled={!name.trim() || hasError}
               />
             </Animated.View>
           </View>
@@ -211,6 +225,13 @@ const styles = StyleSheet.create({
     height: 2,
     width: "100%",
     marginTop: 8,
+  },
+  errorText: {
+    color: "#FF3B30",
+    fontSize: 14,
+    fontWeight: "400",
+    textAlign: "center",
+    marginBottom: 16,
   },
   buttonContainer: {
     paddingHorizontal: 20,
