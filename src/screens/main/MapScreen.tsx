@@ -431,7 +431,7 @@ export default function MapScreen({ navigation }: any) {
         const location = await Location.getCurrentPositionAsync({});
         setCurrentLocation(location);
       } catch (error) {
-        console.error("Error getting location:", error);
+
         Alert.alert(
           "Location Error",
           "Unable to get your current location. Please try again.",
@@ -499,7 +499,7 @@ export default function MapScreen({ navigation }: any) {
                       pinColor={colors.accentTertiary}
                       tracksViewChanges={false}
                       onPress={() => {
-                        console.log("🗺️ Marker pressed for meetup:", meetup.id);
+
                         handleMarkerPress(meetup);
                       }}
                     />
@@ -517,10 +517,7 @@ export default function MapScreen({ navigation }: any) {
                       pinColor={colors.accentQuaternary}
                       tracksViewChanges={false}
                       onPress={() => {
-                        console.log(
-                          "🗺️ Marker pressed for happy hour:",
-                          event.id
-                        );
+
                         handleMarkerPress(event);
                       }}
                     />

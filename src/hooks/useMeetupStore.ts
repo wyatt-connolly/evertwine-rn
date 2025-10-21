@@ -30,7 +30,7 @@ export const useMeetupStore = create<MeetupState>()(
           const meetups = await SupabaseDataService.getMeetups();
           set({ meetups, isLoading: false });
         } catch (error) {
-          console.error("Error fetching meetups:", error);
+
           set({ isLoading: false });
         }
       },
@@ -47,7 +47,7 @@ export const useMeetupStore = create<MeetupState>()(
           }));
           return newMeetup;
         } catch (error) {
-          console.error("Error creating meetup:", error);
+
           set({ isLoading: false });
           throw error;
         }
@@ -67,7 +67,7 @@ export const useMeetupStore = create<MeetupState>()(
             isLoading: false,
           }));
         } catch (error) {
-          console.error("Error updating meetup:", error);
+
           set({ isLoading: false });
           throw error;
         }
@@ -82,7 +82,7 @@ export const useMeetupStore = create<MeetupState>()(
             isLoading: false,
           }));
         } catch (error) {
-          console.error("Error deleting meetup:", error);
+
           set({ isLoading: false });
           throw error;
         }

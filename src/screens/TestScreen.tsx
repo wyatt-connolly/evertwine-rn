@@ -20,7 +20,7 @@ export default function TestScreen() {
   const testPhoneAuth = async () => {
     setLoading(true);
     try {
-      console.log("🧪 TESTING PHONE AUTH...");
+
       const result = await SupabaseAuthService.signInWithPhone(phoneNumber);
 
       if (result.error) {
@@ -36,7 +36,7 @@ export default function TestScreen() {
       );
     } catch (error) {
       Alert.alert("Error", "Failed to send verification code");
-      console.error("Phone auth error:", error);
+
     } finally {
       setLoading(false);
     }
@@ -50,7 +50,7 @@ export default function TestScreen() {
 
     setLoading(true);
     try {
-      console.log("🧪 TESTING CODE VERIFICATION...");
+
       const result = await SupabaseAuthService.verifyPhoneOTP(
         verificationId,
         verificationCode
@@ -61,7 +61,6 @@ export default function TestScreen() {
         return;
       }
 
-      console.log("🧪 TESTING USER CREATION IN SUPABASE...");
       const userData = {
         displayName: "Test User",
         bio: "This is a test user created from the test screen",
@@ -86,7 +85,7 @@ export default function TestScreen() {
       setVerificationCode("123456");
     } catch (error) {
       Alert.alert("Error", "Failed to verify code");
-      console.error("Verification error:", error);
+
     } finally {
       setLoading(false);
     }
@@ -95,7 +94,7 @@ export default function TestScreen() {
   const testSupabaseConnection = async () => {
     setLoading(true);
     try {
-      console.log("🧪 TESTING SUPABASE CONNECTION...");
+
       const result = await SupabaseDataService.testConnection();
 
       if (result.success) {
@@ -105,7 +104,7 @@ export default function TestScreen() {
       }
     } catch (error) {
       Alert.alert("Error", "Failed to test connection");
-      console.error("Connection test error:", error);
+
     } finally {
       setLoading(false);
     }

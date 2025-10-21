@@ -193,7 +193,7 @@ export const useThemeStore = create<ThemeState>()((set, get) => ({
 
       set({ isDarkMode, colors });
     } catch (error) {
-      console.error("Error loading theme preference:", error);
+
       // Fallback to dark mode
       set({ isDarkMode: true, colors: darkTheme });
     }

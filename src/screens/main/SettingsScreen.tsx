@@ -42,7 +42,7 @@ export default function SettingsScreen({ navigation }: any) {
         setLocationEnabled(userData.user.locationEnabled ?? true);
       }
     } catch (error) {
-      console.error("Error loading settings:", error);
+
     }
   };
 
@@ -58,7 +58,7 @@ export default function SettingsScreen({ navigation }: any) {
           });
         }
       } catch (error) {
-        console.error("Error saving notification setting:", error);
+
         // Revert on error
         setNotificationsEnabled(!value);
         Alert.alert("Error", "Failed to save setting");
@@ -78,7 +78,7 @@ export default function SettingsScreen({ navigation }: any) {
           });
         }
       } catch (error) {
-        console.error("Error saving location setting:", error);
+
         setLocationEnabled(!value);
         Alert.alert("Error", "Failed to save setting");
       }
@@ -154,12 +154,12 @@ export default function SettingsScreen({ navigation }: any) {
       );
 
       // Delete all user files from storage first
-      console.log("🗑️ Deleting user files from storage...");
+
       try {
         await SupabaseStorageService.deleteAllUserFiles(user.uid);
-        console.log("✅ Successfully deleted all user files from storage");
+
       } catch (storageError) {
-        console.error("Error deleting user files from storage:", storageError);
+
         // Continue with database deletion even if storage deletion fails
       }
 
@@ -197,7 +197,7 @@ export default function SettingsScreen({ navigation }: any) {
         [{ text: "OK" }]
       );
     } catch (error: any) {
-      console.error("Delete account error:", error);
+
       Alert.alert(
         "Delete Failed",
         "We encountered an error while deleting your account. Please try again later or contact support if the problem persists."

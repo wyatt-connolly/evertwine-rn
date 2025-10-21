@@ -124,7 +124,7 @@ export default function AllMeetupsScreen() {
             }
           });
         } catch (error) {
-          console.warn("Error filtering meetup:", error);
+
           return false;
         }
       });

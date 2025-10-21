@@ -20,7 +20,7 @@ export class SupabaseDataService {
       .maybeSingle();
 
     if (error) {
-      console.error("Error getting user:", error);
+
       return null;
     }
 
@@ -43,8 +43,7 @@ export class SupabaseDataService {
   }
 
   static async updateUser(uid: string, updates: Partial<User>) {
-    console.log("🔄 Updating user with UID:", uid);
-    console.log("📝 Update data:", updates);
+
 
     const { data, error } = await supabase
       .from("users")
@@ -57,11 +56,10 @@ export class SupabaseDataService {
       .single();
 
     if (error) {
-      console.error("❌ Update user error:", error);
+
       throw error;
     }
 
-    console.log("✅ User updated successfully:", data);
     return this.mapUserFromDB(data);
   }
 
@@ -103,7 +101,7 @@ export class SupabaseDataService {
       .eq("id", id)
       .single();
     if (error) {
-      console.error("Error getting post:", error);
+
       return null;
     }
     return this.mapPostFromDB(data);
@@ -179,7 +177,7 @@ export class SupabaseDataService {
       .eq("id", id)
       .single();
     if (error) {
-      console.error("Error getting meetup:", error);
+
       return null;
     }
     return this.mapMeetupFromDB(data);
@@ -232,7 +230,7 @@ export class SupabaseDataService {
       .eq("id", id)
       .single();
     if (error) {
-      console.error("Error getting happy hour:", error);
+
       return null;
     }
     return this.mapHappyHourFromDB(data);
@@ -280,7 +278,7 @@ export class SupabaseDataService {
       .eq("id", id)
       .single();
     if (error) {
-      console.error("Error getting message room:", error);
+
       return null;
     }
     return this.mapMessageRoomFromDB(data);
@@ -870,111 +868,106 @@ export class SupabaseDataService {
     userId: string
   ): Promise<{ success: boolean; error?: any }> {
     try {
-      console.log(`🗑️ Starting account deletion for user: ${userId}`);
 
       // 1. Delete notifications
-      console.log("🗑️ Deleting notifications...");
+
       const { error: notificationsError } = await supabase
         .from("notifications")
         .delete()
         .eq("receiver_ref", userId);
 
       if (notificationsError) {
-        console.error("Error deleting notifications:", notificationsError);
+
         throw notificationsError;
       }
 
       // 2. Delete messages
-      console.log("🗑️ Deleting messages...");
+
       const { error: messagesError } = await supabase
         .from("messages")
         .delete()
         .eq("sender_ref", userId);
 
       if (messagesError) {
-        console.error("Error deleting messages:", messagesError);
+
         throw messagesError;
       }
 
       // 3. Delete message rooms where user is a participant
-      console.log("🗑️ Deleting message rooms...");
+
       const { error: messageRoomsError } = await supabase
         .from("message_rooms")
         .delete()
         .contains("participants", [userId]);
 
       if (messageRoomsError) {
-        console.error("Error deleting message rooms:", messageRoomsError);
+
         throw messageRoomsError;
       }
 
       // 4. Delete post comments
-      console.log("🗑️ Deleting post comments...");
+
       const { error: postCommentsError } = await supabase
         .from("post_comments")
         .delete()
         .eq("user_id", userId);
 
       if (postCommentsError) {
-        console.error("Error deleting post comments:", postCommentsError);
+
         throw postCommentsError;
       }
 
       // 5. Delete posts
-      console.log("🗑️ Deleting posts...");
+
       const { error: postsError } = await supabase
         .from("posts")
         .delete()
         .eq("user_id", userId);
 
       if (postsError) {
-        console.error("Error deleting posts:", postsError);
+
         throw postsError;
       }
 
       // 6. Delete meetups created by user
-      console.log("🗑️ Deleting meetups...");
+
       const { error: meetupsError } = await supabase
         .from("meetups")
         .delete()
         .eq("creator_id", userId);
 
       if (meetupsError) {
-        console.error("Error deleting meetups:", meetupsError);
+
         throw meetupsError;
       }
 
       // 7. Delete happy hours where user is a participant
-      console.log("🗑️ Deleting happy hour participations...");
+
       const { error: happyHoursError } = await supabase
         .from("happy_hours")
         .delete()
         .contains("attendees", [userId]);
 
       if (happyHoursError) {
-        console.error(
-          "Error deleting happy hour participations:",
-          happyHoursError
-        );
+
         throw happyHoursError;
       }
 
       // 8. Delete user profile (this should be last)
-      console.log("🗑️ Deleting user profile...");
+
       const { error: userError } = await supabase
         .from("users")
         .delete()
         .eq("uid", userId);
 
       if (userError) {
-        console.error("Error deleting user profile:", userError);
+
         throw userError;
       }
 
-      console.log(`✅ Successfully deleted all data for user: ${userId}`);
       return { success: true };
     } catch (error) {
-      console.error("Error in deleteUserAccount:", error);
+
       return { success: false, error };
     }
   }

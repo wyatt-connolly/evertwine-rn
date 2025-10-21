@@ -46,14 +46,13 @@ export default function PostDetailsScreen({
   const handleComment = () => {
     if (commentText.trim() && currentUser) {
       // Here you would add the comment to the post
-      console.log("Adding comment:", commentText.trim());
       setCommentText("");
     }
   };
 
   const handleShare = () => {
     // Here you would implement sharing functionality
-    console.log("Sharing post:", post.id);
+
   };
 
   return (

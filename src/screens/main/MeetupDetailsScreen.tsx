@@ -34,11 +34,6 @@ export default function MeetupDetailsScreen({
     useFavoritesStore();
   const { meetupId, meetupData } = route.params;
 
-  console.log("🔍 DEBUG - MeetupDetailsScreen received params:", {
-    meetupId,
-    meetupData,
-    routeParams: route.params,
-  });
   const [isJoined, setIsJoined] = useState(false);
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -55,17 +50,6 @@ export default function MeetupDetailsScreen({
       (u) => u.uid === meetup?.creatorRef?.replace("users/", "")
     );
 
-  console.log("📅 MeetupDetailsScreen loaded:", {
-    meetupId,
-    cleanMeetupId,
-    meetupData: meetupData?.title || "No data",
-    meetup: meetup?.title || "Not found",
-    creator: creator?.displayName || "Not found",
-    hasMeetupData: !!meetupData,
-    hasMeetup: !!meetup,
-    meetupTime: meetup?.time,
-    meetupDuration: meetup?.duration,
-  });
   const participants =
     meetupData?.participants ||
     getMockUsers().filter((u) => meetup?.participants?.includes(u.uid));

@@ -151,17 +151,17 @@ export default function InterestSelectionScreen({ navigation }: Props) {
 
         if (result.error) {
           Alert.alert("Error", "Failed to save interests. Please try again.");
-          console.error("Supabase error:", result.error);
+
           return;
         }
       } else {
-        console.log("🔧 Developer Mode: Using local storage only");
+
       }
 
       navigation.navigate("AppFeatures");
     } catch (error) {
       Alert.alert("Error", "Failed to save interests. Please try again.");
-      console.error("Interest selection error:", error);
+
     } finally {
       setLoading(false);
     }

@@ -189,7 +189,6 @@ export class SupabaseStorageService {
    */
   static async deleteUserProfilePictures(userId: string): Promise<void> {
     try {
-      console.log(`🗑️ Deleting profile pictures for user: ${userId}`);
 
       // List all files in the user's profile pictures folder
       const { data: files, error: listError } = await supabase.storage
@@ -197,7 +196,7 @@ export class SupabaseStorageService {
         .list(userId);
 
       if (listError) {
-        console.error("Error listing profile pictures:", listError);
+
         throw listError;
       }
 
@@ -209,18 +208,15 @@ export class SupabaseStorageService {
           .remove(filePaths);
 
         if (deleteError) {
-          console.error("Error deleting profile pictures:", deleteError);
+
           throw deleteError;
         }
 
-        console.log(
-          `✅ Deleted ${files.length} profile pictures for user: ${userId}`
-        );
       } else {
-        console.log(`ℹ️ No profile pictures found for user: ${userId}`);
+
       }
     } catch (error) {
-      console.error("Error in deleteUserProfilePictures:", error);
+
       throw error;
     }
   }
@@ -230,7 +226,6 @@ export class SupabaseStorageService {
    */
   static async deleteUserPostImages(userId: string): Promise<void> {
     try {
-      console.log(`🗑️ Deleting post images for user: ${userId}`);
 
       // List all files in the user's post images folder
       const { data: files, error: listError } = await supabase.storage
@@ -238,7 +233,7 @@ export class SupabaseStorageService {
         .list(userId);
 
       if (listError) {
-        console.error("Error listing post images:", listError);
+
         throw listError;
       }
 
@@ -250,18 +245,15 @@ export class SupabaseStorageService {
           .remove(filePaths);
 
         if (deleteError) {
-          console.error("Error deleting post images:", deleteError);
+
           throw deleteError;
         }
 
-        console.log(
-          `✅ Deleted ${files.length} post images for user: ${userId}`
-        );
       } else {
-        console.log(`ℹ️ No post images found for user: ${userId}`);
+
       }
     } catch (error) {
-      console.error("Error in deleteUserPostImages:", error);
+
       throw error;
     }
   }
@@ -271,7 +263,6 @@ export class SupabaseStorageService {
    */
   static async deleteUserMeetupImages(userId: string): Promise<void> {
     try {
-      console.log(`🗑️ Deleting meetup images for user: ${userId}`);
 
       // List all files in the user's meetup images folder
       const { data: files, error: listError } = await supabase.storage
@@ -279,7 +270,7 @@ export class SupabaseStorageService {
         .list(userId);
 
       if (listError) {
-        console.error("Error listing meetup images:", listError);
+
         throw listError;
       }
 
@@ -291,18 +282,15 @@ export class SupabaseStorageService {
           .remove(filePaths);
 
         if (deleteError) {
-          console.error("Error deleting meetup images:", deleteError);
+
           throw deleteError;
         }
 
-        console.log(
-          `✅ Deleted ${files.length} meetup images for user: ${userId}`
-        );
       } else {
-        console.log(`ℹ️ No meetup images found for user: ${userId}`);
+
       }
     } catch (error) {
-      console.error("Error in deleteUserMeetupImages:", error);
+
       throw error;
     }
   }
@@ -312,7 +300,6 @@ export class SupabaseStorageService {
    */
   static async deleteAllUserFiles(userId: string): Promise<void> {
     try {
-      console.log(`🗑️ Deleting all files for user: ${userId}`);
 
       // Delete from all storage buckets
       await Promise.all([
@@ -321,9 +308,8 @@ export class SupabaseStorageService {
         this.deleteUserMeetupImages(userId),
       ]);
 
-      console.log(`✅ Successfully deleted all files for user: ${userId}`);
     } catch (error) {
-      console.error("Error in deleteAllUserFiles:", error);
+
       throw error;
     }
   }

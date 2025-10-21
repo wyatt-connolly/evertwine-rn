@@ -46,13 +46,6 @@ export default function AuthSignInScreen({ navigation }: Props) {
 
   // Watch for authentication changes and navigate to next onboarding step
   useEffect(() => {
-    console.log("🔍 AuthSignInScreen useEffect triggered:", {
-      isAuthenticated,
-      hasUser: !!user,
-      userUID: user?.uid,
-      userOnboardingComplete: user?.onboardingComplete,
-      isOAuthInProgress,
-    });
 
     if (
       isAuthenticated &&
@@ -60,82 +53,58 @@ export default function AuthSignInScreen({ navigation }: Props) {
       !user.onboardingComplete &&
       !isOAuthInProgress
     ) {
-      console.log("✅ User authenticated, navigating to NameInput");
-      console.log("👤 User data:", {
-        uid: user.uid,
-        email: user.email,
-        onboardingComplete: user.onboardingComplete,
-      });
+
+
       // Navigate immediately without delay
-      console.log("🚀 Navigating to NameInput immediately");
+
       setOnboardingStep("NameInput");
       navigation.navigate("NameInput");
     } else if (isAuthenticated && user && user.onboardingComplete) {
-      console.log(
-        "✅ User authenticated and onboarding complete, letting AppNavigator handle routing"
-      );
-      console.log("👤 User onboarding status:", {
-        uid: user.uid,
-        email: user.email,
-        onboardingComplete: user.onboardingComplete,
-      });
+
+
       // User is authenticated and has completed onboarding
       // Let AppNavigator handle the routing automatically
       // Don't navigate manually - the AppNavigator will route to MainTabs
     } else {
-      console.log("⏳ AuthSignInScreen waiting for conditions:", {
-        isAuthenticated,
-        hasUser: !!user,
-        userOnboardingComplete: user?.onboardingComplete,
-        isOAuthInProgress,
-      });
+
     }
   }, [isAuthenticated, user, navigation, isOAuthInProgress]);
 
   const handleOAuthSignIn = async (provider: "google" | "apple") => {
     try {
-      console.log(`🔵 Starting ${provider} OAuth...`);
+
       setLoading(provider);
       setIsOAuthInProgress(true);
 
       let authData;
       if (provider === "google") {
-        console.log("🔵 Calling signInWithGoogle...");
+
         authData = await SupabaseAuthService.signInWithGoogle();
       } else {
-        console.log("🔵 Calling signInWithApple...");
+
         authData = await SupabaseAuthService.signInWithApple();
       }
 
-      console.log(`✅ ${provider} OAuth completed:`, authData);
-
       // Check if the OAuth was successful
       if (authData?.type === "success") {
-        console.log(
-          "🎉 OAuth successful, auth state change will handle navigation"
-        );
-        console.log("🔍 OAuth success details:", {
-          type: authData.type,
-          hasUrl: !!authData.url,
-          urlLength: authData.url?.length,
-        });
+
+
         // The auth state change listener in AppNavigator will handle navigation
         // based on onboardingComplete status - no manual navigation needed
       } else if (authData?.type === "cancel") {
-        console.log(`ℹ️ User cancelled ${provider} OAuth`);
+
         return;
       } else {
-        console.log(`⚠️ OAuth completed with unexpected result:`, authData);
+
       }
     } catch (error: any) {
-      console.error(`❌ ${provider} sign-in error:`, error);
 
       // Handle specific error cases
       if (
         error.message?.includes("cancelled") ||
         error.message?.includes("canceled")
       ) {
-        console.log(`ℹ️ User cancelled ${provider} OAuth`);
+
         return;
       }
 

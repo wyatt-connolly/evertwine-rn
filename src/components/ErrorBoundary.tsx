@@ -49,7 +49,7 @@ export default class ErrorBoundary extends Component<Props, State> {
     }
 
     // Log error to crash analytics service
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
+
   }
 
   handleRetry = () => {

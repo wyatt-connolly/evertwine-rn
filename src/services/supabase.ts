@@ -74,13 +74,12 @@ export class SupabaseAuthService {
 
   static async signOut() {
     try {
-      console.log("🚪 Signing out from Supabase...");
+
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
 
-      console.log("✅ Successfully signed out from Supabase");
     } catch (error) {
-      console.error("❌ Error signing out:", error);
+
       throw error;
     }
   }
@@ -88,7 +87,7 @@ export class SupabaseAuthService {
   // Clear browser session to allow account switching
   static async clearBrowserSession() {
     try {
-      console.log("🧹 Clearing browser session...");
+
       // Clear any cached browser sessions with timeout
       await Promise.race([
         WebBrowser.dismissBrowser(),
@@ -96,12 +95,9 @@ export class SupabaseAuthService {
           setTimeout(() => reject(new Error("Timeout")), 2000)
         ),
       ]);
-      console.log("✅ Browser session cleared");
+
     } catch (error) {
-      console.log(
-        "⚠️ Browser session clear timeout or error (non-critical):",
-        error
-      );
+
       // Don't throw - this is not critical
     }
   }
@@ -109,7 +105,6 @@ export class SupabaseAuthService {
   // OAuth Authentication
   static async signInWithGoogle() {
     try {
-      console.log("🚀 Starting Google OAuth...");
 
       // Use the standard OAuth flow without skipBrowserRedirect
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -123,18 +118,16 @@ export class SupabaseAuthService {
       });
 
       if (error) {
-        console.error("❌ Google OAuth error:", error);
+
         throw new Error(`Google OAuth not configured: ${error.message}`);
       }
 
       if (!data?.url) {
-        console.error("❌ No OAuth URL received");
+
         throw new Error(
           "Google OAuth provider not configured in Supabase dashboard"
         );
       }
-
-      console.log("✅ OAuth URL generated:", data.url);
 
       // Open the URL in the browser - Supabase will handle the redirect automatically
       const result = await WebBrowser.openAuthSessionAsync(
@@ -142,16 +135,12 @@ export class SupabaseAuthService {
         "evertwine://auth/callback"
       );
 
-      console.log("🔙 OAuth result:", result);
-
       // Process the OAuth callback URL to set the session
       if (result.type === "success" && result.url) {
-        console.log("🔄 Processing OAuth callback URL...");
 
         // Extract the URL fragment (everything after #)
         const urlFragment = result.url.split("#")[1];
         if (urlFragment) {
-          console.log("🔑 Setting session with access token...");
 
           // Parse the URL fragment to extract tokens
           const params = new URLSearchParams(urlFragment);
@@ -167,26 +156,25 @@ export class SupabaseAuthService {
               });
 
             if (sessionError) {
-              console.error("❌ Error setting session:", sessionError);
+
               throw new Error(`Failed to set session: ${sessionError.message}`);
             }
 
-            console.log("✅ Session set successfully:", !!sessionData.session);
           } else {
-            console.error("❌ Missing tokens in OAuth callback");
+
             throw new Error(
               "Missing access or refresh token in OAuth callback"
             );
           }
         } else {
-          console.error("❌ No URL fragment in OAuth callback");
+
           throw new Error("No URL fragment in OAuth callback");
         }
       }
 
       return result;
     } catch (error) {
-      console.error("❌ Google sign-in error:", error);
+
       throw error;
     }
   }
@@ -196,7 +184,6 @@ export class SupabaseAuthService {
     if (!authUser) return;
 
     try {
-      console.log("🔍 Checking if user exists in database:", authUser.uid);
 
       // Check if user already exists in database
       const { data: existingUser, error: fetchError } = await supabase
@@ -206,12 +193,12 @@ export class SupabaseAuthService {
         .single();
 
       if (existingUser) {
-        console.log("✅ User already exists in database");
+
         return existingUser;
       }
 
       // Create new user record with OAuth data
-      console.log("📝 Creating new user record with OAuth data");
+
       const userData = {
         uid: authUser.uid,
         email: authUser.email,
@@ -261,10 +248,9 @@ export class SupabaseAuthService {
 
       const newUser = await SupabaseDataService.createUser(userData);
 
-      console.log("✅ New user created:", authUser.id);
       return newUser;
     } catch (error) {
-      console.error("❌ Error in ensureUserExists:", error);
+
       throw error;
     }
   }
@@ -272,7 +258,6 @@ export class SupabaseAuthService {
   static async signInWithApple() {
     const redirectUrl =
       "https://lqrumkrfmhrstcjfloty.supabase.co/auth/v1/callback";
-    console.log("🔗 Redirect URL:", redirectUrl);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "apple",
@@ -283,7 +268,7 @@ export class SupabaseAuthService {
     });
 
     if (error) {
-      console.error("Apple OAuth error:", error);
+
       throw new Error(`Apple OAuth not configured: ${error.message}`);
     }
 
@@ -302,13 +287,11 @@ export class SupabaseAuthService {
     }
 
     // Open the OAuth URL in a browser
-    console.log("🌐 Opening OAuth URL:", data.url);
+
     const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
-    console.log("🔙 OAuth result:", result);
 
     // Handle session if successful
     if (result.type === "success" && result.url) {
-      console.log("🔄 Processing Apple OAuth callback URL...");
 
       // Extract the URL fragment (everything after #)
       const urlFragment = result.url.split("#")[1];
@@ -319,7 +302,7 @@ export class SupabaseAuthService {
         const refreshToken = params.get("refresh_token");
 
         if (accessToken) {
-          console.log("🔑 Setting session with access token...");
+
           // Set the session manually
           const { data: sessionData, error: sessionError } =
             await supabase.auth.setSession({
@@ -328,11 +311,9 @@ export class SupabaseAuthService {
             });
 
           if (sessionError) {
-            console.error("❌ Error setting session:", sessionError);
+
             throw sessionError;
           }
-
-          console.log("✅ Session set successfully:", !!sessionData.session);
 
           // Check if user exists in database and create if needed
           await this.ensureUserExists(sessionData.session?.user);
@@ -367,7 +348,6 @@ export class SupabaseAuthService {
   // Account Deletion
   static async deleteAccount(): Promise<{ success: boolean; error?: any }> {
     try {
-      console.log("🗑️ Deleting user account from Supabase Auth...");
 
       // Get current user to get their ID
       const {
@@ -376,34 +356,30 @@ export class SupabaseAuthService {
       } = await supabase.auth.getUser();
 
       if (getUserError) {
-        console.error("Error getting current user for deletion:", getUserError);
+
         return { success: false, error: getUserError };
       }
 
       if (!user) {
-        console.error("No user found to delete");
+
         return { success: false, error: new Error("No user found") };
       }
 
       // For now, we'll just sign out the user since we can't delete from auth on client side
       // In a production app, you would call an Edge Function with service role key
-      console.log(
-        "⚠️ Note: Auth account deletion requires server-side implementation"
-      );
-      console.log("📝 User will be signed out instead");
+
 
       // Sign out the user
       const { error: signOutError } = await supabase.auth.signOut();
 
       if (signOutError) {
-        console.error("Error signing out user:", signOutError);
+
         return { success: false, error: signOutError };
       }
 
-      console.log("✅ User signed out successfully");
       return { success: true };
     } catch (error) {
-      console.error("Error in deleteAccount:", error);
+
       return { success: false, error };
     }
   }

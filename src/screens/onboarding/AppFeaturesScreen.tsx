@@ -81,17 +81,17 @@ export default function AppFeaturesScreen({
   }, []);
 
   const handleNext = () => {
-    console.log("Next button pressed, currentIndex:", currentIndex);
+
     if (currentIndex < appFeatures.length - 1) {
       const nextIndex = currentIndex + 1;
-      console.log("Moving to next index:", nextIndex);
+
       setCurrentIndex(nextIndex);
       flatListRef.current?.scrollToOffset({
         offset: nextIndex * width,
         animated: true,
       });
     } else {
-      console.log("Navigating to LocationPermission");
+
       // Navigate to next onboarding step
       navigation.navigate("LocationPermission");
     }

@@ -96,12 +96,6 @@ export default function AuthHomeScreen({ navigation }: Props) {
       setAuthenticated(true);
       setOnboardingComplete(false);
 
-      console.log("🔧 Developer Onboarding:", {
-        message: "Starting local onboarding flow (no backend)",
-        isAuthenticated: true,
-        onboardingComplete: false,
-        user: localUser,
-      });
 
       // Navigate to ProfileSetup to start onboarding UI testing
       setTimeout(() => {

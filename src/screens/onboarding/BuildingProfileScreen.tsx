@@ -43,8 +43,7 @@ export default function BuildingProfileScreen() {
     }
 
     try {
-      console.log("💾 Saving onboarding data:", onboardingData);
-      console.log("👤 Current user UID:", user.uid);
+
 
       // Prepare user data with onboarding information
       const userUpdateData = {
@@ -76,8 +75,6 @@ export default function BuildingProfileScreen() {
         return; // Don't mark complete
       }
 
-      console.log("✅ Onboarding data saved successfully");
-
       // Only mark complete on success
       clearOnboardingData();
       setOnboardingComplete(true);
@@ -87,7 +84,7 @@ export default function BuildingProfileScreen() {
       const { updateUserProfile } = useAuthStore.getState();
       updateUserProfile({ onboardingComplete: true });
     } catch (error) {
-      console.error("❌ Error saving onboarding data:", error);
+
       Alert.alert("Error", "An unexpected error occurred. Please try again.", [
         { text: "Retry", onPress: () => saveOnboardingData() },
       ]);
@@ -140,7 +137,7 @@ export default function BuildingProfileScreen() {
   }, []);
 
   const startProgressAnimation = () => {
-    console.log("🎬 Starting progress animation");
+
     // Update the displayed percentage during animation
     const listener = progressAnim.addListener(({ value }) => {
       setCurrentProgress(Math.round(value));
@@ -153,13 +150,13 @@ export default function BuildingProfileScreen() {
       useNativeDriver: false,
     }).start(({ finished }) => {
       if (finished) {
-        console.log("🎯 Progress animation finished, setting to 100%");
+
         setCurrentProgress(100);
         // Remove listener to prevent memory leaks
         progressAnim.removeListener(listener);
         // All done, save onboarding data and mark complete after 1 second
         setTimeout(async () => {
-          console.log("🚀 Saving onboarding data and completing onboarding");
+
           await saveOnboardingData();
         }, 1000);
       }

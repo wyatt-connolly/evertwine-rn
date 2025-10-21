@@ -108,13 +108,13 @@ export default function ShareButton({
 
       if (result.action === Share.sharedAction) {
         if (result.activityType) {
-          console.log("Shared via:", result.activityType);
+
         } else {
-          console.log("Shared successfully");
+
         }
       }
     } catch (error) {
-      console.error("Error sharing:", error);
+
       Alert.alert("Error", "Unable to share at this time. Please try again.");
     }
   };

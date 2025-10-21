@@ -78,8 +78,6 @@ export default function GroupDetailsScreen({
   const { colors } = useThemeStore();
   const { groupId, groupData } = route.params;
 
-  console.log("👥 GroupDetailsScreen loaded:", { groupId, groupData });
-
   const renderMember = ({ item }: { item: string }) => {
     const user = mockUsers[item];
     if (!user) return null;
@@ -88,7 +86,7 @@ export default function GroupDetailsScreen({
       <TouchableOpacity
         style={[styles.memberItem, { backgroundColor: colors.surface }]}
         onPress={() => {
-          console.log("👤 Member clicked:", user.name);
+
           navigation.navigate("UserProfile", {
             userId: user.id,
             userData: user,

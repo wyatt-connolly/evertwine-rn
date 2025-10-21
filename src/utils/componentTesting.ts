@@ -65,7 +65,7 @@ export function testComponentWithScenarios<T>(
   Object.entries(scenarios).forEach(([name, scenario]) => {
     try {
       // This would be used in actual testing
-      console.log(`Testing ${component.name} with scenario: ${name}`, scenario);
+
       results[name] = { success: true };
     } catch (error) {
       results[name] = {
@@ -119,10 +119,8 @@ export const navigationTestScenarios = {
 
   // Test with valid navigation
   validNavigation: {
-    navigate: (route: string, params?: any) => {
-      console.log(`Navigating to ${route}`, params);
-    },
-    goBack: () => console.log("Going back"),
-    reset: () => console.log("Resetting navigation"),
+    navigate: (route: string, params?: any) => {},
+    goBack: () => {},
+    reset: () => {},
   },
 };

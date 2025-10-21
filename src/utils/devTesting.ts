@@ -8,7 +8,6 @@ import { testScenarios, validateUser } from "./componentTesting";
  * Test common error scenarios in development
  */
 export function runDevTests() {
-  console.log("🧪 Running development tests...");
 
   // Test user validation
   const testUsers = [
@@ -22,15 +21,10 @@ export function runDevTests() {
 
   testUsers.forEach((user, index) => {
     const result = validateUser(user);
-    console.log(
-      `User ${index}:`,
-      result.isValid ? "✅ Valid" : "❌ Invalid",
-      result.errors
-    );
+
   });
 
   // Test safe access functions
-  console.log("Testing safe access functions...");
 
   const testObj = {
     user: {
@@ -44,30 +38,18 @@ export function runDevTests() {
 
   // These should not throw errors
   try {
-    console.log(
-      "✅ Safe get with valid object:",
-      testObj?.user?.profilePictures?.[0]
-    );
-    console.log(
-      "✅ Safe get with null object:",
-      nullObj?.user?.profilePictures?.[0]
-    );
-    console.log(
-      "✅ Safe get with undefined object:",
-      undefinedObj?.user?.profilePictures?.[0]
-    );
+
+
   } catch (error) {
-    console.error("❌ Safe access failed:", error);
+
   }
 
-  console.log("🧪 Development tests completed");
 }
 
 /**
  * Test component with different data scenarios
  */
 export function testComponentData(componentName: string, data: any) {
-  console.log(`🧪 Testing ${componentName} with data:`, data);
 
   // Check for common issues
   const issues: string[] = [];
@@ -90,9 +72,9 @@ export function testComponentData(componentName: string, data: any) {
   }
 
   if (issues.length > 0) {
-    console.warn(`⚠️ ${componentName} has potential issues:`, issues);
+
   } else {
-    console.log(`✅ ${componentName} data looks good`);
+
   }
 
   return issues;
@@ -102,24 +84,23 @@ export function testComponentData(componentName: string, data: any) {
  * Test navigation scenarios
  */
 export function testNavigation(navigation: any, route: string, params?: any) {
-  console.log(`🧪 Testing navigation to ${route}`, params);
 
   if (!navigation) {
-    console.error("❌ Navigation is null or undefined");
+
     return false;
   }
 
   if (typeof navigation.navigate !== "function") {
-    console.error("❌ Navigation.navigate is not a function");
+
     return false;
   }
 
   try {
     // Don't actually navigate in tests, just validate
-    console.log("✅ Navigation looks valid");
+
     return true;
   } catch (error) {
-    console.error("❌ Navigation test failed:", error);
+
     return false;
   }
 }
@@ -128,7 +109,6 @@ export function testNavigation(navigation: any, route: string, params?: any) {
  * Test backend data scenarios
  */
 export function testBackendData(data: any, dataType: string) {
-  console.log(`🧪 Testing ${dataType} data:`, data);
 
   const issues: string[] = [];
 
@@ -157,9 +137,9 @@ export function testBackendData(data: any, dataType: string) {
   }
 
   if (issues.length > 0) {
-    console.warn(`⚠️ ${dataType} data has issues:`, issues);
+
   } else {
-    console.log(`✅ ${dataType} data looks good`);
+
   }
 
   return issues;

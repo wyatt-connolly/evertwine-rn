@@ -569,13 +569,6 @@ export default function MessageDetailsScreen({
     setShowMenu(false);
     switch (action) {
       case "view_profile":
-        console.log("🔍 Menu 'View Profile' clicked - Debug info:", {
-          roomId: currentRoom.id,
-          roomType: currentRoom.type,
-          roomName: currentRoom.name,
-          participants: currentRoom.participants,
-          currentUser: "user1",
-        });
 
         // Handle navigation based on conversation type
         if (currentRoom.type === "direct") {
@@ -583,33 +576,21 @@ export default function MessageDetailsScreen({
           const otherUserId = currentRoom.participants.find(
             (id) => id !== "user1"
           );
-          console.log("👤 Menu - Direct message - Other user ID:", otherUserId);
 
           if (otherUserId) {
-            console.log("🚀 Menu - Navigating to UserProfile with:", {
-              userId: otherUserId,
-              userData: mockUsers[otherUserId],
-            });
+
             navigation.navigate("UserProfile", {
               userId: otherUserId,
               userData: mockUsers[otherUserId],
               fromMessage: true,
             });
           } else {
-            console.log("❌ Menu - No other user found in direct message");
+
           }
         } else if (currentRoom.type === "meetup") {
           // For meetup conversations, navigate to meetup details
-          console.log("📅 Menu - Meetup message - Navigating to MeetupDetails");
-          console.log("🔍 DEBUG - Menu action - Current room data:", {
-            roomId: currentRoom.id,
-            roomType: currentRoom.type,
-            roomName: currentRoom.name,
-            meetupRef: currentRoom.meetupRef,
-            participants: currentRoom.participants,
-            admins: currentRoom.admins,
-          });
-          
+
+
           const meetupData = {
             id: currentRoom.meetupRef || "meetup2",
             title: currentRoom.name,
@@ -631,16 +612,14 @@ export default function MessageDetailsScreen({
             participants: currentRoom.participants,
             organizer: mockUsers[currentRoom.admins[0] || "user3"],
           };
-          
-          console.log("🔍 DEBUG - Menu action - Meetup data being passed:", meetupData);
-          
+
           navigation.navigate("MeetupDetails", {
             meetupId: currentRoom.meetupRef || "meetup2",
             meetupData: meetupData,
           });
         } else if (currentRoom.type === "group") {
           // For group conversations, navigate to a group details screen
-          console.log("👥 Menu - Group message - Navigating to GroupDetails");
+
           navigation.navigate("GroupDetails", {
             groupId: currentRoom.id,
             groupData: {
@@ -756,13 +735,6 @@ export default function MessageDetailsScreen({
         <TouchableOpacity
           style={styles.headerInfo}
           onPress={() => {
-            console.log("🔍 Avatar/Name clicked - Debug info:", {
-              roomId: currentRoom.id,
-              roomType: currentRoom.type,
-              roomName: currentRoom.name,
-              participants: currentRoom.participants,
-              currentUser: "user1",
-            });
 
             // Handle navigation based on conversation type
             if (currentRoom.type === "direct") {
@@ -770,33 +742,21 @@ export default function MessageDetailsScreen({
               const otherUserId = currentRoom.participants.find(
                 (id) => id !== "user1"
               );
-              console.log("👤 Direct message - Other user ID:", otherUserId);
 
               if (otherUserId) {
-                console.log("🚀 Navigating to UserProfile with:", {
-                  userId: otherUserId,
-                  userData: mockUsers[otherUserId],
-                });
+
                 navigation.navigate("UserProfile", {
                   userId: otherUserId,
                   userData: mockUsers[otherUserId],
                   fromMessage: true,
                 });
               } else {
-                console.log("❌ No other user found in direct message");
+
               }
             } else if (currentRoom.type === "meetup") {
               // For meetup conversations, navigate to meetup details
-              console.log("📅 Meetup message - Navigating to MeetupDetails");
-              console.log("🔍 DEBUG - Current room data:", {
-                roomId: currentRoom.id,
-                roomType: currentRoom.type,
-                roomName: currentRoom.name,
-                meetupRef: currentRoom.meetupRef,
-                participants: currentRoom.participants,
-                admins: currentRoom.admins,
-              });
-              
+
+
               const meetupData = {
                 id: currentRoom.meetupRef || "meetup2",
                 title: currentRoom.name,
@@ -818,16 +778,14 @@ export default function MessageDetailsScreen({
                 participants: currentRoom.participants,
                 organizer: mockUsers[currentRoom.admins[0] || "user3"],
               };
-              
-              console.log("🔍 DEBUG - Meetup data being passed:", meetupData);
-              
+
               navigation.navigate("MeetupDetails", {
                 meetupId: currentRoom.meetupRef || "meetup2",
                 meetupData: meetupData,
               });
             } else if (currentRoom.type === "group") {
               // For group conversations, navigate to a group details screen
-              console.log("👥 Group message - Navigating to GroupDetails");
+
               navigation.navigate("GroupDetails", {
                 groupId: currentRoom.id,
                 groupData: {

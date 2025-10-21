@@ -51,7 +51,7 @@ export default function StandoutsScreen({ navigation }: any) {
           setStandouts([]);
         }
       } catch (error) {
-        console.error("Error loading standouts:", error);
+
         setStandouts([]);
       } finally {
         setIsLoading(false);

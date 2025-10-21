@@ -36,27 +36,23 @@ export default function ProfileScreen({ navigation, route }: any) {
   // Load profile data using DataService
   useEffect(() => {
     const loadProfileData = async () => {
-      console.log("🔄 ProfileScreen loading data for:", profileUserId);
+
       try {
         setIsLoading(true);
 
         // Load user profile data
-        console.log("📊 Loading user profile data...");
+
         const userResult = await DataService.getUser(profileUserId);
-        console.log("📊 User result:", {
-          success: !!userResult.user,
-          error: userResult.error,
-        });
 
         if (userResult.user) {
           setProfileUserData(userResult.user);
-          console.log("✅ Profile data loaded:", userResult.user.displayName);
+
         } else if (route?.params?.userData) {
           setProfileUserData(route.params.userData);
-          console.log("✅ Using route params data");
+
         } else if (user && profileUserId === user.uid) {
           // If viewing own profile but no data in Supabase, create user record
-          console.log("🔄 No user data found, creating user record...");
+
           try {
             const createResult = await DataService.createUser({
               uid: user.uid,
@@ -94,79 +90,64 @@ export default function ProfileScreen({ navigation, route }: any) {
               const newUserResult = await DataService.getUser(profileUserId);
               if (newUserResult.user) {
                 setProfileUserData(newUserResult.user);
-                console.log("✅ User record created and loaded");
+
               }
             } else {
-              console.error(
-                "❌ Failed to create user record:",
-                createResult.error
-              );
+
               setProfileUserData(user);
             }
           } catch (error) {
-            console.error("❌ Error creating user record:", error);
+
             setProfileUserData(user);
           }
         } else {
-          console.log("❌ No profile data available");
+
         }
 
         // Load user stats
-        console.log("📊 Loading user stats...");
+
         try {
           const statsResult = await DataService.getUserStats(profileUserId);
-          console.log("📊 Stats result:", {
-            success: !!statsResult.stats,
-            error: statsResult.error,
-          });
 
           if (statsResult.stats) {
             setUserStats(statsResult.stats);
-            console.log("✅ Stats loaded");
+
           } else {
             // Fallback to mock stats in developer mode
             if (DataService.isInDeveloperMode()) {
               setUserStats(getMockUserStats(profileUserId));
-              console.log("✅ Using mock stats");
+
             }
           }
         } catch (statsError) {
-          console.error("❌ Error loading stats:", statsError);
+
           // Don't fail the entire loading process for stats
           if (DataService.isInDeveloperMode()) {
             setUserStats(getMockUserStats(profileUserId));
           }
         }
       } catch (error) {
-        console.error("❌ Error loading profile data:", error);
+
         // In developer mode, fallback to mock data
         if (DataService.isInDeveloperMode()) {
           setProfileUserData(mockUsers[0]);
           setUserStats(getMockUserStats(profileUserId));
-          console.log("✅ Using fallback mock data");
+
         } else {
           // In production, try to use current user data as fallback
           if (user) {
             setProfileUserData(user);
-            console.log("✅ Using current user as fallback");
+
           }
         }
       } finally {
         setIsLoading(false);
-        console.log("✅ ProfileScreen loading complete");
+
       }
     };
 
     loadProfileData();
   }, [profileUserId, route?.params?.userData, user]);
-
-  console.log("👤 ProfileScreen loaded:", {
-    routeParams: route?.params,
-    profileUserId,
-    isViewingOtherProfile,
-    profileUserData: profileUserData?.displayName || "Unknown",
-    userData: route?.params?.userData,
-  });
 
   const handleEditProfile = () => {
     navigation.navigate("EditProfile");
@@ -213,7 +194,7 @@ export default function ProfileScreen({ navigation, route }: any) {
     } catch (error) {
       setLoading(false);
       Alert.alert("Error", "Failed to update photo. Please try again.");
-      console.error("Photo update error:", error);
+
     }
   };
 

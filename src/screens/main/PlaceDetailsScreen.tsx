@@ -50,15 +50,9 @@ export default function PlaceDetailsScreen({
   const place = route.params?.place || mockPlaces.find((p) => p.id === placeId);
   const reviews = getMockPlaceReviews(placeId);
 
-  console.log("🏢 PlaceDetailsScreen loaded:", {
-    placeId,
-    place: place?.name || "Not found",
-    reviewsCount: reviews.length,
-  });
-
   // If no place is found, show error or go back
   if (!place) {
-    console.log("❌ PlaceDetailsScreen: No place found for ID:", placeId);
+
     return (
       <SafeAreaView
         style={[styles.container, { backgroundColor: colors.background }]}

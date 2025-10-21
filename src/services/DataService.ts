@@ -37,7 +37,7 @@ export class DataService {
       const user = await SupabaseDataService.getUser(uid);
       return { user, error: null };
     } catch (error) {
-      console.error("Error getting user from Supabase:", error);
+
       return {
         user: null,
         error: error instanceof Error ? error.message : "Unknown error",
@@ -59,7 +59,7 @@ export class DataService {
       const result = await SupabaseDataService.createUser(userData);
       return { success: true, error: null };
     } catch (error) {
-      console.error("Error creating user in Supabase:", error);
+
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
@@ -81,7 +81,7 @@ export class DataService {
       const result = await SupabaseDataService.updateUser(uid, updates);
       return { success: true, error: null };
     } catch (error) {
-      console.error("Error updating user in Supabase:", error);
+
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",

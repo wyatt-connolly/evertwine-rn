@@ -98,7 +98,7 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
         "Error",
         "Failed to send verification code. Please try again."
       );
-      console.error("Phone verification error:", error);
+
     } finally {
       setLoading(false);
     }
@@ -110,70 +110,41 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
       return;
     }
 
-    console.log("🔄 Starting phone verification process...");
     setLoading(true);
     try {
       // Ensure we're in production mode for phone authentication
-      console.log(
-        "🔧 Setting developer mode to false for phone authentication"
-      );
+
       const { DataService } = await import("../../services/DataService");
       DataService.setDeveloperMode(false);
-      console.log(
-        "📊 DataService developer mode:",
-        DataService.isInDeveloperMode()
+
       );
 
-      console.log("📞 Verifying phone code with Supabase Auth...");
       const result = await SupabaseAuthService.verifyPhoneOTP(
         verificationId,
         verificationCode
       );
 
-      console.log("📞 Supabase Auth verification result:", {
-        success: !result.error,
-        error: result.error,
-        userExists: !!result.user,
-        userUid: result.user?.uid,
-        timestamp: new Date().toISOString(),
-      });
 
       if (result.error) {
-        console.error("❌ Phone verification failed:", result.error);
+
         Alert.alert("Error", result.error);
         return;
       }
 
-      console.log("✅ Phone verification successful, loading user profile...");
-
       // Try to load user profile from Supabase
       let userProfile = null;
       try {
-        console.log("📖 Loading user profile data for:", result.user.uid);
+
         const profileResult = await DataService.getUser(result.user.uid);
 
-        console.log("📖 Profile loading result:", {
-          success: !!profileResult.user,
-          error: profileResult.error,
-          hasProfile: !!profileResult.user,
-          timestamp: new Date().toISOString(),
-        });
 
         if (profileResult.user) {
           userProfile = profileResult.user;
-          console.log("✅ User profile found:", {
-            displayName: userProfile.displayName,
-            onboardingComplete: userProfile.onboardingComplete,
-            email: userProfile.email,
-            rawOnboardingComplete: userProfile.onboardingComplete,
-            typeOfOnboardingComplete: typeof userProfile.onboardingComplete,
-            timestamp: new Date().toISOString(),
-          });
         } else {
-          console.log("❌ No profile data found for user:", result.user.uid);
+
         }
       } catch (profileError) {
-        console.error("❌ Error loading user profile:", profileError);
+
       }
 
       // Create user object with available data
@@ -196,16 +167,6 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
         bio: userProfile?.bio || undefined,
       };
 
-      console.log("👤 Setting user in PhoneVerificationScreen:", {
-        uid: user.uid,
-        phoneNumber: user.phoneNumber,
-        displayName: user.displayName,
-        onboardingComplete: user.onboardingComplete,
-        hasProfile: !!userProfile,
-        userProfileOnboardingComplete: userProfile?.onboardingComplete,
-        finalOnboardingComplete: user.onboardingComplete,
-        timestamp: new Date().toISOString(),
-      });
 
       // Set user and authentication state
       setUser(user);
@@ -214,27 +175,17 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
       // Also update the onboarding status in the store to ensure consistency
       if (user.onboardingComplete) {
         setOnboardingComplete(true);
-        console.log(
-          "✅ User has completed onboarding, updating store and navigating to main app"
-        );
+
         // The AppNavigator will handle routing to MainTabs
       } else {
         setOnboardingComplete(false);
-        console.log(
-          "📝 User needs to complete onboarding, navigating to ProfileSetup"
-        );
-        console.log("🧭 Navigation state:", {
-          canGoBack: navigation.canGoBack(),
-          currentRoute: "PhoneVerification",
-          targetRoute: "ProfileSetup",
-          timestamp: new Date().toISOString(),
-        });
+
 
         try {
           navigation.navigate("ProfileSetup");
-          console.log("✅ Navigation to ProfileSetup successful");
+
         } catch (navError) {
-          console.error("❌ Navigation error:", navError);
+
           Alert.alert(
             "Navigation Error",
             "Unable to navigate to profile setup. Please try again."
@@ -242,11 +193,11 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
         }
       }
     } catch (error) {
-      console.error("❌ Phone verification error:", error);
+
       Alert.alert("Error", "Invalid verification code. Please try again.");
     } finally {
       setLoading(false);
-      console.log("🔄 Phone verification process complete");
+
     }
   };
 

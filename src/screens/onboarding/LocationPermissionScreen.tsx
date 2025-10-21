@@ -63,7 +63,7 @@ export default function LocationPermissionScreen({ navigation }: Props) {
             [{ text: "Continue", onPress: handleContinue }]
           );
         } catch (locationError) {
-          console.error("Error getting location:", locationError);
+
           Alert.alert(
             "Location Error",
             "We got permission but couldn't get your current location. You can still use the app and set your location manually.",
@@ -81,7 +81,7 @@ export default function LocationPermissionScreen({ navigation }: Props) {
         );
       }
     } catch (error) {
-      console.error("Location permission error:", error);
+
       Alert.alert(
         "Error",
         "Something went wrong while requesting location permission. Please try again.",

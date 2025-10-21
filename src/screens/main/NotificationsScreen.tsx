@@ -43,7 +43,7 @@ export default function NotificationsScreen({ navigation }: any) {
         }
       } catch (err) {
         setError("Failed to load notifications");
-        console.error("Error loading notifications:", err);
+
       } finally {
         setIsLoading(false);
       }

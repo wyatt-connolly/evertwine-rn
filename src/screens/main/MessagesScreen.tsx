@@ -105,7 +105,7 @@ export default function MessagesScreen({ navigation }: any) {
           setMessageRooms(result.rooms);
         }
       } catch (error) {
-        console.error("Error loading message rooms:", error);
+
         // In developer mode, fallback to mock data if DataService fails
         if (DataService.isInDeveloperMode()) {
           setMessageRooms(mockMessageRooms);

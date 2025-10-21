@@ -33,12 +33,6 @@ export default function CreatePostScreen({ navigation }: any) {
     }
 
     // Here you would implement the actual post creation logic
-    console.log("Creating post:", {
-      title: title.trim(),
-      message: message.trim(),
-      images,
-      userId: currentUser?.uid,
-    });
 
     // Show success message and navigate back
     Alert.alert(

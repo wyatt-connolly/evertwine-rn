@@ -8,7 +8,7 @@ import {
   Text,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Audio } from "expo-av";
+import { useAudioPlayer } from "expo-audio";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useAuthStore } from "../hooks/useAuthStore";
@@ -105,77 +105,40 @@ const CinematicIntroScreen: React.FC = () => {
   const { setHasSeenIntro } = useAuthStore();
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [hasCompleted, setHasCompleted] = useState(false);
   const fadeAnim = new Animated.Value(0);
   const textFadeAnim = new Animated.Value(0);
+  const audioPlayer = useAudioPlayer(
+    "https://www.bensound.com/bensound-music/bensound-cosmos.mp3"
+  );
 
-  // Load background music - Cosmos Wide Hopeful by Matt Cole
+  // Start playing background music
   useEffect(() => {
-    const loadSound = async () => {
-      try {
-        // Using the Bensound Cosmos Wide Hopeful track
-        // This is a royalty-free track perfect for cinematic intros
-        const { sound } = await Audio.Sound.createAsync(
-          {
-            uri: "https://www.bensound.com/bensound-music/bensound-cosmos.mp3",
-          },
-          { shouldPlay: false, isLooping: true, volume: 0 } // Start with volume 0 for fade-in
-        );
+    // Start playing with low volume and loop
+    audioPlayer.loop = true;
+    audioPlayer.volume = 0;
 
-        setSound(sound);
-        console.log("Successfully loaded Cosmos Wide Hopeful audio");
+    // Start playing and fade in when intro begins
+    setTimeout(() => {
+      audioPlayer.play();
 
-        // Start playing and fade in when intro begins
-        setTimeout(async () => {
-          await sound.playAsync();
-          // Gradual fade in over 3 seconds
-          const fadeInSteps = 30; // 30 steps over 3 seconds
-          const targetVolume = 0.3; // Slightly higher volume for this cinematic track
-          const stepVolume = targetVolume / fadeInSteps;
+      // Gradual fade in over 3 seconds
+      const fadeInSteps = 30; // 30 steps over 3 seconds
+      const targetVolume = 0.3; // Slightly higher volume for this cinematic track
+      const stepVolume = targetVolume / fadeInSteps;
 
-          for (let i = 1; i <= fadeInSteps; i++) {
-            setTimeout(() => {
-              sound.setVolumeAsync(stepVolume * i);
-            }, i * 100); // 100ms between each volume step
-          }
-        }, 1000); // Start after initial fade-in animation
-      } catch (error) {
-        console.log("Error loading Cosmos audio:", error);
-        // Fallback to a different Bensound track if the primary fails
-        try {
-          const { sound: fallbackSound } = await Audio.Sound.createAsync(
-            {
-              uri: "https://www.bensound.com/bensound-music/bensound-creativeminds.mp3",
-            },
-            { shouldPlay: false, isLooping: true, volume: 0 }
-          );
-          setSound(fallbackSound);
-          console.log("Loaded fallback audio track");
-        } catch (fallbackError) {
-          console.log("Fallback audio also failed:", fallbackError);
-        }
+      for (let i = 1; i <= fadeInSteps; i++) {
+        setTimeout(() => {
+          audioPlayer.volume = stepVolume * i;
+        }, i * 100); // 100ms between each volume step
       }
-    };
-
-    loadSound();
+    }, 1000); // Start after initial fade-in animation
 
     // Cleanup function
     return () => {
-      if (sound) {
-        sound.unloadAsync();
-      }
+      audioPlayer.pause();
     };
   }, []);
-
-  // Cleanup sound when component unmounts
-  useEffect(() => {
-    return () => {
-      if (sound) {
-        sound.unloadAsync();
-      }
-    };
-  }, [sound]);
 
   const introSteps = [
     {
@@ -255,22 +218,21 @@ const CinematicIntroScreen: React.FC = () => {
         useNativeDriver: true,
       }).start(() => {
         // Fade out music before completing
-        if (sound) {
-          // Gradual fade out over 2 seconds
-          const fadeOutSteps = 20; // 20 steps over 2 seconds
-          const currentVolume = 0.3; // Match the target volume from fade-in
-          const stepVolume = currentVolume / fadeOutSteps;
+        // Gradual fade out over 2 seconds
+        const fadeOutSteps = 20; // 20 steps over 2 seconds
+        const currentVolume = 0.3; // Match the target volume from fade-in
+        const stepVolume = currentVolume / fadeOutSteps;
 
-          for (let i = fadeOutSteps; i >= 0; i--) {
-            setTimeout(() => {
-              sound.setVolumeAsync(stepVolume * i);
-            }, (fadeOutSteps - i) * 100); // 100ms between each volume step
-          }
-
+        for (let i = fadeOutSteps; i >= 0; i--) {
           setTimeout(() => {
-            sound.stopAsync();
-          }, 2000);
+            audioPlayer.volume = stepVolume * i;
+          }, (fadeOutSteps - i) * 100); // 100ms between each volume step
         }
+
+        setTimeout(() => {
+          audioPlayer.pause();
+        }, 2000);
+
         if (!hasCompleted) {
           setHasCompleted(true);
           setHasSeenIntro(true);
@@ -283,22 +245,21 @@ const CinematicIntroScreen: React.FC = () => {
 
   const handleSkip = () => {
     // Fade out music before skipping
-    if (sound) {
-      // Quick fade out over 0.5 seconds for skip
-      const fadeOutSteps = 5; // 5 steps over 0.5 seconds
-      const currentVolume = 0.3; // Match the target volume from fade-in
-      const stepVolume = currentVolume / fadeOutSteps;
+    // Quick fade out over 0.5 seconds for skip
+    const fadeOutSteps = 5; // 5 steps over 0.5 seconds
+    const currentVolume = 0.3; // Match the target volume from fade-in
+    const stepVolume = currentVolume / fadeOutSteps;
 
-      for (let i = fadeOutSteps; i >= 0; i--) {
-        setTimeout(() => {
-          sound.setVolumeAsync(stepVolume * i);
-        }, (fadeOutSteps - i) * 100); // 100ms between each volume step
-      }
-
+    for (let i = fadeOutSteps; i >= 0; i--) {
       setTimeout(() => {
-        sound.stopAsync();
-      }, 500);
+        audioPlayer.volume = stepVolume * i;
+      }, (fadeOutSteps - i) * 100); // 100ms between each volume step
     }
+
+    setTimeout(() => {
+      audioPlayer.pause();
+    }, 500);
+
     if (!hasCompleted) {
       setHasCompleted(true);
       setHasSeenIntro(true);

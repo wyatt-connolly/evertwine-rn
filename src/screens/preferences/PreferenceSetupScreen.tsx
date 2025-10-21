@@ -89,7 +89,6 @@ export default function PreferenceSetupScreen({
           style: "destructive",
           onPress: async () => {
             try {
-              console.log("✅ Default preferences saved locally!");
 
               if (onSkip) {
                 onSkip();
@@ -101,7 +100,7 @@ export default function PreferenceSetupScreen({
                 });
               }
             } catch (error) {
-              console.error("Error saving default preferences:", error);
+
               Alert.alert(
                 "Error",
                 "Failed to save preferences. Please try again."
@@ -118,8 +117,6 @@ export default function PreferenceSetupScreen({
       await markPreferencesComplete();
       await savePreferences();
 
-      console.log("✅ Preferences saved locally!");
-
       if (onComplete) {
         onComplete();
       } else {
@@ -130,7 +127,7 @@ export default function PreferenceSetupScreen({
         });
       }
     } catch (error) {
-      console.error("Error saving preferences:", error);
+
       Alert.alert("Error", "Failed to save preferences. Please try again.");
     }
   };

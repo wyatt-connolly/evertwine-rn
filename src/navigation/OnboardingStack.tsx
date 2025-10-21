@@ -53,16 +53,11 @@ export default function OnboardingStack({
 
     // User is authenticated, resume from where they left off
     const currentStep = getCurrentOnboardingStep();
-    console.log("📍 Resuming onboarding from step:", currentStep);
+
     return currentStep as keyof OnboardingStackParamList;
   };
 
   useEffect(() => {
-    console.log("🚀 OnboardingStack state changed:", {
-      hasSeenIntro,
-      isAuthenticated,
-      initialRoute: getInitialRoute(),
-    });
   }, [hasSeenIntro, isAuthenticated]);
 
   return (

@@ -74,7 +74,7 @@ export default function FollowingScreen() {
       const activity = getFollowingActivity(following.map((u) => u.uid));
       setActivityData(activity);
     } catch (error) {
-      console.error("Error loading following data:", error);
+
     } finally {
       setLoading(false);
     }

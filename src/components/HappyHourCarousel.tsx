@@ -625,12 +625,6 @@ export default function HappyHourCarousel({
 
   const renderEvent = ({ item }: { item: Event }) => {
     // Debug image data
-    console.log(`🍷 HappyHour Event - ${item.title}:`, {
-      hasCoverImage: !!item.coverImage,
-      coverImageUrl: item.coverImage,
-      hasImages: !!item.images,
-      imagesArray: item.images,
-    });
 
     return (
       <TouchableOpacity
@@ -644,13 +638,10 @@ export default function HappyHourCarousel({
               source={{ uri: item.coverImage }}
               style={styles.eventImage}
               onError={(error) => {
-                console.log(
-                  `❌ HappyHour image error for ${item.title}:`,
-                  error.nativeEvent.error
-                );
+
               }}
               onLoad={() => {
-                console.log(`✅ HappyHour image loaded for ${item.title}`);
+
               }}
             />
           ) : (

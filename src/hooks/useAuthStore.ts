@@ -56,12 +56,12 @@ export const useAuthStore = create<AuthState>()(
       setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
 
       setOnboardingComplete: (onboardingComplete) => {
-        console.log("🎯 Setting onboarding complete:", onboardingComplete);
+
         set({ onboardingComplete });
       },
 
       setHasSeenIntro: (hasSeenIntro) => {
-        console.log("🎬 Setting has seen intro:", hasSeenIntro);
+
         set({ hasSeenIntro });
       },
 
@@ -82,7 +82,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       setOnboardingStep: (onboardingStep) => {
-        console.log("📍 Setting onboarding step:", onboardingStep);
+
         set({ onboardingStep });
       },
 
@@ -114,7 +114,7 @@ export const useAuthStore = create<AuthState>()(
           // Clear browser session to allow account switching
           await SupabaseAuthService.clearBrowserSession();
         } catch (error) {
-          console.error("Error signing out:", error);
+
         }
 
         // Clear local state but preserve hasSeenIntro
@@ -144,7 +144,7 @@ export const useAuthStore = create<AuthState>()(
       name: "auth-storage",
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state) => {
-        console.log("🔄 Auth store hydrated");
+
         if (state) {
           state.setHydrated(true);
         }
