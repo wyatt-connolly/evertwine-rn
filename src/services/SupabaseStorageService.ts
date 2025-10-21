@@ -11,18 +11,20 @@ export class SupabaseStorageService {
     index: number
   ): Promise<string> {
     console.log("🔧 uploadProfilePicture called with:", { userId, uri, index });
-    console.log("🔧 FileSystem:", FileSystem);
-    console.log("🔧 FileSystem.EncodingType:", FileSystem.EncodingType);
     
     const fileName = `${userId}/profile_${index}_${Date.now()}.jpg`;
 
-    // Read file as base64
+    // Read file as base64 - use string literal instead of EncodingType constant
     const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: FileSystem.EncodingType.Base64,
+      encoding: 'base64',
     });
+
+    console.log("🔧 Base64 read successfully, length:", base64.length);
 
     // Convert base64 to blob
     const arrayBuffer = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+
+    console.log("🔧 ArrayBuffer created, uploading to Supabase...");
 
     const { error } = await supabase.storage
       .from("profile-pictures")
@@ -31,11 +33,18 @@ export class SupabaseStorageService {
         upsert: false,
       });
 
-    if (error) throw error;
+    if (error) {
+      console.error("🔧 Supabase upload error:", error);
+      throw error;
+    }
+
+    console.log("🔧 File uploaded successfully, getting public URL...");
 
     const {
       data: { publicUrl },
     } = supabase.storage.from("profile-pictures").getPublicUrl(fileName);
+
+    console.log("🔧 Public URL generated:", publicUrl);
 
     return publicUrl;
   }
@@ -48,7 +57,7 @@ export class SupabaseStorageService {
 
     // Read file as base64
     const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: FileSystem.EncodingType.Base64,
+      encoding: 'base64',
     });
 
     // Convert base64 to blob
@@ -92,7 +101,7 @@ export class SupabaseStorageService {
 
     // Read file as base64
     const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: FileSystem.EncodingType.Base64,
+      encoding: 'base64',
     });
 
     // Convert base64 to blob
@@ -138,7 +147,7 @@ export class SupabaseStorageService {
 
     // Read file as base64
     const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: FileSystem.EncodingType.Base64,
+      encoding: 'base64',
     });
 
     // Convert base64 to blob
@@ -193,14 +202,12 @@ export class SupabaseStorageService {
    */
   static async deleteUserProfilePictures(userId: string): Promise<void> {
     try {
-
       // List all files in the user's profile pictures folder
       const { data: files, error: listError } = await supabase.storage
         .from("profile-pictures")
         .list(userId);
 
       if (listError) {
-
         throw listError;
       }
 
@@ -212,15 +219,11 @@ export class SupabaseStorageService {
           .remove(filePaths);
 
         if (deleteError) {
-
           throw deleteError;
         }
-
       } else {
-
       }
     } catch (error) {
-
       throw error;
     }
   }
@@ -230,14 +233,12 @@ export class SupabaseStorageService {
    */
   static async deleteUserPostImages(userId: string): Promise<void> {
     try {
-
       // List all files in the user's post images folder
       const { data: files, error: listError } = await supabase.storage
         .from("post-images")
         .list(userId);
 
       if (listError) {
-
         throw listError;
       }
 
@@ -249,15 +250,11 @@ export class SupabaseStorageService {
           .remove(filePaths);
 
         if (deleteError) {
-
           throw deleteError;
         }
-
       } else {
-
       }
     } catch (error) {
-
       throw error;
     }
   }
@@ -267,14 +264,12 @@ export class SupabaseStorageService {
    */
   static async deleteUserMeetupImages(userId: string): Promise<void> {
     try {
-
       // List all files in the user's meetup images folder
       const { data: files, error: listError } = await supabase.storage
         .from("meetup-images")
         .list(userId);
 
       if (listError) {
-
         throw listError;
       }
 
@@ -286,15 +281,11 @@ export class SupabaseStorageService {
           .remove(filePaths);
 
         if (deleteError) {
-
           throw deleteError;
         }
-
       } else {
-
       }
     } catch (error) {
-
       throw error;
     }
   }
@@ -304,16 +295,13 @@ export class SupabaseStorageService {
    */
   static async deleteAllUserFiles(userId: string): Promise<void> {
     try {
-
       // Delete from all storage buckets
       await Promise.all([
         this.deleteUserProfilePictures(userId),
         this.deleteUserPostImages(userId),
         this.deleteUserMeetupImages(userId),
       ]);
-
     } catch (error) {
-
       throw error;
     }
   }
