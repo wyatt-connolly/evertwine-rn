@@ -10,6 +10,10 @@ export class SupabaseStorageService {
     uri: string,
     index: number
   ): Promise<string> {
+    console.log("🔧 uploadProfilePicture called with:", { userId, uri, index });
+    console.log("🔧 FileSystem:", FileSystem);
+    console.log("🔧 FileSystem.EncodingType:", FileSystem.EncodingType);
+    
     const fileName = `${userId}/profile_${index}_${Date.now()}.jpg`;
 
     // Read file as base64
