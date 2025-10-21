@@ -139,11 +139,18 @@ export default function ProfileScreen({ navigation, route }: any) {
   // Reload profile data when screen comes into focus (e.g., after editing)
   useFocusEffect(
     React.useCallback(() => {
+      console.log("👀 ProfileScreen focused, reloading data...");
       if (!isViewingOtherProfile) {
         // Reload current user's profile data
         const reloadData = async () => {
+          console.log("🔄 Reloading profile data for:", profileUserId);
           const userResult = await DataService.getUser(profileUserId);
           if (userResult.user) {
+            console.log("✅ Profile data reloaded:", {
+              uid: userResult.user.uid,
+              photoCount: userResult.user.profilePictures?.length || 0,
+              photos: userResult.user.profilePictures,
+            });
             setProfileUserData(userResult.user);
           }
         };

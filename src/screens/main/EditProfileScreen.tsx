@@ -63,21 +63,27 @@ export default function EditProfileScreen({ navigation }: any) {
   // Image upload function
   const uploadProfileImage = async (imageUri: string) => {
     try {
+      console.log("📤 Starting image upload:", imageUri);
       setUploadingPhotos(true);
 
+      console.log("📤 Calling SupabaseStorageService.uploadProfilePicture with UID:", user?.uid);
       // Upload to Supabase Storage
-      const result = await SupabaseStorageService.uploadProfileImage(
+      const result = await SupabaseStorageService.uploadProfilePicture(
         user?.uid || "",
         imageUri
       );
 
+      console.log("📤 Upload result:", result);
+
       if (result.error) {
+        console.error("❌ Upload error:", result.error);
         throw new Error(result.error);
       }
 
+      console.log("✅ Image uploaded successfully:", result.url);
       return result.url; // Public URL of uploaded image
     } catch (error) {
-      console.error("Error uploading image:", error);
+      console.error("❌ Error uploading image:", error);
       Alert.alert("Error", "Failed to upload image");
       return null;
     } finally {
@@ -228,17 +234,25 @@ export default function EditProfileScreen({ navigation }: any) {
       });
 
       if (!result.canceled && result.assets.length > 0) {
+        console.log("📷 Selected", result.assets.length, "photo(s) to upload");
         setUploadingPhotos(true);
 
         try {
           // Upload each photo to Supabase
-          const uploadPromises = result.assets.map(async (asset) => {
+          console.log("📤 Starting upload of", result.assets.length, "photo(s)...");
+          const uploadPromises = result.assets.map(async (asset, idx) => {
+            console.log(`📤 Uploading photo ${idx + 1}/${result.assets.length}:`, asset.uri);
             const uploadedUrl = await uploadProfileImage(asset.uri);
+            console.log(`✅ Photo ${idx + 1} uploaded:`, uploadedUrl);
             return uploadedUrl;
           });
 
           const uploadedUrls = await Promise.all(uploadPromises);
-          const validUrls = uploadedUrls.filter((url) => url !== null) as string[];
+          const validUrls = uploadedUrls.filter(
+            (url) => url !== null
+          ) as string[];
+
+          console.log("✅ Successfully uploaded", validUrls.length, "photo(s):", validUrls);
 
           if (validUrls.length > 0) {
             const updatedPhotos = [
@@ -246,26 +260,39 @@ export default function EditProfileScreen({ navigation }: any) {
               ...validUrls,
             ].slice(0, 6);
 
+            console.log("💾 Saving to Supabase. Updated photos array:", updatedPhotos);
+
             // Update Supabase
             if (profileData?.uid) {
-              await SupabaseDataService.updateUser(profileData.uid, {
+              const updateResult = await SupabaseDataService.updateUser(profileData.uid, {
                 profilePictures: updatedPhotos,
               });
+
+              console.log("💾 Supabase update result:", updateResult);
 
               // Update local state
               setProfileData((prev) =>
                 prev ? { ...prev, profilePictures: updatedPhotos } : null
               );
 
+              console.log("✅ Local state updated. New profile data:", { ...profileData, profilePictures: updatedPhotos });
+
               Alert.alert(
                 "Success",
                 `${validUrls.length} photo(s) uploaded successfully!`
               );
+            } else {
+              console.error("❌ No profileData.uid available");
             }
+          } else {
+            console.warn("⚠️ No valid URLs after upload");
           }
         } catch (error) {
-          console.error("Error uploading photos:", error);
-          Alert.alert("Error", "Failed to upload some photos. Please try again.");
+          console.error("❌ Error uploading photos:", error);
+          Alert.alert(
+            "Error",
+            "Failed to upload some photos. Please try again."
+          );
         } finally {
           setUploadingPhotos(false);
         }
@@ -278,44 +305,67 @@ export default function EditProfileScreen({ navigation }: any) {
   };
 
   const handleRemovePhoto = async (index: number) => {
-    if (!profileData) return;
-    
+    if (!profileData) {
+      console.error("❌ No profileData available for removing photo");
+      return;
+    }
+
+    console.log("🗑️ Removing photo at index:", index);
+
     Alert.alert("Remove Photo", "Are you sure you want to remove this photo?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Remove",
         style: "destructive",
         onPress: async () => {
-          const updatedPhotos = profileData.profilePictures.filter((_, i) => i !== index);
-          
+          const updatedPhotos = profileData.profilePictures.filter(
+            (_, i) => i !== index
+          );
+
+          console.log("💾 Updating Supabase with photos:", updatedPhotos);
+
           // Update Supabase
-          await SupabaseDataService.updateUser(profileData.uid, {
+          const updateResult = await SupabaseDataService.updateUser(profileData.uid, {
             profilePictures: updatedPhotos,
           });
-          
+
+          console.log("💾 Photo removal update result:", updateResult);
+
           // Update local state
           setProfileData((prev) =>
             prev ? { ...prev, profilePictures: updatedPhotos } : null
           );
+
+          console.log("✅ Photo removed successfully");
         },
       },
     ]);
   };
 
   const handleSetStandoutPhoto = async (index: number) => {
-    if (!profileData) return;
-    
-    const newStandoutIndex = profileData.standoutPhotoIndex === index ? 0 : index;
-    
+    if (!profileData) {
+      console.error("❌ No profileData available for setting standout photo");
+      return;
+    }
+
+    const newStandoutIndex =
+      profileData.standoutPhotoIndex === index ? 0 : index;
+
+    console.log("⭐ Setting standout photo to index:", newStandoutIndex);
+
     // Update Supabase
-    await SupabaseDataService.updateUser(profileData.uid, {
+    const updateResult = await SupabaseDataService.updateUser(profileData.uid, {
       standoutPhotoIndex: newStandoutIndex,
     });
-    
+
+    console.log("💾 Standout photo update result:", updateResult);
+
     // Update local state
     setProfileData((prev) =>
       prev ? { ...prev, standoutPhotoIndex: newStandoutIndex } : null
     );
+
+    console.log("✅ Standout photo updated successfully");
   };
 
   const handleSaveEdit = async () => {
