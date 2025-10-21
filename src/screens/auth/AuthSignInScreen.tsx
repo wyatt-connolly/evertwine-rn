@@ -23,6 +23,7 @@ export default function AuthSignInScreen({ navigation }: Props) {
   const { isAuthenticated, user, setOnboardingStep } = useAuthStore();
   const [loading, setLoading] = useState<"google" | "apple" | null>(null);
   const [isOAuthInProgress, setIsOAuthInProgress] = useState(false);
+  const [isNavigatingToOnboarding, setIsNavigatingToOnboarding] = useState(false);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -66,12 +67,13 @@ export default function AuthSignInScreen({ navigation }: Props) {
         email: user.email,
         onboardingComplete: user.onboardingComplete,
       });
-      // Small delay to ensure the auth state is fully processed
+      // Show loading state and longer delay to ensure the auth state is fully processed
+      setIsNavigatingToOnboarding(true);
       setTimeout(() => {
         console.log("🚀 Navigating to NameInput after timeout");
         setOnboardingStep("NameInput");
         navigation.navigate("NameInput");
-      }, 500);
+      }, 1500);
     } else if (isAuthenticated && user && user.onboardingComplete) {
       console.log(
         "✅ User authenticated and onboarding complete, letting AppNavigator handle routing"
@@ -185,21 +187,31 @@ export default function AuthSignInScreen({ navigation }: Props) {
 
           {/* OAuth Buttons */}
           <View style={styles.buttonContainer}>
-            <OAuthButton
-              provider="google"
-              onPress={() => handleOAuthSignIn("google")}
-              loading={loading === "google"}
-              disabled={loading !== null}
-            />
+            {isNavigatingToOnboarding ? (
+              <View style={styles.loadingContainer}>
+                <Text style={[styles.loadingText, { color: "#FFFFFF" }]}>
+                  Setting up your account...
+                </Text>
+              </View>
+            ) : (
+              <>
+                <OAuthButton
+                  provider="google"
+                  onPress={() => handleOAuthSignIn("google")}
+                  loading={loading === "google"}
+                  disabled={loading !== null}
+                />
 
-            <View style={styles.buttonSpacing} />
+                <View style={styles.buttonSpacing} />
 
-            <OAuthButton
-              provider="apple"
-              onPress={() => handleOAuthSignIn("apple")}
-              loading={loading === "apple"}
-              disabled={loading !== null}
-            />
+                <OAuthButton
+                  provider="apple"
+                  onPress={() => handleOAuthSignIn("apple")}
+                  loading={loading === "apple"}
+                  disabled={loading !== null}
+                />
+              </>
+            )}
           </View>
 
           {/* Back Button */}
@@ -246,6 +258,16 @@ const styles = StyleSheet.create({
   },
   buttonSpacing: {
     height: 16,
+  },
+  loadingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 20,
+  },
+  loadingText: {
+    fontSize: 18,
+    fontWeight: "500",
+    textAlign: "center",
   },
   footer: {
     alignItems: "center",

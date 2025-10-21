@@ -106,6 +106,7 @@ const CinematicIntroScreen: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [hasCompleted, setHasCompleted] = useState(false);
   const fadeAnim = new Animated.Value(0);
   const textFadeAnim = new Animated.Value(0);
 
@@ -270,9 +271,12 @@ const CinematicIntroScreen: React.FC = () => {
             sound.stopAsync();
           }, 2000);
         }
-        setHasSeenIntro(true);
-        // Navigate to Welcome screen after intro completes
-        navigation.navigate("Welcome");
+        if (!hasCompleted) {
+          setHasCompleted(true);
+          setHasSeenIntro(true);
+          // Navigate to Welcome screen after intro completes
+          navigation.navigate("Welcome");
+        }
       });
     }
   };
@@ -295,9 +299,12 @@ const CinematicIntroScreen: React.FC = () => {
         sound.stopAsync();
       }, 500);
     }
-    setHasSeenIntro(true);
-    // Navigate to Welcome screen when skipping
-    navigation.navigate("Welcome");
+    if (!hasCompleted) {
+      setHasCompleted(true);
+      setHasSeenIntro(true);
+      // Navigate to Welcome screen when skipping
+      navigation.navigate("Welcome");
+    }
   };
 
   return (

@@ -16,7 +16,6 @@ const SelectableOption: React.FC<SelectableOptionProps> = ({
   onPress,
   style,
 }) => {
-
   const getButtonStyle = () => {
     const baseStyle: any[] = [styles.option];
 
