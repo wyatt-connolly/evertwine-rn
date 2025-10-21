@@ -23,7 +23,8 @@ export default function AuthSignInScreen({ navigation }: Props) {
   const { isAuthenticated, user, setOnboardingStep } = useAuthStore();
   const [loading, setLoading] = useState<"google" | "apple" | null>(null);
   const [isOAuthInProgress, setIsOAuthInProgress] = useState(false);
-  const [isNavigatingToOnboarding, setIsNavigatingToOnboarding] = useState(false);
+  const [isNavigatingToOnboarding, setIsNavigatingToOnboarding] =
+    useState(false);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
