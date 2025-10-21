@@ -279,10 +279,10 @@ export default function ProfileScreen({ navigation, route }: any) {
             onPress={isViewingOtherProfile ? undefined : handleChangePhoto}
             style={styles.photoContainer}
           >
-            {profileUserData?.avatar || profileUserData?.photoURL ? (
+            {profileUserData?.profilePictures?.[0] ? (
               <Image
                 source={{
-                  uri: profileUserData.avatar || profileUserData.photoURL,
+                  uri: profileUserData.profilePictures[0],
                 }}
                 style={styles.profilePhoto}
               />
