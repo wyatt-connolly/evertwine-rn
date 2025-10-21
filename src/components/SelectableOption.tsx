@@ -43,11 +43,7 @@ const SelectableOption: React.FC<SelectableOptionProps> = ({
   if (selected) {
     return (
       <TouchableOpacity
-        style={[
-          styles.option,
-          styles.selectedOption,
-          style,
-        ]}
+        style={[styles.option, styles.selectedOption, style]}
         onPress={onPress}
         activeOpacity={0.7}
       >

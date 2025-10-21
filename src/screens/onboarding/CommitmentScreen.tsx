@@ -33,6 +33,7 @@ export default function CommitmentScreen({ navigation }: Props) {
   const { setOnboardingStep } = useAuthStore();
   const [isHolding, setIsHolding] = useState(false);
   const [, setProgress] = useState(0);
+  const hapticIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -80,18 +81,39 @@ export default function CommitmentScreen({ navigation }: Props) {
         useNativeDriver: true,
       }).start();
     }, 800);
+
+    // Cleanup haptic feedback on unmount
+    return () => {
+      if (hapticIntervalRef.current) {
+        clearInterval(hapticIntervalRef.current);
+        hapticIntervalRef.current = null;
+      }
+    };
   }, []);
 
   const handlePressIn = () => {
     setIsHolding(true);
     // Light haptic feedback when starting to hold
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    // Start continuous haptic feedback
+    hapticIntervalRef.current = setInterval(() => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }, 200); // Haptic feedback every 200ms
+
     startProgress();
   };
 
   const handlePressOut = () => {
     setIsHolding(false);
     setProgress(0);
+
+    // Stop continuous haptic feedback
+    if (hapticIntervalRef.current) {
+      clearInterval(hapticIntervalRef.current);
+      hapticIntervalRef.current = null;
+    }
+
     // Medium haptic feedback when releasing
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
@@ -101,6 +123,13 @@ export default function CommitmentScreen({ navigation }: Props) {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(interval);
+
+          // Stop continuous haptic feedback when completing
+          if (hapticIntervalRef.current) {
+            clearInterval(hapticIntervalRef.current);
+            hapticIntervalRef.current = null;
+          }
+
           // Strong haptic feedback when commitment is complete
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           // Use setTimeout to avoid setState-in-render error

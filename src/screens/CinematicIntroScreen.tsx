@@ -9,7 +9,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Audio } from "expo-av";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import { useAuthStore } from "../hooks/useAuthStore";
+import { OnboardingStackParamList } from "../navigation/OnboardingStack";
 
 interface FadingTextProps {
   text: string;
@@ -92,7 +95,13 @@ const FadingText: React.FC<FadingTextProps> = ({
   );
 };
 
+type CinematicIntroScreenNavigationProp = StackNavigationProp<
+  OnboardingStackParamList,
+  "CinematicIntro"
+>;
+
 const CinematicIntroScreen: React.FC = () => {
+  const navigation = useNavigation<CinematicIntroScreenNavigationProp>();
   const { setHasSeenIntro } = useAuthStore();
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -100,31 +109,51 @@ const CinematicIntroScreen: React.FC = () => {
   const fadeAnim = new Animated.Value(0);
   const textFadeAnim = new Animated.Value(0);
 
-  // Load and play background music
+  // Load background music - Cosmos Wide Hopeful by Matt Cole
   useEffect(() => {
     const loadSound = async () => {
       try {
-        // Option 1: Use a free ambient music URL
-        const { sound: audioSound } = await Audio.Sound.createAsync(
+        // Using the Bensound Cosmos Wide Hopeful track
+        // This is a royalty-free track perfect for cinematic intros
+        const { sound } = await Audio.Sound.createAsync(
           {
-            uri: "https://www.bensound.com/bensound-music/bensound-ukulele.mp3",
-          }, // Free ambient music
-          { shouldPlay: true, isLooping: true, volume: 0.2 }
+            uri: "https://www.bensound.com/bensound-music/bensound-cosmos.mp3",
+          },
+          { shouldPlay: false, isLooping: true, volume: 0 } // Start with volume 0 for fade-in
         );
-        setSound(audioSound);
+
+        setSound(sound);
+        console.log("Successfully loaded Cosmos Wide Hopeful audio");
+
+        // Start playing and fade in when intro begins
+        setTimeout(async () => {
+          await sound.playAsync();
+          // Gradual fade in over 3 seconds
+          const fadeInSteps = 30; // 30 steps over 3 seconds
+          const targetVolume = 0.3; // Slightly higher volume for this cinematic track
+          const stepVolume = targetVolume / fadeInSteps;
+
+          for (let i = 1; i <= fadeInSteps; i++) {
+            setTimeout(() => {
+              sound.setVolumeAsync(stepVolume * i);
+            }, i * 100); // 100ms between each volume step
+          }
+        }, 1000); // Start after initial fade-in animation
       } catch (error) {
-        console.log("Error loading audio:", error);
-        // Option 2: If URL fails, you can use a local file or continue without audio
-        // Uncomment the lines below to use a local file instead:
-        // try {
-        //   const { sound: audioSound } = await Audio.Sound.createAsync(
-        //     require('../../assets/intro-music.mp3'),
-        //     { shouldPlay: true, isLooping: true, volume: 0.2 }
-        //   );
-        //   setSound(audioSound);
-        // } catch (localError) {
-        //   console.log("No audio file found, continuing without music");
-        // }
+        console.log("Error loading Cosmos audio:", error);
+        // Fallback to a different Bensound track if the primary fails
+        try {
+          const { sound: fallbackSound } = await Audio.Sound.createAsync(
+            {
+              uri: "https://www.bensound.com/bensound-music/bensound-creativeminds.mp3",
+            },
+            { shouldPlay: false, isLooping: true, volume: 0 }
+          );
+          setSound(fallbackSound);
+          console.log("Loaded fallback audio track");
+        } catch (fallbackError) {
+          console.log("Fallback audio also failed:", fallbackError);
+        }
       }
     };
 
@@ -178,35 +207,6 @@ const CinematicIntroScreen: React.FC = () => {
     },
   ];
 
-  // Load and play soothing background music
-  useEffect(() => {
-    const loadAudio = async () => {
-      try {
-        // For now, we'll use a placeholder. You can replace this with:
-        // 1. A local audio file: require('../../assets/audio/soothing-intro.mp3')
-        // 2. A remote URL: { uri: 'https://example.com/soothing-intro.mp3' }
-        // 3. Or remove this section if you don't want background music
-        
-        // Placeholder - replace with actual audio source
-        const { sound } = await Audio.Sound.createAsync(
-          { uri: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav' }, // Placeholder URL
-          { shouldPlay: false, isLooping: false, volume: 0.1 } // Disabled for now
-        );
-        setSound(sound);
-      } catch (error) {
-        console.log('Error loading audio:', error);
-      }
-    };
-
-    loadAudio();
-
-    return () => {
-      if (sound) {
-        sound.unloadAsync();
-      }
-    };
-  }, []);
-
   // Fade in animation on mount
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -253,25 +253,51 @@ const CinematicIntroScreen: React.FC = () => {
         duration: 600,
         useNativeDriver: true,
       }).start(() => {
-        // Stop the music before completing
+        // Fade out music before completing
         if (sound) {
-          sound.stopAsync();
+          // Gradual fade out over 2 seconds
+          const fadeOutSteps = 20; // 20 steps over 2 seconds
+          const currentVolume = 0.3; // Match the target volume from fade-in
+          const stepVolume = currentVolume / fadeOutSteps;
+
+          for (let i = fadeOutSteps; i >= 0; i--) {
+            setTimeout(() => {
+              sound.setVolumeAsync(stepVolume * i);
+            }, (fadeOutSteps - i) * 100); // 100ms between each volume step
+          }
+
+          setTimeout(() => {
+            sound.stopAsync();
+          }, 2000);
         }
         setHasSeenIntro(true);
-        // Let AppNavigator handle routing based on auth state
-        // Don't navigate manually - the auth state change will trigger the correct route
+        // Navigate to Welcome screen after intro completes
+        navigation.navigate("Welcome");
       });
     }
   };
 
   const handleSkip = () => {
-    // Stop the music before skipping
+    // Fade out music before skipping
     if (sound) {
-      sound.stopAsync();
+      // Quick fade out over 0.5 seconds for skip
+      const fadeOutSteps = 5; // 5 steps over 0.5 seconds
+      const currentVolume = 0.3; // Match the target volume from fade-in
+      const stepVolume = currentVolume / fadeOutSteps;
+
+      for (let i = fadeOutSteps; i >= 0; i--) {
+        setTimeout(() => {
+          sound.setVolumeAsync(stepVolume * i);
+        }, (fadeOutSteps - i) * 100); // 100ms between each volume step
+      }
+
+      setTimeout(() => {
+        sound.stopAsync();
+      }, 500);
     }
     setHasSeenIntro(true);
-    // Let AppNavigator handle routing based on auth state
-    // Don't navigate manually - the auth state change will trigger the correct route
+    // Navigate to Welcome screen when skipping
+    navigation.navigate("Welcome");
   };
 
   return (

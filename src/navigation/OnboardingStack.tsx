@@ -58,10 +58,11 @@ export default function OnboardingStack({
   };
 
   useEffect(() => {
-    console.log("🚀 OnboardingStack mounted - this should only happen once");
-    console.log("🎬 OnboardingStack hasSeenIntro:", hasSeenIntro);
-    console.log("🔐 OnboardingStack isAuthenticated:", isAuthenticated);
-    console.log("📍 OnboardingStack initialRouteName:", getInitialRoute());
+    console.log("🚀 OnboardingStack state changed:", {
+      hasSeenIntro,
+      isAuthenticated,
+      initialRoute: getInitialRoute(),
+    });
   }, [hasSeenIntro, isAuthenticated]);
 
   return (

@@ -267,22 +267,6 @@ const styles = StyleSheet.create({
     minHeight: 70,
     justifyContent: "center",
   },
-  gradientBorder: {
-    padding: 2, // This creates the border width
-    borderRadius: 18, // Slightly larger to account for padding
-  },
-  selectedOption: {
-    backgroundColor: "transparent",
-    borderWidth: 0,
-    shadowColor: "#8B5CF6",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
   optionText: {
     fontSize: 18,
     fontWeight: "600",
