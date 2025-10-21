@@ -200,7 +200,7 @@ export default function EditProfileScreen({ navigation }: any) {
     }
   };
 
-  const handlePhotoUpload = async () => {
+  const handlePhotoUpload = async (photoIndex?: number) => {
     try {
       // Request permissions
       const permissionResult =
@@ -214,74 +214,50 @@ export default function EditProfileScreen({ navigation }: any) {
         return;
       }
 
-      // Check if user already has 6 photos
-      const currentPhotoCount = profileData.profilePictures?.length || 0;
-      if (currentPhotoCount >= 6) {
-        Alert.alert(
-          "Maximum Photos",
-          "You can only have 6 photos. Remove one to add a new one."
-        );
-        return;
-      }
-
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         aspect: [1, 1],
         quality: 0.8,
-        allowsMultipleSelection: true,
-        selectionLimit: 6 - currentPhotoCount,
+        allowsMultipleSelection: false, // Single photo selection
       });
 
       if (!result.canceled && result.assets.length > 0) {
-        console.log("📷 Selected", result.assets.length, "photo(s) to upload");
+        const selectedPhoto = result.assets[0];
+        console.log("📷 Selected photo to upload at index:", photoIndex || "end");
         setUploadingPhotos(true);
 
         try {
-          // Upload each photo to Supabase
-          console.log(
-            "📤 Starting upload of",
-            result.assets.length,
-            "photo(s)..."
-          );
-          const uploadPromises = result.assets.map(async (asset, idx) => {
-            console.log(
-              `📤 Uploading photo ${idx + 1}/${result.assets.length}:`,
-              asset.uri
-            );
-            const uploadedUrl = await uploadProfileImage(asset.uri);
-            console.log(`✅ Photo ${idx + 1} uploaded:`, uploadedUrl);
-            return uploadedUrl;
-          });
+          // Upload the single photo to Supabase
+          console.log("📤 Starting upload of photo:", selectedPhoto.uri);
+          const uploadedUrl = await uploadProfileImage(selectedPhoto.uri);
+          console.log("✅ Photo uploaded:", uploadedUrl);
 
-          const uploadedUrls = await Promise.all(uploadPromises);
-          const validUrls = uploadedUrls.filter(
-            (url) => url !== null
-          ) as string[];
+          if (uploadedUrl) {
+            // Create updated photos array
+            const currentPhotos = profileData?.profilePictures || [];
+            const updatedPhotos = [...currentPhotos];
+            
+            if (photoIndex !== undefined) {
+              // Replace photo at specific index
+              updatedPhotos[photoIndex] = uploadedUrl;
+              console.log(`📝 Replacing photo at index ${photoIndex}`);
+            } else {
+              // Add to end (fallback behavior)
+              updatedPhotos.push(uploadedUrl);
+              console.log("📝 Adding photo to end");
+            }
 
-          console.log(
-            "✅ Successfully uploaded",
-            validUrls.length,
-            "photo(s):",
-            validUrls
-          );
+            // Ensure we don't exceed 6 photos
+            const finalPhotos = updatedPhotos.slice(0, 6);
 
-          if (validUrls.length > 0) {
-            const updatedPhotos = [
-              ...(profileData?.profilePictures || []),
-              ...validUrls,
-            ].slice(0, 6);
-
-            console.log(
-              "💾 Saving to Supabase. Updated photos array:",
-              updatedPhotos
-            );
+            console.log("💾 Saving to Supabase. Updated photos array:", finalPhotos);
 
             // Update Supabase
             if (profileData?.uid) {
               const updateResult = await SupabaseDataService.updateUser(
                 profileData.uid,
                 {
-                  profilePictures: updatedPhotos,
+                  profilePictures: finalPhotos,
                 }
               );
 
@@ -289,17 +265,17 @@ export default function EditProfileScreen({ navigation }: any) {
 
               // Update local state
               setProfileData((prev) =>
-                prev ? { ...prev, profilePictures: updatedPhotos } : null
+                prev ? { ...prev, profilePictures: finalPhotos } : null
               );
 
               console.log("✅ Local state updated. New profile data:", {
                 ...profileData,
-                profilePictures: updatedPhotos,
+                profilePictures: finalPhotos,
               });
 
               Alert.alert(
                 "Success",
-                `${validUrls.length} photo(s) uploaded successfully!`
+                "Photo uploaded successfully!"
               );
             } else {
               console.error("❌ No profileData.uid available");
@@ -546,7 +522,7 @@ export default function EditProfileScreen({ navigation }: any) {
                             borderColor: colors.border,
                           },
                         ]}
-                        onPress={handlePhotoUpload}
+                        onPress={() => handlePhotoUpload(index)}
                         disabled={uploadingPhotos}
                       >
                         <Ionicons
@@ -612,6 +588,22 @@ export default function EditProfileScreen({ navigation }: any) {
                                 ? colors.onPrimary
                                 : colors.textSecondary
                             }
+                          />
+                        </TouchableOpacity>
+
+                        {/* Replace photo button */}
+                        <TouchableOpacity
+                          style={[
+                            styles.replacePhotoButton,
+                            { backgroundColor: colors.primary },
+                          ]}
+                          onPress={() => handlePhotoUpload(index)}
+                          disabled={uploadingPhotos}
+                        >
+                          <Ionicons
+                            name="camera"
+                            size={12}
+                            color={colors.onPrimary}
                           />
                         </TouchableOpacity>
                       </View>
@@ -1607,6 +1599,18 @@ const styles = StyleSheet.create({
   removePhotoButton: {
     position: "absolute",
     top: -6,
+    right: -6,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "white",
+  },
+  replacePhotoButton: {
+    position: "absolute",
+    bottom: -6,
     right: -6,
     width: 24,
     height: 24,
