@@ -173,8 +173,8 @@ export default function FeatureIntroScreen({ navigation }: Props) {
   }, []);
 
   const handleGetStarted = () => {
-    setOnboardingStep("SocialBenefits");
-    navigation.navigate("SocialBenefits");
+    setOnboardingStep("Commitment");
+    navigation.navigate("Commitment");
   };
 
   return (

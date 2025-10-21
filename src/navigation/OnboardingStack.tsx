@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import CinematicIntroScreen from "../screens/CinematicIntroScreen";
 import WelcomeScreen from "../screens/WelcomeScreen";
@@ -10,7 +10,6 @@ import GoalsSelectionScreen from "../screens/onboarding/GoalsSelectionScreen";
 import ObstaclesScreen from "../screens/onboarding/ObstaclesScreen";
 import RoutineSetupScreen from "../screens/onboarding/RoutineSetupScreen";
 import FeatureIntroScreen from "../screens/onboarding/FeatureIntroScreen";
-import SocialBenefitsScreen from "../screens/onboarding/SocialBenefitsScreen";
 import CommitmentScreen from "../screens/onboarding/CommitmentScreen";
 import BuildingProfileScreen from "../screens/onboarding/BuildingProfileScreen";
 import { useAuthStore } from "../hooks/useAuthStore";
@@ -27,7 +26,6 @@ export type OnboardingStackParamList = {
   ObstaclesSelection: undefined;
   RoutineSetup: undefined;
   FeatureIntro: undefined;
-  SocialBenefits: undefined;
   Commitment: undefined;
   BuildingProfile: undefined;
 };
@@ -44,7 +42,7 @@ export default function OnboardingStack({
   const { isAuthenticated, getCurrentOnboardingStep } = useAuthStore();
 
   // Determine the initial route based on authentication and progress
-  const getInitialRoute = () => {
+  const getInitialRoute = (): keyof OnboardingStackParamList => {
     if (!hasSeenIntro) {
       return "CinematicIntro";
     }
@@ -56,7 +54,7 @@ export default function OnboardingStack({
     // User is authenticated, resume from where they left off
     const currentStep = getCurrentOnboardingStep();
     console.log("📍 Resuming onboarding from step:", currentStep);
-    return currentStep;
+    return currentStep as keyof OnboardingStackParamList;
   };
 
   useEffect(() => {
@@ -84,7 +82,6 @@ export default function OnboardingStack({
       <Stack.Screen name="ObstaclesSelection" component={ObstaclesScreen} />
       <Stack.Screen name="RoutineSetup" component={RoutineSetupScreen} />
       <Stack.Screen name="FeatureIntro" component={FeatureIntroScreen} />
-      <Stack.Screen name="SocialBenefits" component={SocialBenefitsScreen} />
       <Stack.Screen name="Commitment" component={CommitmentScreen} />
       <Stack.Screen name="BuildingProfile" component={BuildingProfileScreen} />
     </Stack.Navigator>

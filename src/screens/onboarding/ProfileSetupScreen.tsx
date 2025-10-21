@@ -291,9 +291,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
                     </View>
                   )}
                 </TouchableOpacity>
-                <Text
-                  style={[styles.imageLabel, { color: "#E5E5EA" }]}
-                >
+                <Text style={[styles.imageLabel, { color: "#E5E5EA" }]}>
                   Add a photo
                 </Text>
               </Animated.View>

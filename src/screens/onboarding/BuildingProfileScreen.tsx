@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -9,24 +9,15 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
-import { useThemeStore } from "../../hooks/useThemeStore";
+import Svg, { Circle } from "react-native-svg";
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { SupabaseDataService } from "../../services/SupabaseDataService";
 import AnimatedCheckmark from "../../components/AnimatedCheckmark";
 import GradientBackground from "../../components/GradientBackground";
 
-type BuildingProfileScreenNavigationProp = StackNavigationProp<
-  OnboardingStackParamList,
-  "BuildingProfile"
->;
-
-interface Props {
-  navigation: BuildingProfileScreenNavigationProp;
-}
-
-const { width, height } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 
 const tasks = [
   "Analyzing your preferences",
@@ -34,8 +25,7 @@ const tasks = [
   "Personalizing your feed",
 ];
 
-export default function BuildingProfileScreen({ navigation }: Props) {
-  const { colors } = useThemeStore();
+export default function BuildingProfileScreen() {
   const {
     user,
     onboardingData,
@@ -204,34 +194,35 @@ export default function BuildingProfileScreen({ navigation }: Props) {
                 },
               ]}
             >
-              {/* Custom Progress Circle */}
-              <View style={styles.progressCircleContainer}>
-                {/* Background Circle */}
-                <View style={styles.progressBackground} />
-
-                {/* Progress Circle - starts small and fills */}
-                <Animated.View
-                  style={[
-                    styles.progressCircle,
-                    {
-                      transform: [
-                        {
-                          scale: progressAnim.interpolate({
-                            inputRange: [0, 100],
-                            outputRange: [0.1, 1],
-                          }),
-                        },
-                        {
-                          rotate: progressAnim.interpolate({
-                            inputRange: [0, 100],
-                            outputRange: ["0deg", "360deg"],
-                          }),
-                        },
-                      ],
-                    },
-                  ]}
-                />
-
+              {/* SVG Progress Circle */}
+              <View style={styles.progressContainer}>
+                <Svg width={120} height={120} style={styles.progressSvg}>
+                  {/* Background circle */}
+                  <Circle
+                    cx={60}
+                    cy={60}
+                    r={56}
+                    stroke="rgba(255, 255, 255, 0.1)"
+                    strokeWidth={4}
+                    fill="none"
+                  />
+                  {/* Progress arc */}
+                  <AnimatedCircle
+                    cx={60}
+                    cy={60}
+                    r={56}
+                    stroke="#3B82F6"
+                    strokeWidth={4}
+                    fill="none"
+                    strokeDasharray={`${2 * Math.PI * 56}`}
+                    strokeDashoffset={progressAnim.interpolate({
+                      inputRange: [0, 100],
+                      outputRange: [2 * Math.PI * 56, 0],
+                    })}
+                    strokeLinecap="round"
+                    transform="rotate(-90 60 60)"
+                  />
+                </Svg>
                 {/* Percentage Text */}
                 <View style={styles.progressTextContainer}>
                   <Text style={[styles.progressText, { color: "#FFFFFF" }]}>
@@ -332,31 +323,12 @@ const styles = StyleSheet.create({
   },
   progressContainer: {
     marginBottom: 40,
-  },
-  progressCircleContainer: {
-    width: 120,
-    height: 120,
     position: "relative",
     justifyContent: "center",
     alignItems: "center",
   },
-  progressBackground: {
+  progressSvg: {
     position: "absolute",
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 4,
-    borderColor: "rgba(255, 255, 255, 0.1)",
-  },
-  progressCircle: {
-    position: "absolute",
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 4,
-    borderColor: "transparent",
-    borderTopColor: "#3B82F6",
-    borderRightColor: "#3B82F6",
   },
   progressTextContainer: {
     position: "absolute",
