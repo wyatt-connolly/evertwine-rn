@@ -1,7 +1,5 @@
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet, ViewStyle } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { useThemeStore } from "../hooks/useThemeStore";
 
 interface SelectableOptionProps {
   icon?: string;
@@ -9,7 +7,6 @@ interface SelectableOptionProps {
   selected?: boolean;
   onPress: () => void;
   style?: ViewStyle;
-  multiple?: boolean;
 }
 
 const SelectableOption: React.FC<SelectableOptionProps> = ({
@@ -18,12 +15,10 @@ const SelectableOption: React.FC<SelectableOptionProps> = ({
   selected = false,
   onPress,
   style,
-  multiple = false,
 }) => {
-  const { colors } = useThemeStore();
 
   const getButtonStyle = () => {
-    const baseStyle = [styles.option];
+    const baseStyle: any[] = [styles.option];
 
     if (!selected) {
       baseStyle.push({
@@ -76,15 +71,15 @@ const styles = StyleSheet.create({
     minHeight: 56,
   },
   selectedOption: {
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
     borderWidth: 2,
-    borderColor: "#8B5CF6",
-    shadowColor: "#8B5CF6",
+    borderColor: "rgba(255, 255, 255, 0.3)",
+    shadowColor: "rgba(255, 255, 255, 0.2)",
     shadowOffset: {
       width: 0,
       height: 4,
     },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 8,
   },

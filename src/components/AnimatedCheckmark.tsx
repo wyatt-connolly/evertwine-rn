@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
-import { useThemeStore } from "../hooks/useThemeStore";
 
 interface AnimatedCheckmarkProps {
   text: string;
@@ -15,7 +14,6 @@ const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
   onComplete,
   style,
 }) => {
-  const { colors } = useThemeStore();
   const spinnerAnim = useRef(new Animated.Value(0)).current;
   const lineAnim = useRef(new Animated.Value(0)).current;
   const checkmarkAnim = useRef(new Animated.Value(0)).current;
@@ -84,7 +82,7 @@ const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
             },
           ]}
         >
-          <View style={[styles.spinnerCircle, { borderColor: "#8B5CF6" }]} />
+          <View style={[styles.spinnerCircle, { borderColor: "rgba(255, 255, 255, 0.3)" }]} />
         </Animated.View>
 
         {/* Checkmark */}
@@ -98,7 +96,7 @@ const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
           ]}
         >
           <View
-            style={[styles.checkmarkCircle, { backgroundColor: "#8B5CF6" }]}
+            style={[styles.checkmarkCircle, { backgroundColor: "rgba(255, 255, 255, 0.2)" }]}
           >
             <Text style={styles.checkmarkIcon}>✓</Text>
           </View>
@@ -110,7 +108,7 @@ const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
             styles.line,
             {
               opacity: lineAnim,
-              backgroundColor: "#8B5CF6",
+              backgroundColor: "rgba(255, 255, 255, 0.3)",
             },
           ]}
         />
