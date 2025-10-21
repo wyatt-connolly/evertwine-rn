@@ -32,8 +32,9 @@ const OnboardingButton: React.FC<OnboardingButtonProps> = ({
 
     if (variant === "primary") {
       baseStyle.push({
-        backgroundColor: "#8B5CF6",
-        borderWidth: 0,
+        backgroundColor: "rgba(255, 255, 255, 0.1)",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.3)",
       });
     } else {
       baseStyle.push({

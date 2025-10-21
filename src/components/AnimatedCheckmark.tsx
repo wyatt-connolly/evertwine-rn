@@ -82,12 +82,7 @@ const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
             },
           ]}
         >
-          <View
-            style={[
-              styles.spinnerCircle,
-              { borderColor: "#8B5CF6" },
-            ]}
-          />
+          <View style={[styles.spinnerCircle, { borderColor: "#8B5CF6" }]} />
         </Animated.View>
 
         {/* Checkmark */}
@@ -101,10 +96,7 @@ const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
           ]}
         >
           <View
-            style={[
-              styles.checkmarkCircle,
-              { backgroundColor: "#8B5CF6" },
-            ]}
+            style={[styles.checkmarkCircle, { backgroundColor: "#8B5CF6" }]}
           >
             <Text style={styles.checkmarkIcon}>✓</Text>
           </View>
