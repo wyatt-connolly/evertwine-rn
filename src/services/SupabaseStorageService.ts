@@ -1,5 +1,5 @@
 import { supabase } from "../config/supabase.config";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 
 export class SupabaseStorageService {
   /**
@@ -11,12 +11,12 @@ export class SupabaseStorageService {
     index: number
   ): Promise<string> {
     console.log("🔧 uploadProfilePicture called with:", { userId, uri, index });
-    
+
     const fileName = `${userId}/profile_${index}_${Date.now()}.jpg`;
 
-    // Read file as base64 - use string literal instead of EncodingType constant
+    // Read file as base64
     const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: 'base64',
+      encoding: FileSystem.EncodingType.Base64,
     });
 
     console.log("🔧 Base64 read successfully, length:", base64.length);
@@ -57,7 +57,7 @@ export class SupabaseStorageService {
 
     // Read file as base64
     const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: 'base64',
+      encoding: FileSystem.EncodingType.Base64,
     });
 
     // Convert base64 to blob
@@ -101,7 +101,7 @@ export class SupabaseStorageService {
 
     // Read file as base64
     const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: 'base64',
+      encoding: FileSystem.EncodingType.Base64,
     });
 
     // Convert base64 to blob
@@ -147,7 +147,7 @@ export class SupabaseStorageService {
 
     // Read file as base64
     const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: 'base64',
+      encoding: FileSystem.EncodingType.Base64,
     });
 
     // Convert base64 to blob
