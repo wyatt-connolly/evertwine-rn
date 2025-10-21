@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -135,6 +136,22 @@ export default function ProfileScreen({ navigation, route }: any) {
     loadProfileData();
   }, [profileUserId, route?.params?.userData, user]);
 
+  // Reload profile data when screen comes into focus (e.g., after editing)
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!isViewingOtherProfile) {
+        // Reload current user's profile data
+        const reloadData = async () => {
+          const userResult = await DataService.getUser(profileUserId);
+          if (userResult.user) {
+            setProfileUserData(userResult.user);
+          }
+        };
+        reloadData();
+      }
+    }, [profileUserId, isViewingOtherProfile])
+  );
+
   const handleEditProfile = () => {
     navigation.navigate("EditProfile");
   };
@@ -153,7 +170,7 @@ export default function ProfileScreen({ navigation, route }: any) {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
+        mediaTypes: ["images"],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,

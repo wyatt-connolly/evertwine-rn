@@ -220,7 +220,7 @@ export default function EditProfileScreen({ navigation }: any) {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
+        mediaTypes: ["images"],
         aspect: [1, 1],
         quality: 0.8,
         allowsMultipleSelection: true,
@@ -230,22 +230,45 @@ export default function EditProfileScreen({ navigation }: any) {
       if (!result.canceled && result.assets.length > 0) {
         setUploadingPhotos(true);
 
-        // Simulate upload delay
-        setTimeout(() => {
-          const newPhotos = result.assets.map((asset) => asset.uri);
-          setProfileData((prev) => ({
-            ...prev,
-            profilePictures: [
-              ...(prev.profilePictures || []),
-              ...newPhotos,
-            ].slice(0, 6),
-          }));
+        try {
+          // Upload each photo to Supabase
+          const uploadPromises = result.assets.map(async (asset) => {
+            const uploadedUrl = await uploadProfileImage(asset.uri);
+            return uploadedUrl;
+          });
+
+          const uploadedUrls = await Promise.all(uploadPromises);
+          const validUrls = uploadedUrls.filter((url) => url !== null) as string[];
+
+          if (validUrls.length > 0) {
+            const updatedPhotos = [
+              ...(profileData?.profilePictures || []),
+              ...validUrls,
+            ].slice(0, 6);
+
+            // Update Supabase
+            if (profileData?.uid) {
+              await SupabaseDataService.updateUser(profileData.uid, {
+                profilePictures: updatedPhotos,
+              });
+
+              // Update local state
+              setProfileData((prev) =>
+                prev ? { ...prev, profilePictures: updatedPhotos } : null
+              );
+
+              Alert.alert(
+                "Success",
+                `${validUrls.length} photo(s) uploaded successfully!`
+              );
+            }
+          }
+        } catch (error) {
+          console.error("Error uploading photos:", error);
+          Alert.alert("Error", "Failed to upload some photos. Please try again.");
+        } finally {
           setUploadingPhotos(false);
-          Alert.alert(
-            "Success",
-            `${newPhotos.length} photo(s) uploaded successfully!`
-          );
-        }, 1000);
+        }
       }
     } catch (error) {
       console.error("Error picking images:", error);
@@ -254,27 +277,45 @@ export default function EditProfileScreen({ navigation }: any) {
     }
   };
 
-  const handleRemovePhoto = (index: number) => {
+  const handleRemovePhoto = async (index: number) => {
+    if (!profileData) return;
+    
     Alert.alert("Remove Photo", "Are you sure you want to remove this photo?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Remove",
         style: "destructive",
-        onPress: () => {
-          setProfileData((prev) => ({
-            ...prev,
-            profilePictures: prev.profilePictures.filter((_, i) => i !== index),
-          }));
+        onPress: async () => {
+          const updatedPhotos = profileData.profilePictures.filter((_, i) => i !== index);
+          
+          // Update Supabase
+          await SupabaseDataService.updateUser(profileData.uid, {
+            profilePictures: updatedPhotos,
+          });
+          
+          // Update local state
+          setProfileData((prev) =>
+            prev ? { ...prev, profilePictures: updatedPhotos } : null
+          );
         },
       },
     ]);
   };
 
-  const handleSetStandoutPhoto = (index: number) => {
-    setProfileData((prev) => ({
-      ...prev,
-      standoutPhotoIndex: prev.standoutPhotoIndex === index ? undefined : index,
-    }));
+  const handleSetStandoutPhoto = async (index: number) => {
+    if (!profileData) return;
+    
+    const newStandoutIndex = profileData.standoutPhotoIndex === index ? 0 : index;
+    
+    // Update Supabase
+    await SupabaseDataService.updateUser(profileData.uid, {
+      standoutPhotoIndex: newStandoutIndex,
+    });
+    
+    // Update local state
+    setProfileData((prev) =>
+      prev ? { ...prev, standoutPhotoIndex: newStandoutIndex } : null
+    );
   };
 
   const handleSaveEdit = async () => {

@@ -107,7 +107,7 @@ export default function CreateMeetupStep1Screen({
 
   const pickImage = async (type: string) => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [3, 2],
       quality: 1,
