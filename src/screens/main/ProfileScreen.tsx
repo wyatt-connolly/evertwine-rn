@@ -36,7 +36,6 @@ export default function ProfileScreen({ navigation, route }: any) {
   // Load profile data using DataService
   useEffect(() => {
     const loadProfileData = async () => {
-
       try {
         setIsLoading(true);
 
@@ -46,10 +45,8 @@ export default function ProfileScreen({ navigation, route }: any) {
 
         if (userResult.user) {
           setProfileUserData(userResult.user);
-
         } else if (route?.params?.userData) {
           setProfileUserData(route.params.userData);
-
         } else if (user && profileUserId === user.uid) {
           // If viewing own profile but no data in Supabase, create user record
 
@@ -90,18 +87,14 @@ export default function ProfileScreen({ navigation, route }: any) {
               const newUserResult = await DataService.getUser(profileUserId);
               if (newUserResult.user) {
                 setProfileUserData(newUserResult.user);
-
               }
             } else {
-
               setProfileUserData(user);
             }
           } catch (error) {
-
             setProfileUserData(user);
           }
         } else {
-
         }
 
         // Load user stats
@@ -111,38 +104,31 @@ export default function ProfileScreen({ navigation, route }: any) {
 
           if (statsResult.stats) {
             setUserStats(statsResult.stats);
-
           } else {
             // Fallback to mock stats in developer mode
             if (DataService.isInDeveloperMode()) {
               setUserStats(getMockUserStats(profileUserId));
-
             }
           }
         } catch (statsError) {
-
           // Don't fail the entire loading process for stats
           if (DataService.isInDeveloperMode()) {
             setUserStats(getMockUserStats(profileUserId));
           }
         }
       } catch (error) {
-
         // In developer mode, fallback to mock data
         if (DataService.isInDeveloperMode()) {
           setProfileUserData(mockUsers[0]);
           setUserStats(getMockUserStats(profileUserId));
-
         } else {
           // In production, try to use current user data as fallback
           if (user) {
             setProfileUserData(user);
-
           }
         }
       } finally {
         setIsLoading(false);
-
       }
     };
 
@@ -167,7 +153,7 @@ export default function ProfileScreen({ navigation, route }: any) {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: [ImagePicker.MediaType.Images],
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
@@ -194,7 +180,6 @@ export default function ProfileScreen({ navigation, route }: any) {
     } catch (error) {
       setLoading(false);
       Alert.alert("Error", "Failed to update photo. Please try again.");
-
     }
   };
 

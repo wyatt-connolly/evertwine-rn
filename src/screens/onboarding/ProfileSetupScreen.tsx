@@ -110,7 +110,6 @@ export default function ProfileSetupScreen({ navigation }: Props) {
 
   const pickImage = async () => {
     try {
-
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
@@ -122,18 +121,16 @@ export default function ProfileSetupScreen({ navigation }: Props) {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: [ImagePicker.MediaType.Images],
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
       });
 
       if (!result.canceled && result.assets[0]) {
-
         setProfileImage(result.assets[0].uri);
       }
     } catch (error) {
-
       Alert.alert("Error", "Failed to pick image. Please try again.");
     }
   };
@@ -177,7 +174,6 @@ export default function ProfileSetupScreen({ navigation }: Props) {
       navigation.navigate("AgeVerification");
     } catch (error) {
       Alert.alert("Error", "Failed to save profile. Please try again.");
-
     } finally {
       setLoading(false);
     }
