@@ -46,19 +46,33 @@ export default function NotificationsScreen({ navigation }: any) {
   // Load notification preferences from Supabase
   useEffect(() => {
     const loadNotificationPreferences = async () => {
+      console.log("🔔 NotificationsScreen: Starting to load preferences for user:", user?.uid);
+      
       if (!user?.uid) {
+        console.log("🔔 NotificationsScreen: No user UID, skipping load");
         setIsLoading(false);
         return;
       }
 
       try {
+        console.log("🔔 NotificationsScreen: Fetching user data from Supabase...");
         const userData = await SupabaseDataService.getUser(user.uid);
+        console.log("🔔 NotificationsScreen: User data received:", {
+          hasUserData: !!userData,
+          hasNotificationPreferences: !!userData?.notificationPreferences,
+          notificationPreferences: userData?.notificationPreferences
+        });
+        
         if (userData?.notificationPreferences) {
+          console.log("🔔 NotificationsScreen: Setting notification preferences from database");
           setNotificationSettings(userData.notificationPreferences);
+        } else {
+          console.log("🔔 NotificationsScreen: No notification preferences found, using defaults");
         }
       } catch (error) {
-        console.error("Error loading notification preferences:", error);
+        console.error("🔔 NotificationsScreen: Error loading notification preferences:", error);
       } finally {
+        console.log("🔔 NotificationsScreen: Loading complete");
         setIsLoading(false);
       }
     };
@@ -67,8 +81,13 @@ export default function NotificationsScreen({ navigation }: any) {
   }, [user?.uid]);
 
   const handleToggle = async (settingId: string) => {
-    const newValue = !notificationSettings[settingId as keyof typeof notificationSettings];
+    console.log("🔔 NotificationsScreen: Toggle triggered for setting:", settingId);
     
+    const newValue =
+      !notificationSettings[settingId as keyof typeof notificationSettings];
+    
+    console.log("🔔 NotificationsScreen: New value for", settingId, ":", newValue);
+
     // Update local state immediately for responsive UI
     setNotificationSettings((prev) => ({
       ...prev,
@@ -82,18 +101,31 @@ export default function NotificationsScreen({ navigation }: any) {
           ...notificationSettings,
           [settingId]: newValue,
         };
-        
-        await SupabaseDataService.updateUser(user.uid, {
+
+        console.log("🔔 NotificationsScreen: Saving to Supabase:", {
+          userId: user.uid,
+          settingId,
+          newValue,
+          updatedPreferences
+        });
+
+        const result = await SupabaseDataService.updateUser(user.uid, {
           notificationPreferences: updatedPreferences,
         });
+        
+        console.log("🔔 NotificationsScreen: Supabase update result:", result);
+        console.log("🔔 NotificationsScreen: Successfully saved notification preferences");
       } catch (error) {
-        console.error("Error saving notification preferences:", error);
+        console.error("🔔 NotificationsScreen: Error saving notification preferences:", error);
         // Revert local state on error
         setNotificationSettings((prev) => ({
           ...prev,
           [settingId]: !newValue,
         }));
+        console.log("🔔 NotificationsScreen: Reverted local state due to error");
       }
+    } else {
+      console.log("🔔 NotificationsScreen: No user UID available for saving");
     }
   };
 
@@ -231,83 +263,86 @@ export default function NotificationsScreen({ navigation }: any) {
           contentContainerStyle={{ paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-        {settingsData.map((section, sectionIndex) => (
-          <View key={section.category} style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              {section.category}
-            </Text>
+          {settingsData.map((section, sectionIndex) => (
+            <View key={section.category} style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                {section.category}
+              </Text>
 
-            <View
-              style={[
-                styles.sectionContent,
-                { backgroundColor: colors.surface },
-              ]}
-            >
-              {section.items.map((item, itemIndex) => (
-                <View key={item.id}>
-                  <View style={styles.settingRow}>
-                    <View style={styles.settingLeft}>
-                      <View
-                        style={[
-                          styles.iconContainer,
-                          { backgroundColor: colors.primary + "20" },
-                        ]}
-                      >
-                        <Ionicons
-                          name={item.icon as any}
-                          size={20}
-                          color={colors.primary}
-                        />
-                      </View>
-                      <View style={styles.settingText}>
-                        <Text
-                          style={[styles.settingTitle, { color: colors.text }]}
-                        >
-                          {item.title}
-                        </Text>
-                        <Text
+              <View
+                style={[
+                  styles.sectionContent,
+                  { backgroundColor: colors.surface },
+                ]}
+              >
+                {section.items.map((item, itemIndex) => (
+                  <View key={item.id}>
+                    <View style={styles.settingRow}>
+                      <View style={styles.settingLeft}>
+                        <View
                           style={[
-                            styles.settingDescription,
-                            { color: colors.textSecondary },
+                            styles.iconContainer,
+                            { backgroundColor: colors.primary + "20" },
                           ]}
                         >
-                          {item.description}
-                        </Text>
+                          <Ionicons
+                            name={item.icon as any}
+                            size={20}
+                            color={colors.primary}
+                          />
+                        </View>
+                        <View style={styles.settingText}>
+                          <Text
+                            style={[
+                              styles.settingTitle,
+                              { color: colors.text },
+                            ]}
+                          >
+                            {item.title}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.settingDescription,
+                              { color: colors.textSecondary },
+                            ]}
+                          >
+                            {item.description}
+                          </Text>
+                        </View>
                       </View>
+                      <Switch
+                        value={
+                          notificationSettings[
+                            item.id as keyof typeof notificationSettings
+                          ]
+                        }
+                        onValueChange={() => handleToggle(item.id)}
+                        trackColor={{
+                          false: colors.border,
+                          true: colors.primary + "40",
+                        }}
+                        thumbColor={
+                          notificationSettings[
+                            item.id as keyof typeof notificationSettings
+                          ]
+                            ? colors.primary
+                            : colors.textTertiary
+                        }
+                      />
                     </View>
-                    <Switch
-                      value={
-                        notificationSettings[
-                          item.id as keyof typeof notificationSettings
-                        ]
-                      }
-                      onValueChange={() => handleToggle(item.id)}
-                      trackColor={{
-                        false: colors.border,
-                        true: colors.primary + "40",
-                      }}
-                      thumbColor={
-                        notificationSettings[
-                          item.id as keyof typeof notificationSettings
-                        ]
-                          ? colors.primary
-                          : colors.textTertiary
-                      }
-                    />
+                    {itemIndex < section.items.length - 1 && (
+                      <View
+                        style={[
+                          styles.separator,
+                          { backgroundColor: colors.border },
+                        ]}
+                      />
+                    )}
                   </View>
-                  {itemIndex < section.items.length - 1 && (
-                    <View
-                      style={[
-                        styles.separator,
-                        { backgroundColor: colors.border },
-                      ]}
-                    />
-                  )}
-                </View>
-              ))}
+                ))}
+              </View>
             </View>
-          </View>
-        ))}
+          ))}
         </ScrollView>
       )}
     </SafeAreaView>

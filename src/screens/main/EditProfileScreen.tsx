@@ -61,13 +61,8 @@ export default function EditProfileScreen() {
   // Image upload function
   const uploadProfileImage = async (imageUri: string) => {
     try {
-      console.log("📤 Starting image upload:", imageUri);
       setUploadingPhotos(true);
 
-      console.log(
-        "📤 Calling SupabaseStorageService.uploadProfilePicture with UID:",
-        user?.uid
-      );
       // Upload to Supabase Storage
       // Generate a unique index based on timestamp
       const imageIndex = Date.now();
@@ -77,7 +72,6 @@ export default function EditProfileScreen() {
         imageIndex
       );
 
-      console.log("✅ Image uploaded successfully:", uploadedUrl);
       return uploadedUrl; // Public URL of uploaded image
     } catch (error) {
       console.error("❌ Error uploading image:", error);
@@ -91,7 +85,6 @@ export default function EditProfileScreen() {
   // Load profile data using DataService
   useEffect(() => {
     const loadProfileData = async () => {
-      console.log("🔄 EditProfileScreen loading data for:", user?.uid);
       try {
         setIsLoading(true);
 
@@ -105,10 +98,8 @@ export default function EditProfileScreen() {
 
         if (userResult.user) {
           setProfileData(userResult.user);
-          console.log("✅ Profile data loaded");
         } else {
           // User doesn't exist in Supabase - create them
-          console.log("🔄 No user data found, creating user record...");
 
           const createResult = await DataService.createUser({
             uid: user.uid,
@@ -144,7 +135,6 @@ export default function EditProfileScreen() {
             const newUserResult = await DataService.getUser(user.uid);
             if (newUserResult.user) {
               setProfileData(newUserResult.user);
-              console.log("✅ User record created and loaded");
             }
           } else {
             console.error(
@@ -221,7 +211,6 @@ export default function EditProfileScreen() {
 
       if (!result.canceled && result.assets.length > 0) {
         const selectedPhoto = result.assets[0];
-        console.log(
           "📷 Selected photo to upload at index:",
           photoIndex || "end"
         );
@@ -257,9 +246,7 @@ export default function EditProfileScreen() {
       setUploadingPhotos(true);
 
       // Upload the single photo to Supabase
-      console.log("📤 Starting upload of photo:", selectedPhoto.uri);
       const uploadedUrl = await uploadProfileImage(selectedPhoto.uri);
-      console.log("✅ Photo uploaded:", uploadedUrl);
 
       if (uploadedUrl) {
         // Create updated photos array
@@ -269,17 +256,14 @@ export default function EditProfileScreen() {
         if (photoIndex !== undefined) {
           // Replace photo at specific index
           updatedPhotos[photoIndex] = uploadedUrl;
-          console.log(`📝 Replacing photo at index ${photoIndex}`);
         } else {
           // Add to end (fallback behavior)
           updatedPhotos.push(uploadedUrl);
-          console.log("📝 Adding photo to end");
         }
 
         // Ensure we don't exceed 6 photos
         const finalPhotos = updatedPhotos.slice(0, 6);
 
-        console.log(
           "💾 Saving to Supabase. Updated photos array:",
           finalPhotos
         );
@@ -293,14 +277,12 @@ export default function EditProfileScreen() {
             }
           );
 
-          console.log("💾 Supabase update result:", updateResult);
 
           // Update local state
           setProfileData((prev) =>
             prev ? { ...prev, profilePictures: finalPhotos } : null
           );
 
-          console.log("✅ Local state updated. New profile data:", {
             ...profileData,
             profilePictures: finalPhotos,
           });
@@ -326,7 +308,6 @@ export default function EditProfileScreen() {
       return;
     }
 
-    console.log("🗑️ Removing photo at index:", index);
 
     Alert.alert("Remove Photo", "Are you sure you want to remove this photo?", [
       { text: "Cancel", style: "cancel" },
@@ -338,7 +319,6 @@ export default function EditProfileScreen() {
             (_, i) => i !== index
           );
 
-          console.log("💾 Updating Supabase with photos:", updatedPhotos);
 
           // Update Supabase
           const updateResult = await SupabaseDataService.updateUser(
@@ -348,14 +328,12 @@ export default function EditProfileScreen() {
             }
           );
 
-          console.log("💾 Photo removal update result:", updateResult);
 
           // Update local state
           setProfileData((prev) =>
             prev ? { ...prev, profilePictures: updatedPhotos } : null
           );
 
-          console.log("✅ Photo removed successfully");
         },
       },
     ]);
@@ -370,21 +348,18 @@ export default function EditProfileScreen() {
     const newStandoutIndex =
       profileData.standoutPhotoIndex === index ? 0 : index;
 
-    console.log("⭐ Setting standout photo to index:", newStandoutIndex);
 
     // Update Supabase
     const updateResult = await SupabaseDataService.updateUser(profileData.uid, {
       standoutPhotoIndex: newStandoutIndex,
     });
 
-    console.log("💾 Standout photo update result:", updateResult);
 
     // Update local state
     setProfileData((prev) =>
       prev ? { ...prev, standoutPhotoIndex: newStandoutIndex } : null
     );
 
-    console.log("✅ Standout photo updated successfully");
   };
 
   const handleSaveEdit = async () => {

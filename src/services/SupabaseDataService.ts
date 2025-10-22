@@ -20,7 +20,6 @@ export class SupabaseDataService {
       .maybeSingle();
 
     if (error) {
-
       return null;
     }
 
@@ -43,8 +42,6 @@ export class SupabaseDataService {
   }
 
   static async updateUser(uid: string, updates: Partial<User>) {
-
-
     const { data, error } = await supabase
       .from("users")
       .update({
@@ -56,7 +53,6 @@ export class SupabaseDataService {
       .single();
 
     if (error) {
-
       throw error;
     }
 
@@ -101,7 +97,6 @@ export class SupabaseDataService {
       .eq("id", id)
       .single();
     if (error) {
-
       return null;
     }
     return this.mapPostFromDB(data);
@@ -177,7 +172,6 @@ export class SupabaseDataService {
       .eq("id", id)
       .single();
     if (error) {
-
       return null;
     }
     return this.mapMeetupFromDB(data);
@@ -230,7 +224,6 @@ export class SupabaseDataService {
       .eq("id", id)
       .single();
     if (error) {
-
       return null;
     }
     return this.mapHappyHourFromDB(data);
@@ -278,7 +271,6 @@ export class SupabaseDataService {
       .eq("id", id)
       .single();
     if (error) {
-
       return null;
     }
     return this.mapMessageRoomFromDB(data);
@@ -468,7 +460,8 @@ export class SupabaseDataService {
     if (user.averageViewDuration !== undefined)
       mapped.average_view_duration = user.averageViewDuration;
     if (user.preferences !== undefined) mapped.preferences = user.preferences;
-    if (user.notificationPreferences !== undefined) mapped.notification_preferences = user.notificationPreferences;
+    if (user.notificationPreferences !== undefined)
+      mapped.notification_preferences = user.notificationPreferences;
     if (user.createdTime !== undefined)
       mapped.created_time = user.createdTime.toISOString();
     if (user.updatedTime !== undefined)
@@ -870,7 +863,6 @@ export class SupabaseDataService {
     userId: string
   ): Promise<{ success: boolean; error?: any }> {
     try {
-
       // 1. Delete notifications
 
       const { error: notificationsError } = await supabase
@@ -879,7 +871,6 @@ export class SupabaseDataService {
         .eq("receiver_ref", userId);
 
       if (notificationsError) {
-
         throw notificationsError;
       }
 
@@ -891,7 +882,6 @@ export class SupabaseDataService {
         .eq("sender_ref", userId);
 
       if (messagesError) {
-
         throw messagesError;
       }
 
@@ -903,7 +893,6 @@ export class SupabaseDataService {
         .contains("participants", [userId]);
 
       if (messageRoomsError) {
-
         throw messageRoomsError;
       }
 
@@ -915,7 +904,6 @@ export class SupabaseDataService {
         .eq("user_id", userId);
 
       if (postCommentsError) {
-
         throw postCommentsError;
       }
 
@@ -927,7 +915,6 @@ export class SupabaseDataService {
         .eq("user_id", userId);
 
       if (postsError) {
-
         throw postsError;
       }
 
@@ -939,7 +926,6 @@ export class SupabaseDataService {
         .eq("creator_id", userId);
 
       if (meetupsError) {
-
         throw meetupsError;
       }
 
@@ -951,7 +937,6 @@ export class SupabaseDataService {
         .contains("attendees", [userId]);
 
       if (happyHoursError) {
-
         throw happyHoursError;
       }
 
@@ -963,13 +948,11 @@ export class SupabaseDataService {
         .eq("uid", userId);
 
       if (userError) {
-
         throw userError;
       }
 
       return { success: true };
     } catch (error) {
-
       return { success: false, error };
     }
   }

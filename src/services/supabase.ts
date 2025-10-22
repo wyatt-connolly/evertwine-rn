@@ -74,12 +74,9 @@ export class SupabaseAuthService {
 
   static async signOut() {
     try {
-
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-
     } catch (error) {
-
       throw error;
     }
   }
@@ -87,7 +84,6 @@ export class SupabaseAuthService {
   // Clear browser session to allow account switching
   static async clearBrowserSession() {
     try {
-
       // Clear any cached browser sessions with timeout
       await Promise.race([
         WebBrowser.dismissBrowser(),
@@ -95,9 +91,7 @@ export class SupabaseAuthService {
           setTimeout(() => reject(new Error("Timeout")), 2000)
         ),
       ]);
-
     } catch (error) {
-
       // Don't throw - this is not critical
     }
   }
@@ -105,7 +99,6 @@ export class SupabaseAuthService {
   // OAuth Authentication
   static async signInWithGoogle() {
     try {
-
       // Use the standard OAuth flow without skipBrowserRedirect
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -118,12 +111,10 @@ export class SupabaseAuthService {
       });
 
       if (error) {
-
         throw new Error(`Google OAuth not configured: ${error.message}`);
       }
 
       if (!data?.url) {
-
         throw new Error(
           "Google OAuth provider not configured in Supabase dashboard"
         );
@@ -137,11 +128,9 @@ export class SupabaseAuthService {
 
       // Process the OAuth callback URL to set the session
       if (result.type === "success" && result.url) {
-
         // Extract the URL fragment (everything after #)
         const urlFragment = result.url.split("#")[1];
         if (urlFragment) {
-
           // Parse the URL fragment to extract tokens
           const params = new URLSearchParams(urlFragment);
           const accessToken = params.get("access_token");
@@ -156,25 +145,20 @@ export class SupabaseAuthService {
               });
 
             if (sessionError) {
-
               throw new Error(`Failed to set session: ${sessionError.message}`);
             }
-
           } else {
-
             throw new Error(
               "Missing access or refresh token in OAuth callback"
             );
           }
         } else {
-
           throw new Error("No URL fragment in OAuth callback");
         }
       }
 
       return result;
     } catch (error) {
-
       throw error;
     }
   }
@@ -184,7 +168,6 @@ export class SupabaseAuthService {
     if (!authUser) return;
 
     try {
-
       // Check if user already exists in database
       const { data: existingUser, error: fetchError } = await supabase
         .from("users")
@@ -193,7 +176,6 @@ export class SupabaseAuthService {
         .single();
 
       if (existingUser) {
-
         return existingUser;
       }
 
@@ -265,7 +247,6 @@ export class SupabaseAuthService {
 
       return newUser;
     } catch (error) {
-
       throw error;
     }
   }
@@ -283,7 +264,6 @@ export class SupabaseAuthService {
     });
 
     if (error) {
-
       throw new Error(`Apple OAuth not configured: ${error.message}`);
     }
 
@@ -307,7 +287,6 @@ export class SupabaseAuthService {
 
     // Handle session if successful
     if (result.type === "success" && result.url) {
-
       // Extract the URL fragment (everything after #)
       const urlFragment = result.url.split("#")[1];
       if (urlFragment) {
@@ -317,7 +296,6 @@ export class SupabaseAuthService {
         const refreshToken = params.get("refresh_token");
 
         if (accessToken) {
-
           // Set the session manually
           const { data: sessionData, error: sessionError } =
             await supabase.auth.setSession({
@@ -326,7 +304,6 @@ export class SupabaseAuthService {
             });
 
           if (sessionError) {
-
             throw sessionError;
           }
 
@@ -363,7 +340,6 @@ export class SupabaseAuthService {
   // Account Deletion
   static async deleteAccount(): Promise<{ success: boolean; error?: any }> {
     try {
-
       // Get current user to get their ID
       const {
         data: { user },
@@ -371,30 +347,25 @@ export class SupabaseAuthService {
       } = await supabase.auth.getUser();
 
       if (getUserError) {
-
         return { success: false, error: getUserError };
       }
 
       if (!user) {
-
         return { success: false, error: new Error("No user found") };
       }
 
       // For now, we'll just sign out the user since we can't delete from auth on client side
       // In a production app, you would call an Edge Function with service role key
 
-
       // Sign out the user
       const { error: signOutError } = await supabase.auth.signOut();
 
       if (signOutError) {
-
         return { success: false, error: signOutError };
       }
 
       return { success: true };
     } catch (error) {
-
       return { success: false, error };
     }
   }
