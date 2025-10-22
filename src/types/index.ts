@@ -67,6 +67,23 @@ export interface User {
   // User Preferences
   preferences?: UserPreferences;
 
+  // Notification Settings (stored as JSONB in database)
+  notificationPreferences?: {
+    meetup_invites: boolean;
+    meetup_reminders: boolean;
+    meetup_updates: boolean;
+    meetup_cancelled: boolean;
+    new_messages: boolean;
+    message_replies: boolean;
+    new_followers: boolean;
+    profile_views: boolean;
+    friend_requests: boolean;
+    profile_likes: boolean;
+    app_updates: boolean;
+    promotions: boolean;
+    verification_updates: boolean;
+  };
+
   // Timestamps
   createdTime: Date;
   updatedTime: Date;

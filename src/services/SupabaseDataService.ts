@@ -417,6 +417,7 @@ export class SupabaseDataService {
       viewsThisWeek: data.views_this_week,
       averageViewDuration: data.average_view_duration,
       preferences: data.preferences,
+      notificationPreferences: data.notification_preferences,
       createdTime: new Date(data.created_time),
       updatedTime: new Date(data.updated_time),
     };
@@ -467,6 +468,7 @@ export class SupabaseDataService {
     if (user.averageViewDuration !== undefined)
       mapped.average_view_duration = user.averageViewDuration;
     if (user.preferences !== undefined) mapped.preferences = user.preferences;
+    if (user.notificationPreferences !== undefined) mapped.notification_preferences = user.notificationPreferences;
     if (user.createdTime !== undefined)
       mapped.created_time = user.createdTime.toISOString();
     if (user.updatedTime !== undefined)

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,13 +6,18 @@ import {
   TouchableOpacity,
   ScrollView,
   Switch,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { useAuthStore } from "../../hooks/useAuthStore";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
 
 export default function NotificationsScreen({ navigation }: any) {
   const { colors } = useThemeStore();
+  const { user } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(true);
 
   // Notification settings state
   const [notificationSettings, setNotificationSettings] = useState({
@@ -38,11 +43,58 @@ export default function NotificationsScreen({ navigation }: any) {
     verification_updates: true,
   });
 
-  const handleToggle = (settingId: string) => {
+  // Load notification preferences from Supabase
+  useEffect(() => {
+    const loadNotificationPreferences = async () => {
+      if (!user?.uid) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const userData = await SupabaseDataService.getUser(user.uid);
+        if (userData?.notificationPreferences) {
+          setNotificationSettings(userData.notificationPreferences);
+        }
+      } catch (error) {
+        console.error("Error loading notification preferences:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadNotificationPreferences();
+  }, [user?.uid]);
+
+  const handleToggle = async (settingId: string) => {
+    const newValue = !notificationSettings[settingId as keyof typeof notificationSettings];
+    
+    // Update local state immediately for responsive UI
     setNotificationSettings((prev) => ({
       ...prev,
-      [settingId]: !prev[settingId as keyof typeof prev],
+      [settingId]: newValue,
     }));
+
+    // Save to Supabase
+    if (user?.uid) {
+      try {
+        const updatedPreferences = {
+          ...notificationSettings,
+          [settingId]: newValue,
+        };
+        
+        await SupabaseDataService.updateUser(user.uid, {
+          notificationPreferences: updatedPreferences,
+        });
+      } catch (error) {
+        console.error("Error saving notification preferences:", error);
+        // Revert local state on error
+        setNotificationSettings((prev) => ({
+          ...prev,
+          [settingId]: !newValue,
+        }));
+      }
+    }
   };
 
   const settingsData = [
@@ -166,10 +218,19 @@ export default function NotificationsScreen({ navigation }: any) {
       </View>
 
       {/* Settings List */}
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-      >
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.text }]}>
+            Loading notification settings...
+          </Text>
+        </View>
+      ) : (
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={{ paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+        >
         {settingsData.map((section, sectionIndex) => (
           <View key={section.category} style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -247,7 +308,8 @@ export default function NotificationsScreen({ navigation }: any) {
             </View>
           </View>
         ))}
-      </ScrollView>
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
@@ -331,5 +393,16 @@ const styles = StyleSheet.create({
   separator: {
     height: 1,
     marginLeft: 68,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    textAlign: "center",
   },
 });

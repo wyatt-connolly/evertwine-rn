@@ -170,7 +170,7 @@ export default function EditProfileScreen() {
 
   const handleEditSection = (section: string) => {
     if (!profileData) return;
-    
+
     setEditingSection(section);
 
     // Set up temp data based on section
