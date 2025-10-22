@@ -354,7 +354,7 @@ export default function SettingsScreen({ navigation }: any) {
             <Switch
               value={notificationsEnabled}
               onValueChange={handleNotificationToggle}
-              trackColor={{ false: colors.border, true: colors.primary }}
+              trackColor={{ false: colors.border, true: "#10B981" }}
               thumbColor={colors.surface}
             />
           </View>
@@ -371,7 +371,7 @@ export default function SettingsScreen({ navigation }: any) {
             <Switch
               value={notificationsEnabled}
               onValueChange={handleNotificationToggle}
-              trackColor={{ false: colors.border, true: colors.primary }}
+              trackColor={{ false: colors.border, true: "#10B981" }}
               thumbColor={colors.surface}
             />
           </View>
@@ -395,7 +395,7 @@ export default function SettingsScreen({ navigation }: any) {
             <Switch
               value={locationEnabled}
               onValueChange={handleLocationToggle}
-              trackColor={{ false: colors.border, true: colors.primary }}
+              trackColor={{ false: colors.border, true: "#10B981" }}
               thumbColor={colors.surface}
             />
           </View>
@@ -455,7 +455,7 @@ export default function SettingsScreen({ navigation }: any) {
             <Switch
               value={isDarkMode}
               onValueChange={toggleTheme}
-              trackColor={{ false: colors.border, true: colors.primary }}
+              trackColor={{ false: colors.border, true: "#10B981" }}
               thumbColor={colors.surface}
             />
           </View>

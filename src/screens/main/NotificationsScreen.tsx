@@ -365,7 +365,7 @@ export default function NotificationsScreen({ navigation }: any) {
                         onValueChange={() => handleToggle(item.id)}
                          trackColor={{
                            false: colors.border,
-                           true: colors.primary,
+                           true: "#10B981",
                          }}
                         thumbColor={
                           notificationSettings[
