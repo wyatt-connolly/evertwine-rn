@@ -377,7 +377,6 @@ export default function ProfileScreen({ navigation, route }: any) {
             </TouchableOpacity>
           )}
 
-
           <TouchableOpacity
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
             onPress={handleNotifications}
