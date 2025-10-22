@@ -254,75 +254,67 @@ export default function EditProfileScreen({ navigation }: any) {
   const uploadSelectedPhoto = async (selectedPhoto: any, photoIndex?: number) => {
     try {
       setUploadingPhotos(true);
-          // Upload the single photo to Supabase
-          console.log("📤 Starting upload of photo:", selectedPhoto.uri);
-          const uploadedUrl = await uploadProfileImage(selectedPhoto.uri);
-          console.log("✅ Photo uploaded:", uploadedUrl);
+      
+      // Upload the single photo to Supabase
+      console.log("📤 Starting upload of photo:", selectedPhoto.uri);
+      const uploadedUrl = await uploadProfileImage(selectedPhoto.uri);
+      console.log("✅ Photo uploaded:", uploadedUrl);
 
-          if (uploadedUrl) {
-            // Create updated photos array
-            const currentPhotos = profileData?.profilePictures || [];
-            const updatedPhotos = [...currentPhotos];
-
-            if (photoIndex !== undefined) {
-              // Replace photo at specific index
-              updatedPhotos[photoIndex] = uploadedUrl;
-              console.log(`📝 Replacing photo at index ${photoIndex}`);
-            } else {
-              // Add to end (fallback behavior)
-              updatedPhotos.push(uploadedUrl);
-              console.log("📝 Adding photo to end");
-            }
-
-            // Ensure we don't exceed 6 photos
-            const finalPhotos = updatedPhotos.slice(0, 6);
-
-            console.log(
-              "💾 Saving to Supabase. Updated photos array:",
-              finalPhotos
-            );
-
-            // Update Supabase
-            if (profileData?.uid) {
-              const updateResult = await SupabaseDataService.updateUser(
-                profileData.uid,
-                {
-                  profilePictures: finalPhotos,
-                }
-              );
-
-              console.log("💾 Supabase update result:", updateResult);
-
-              // Update local state
-              setProfileData((prev) =>
-                prev ? { ...prev, profilePictures: finalPhotos } : null
-              );
-
-              console.log("✅ Local state updated. New profile data:", {
-                ...profileData,
-                profilePictures: finalPhotos,
-              });
-
-              Alert.alert("Success", "Photo uploaded successfully!");
-            } else {
-              console.error("❌ No profileData.uid available");
-            }
-          } else {
-            console.warn("⚠️ No valid URLs after upload");
-          }
-        } catch (error) {
-          console.error("❌ Error uploading photos:", error);
-          Alert.alert(
-            "Error",
-            "Failed to upload some photos. Please try again."
-          );
-        } finally {
-          setUploadingPhotos(false);
+      if (uploadedUrl) {
+        // Create updated photos array
+        const currentPhotos = profileData?.profilePictures || [];
+        const updatedPhotos = [...currentPhotos];
+        
+        if (photoIndex !== undefined) {
+          // Replace photo at specific index
+          updatedPhotos[photoIndex] = uploadedUrl;
+          console.log(`📝 Replacing photo at index ${photoIndex}`);
+        } else {
+          // Add to end (fallback behavior)
+          updatedPhotos.push(uploadedUrl);
+          console.log("📝 Adding photo to end");
         }
+
+        // Ensure we don't exceed 6 photos
+        const finalPhotos = updatedPhotos.slice(0, 6);
+
+        console.log(
+          "💾 Saving to Supabase. Updated photos array:",
+          finalPhotos
+        );
+
+        // Update Supabase
+        if (profileData?.uid) {
+          const updateResult = await SupabaseDataService.updateUser(
+            profileData.uid,
+            {
+              profilePictures: finalPhotos,
+            }
+          );
+
+          console.log("💾 Supabase update result:", updateResult);
+
+          // Update local state
+          setProfileData((prev) =>
+            prev ? { ...prev, profilePictures: finalPhotos } : null
+          );
+
+          console.log("✅ Local state updated. New profile data:", {
+            ...profileData,
+            profilePictures: finalPhotos,
+          });
+
+          Alert.alert("Success", "Photo uploaded successfully!");
+        } else {
+          console.error("❌ No profileData.uid available");
+        }
+      } else {
+        console.warn("⚠️ No valid URLs after upload");
       }
     } catch (error) {
-      console.error("Error picking images:", error);
-      Alert.alert("Error", "Failed to upload photos. Please try again.");
+      console.error("❌ Error uploading photo:", error);
+      Alert.alert("Error", "Failed to upload photo. Please try again.");
+    } finally {
       setUploadingPhotos(false);
     }
   };
