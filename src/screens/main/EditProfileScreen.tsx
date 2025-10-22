@@ -223,10 +223,37 @@ export default function EditProfileScreen({ navigation }: any) {
 
       if (!result.canceled && result.assets.length > 0) {
         const selectedPhoto = result.assets[0];
-        console.log("📷 Selected photo to upload at index:", photoIndex || "end");
-        setUploadingPhotos(true);
+        console.log(
+          "📷 Selected photo to upload at index:",
+          photoIndex || "end"
+        );
+        
+        // Show preview and confirmation
+        Alert.alert(
+          "Preview Photo",
+          "Do you want to upload this photo?",
+          [
+            {
+              text: "Cancel",
+              style: "cancel",
+            },
+            {
+              text: "Upload",
+              onPress: () => uploadSelectedPhoto(selectedPhoto, photoIndex),
+            },
+          ],
+          { cancelable: true }
+        );
+      }
+    } catch (error) {
+      console.error("❌ Error selecting photo:", error);
+      Alert.alert("Error", "Failed to select photo. Please try again.");
+    }
+  };
 
-        try {
+  const uploadSelectedPhoto = async (selectedPhoto: any, photoIndex?: number) => {
+    try {
+      setUploadingPhotos(true);
           // Upload the single photo to Supabase
           console.log("📤 Starting upload of photo:", selectedPhoto.uri);
           const uploadedUrl = await uploadProfileImage(selectedPhoto.uri);
@@ -236,7 +263,7 @@ export default function EditProfileScreen({ navigation }: any) {
             // Create updated photos array
             const currentPhotos = profileData?.profilePictures || [];
             const updatedPhotos = [...currentPhotos];
-            
+
             if (photoIndex !== undefined) {
               // Replace photo at specific index
               updatedPhotos[photoIndex] = uploadedUrl;
@@ -250,7 +277,10 @@ export default function EditProfileScreen({ navigation }: any) {
             // Ensure we don't exceed 6 photos
             const finalPhotos = updatedPhotos.slice(0, 6);
 
-            console.log("💾 Saving to Supabase. Updated photos array:", finalPhotos);
+            console.log(
+              "💾 Saving to Supabase. Updated photos array:",
+              finalPhotos
+            );
 
             // Update Supabase
             if (profileData?.uid) {
@@ -273,10 +303,7 @@ export default function EditProfileScreen({ navigation }: any) {
                 profilePictures: finalPhotos,
               });
 
-              Alert.alert(
-                "Success",
-                "Photo uploaded successfully!"
-              );
+              Alert.alert("Success", "Photo uploaded successfully!");
             } else {
               console.error("❌ No profileData.uid available");
             }
@@ -537,22 +564,8 @@ export default function EditProfileScreen({ navigation }: any) {
                           source={{ uri: photo }}
                           style={styles.gridPhoto}
                         />
-                        {/* Remove button */}
-                        <TouchableOpacity
-                          style={[
-                            styles.removePhotoButton,
-                            { backgroundColor: colors.error },
-                          ]}
-                          onPress={() => handleRemovePhoto(index)}
-                        >
-                          <Ionicons
-                            name="close"
-                            size={14}
-                            color={colors.error}
-                          />
-                        </TouchableOpacity>
-                        {/* Standout photo indicator */}
-                        {profileData.standoutPhotoIndex === index && (
+                        {/* Star icon only on first photo (index 0) */}
+                        {index === 0 && (
                           <View
                             style={[
                               styles.standoutBadge,
@@ -567,45 +580,6 @@ export default function EditProfileScreen({ navigation }: any) {
                           </View>
                         )}
 
-                        {/* Standout photo toggle button */}
-                        <TouchableOpacity
-                          style={[
-                            styles.standoutButton,
-                            {
-                              backgroundColor:
-                                profileData.standoutPhotoIndex === index
-                                  ? colors.primary
-                                  : colors.surface + "80",
-                            },
-                          ]}
-                          onPress={() => handleSetStandoutPhoto(index)}
-                        >
-                          <Ionicons
-                            name="star"
-                            size={12}
-                            color={
-                              profileData.standoutPhotoIndex === index
-                                ? colors.onPrimary
-                                : colors.textSecondary
-                            }
-                          />
-                        </TouchableOpacity>
-
-                        {/* Replace photo button */}
-                        <TouchableOpacity
-                          style={[
-                            styles.replacePhotoButton,
-                            { backgroundColor: colors.primary },
-                          ]}
-                          onPress={() => handlePhotoUpload(index)}
-                          disabled={uploadingPhotos}
-                        >
-                          <Ionicons
-                            name="camera"
-                            size={12}
-                            color={colors.onPrimary}
-                          />
-                        </TouchableOpacity>
                       </View>
                     )}
                   </View>
@@ -613,23 +587,6 @@ export default function EditProfileScreen({ navigation }: any) {
               })}
             </View>
 
-            {/* Upload button */}
-            <TouchableOpacity
-              style={[styles.uploadButton, { backgroundColor: colors.primary }]}
-              onPress={handlePhotoUpload}
-              disabled={uploadingPhotos}
-            >
-              <Ionicons
-                name={uploadingPhotos ? "hourglass" : "cloud-upload"}
-                size={20}
-                color={colors.onPrimary}
-              />
-              <Text
-                style={[styles.uploadButtonText, { color: colors.onPrimary }]}
-              >
-                {uploadingPhotos ? "Uploading..." : "Add Photos"}
-              </Text>
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -994,22 +951,6 @@ export default function EditProfileScreen({ navigation }: any) {
                     />
                   </View>
                 )}
-                <TouchableOpacity
-                  style={[
-                    styles.changePhotoButton,
-                    { backgroundColor: colors.primary },
-                  ]}
-                >
-                  <Ionicons name="camera" size={16} color={colors.onPrimary} />
-                  <Text
-                    style={[
-                      styles.changePhotoText,
-                      { color: colors.onPrimary },
-                    ]}
-                  >
-                    Change Photo
-                  </Text>
-                </TouchableOpacity>
               </View>
               <View style={styles.modalButtons}>
                 <TouchableOpacity
