@@ -146,7 +146,7 @@ export default function EditProfileScreen() {
 
         // Load user stats (always use mock for now)
         if (DataService.isInDeveloperMode()) {
-          setUserStats(getMockUserStats(user.uid));
+          setUserStats(getMockUserStats(user.uid) || null);
         }
       } catch (error) {
         console.error("❌ Error loading profile data:", error);
@@ -211,9 +211,6 @@ export default function EditProfileScreen() {
 
       if (!result.canceled && result.assets.length > 0) {
         const selectedPhoto = result.assets[0];
-          "📷 Selected photo to upload at index:",
-          photoIndex || "end"
-        );
 
         // Show preview and confirmation
         Alert.alert(
@@ -264,10 +261,6 @@ export default function EditProfileScreen() {
         // Ensure we don't exceed 6 photos
         const finalPhotos = updatedPhotos.slice(0, 6);
 
-          "💾 Saving to Supabase. Updated photos array:",
-          finalPhotos
-        );
-
         // Update Supabase
         if (profileData?.uid) {
           const updateResult = await SupabaseDataService.updateUser(
@@ -282,10 +275,6 @@ export default function EditProfileScreen() {
           setProfileData((prev) =>
             prev ? { ...prev, profilePictures: finalPhotos } : null
           );
-
-            ...profileData,
-            profilePictures: finalPhotos,
-          });
 
           Alert.alert("Success", "Photo uploaded successfully!");
         } else {
@@ -365,7 +354,7 @@ export default function EditProfileScreen() {
   const handleSaveEdit = async () => {
     if (!editingSection || !user?.uid) return;
 
-    setLoading(true);
+    setIsLoading(true);
     try {
       let updates: Partial<User> = {};
 
@@ -430,7 +419,7 @@ export default function EditProfileScreen() {
       console.error("Error saving profile:", error);
       Alert.alert("Error", "Failed to save changes. Please try again.");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 

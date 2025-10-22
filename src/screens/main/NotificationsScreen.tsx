@@ -46,8 +46,11 @@ export default function NotificationsScreen({ navigation }: any) {
   // Load notification preferences from Supabase
   useEffect(() => {
     const loadNotificationPreferences = async () => {
-      console.log("🔔 NotificationsScreen: Starting to load preferences for user:", user?.uid);
-      
+      console.log(
+        "🔔 NotificationsScreen: Starting to load preferences for user:",
+        user?.uid
+      );
+
       if (!user?.uid) {
         console.log("🔔 NotificationsScreen: No user UID, skipping load");
         setIsLoading(false);
@@ -55,22 +58,31 @@ export default function NotificationsScreen({ navigation }: any) {
       }
 
       try {
-        console.log("🔔 NotificationsScreen: Fetching user data from Supabase...");
+        console.log(
+          "🔔 NotificationsScreen: Fetching user data from Supabase..."
+        );
         const userData = await SupabaseDataService.getUser(user.uid);
         console.log("🔔 NotificationsScreen: User data received:", {
           hasUserData: !!userData,
           hasNotificationPreferences: !!userData?.notificationPreferences,
-          notificationPreferences: userData?.notificationPreferences
+          notificationPreferences: userData?.notificationPreferences,
         });
-        
+
         if (userData?.notificationPreferences) {
-          console.log("🔔 NotificationsScreen: Setting notification preferences from database");
+          console.log(
+            "🔔 NotificationsScreen: Setting notification preferences from database"
+          );
           setNotificationSettings(userData.notificationPreferences);
         } else {
-          console.log("🔔 NotificationsScreen: No notification preferences found, using defaults");
+          console.log(
+            "🔔 NotificationsScreen: No notification preferences found, using defaults"
+          );
         }
       } catch (error) {
-        console.error("🔔 NotificationsScreen: Error loading notification preferences:", error);
+        console.error(
+          "🔔 NotificationsScreen: Error loading notification preferences:",
+          error
+        );
       } finally {
         console.log("🔔 NotificationsScreen: Loading complete");
         setIsLoading(false);
@@ -81,12 +93,20 @@ export default function NotificationsScreen({ navigation }: any) {
   }, [user?.uid]);
 
   const handleToggle = async (settingId: string) => {
-    console.log("🔔 NotificationsScreen: Toggle triggered for setting:", settingId);
-    
+    console.log(
+      "🔔 NotificationsScreen: Toggle triggered for setting:",
+      settingId
+    );
+
     const newValue =
       !notificationSettings[settingId as keyof typeof notificationSettings];
-    
-    console.log("🔔 NotificationsScreen: New value for", settingId, ":", newValue);
+
+    console.log(
+      "🔔 NotificationsScreen: New value for",
+      settingId,
+      ":",
+      newValue
+    );
 
     // Update local state immediately for responsive UI
     setNotificationSettings((prev) => ({
@@ -106,23 +126,30 @@ export default function NotificationsScreen({ navigation }: any) {
           userId: user.uid,
           settingId,
           newValue,
-          updatedPreferences
+          updatedPreferences,
         });
 
         const result = await SupabaseDataService.updateUser(user.uid, {
           notificationPreferences: updatedPreferences,
         });
-        
+
         console.log("🔔 NotificationsScreen: Supabase update result:", result);
-        console.log("🔔 NotificationsScreen: Successfully saved notification preferences");
+        console.log(
+          "🔔 NotificationsScreen: Successfully saved notification preferences"
+        );
       } catch (error) {
-        console.error("🔔 NotificationsScreen: Error saving notification preferences:", error);
+        console.error(
+          "🔔 NotificationsScreen: Error saving notification preferences:",
+          error
+        );
         // Revert local state on error
         setNotificationSettings((prev) => ({
           ...prev,
           [settingId]: !newValue,
         }));
-        console.log("🔔 NotificationsScreen: Reverted local state due to error");
+        console.log(
+          "🔔 NotificationsScreen: Reverted local state due to error"
+        );
       }
     } else {
       console.log("🔔 NotificationsScreen: No user UID available for saving");
