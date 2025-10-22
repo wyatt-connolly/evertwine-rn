@@ -104,6 +104,7 @@ function ProfileStackNavigator() {
       }}
     >
       <ProfileStack.Screen name="ProfileMain" component={ProfileScreen} />
+      <ProfileStack.Screen name="Notifications" component={NotificationsScreen} />
       <ProfileStack.Screen
         name="EditProfile"
         component={EditProfileScreen}

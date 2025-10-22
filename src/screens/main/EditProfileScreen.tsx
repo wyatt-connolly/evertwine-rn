@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,14 +9,13 @@ import {
   Image,
   Alert,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { SupabaseDataService } from "../../services/SupabaseDataService";
 import { SupabaseStorageService } from "../../services/SupabaseStorageService";
 import { DataService } from "../../services/DataService";
-import { getMockUserStats, mockUsers } from "../../data/mockData";
+import { getMockUserStats } from "../../data/mockData";
 import { UserStats, User } from "../../types";
 import * as ImagePicker from "expo-image-picker";
 
@@ -47,10 +46,9 @@ const INTERESTS = [
   "Adventure",
 ];
 
-export default function EditProfileScreen({ navigation }: any) {
+export default function EditProfileScreen() {
   const { user, updateUserProfile } = useAuthStore();
   const { colors } = useThemeStore();
-  const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Local state for editable profile data
@@ -139,8 +137,6 @@ export default function EditProfileScreen({ navigation }: any) {
             interests: [],
             lookingFor: [],
             onboardingComplete: user.onboardingComplete || false,
-            notificationsEnabled: true,
-            locationEnabled: true,
           });
 
           if (createResult.success) {
@@ -173,6 +169,8 @@ export default function EditProfileScreen({ navigation }: any) {
   }, [user?.uid]);
 
   const handleEditSection = (section: string) => {
+    if (!profileData) return;
+    
     setEditingSection(section);
 
     // Set up temp data based on section
@@ -437,8 +435,8 @@ export default function EditProfileScreen({ navigation }: any) {
       // Save to Supabase (or local storage in dev mode)
       if (!DataService.isInDeveloperMode()) {
         const result = await SupabaseDataService.updateUser(user.uid, updates);
-        if (result.error) {
-          throw new Error(result.error);
+        if ((result as any).error) {
+          throw new Error((result as any).error);
         }
       }
 
