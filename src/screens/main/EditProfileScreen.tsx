@@ -702,11 +702,6 @@ export default function EditProfileScreen() {
 
           <View style={styles.professionalGrid}>
             <View style={styles.professionalItem}>
-              <View
-                style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}
-              >
-                <Ionicons name="school-outline" size={16} color="#FFFFFF" />
-              </View>
               <View style={styles.professionalItemContent}>
                 <Text
                   style={[
@@ -740,11 +735,6 @@ export default function EditProfileScreen() {
             </View>
 
             <View style={styles.professionalItem}>
-              <View
-                style={[styles.iconContainer, { backgroundColor: "#F97316" }]}
-              >
-                <Ionicons name="briefcase-outline" size={16} color="#FFFFFF" />
-              </View>
               <View style={styles.professionalItemContent}>
                 <Text
                   style={[
@@ -1706,7 +1696,6 @@ const styles = StyleSheet.create({
   },
   professionalItemContent: {
     flex: 1,
-    marginLeft: 16,
   },
   professionalItemLabel: {
     fontSize: 12,

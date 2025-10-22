@@ -321,22 +321,6 @@ export default function NotificationsScreen({ navigation }: any) {
                   <View key={item.id}>
                     <View style={styles.settingRow}>
                       <View style={styles.settingLeft}>
-                        <View
-                          style={[
-                            styles.iconContainer,
-                            {
-                              backgroundColor: getCategoryColor(
-                                section.category
-                              ),
-                            },
-                          ]}
-                        >
-                          <Ionicons
-                            name={item.icon as any}
-                            size={20}
-                            color="#FFFFFF"
-                          />
-                        </View>
                         <View style={styles.settingText}>
                           <Text
                             style={[
@@ -363,10 +347,10 @@ export default function NotificationsScreen({ navigation }: any) {
                           ]
                         }
                         onValueChange={() => handleToggle(item.id)}
-                         trackColor={{
-                           false: colors.border,
-                           true: "#10B981",
-                         }}
+                        trackColor={{
+                          false: colors.border,
+                          true: "#10B981",
+                        }}
                         thumbColor={
                           notificationSettings[
                             item.id as keyof typeof notificationSettings
@@ -473,7 +457,7 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    marginLeft: 68,
+    marginLeft: 16,
   },
   loadingContainer: {
     flex: 1,
