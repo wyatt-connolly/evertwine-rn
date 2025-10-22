@@ -212,7 +212,7 @@ export default function ProfileScreen({ navigation, route }: any) {
   };
 
   const handleNotifications = () => {
-    Alert.alert("Notifications", "Notification settings coming soon!");
+    navigation.navigate("Notifications");
   };
 
   const handleHelp = () => {

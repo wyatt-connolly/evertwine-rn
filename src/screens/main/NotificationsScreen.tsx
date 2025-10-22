@@ -13,7 +13,7 @@ import { useThemeStore } from "../../hooks/useThemeStore";
 
 export default function NotificationsScreen({ navigation }: any) {
   const { colors } = useThemeStore();
-  
+
   // Notification settings state
   const [notificationSettings, setNotificationSettings] = useState({
     // Meetup Notifications
@@ -21,17 +21,17 @@ export default function NotificationsScreen({ navigation }: any) {
     meetup_reminders: true,
     meetup_updates: true,
     meetup_cancelled: true,
-    
+
     // Message Notifications
     new_messages: true,
     message_replies: true,
-    
+
     // Social Notifications
     new_followers: true,
     profile_views: false,
     friend_requests: true,
     profile_likes: false,
-    
+
     // System Notifications
     app_updates: true,
     promotions: false,
@@ -39,9 +39,9 @@ export default function NotificationsScreen({ navigation }: any) {
   });
 
   const handleToggle = (settingId: string) => {
-    setNotificationSettings(prev => ({
+    setNotificationSettings((prev) => ({
       ...prev,
-      [settingId]: !prev[settingId as keyof typeof prev]
+      [settingId]: !prev[settingId as keyof typeof prev],
     }));
   };
 
@@ -49,100 +49,100 @@ export default function NotificationsScreen({ navigation }: any) {
     {
       category: "Meetups",
       items: [
-        { 
-          id: "meetup_invites", 
-          title: "Meetup Invites", 
+        {
+          id: "meetup_invites",
+          title: "Meetup Invites",
           description: "When someone invites you to a meetup",
-          icon: "calendar-outline" 
+          icon: "calendar-outline",
         },
-        { 
-          id: "meetup_reminders", 
-          title: "Meetup Reminders", 
+        {
+          id: "meetup_reminders",
+          title: "Meetup Reminders",
           description: "Reminders before your meetups start",
-          icon: "time-outline" 
+          icon: "time-outline",
         },
-        { 
-          id: "meetup_updates", 
-          title: "Meetup Updates", 
+        {
+          id: "meetup_updates",
+          title: "Meetup Updates",
           description: "When meetup details are changed",
-          icon: "refresh-outline" 
+          icon: "refresh-outline",
         },
-        { 
-          id: "meetup_cancelled", 
-          title: "Meetup Cancelled", 
+        {
+          id: "meetup_cancelled",
+          title: "Meetup Cancelled",
           description: "When a meetup you're attending is cancelled",
-          icon: "close-circle-outline" 
+          icon: "close-circle-outline",
         },
-      ]
+      ],
     },
     {
       category: "Messages",
       items: [
-        { 
-          id: "new_messages", 
-          title: "New Messages", 
+        {
+          id: "new_messages",
+          title: "New Messages",
           description: "When you receive a new message",
-          icon: "mail-outline" 
+          icon: "mail-outline",
         },
-        { 
-          id: "message_replies", 
-          title: "Message Replies", 
+        {
+          id: "message_replies",
+          title: "Message Replies",
           description: "When someone replies to your message",
-          icon: "chatbubble-outline" 
+          icon: "chatbubble-outline",
         },
-      ]
+      ],
     },
     {
       category: "Social",
       items: [
-        { 
-          id: "new_followers", 
-          title: "New Followers", 
+        {
+          id: "new_followers",
+          title: "New Followers",
           description: "When someone follows you",
-          icon: "person-add-outline" 
+          icon: "person-add-outline",
         },
-        { 
-          id: "profile_views", 
-          title: "Profile Views", 
+        {
+          id: "profile_views",
+          title: "Profile Views",
           description: "When someone views your profile",
-          icon: "eye-outline" 
+          icon: "eye-outline",
         },
-        { 
-          id: "friend_requests", 
-          title: "Friend Requests", 
+        {
+          id: "friend_requests",
+          title: "Friend Requests",
           description: "When someone sends you a friend request",
-          icon: "people-outline" 
+          icon: "people-outline",
         },
-        { 
-          id: "profile_likes", 
-          title: "Profile Likes", 
+        {
+          id: "profile_likes",
+          title: "Profile Likes",
           description: "When someone likes your profile",
-          icon: "heart-outline" 
+          icon: "heart-outline",
         },
-      ]
+      ],
     },
     {
       category: "System",
       items: [
-        { 
-          id: "app_updates", 
-          title: "App Updates", 
+        {
+          id: "app_updates",
+          title: "App Updates",
           description: "Important app updates and new features",
-          icon: "sparkles-outline" 
+          icon: "sparkles-outline",
         },
-        { 
-          id: "promotions", 
-          title: "Promotions", 
+        {
+          id: "promotions",
+          title: "Promotions",
           description: "Special offers and promotional content",
-          icon: "gift-outline" 
+          icon: "gift-outline",
         },
-        { 
-          id: "verification_updates", 
-          title: "Verification Updates", 
+        {
+          id: "verification_updates",
+          title: "Verification Updates",
           description: "Updates about your account verification",
-          icon: "checkmark-done-circle-outline" 
+          icon: "checkmark-done-circle-outline",
         },
-      ]
+      ],
     },
   ];
 
@@ -175,44 +175,72 @@ export default function NotificationsScreen({ navigation }: any) {
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
               {section.category}
             </Text>
-            
-            <View style={[styles.sectionContent, { backgroundColor: colors.surface }]}>
+
+            <View
+              style={[
+                styles.sectionContent,
+                { backgroundColor: colors.surface },
+              ]}
+            >
               {section.items.map((item, itemIndex) => (
                 <View key={item.id}>
                   <View style={styles.settingRow}>
                     <View style={styles.settingLeft}>
-                      <View style={[styles.iconContainer, { backgroundColor: colors.primary + "20" }]}>
-                        <Ionicons 
-                          name={item.icon as any} 
-                          size={20} 
-                          color={colors.primary} 
+                      <View
+                        style={[
+                          styles.iconContainer,
+                          { backgroundColor: colors.primary + "20" },
+                        ]}
+                      >
+                        <Ionicons
+                          name={item.icon as any}
+                          size={20}
+                          color={colors.primary}
                         />
                       </View>
                       <View style={styles.settingText}>
-                        <Text style={[styles.settingTitle, { color: colors.text }]}>
+                        <Text
+                          style={[styles.settingTitle, { color: colors.text }]}
+                        >
                           {item.title}
                         </Text>
-                        <Text style={[styles.settingDescription, { color: colors.textSecondary }]}>
+                        <Text
+                          style={[
+                            styles.settingDescription,
+                            { color: colors.textSecondary },
+                          ]}
+                        >
                           {item.description}
                         </Text>
                       </View>
                     </View>
                     <Switch
-                      value={notificationSettings[item.id as keyof typeof notificationSettings]}
+                      value={
+                        notificationSettings[
+                          item.id as keyof typeof notificationSettings
+                        ]
+                      }
                       onValueChange={() => handleToggle(item.id)}
-                      trackColor={{ 
-                        false: colors.border, 
-                        true: colors.primary + "40" 
+                      trackColor={{
+                        false: colors.border,
+                        true: colors.primary + "40",
                       }}
                       thumbColor={
-                        notificationSettings[item.id as keyof typeof notificationSettings]
+                        notificationSettings[
+                          item.id as keyof typeof notificationSettings
+                        ]
                           ? colors.primary
                           : colors.textTertiary
                       }
                     />
                   </View>
                   {itemIndex < section.items.length - 1 && (
-                    <View style={[styles.separator, { backgroundColor: colors.border }]} />
+                    <View
+                      style={[
+                        styles.separator,
+                        { backgroundColor: colors.border },
+                      ]}
+                    />
                   )}
                 </View>
               ))}
