@@ -41,9 +41,7 @@ export default function SettingsScreen({ navigation }: any) {
         setNotificationsEnabled(userData.user.notificationsEnabled ?? true);
         setLocationEnabled(userData.user.locationEnabled ?? true);
       }
-    } catch (error) {
-
-    }
+    } catch (error) {}
   };
 
   // Save notification settings changes
@@ -58,7 +56,6 @@ export default function SettingsScreen({ navigation }: any) {
           });
         }
       } catch (error) {
-
         // Revert on error
         setNotificationsEnabled(!value);
         Alert.alert("Error", "Failed to save setting");
@@ -78,7 +75,6 @@ export default function SettingsScreen({ navigation }: any) {
           });
         }
       } catch (error) {
-
         setLocationEnabled(!value);
         Alert.alert("Error", "Failed to save setting");
       }
@@ -157,9 +153,7 @@ export default function SettingsScreen({ navigation }: any) {
 
       try {
         await SupabaseStorageService.deleteAllUserFiles(user.uid);
-
       } catch (storageError) {
-
         // Continue with database deletion even if storage deletion fails
       }
 
@@ -197,7 +191,6 @@ export default function SettingsScreen({ navigation }: any) {
         [{ text: "OK" }]
       );
     } catch (error: any) {
-
       Alert.alert(
         "Delete Failed",
         "We encountered an error while deleting your account. Please try again later or contact support if the problem persists."
@@ -253,7 +246,9 @@ export default function SettingsScreen({ navigation }: any) {
           <TouchableOpacity
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
           >
-            <View style={[styles.iconContainer, { backgroundColor: '#8B5CF6' }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}
+            >
               <Ionicons name="person-outline" size={20} color="#FFFFFF" />
             </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
@@ -269,7 +264,9 @@ export default function SettingsScreen({ navigation }: any) {
           <TouchableOpacity
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
           >
-            <View style={[styles.iconContainer, { backgroundColor: '#8B5CF6' }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}
+            >
               <Ionicons name="key-outline" size={20} color="#FFFFFF" />
             </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
@@ -283,12 +280,10 @@ export default function SettingsScreen({ navigation }: any) {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.menuItem} onPress={handleDataExport}>
-            <View style={[styles.iconContainer, { backgroundColor: '#8B5CF6' }]}>
-              <Ionicons
-                name="download-outline"
-                size={20}
-                color="#FFFFFF"
-              />
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}
+            >
+              <Ionicons name="download-outline" size={20} color="#FFFFFF" />
             </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
               Export Data
@@ -311,12 +306,10 @@ export default function SettingsScreen({ navigation }: any) {
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
             onPress={handlePreferences}
           >
-            <View style={[styles.iconContainer, { backgroundColor: '#F97316' }]}>
-              <Ionicons
-                name="settings-outline"
-                size={20}
-                color="#FFFFFF"
-              />
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#F97316" }]}
+            >
+              <Ionicons name="settings-outline" size={20} color="#FFFFFF" />
             </View>
             <View style={styles.preferenceTextContainer}>
               <Text style={[styles.preferenceMainText, { color: colors.text }]}>
@@ -346,7 +339,9 @@ export default function SettingsScreen({ navigation }: any) {
           </Text>
 
           <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
-            <View style={[styles.iconContainer, { backgroundColor: '#3B82F6' }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}
+            >
               <Ionicons
                 name="notifications-outline"
                 size={20}
@@ -359,13 +354,15 @@ export default function SettingsScreen({ navigation }: any) {
             <Switch
               value={notificationsEnabled}
               onValueChange={handleNotificationToggle}
-              trackColor={{ false: colors.border, true: '#3B82F6' }}
+              trackColor={{ false: colors.border, true: colors.primary }}
               thumbColor={colors.surface}
             />
           </View>
 
           <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
-            <View style={[styles.iconContainer, { backgroundColor: '#3B82F6' }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}
+            >
               <Ionicons name="mail-outline" size={20} color="#FFFFFF" />
             </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
@@ -374,7 +371,7 @@ export default function SettingsScreen({ navigation }: any) {
             <Switch
               value={notificationsEnabled}
               onValueChange={handleNotificationToggle}
-              trackColor={{ false: colors.border, true: '#3B82F6' }}
+              trackColor={{ false: colors.border, true: colors.primary }}
               thumbColor={colors.surface}
             />
           </View>
@@ -387,12 +384,10 @@ export default function SettingsScreen({ navigation }: any) {
           </Text>
 
           <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
-            <View style={[styles.iconContainer, { backgroundColor: '#14B8A6' }]}>
-              <Ionicons
-                name="location-outline"
-                size={20}
-                color="#FFFFFF"
-              />
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#14B8A6" }]}
+            >
+              <Ionicons name="location-outline" size={20} color="#FFFFFF" />
             </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
               Location Services
@@ -400,13 +395,15 @@ export default function SettingsScreen({ navigation }: any) {
             <Switch
               value={locationEnabled}
               onValueChange={handleLocationToggle}
-              trackColor={{ false: colors.border, true: '#14B8A6' }}
+              trackColor={{ false: colors.border, true: colors.primary }}
               thumbColor={colors.surface}
             />
           </View>
 
           <TouchableOpacity style={styles.menuItem} onPress={handlePrivacy}>
-            <View style={[styles.iconContainer, { backgroundColor: '#14B8A6' }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#14B8A6" }]}
+            >
               <Ionicons name="shield-outline" size={20} color="#FFFFFF" />
             </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
@@ -420,7 +417,9 @@ export default function SettingsScreen({ navigation }: any) {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.menuItem} onPress={handleTerms}>
-            <View style={[styles.iconContainer, { backgroundColor: '#14B8A6' }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#14B8A6" }]}
+            >
               <Ionicons
                 name="document-text-outline"
                 size={20}
@@ -445,7 +444,9 @@ export default function SettingsScreen({ navigation }: any) {
           </Text>
 
           <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
-            <View style={[styles.iconContainer, { backgroundColor: '#6366F1' }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#6366F1" }]}
+            >
               <Ionicons name="moon-outline" size={20} color="#FFFFFF" />
             </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
@@ -454,7 +455,7 @@ export default function SettingsScreen({ navigation }: any) {
             <Switch
               value={isDarkMode}
               onValueChange={toggleTheme}
-              trackColor={{ false: colors.border, true: '#6366F1' }}
+              trackColor={{ false: colors.border, true: colors.primary }}
               thumbColor={colors.surface}
             />
           </View>
@@ -467,7 +468,9 @@ export default function SettingsScreen({ navigation }: any) {
           </Text>
 
           <TouchableOpacity style={styles.menuItem} onPress={handleClearCache}>
-            <View style={[styles.iconContainer, { backgroundColor: '#F59E0B' }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#F59E0B" }]}
+            >
               <Ionicons name="trash-outline" size={20} color="#FFFFFF" />
             </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
@@ -488,7 +491,9 @@ export default function SettingsScreen({ navigation }: any) {
           </Text>
 
           <TouchableOpacity style={styles.menuItem} onPress={handleContact}>
-            <View style={[styles.iconContainer, { backgroundColor: '#06B6D4' }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#06B6D4" }]}
+            >
               <Ionicons name="mail-outline" size={20} color="#FFFFFF" />
             </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
@@ -502,7 +507,9 @@ export default function SettingsScreen({ navigation }: any) {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.menuItem} onPress={handleAbout}>
-            <View style={[styles.iconContainer, { backgroundColor: '#06B6D4' }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#06B6D4" }]}
+            >
               <Ionicons
                 name="information-circle-outline"
                 size={20}
@@ -528,7 +535,9 @@ export default function SettingsScreen({ navigation }: any) {
             style={[styles.dangerItem, { borderBottomColor: colors.border }]}
             onPress={handleDeleteAccount}
           >
-            <View style={[styles.iconContainer, { backgroundColor: '#EF4444' }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#EF4444" }]}
+            >
               <Ionicons name="trash-outline" size={20} color="#FFFFFF" />
             </View>
             <Text style={[styles.dangerText, { color: colors.error }]}>
@@ -627,8 +636,8 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 12,
   },
 });

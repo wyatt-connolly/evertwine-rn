@@ -324,7 +324,11 @@ export default function NotificationsScreen({ navigation }: any) {
                         <View
                           style={[
                             styles.iconContainer,
-                            { backgroundColor: getCategoryColor(section.category) },
+                            {
+                              backgroundColor: getCategoryColor(
+                                section.category
+                              ),
+                            },
                           ]}
                         >
                           <Ionicons
@@ -352,25 +356,25 @@ export default function NotificationsScreen({ navigation }: any) {
                           </Text>
                         </View>
                       </View>
-                        <Switch
-                          value={
-                            notificationSettings[
-                              item.id as keyof typeof notificationSettings
-                            ]
-                          }
-                          onValueChange={() => handleToggle(item.id)}
-                          trackColor={{
-                            false: colors.border,
-                            true: getCategoryColor(section.category),
-                          }}
-                          thumbColor={
-                            notificationSettings[
-                              item.id as keyof typeof notificationSettings
-                            ]
-                              ? "#FFFFFF"
-                              : colors.textTertiary
-                          }
-                        />
+                      <Switch
+                        value={
+                          notificationSettings[
+                            item.id as keyof typeof notificationSettings
+                          ]
+                        }
+                        onValueChange={() => handleToggle(item.id)}
+                         trackColor={{
+                           false: colors.border,
+                           true: colors.primary,
+                         }}
+                        thumbColor={
+                          notificationSettings[
+                            item.id as keyof typeof notificationSettings
+                          ]
+                            ? "#FFFFFF"
+                            : colors.textTertiary
+                        }
+                      />
                     </View>
                     {itemIndex < section.items.length - 1 && (
                       <View

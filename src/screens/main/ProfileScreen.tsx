@@ -361,12 +361,10 @@ export default function ProfileScreen({ navigation, route }: any) {
               style={[styles.menuItem, { borderBottomColor: colors.border }]}
               onPress={handleEditProfile}
             >
-              <View style={[styles.iconContainer, { backgroundColor: '#8B5CF6' }]}>
-                <Ionicons
-                  name="create-outline"
-                  size={20}
-                  color="#FFFFFF"
-                />
+              <View
+                style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}
+              >
+                <Ionicons name="create-outline" size={20} color="#FFFFFF" />
               </View>
               <Text style={[styles.menuText, { color: colors.text }]}>
                 Edit Profile
@@ -383,7 +381,9 @@ export default function ProfileScreen({ navigation, route }: any) {
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
             onPress={handleNotifications}
           >
-            <View style={[styles.iconContainer, { backgroundColor: '#3B82F6' }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}
+            >
               <Ionicons
                 name="notifications-outline"
                 size={20}
@@ -404,12 +404,10 @@ export default function ProfileScreen({ navigation, route }: any) {
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
             onPress={() => navigation.navigate("Settings")}
           >
-            <View style={[styles.iconContainer, { backgroundColor: '#6366F1' }]}>
-              <Ionicons
-                name="settings-outline"
-                size={20}
-                color="#FFFFFF"
-              />
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#6366F1" }]}
+            >
+              <Ionicons name="settings-outline" size={20} color="#FFFFFF" />
             </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
               Settings
@@ -425,7 +423,9 @@ export default function ProfileScreen({ navigation, route }: any) {
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
             onPress={handlePrivacy}
           >
-            <View style={[styles.iconContainer, { backgroundColor: '#14B8A6' }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#14B8A6" }]}
+            >
               <Ionicons name="shield-outline" size={20} color="#FFFFFF" />
             </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
@@ -442,12 +442,10 @@ export default function ProfileScreen({ navigation, route }: any) {
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
             onPress={handleHelp}
           >
-            <View style={[styles.iconContainer, { backgroundColor: '#06B6D4' }]}>
-              <Ionicons
-                name="help-circle-outline"
-                size={20}
-                color="#FFFFFF"
-              />
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#06B6D4" }]}
+            >
+              <Ionicons name="help-circle-outline" size={20} color="#FFFFFF" />
             </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
               Help & Support
@@ -572,8 +570,8 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 12,
   },
   logoutButton: {
