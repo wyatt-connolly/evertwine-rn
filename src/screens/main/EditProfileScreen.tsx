@@ -270,7 +270,6 @@ export default function EditProfileScreen() {
             }
           );
 
-
           // Update local state
           setProfileData((prev) =>
             prev ? { ...prev, profilePictures: finalPhotos } : null
@@ -297,7 +296,6 @@ export default function EditProfileScreen() {
       return;
     }
 
-
     Alert.alert("Remove Photo", "Are you sure you want to remove this photo?", [
       { text: "Cancel", style: "cancel" },
       {
@@ -308,7 +306,6 @@ export default function EditProfileScreen() {
             (_, i) => i !== index
           );
 
-
           // Update Supabase
           const updateResult = await SupabaseDataService.updateUser(
             profileData.uid,
@@ -317,12 +314,10 @@ export default function EditProfileScreen() {
             }
           );
 
-
           // Update local state
           setProfileData((prev) =>
             prev ? { ...prev, profilePictures: updatedPhotos } : null
           );
-
         },
       },
     ]);
@@ -337,18 +332,15 @@ export default function EditProfileScreen() {
     const newStandoutIndex =
       profileData.standoutPhotoIndex === index ? 0 : index;
 
-
     // Update Supabase
     const updateResult = await SupabaseDataService.updateUser(profileData.uid, {
       standoutPhotoIndex: newStandoutIndex,
     });
 
-
     // Update local state
     setProfileData((prev) =>
       prev ? { ...prev, standoutPhotoIndex: newStandoutIndex } : null
     );
-
   };
 
   const handleSaveEdit = async () => {
@@ -710,11 +702,13 @@ export default function EditProfileScreen() {
 
           <View style={styles.professionalGrid}>
             <View style={styles.professionalItem}>
-              <Ionicons
-                name="school-outline"
-                size={20}
-                color={colors.primary}
-              />
+              <View style={[styles.iconContainer, { backgroundColor: '#8B5CF6' }]}>
+                <Ionicons
+                  name="school-outline"
+                  size={16}
+                  color="#FFFFFF"
+                />
+              </View>
               <View style={styles.professionalItemContent}>
                 <Text
                   style={[
@@ -748,11 +742,13 @@ export default function EditProfileScreen() {
             </View>
 
             <View style={styles.professionalItem}>
-              <Ionicons
-                name="briefcase-outline"
-                size={20}
-                color={colors.primary}
-              />
+              <View style={[styles.iconContainer, { backgroundColor: '#F97316' }]}>
+                <Ionicons
+                  name="briefcase-outline"
+                  size={16}
+                  color="#FFFFFF"
+                />
+              </View>
               <View style={styles.professionalItemContent}>
                 <Text
                   style={[
@@ -1702,6 +1698,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     paddingVertical: 4,
+  },
+  iconContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+    marginTop: 2,
   },
   professionalItemContent: {
     flex: 1,

@@ -253,7 +253,9 @@ export default function SettingsScreen({ navigation }: any) {
           <TouchableOpacity
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
           >
-            <Ionicons name="person-outline" size={24} color={colors.primary} />
+            <View style={[styles.iconContainer, { backgroundColor: '#8B5CF6' }]}>
+              <Ionicons name="person-outline" size={20} color="#FFFFFF" />
+            </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
               Edit Profile
             </Text>
@@ -267,7 +269,9 @@ export default function SettingsScreen({ navigation }: any) {
           <TouchableOpacity
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
           >
-            <Ionicons name="key-outline" size={24} color={colors.primary} />
+            <View style={[styles.iconContainer, { backgroundColor: '#8B5CF6' }]}>
+              <Ionicons name="key-outline" size={20} color="#FFFFFF" />
+            </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
               Change Password
             </Text>
@@ -279,11 +283,13 @@ export default function SettingsScreen({ navigation }: any) {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.menuItem} onPress={handleDataExport}>
-            <Ionicons
-              name="download-outline"
-              size={24}
-              color={colors.primary}
-            />
+            <View style={[styles.iconContainer, { backgroundColor: '#8B5CF6' }]}>
+              <Ionicons
+                name="download-outline"
+                size={20}
+                color="#FFFFFF"
+              />
+            </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
               Export Data
             </Text>
@@ -305,11 +311,13 @@ export default function SettingsScreen({ navigation }: any) {
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
             onPress={handlePreferences}
           >
-            <Ionicons
-              name="settings-outline"
-              size={24}
-              color={colors.primary}
-            />
+            <View style={[styles.iconContainer, { backgroundColor: '#F97316' }]}>
+              <Ionicons
+                name="settings-outline"
+                size={20}
+                color="#FFFFFF"
+              />
+            </View>
             <View style={styles.preferenceTextContainer}>
               <Text style={[styles.preferenceMainText, { color: colors.text }]}>
                 Manage Preferences
@@ -338,31 +346,35 @@ export default function SettingsScreen({ navigation }: any) {
           </Text>
 
           <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
-            <Ionicons
-              name="notifications-outline"
-              size={24}
-              color={colors.primary}
-            />
+            <View style={[styles.iconContainer, { backgroundColor: '#3B82F6' }]}>
+              <Ionicons
+                name="notifications-outline"
+                size={20}
+                color="#FFFFFF"
+              />
+            </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
               Push Notifications
             </Text>
             <Switch
               value={notificationsEnabled}
               onValueChange={handleNotificationToggle}
-              trackColor={{ false: colors.border, true: colors.primary }}
+              trackColor={{ false: colors.border, true: '#3B82F6' }}
               thumbColor={colors.surface}
             />
           </View>
 
           <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
-            <Ionicons name="mail-outline" size={24} color={colors.primary} />
+            <View style={[styles.iconContainer, { backgroundColor: '#3B82F6' }]}>
+              <Ionicons name="mail-outline" size={20} color="#FFFFFF" />
+            </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
               Email Notifications
             </Text>
             <Switch
               value={notificationsEnabled}
               onValueChange={handleNotificationToggle}
-              trackColor={{ false: colors.border, true: colors.primary }}
+              trackColor={{ false: colors.border, true: '#3B82F6' }}
               thumbColor={colors.surface}
             />
           </View>
@@ -375,24 +387,28 @@ export default function SettingsScreen({ navigation }: any) {
           </Text>
 
           <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
-            <Ionicons
-              name="location-outline"
-              size={24}
-              color={colors.primary}
-            />
+            <View style={[styles.iconContainer, { backgroundColor: '#14B8A6' }]}>
+              <Ionicons
+                name="location-outline"
+                size={20}
+                color="#FFFFFF"
+              />
+            </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
               Location Services
             </Text>
             <Switch
               value={locationEnabled}
               onValueChange={handleLocationToggle}
-              trackColor={{ false: colors.border, true: colors.primary }}
+              trackColor={{ false: colors.border, true: '#14B8A6' }}
               thumbColor={colors.surface}
             />
           </View>
 
           <TouchableOpacity style={styles.menuItem} onPress={handlePrivacy}>
-            <Ionicons name="shield-outline" size={24} color={colors.primary} />
+            <View style={[styles.iconContainer, { backgroundColor: '#14B8A6' }]}>
+              <Ionicons name="shield-outline" size={20} color="#FFFFFF" />
+            </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
               Privacy Policy
             </Text>
@@ -404,11 +420,13 @@ export default function SettingsScreen({ navigation }: any) {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.menuItem} onPress={handleTerms}>
-            <Ionicons
-              name="document-text-outline"
-              size={24}
-              color={colors.primary}
-            />
+            <View style={[styles.iconContainer, { backgroundColor: '#14B8A6' }]}>
+              <Ionicons
+                name="document-text-outline"
+                size={20}
+                color="#FFFFFF"
+              />
+            </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
               Terms of Service
             </Text>
@@ -427,14 +445,16 @@ export default function SettingsScreen({ navigation }: any) {
           </Text>
 
           <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
-            <Ionicons name="moon-outline" size={24} color={colors.primary} />
+            <View style={[styles.iconContainer, { backgroundColor: '#6366F1' }]}>
+              <Ionicons name="moon-outline" size={20} color="#FFFFFF" />
+            </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
               Dark Mode
             </Text>
             <Switch
               value={isDarkMode}
               onValueChange={toggleTheme}
-              trackColor={{ false: colors.border, true: colors.primary }}
+              trackColor={{ false: colors.border, true: '#6366F1' }}
               thumbColor={colors.surface}
             />
           </View>
@@ -447,7 +467,9 @@ export default function SettingsScreen({ navigation }: any) {
           </Text>
 
           <TouchableOpacity style={styles.menuItem} onPress={handleClearCache}>
-            <Ionicons name="trash-outline" size={24} color={colors.primary} />
+            <View style={[styles.iconContainer, { backgroundColor: '#F59E0B' }]}>
+              <Ionicons name="trash-outline" size={20} color="#FFFFFF" />
+            </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
               Clear Cache
             </Text>
@@ -466,7 +488,9 @@ export default function SettingsScreen({ navigation }: any) {
           </Text>
 
           <TouchableOpacity style={styles.menuItem} onPress={handleContact}>
-            <Ionicons name="mail-outline" size={24} color={colors.primary} />
+            <View style={[styles.iconContainer, { backgroundColor: '#06B6D4' }]}>
+              <Ionicons name="mail-outline" size={20} color="#FFFFFF" />
+            </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
               Contact Support
             </Text>
@@ -478,11 +502,13 @@ export default function SettingsScreen({ navigation }: any) {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.menuItem} onPress={handleAbout}>
-            <Ionicons
-              name="information-circle-outline"
-              size={24}
-              color={colors.primary}
-            />
+            <View style={[styles.iconContainer, { backgroundColor: '#06B6D4' }]}>
+              <Ionicons
+                name="information-circle-outline"
+                size={20}
+                color="#FFFFFF"
+              />
+            </View>
             <Text style={[styles.menuText, { color: colors.text }]}>About</Text>
             <Ionicons
               name="chevron-forward"
@@ -502,7 +528,9 @@ export default function SettingsScreen({ navigation }: any) {
             style={[styles.dangerItem, { borderBottomColor: colors.border }]}
             onPress={handleDeleteAccount}
           >
-            <Ionicons name="trash-outline" size={24} color={colors.error} />
+            <View style={[styles.iconContainer, { backgroundColor: '#EF4444' }]}>
+              <Ionicons name="trash-outline" size={20} color="#FFFFFF" />
+            </View>
             <Text style={[styles.dangerText, { color: colors.error }]}>
               Delete Account
             </Text>
@@ -594,5 +622,13 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     marginLeft: 16,
+  },
+  iconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
 });
