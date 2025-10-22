@@ -227,7 +227,7 @@ export default function EditProfileScreen({ navigation }: any) {
           "📷 Selected photo to upload at index:",
           photoIndex || "end"
         );
-        
+
         // Show preview and confirmation
         Alert.alert(
           "Preview Photo",
@@ -251,10 +251,13 @@ export default function EditProfileScreen({ navigation }: any) {
     }
   };
 
-  const uploadSelectedPhoto = async (selectedPhoto: any, photoIndex?: number) => {
+  const uploadSelectedPhoto = async (
+    selectedPhoto: any,
+    photoIndex?: number
+  ) => {
     try {
       setUploadingPhotos(true);
-      
+
       // Upload the single photo to Supabase
       console.log("📤 Starting upload of photo:", selectedPhoto.uri);
       const uploadedUrl = await uploadProfileImage(selectedPhoto.uri);
@@ -264,7 +267,7 @@ export default function EditProfileScreen({ navigation }: any) {
         // Create updated photos array
         const currentPhotos = profileData?.profilePictures || [];
         const updatedPhotos = [...currentPhotos];
-        
+
         if (photoIndex !== undefined) {
           // Replace photo at specific index
           updatedPhotos[photoIndex] = uploadedUrl;
@@ -571,14 +574,12 @@ export default function EditProfileScreen({ navigation }: any) {
                             />
                           </View>
                         )}
-
                       </View>
                     )}
                   </View>
                 );
               })}
             </View>
-
           </View>
         </View>
 

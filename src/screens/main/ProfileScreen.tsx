@@ -300,19 +300,6 @@ export default function ProfileScreen({ navigation, route }: any) {
                 />
               </View>
             )}
-            {!isViewingOtherProfile && (
-              <View
-                style={[
-                  styles.photoEditBadge,
-                  {
-                    backgroundColor: colors.primary,
-                    borderColor: colors.surface,
-                  },
-                ]}
-              >
-                <Ionicons name="camera" size={16} color={colors.onPrimary} />
-              </View>
-            )}
 
             {/* Verification Badge */}
             <View
