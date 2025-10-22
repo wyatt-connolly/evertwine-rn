@@ -377,20 +377,6 @@ export default function ProfileScreen({ navigation, route }: any) {
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity
-            style={[styles.menuItem, { borderBottomColor: colors.border }]}
-            onPress={() => navigation.navigate("Favorites")}
-          >
-            <Ionicons name="heart-outline" size={24} color={colors.primary} />
-            <Text style={[styles.menuText, { color: colors.text }]}>
-              Favorites
-            </Text>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.textTertiary}
-            />
-          </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
