@@ -63,9 +63,17 @@ export default function CommunityScreen({ navigation }: any) {
   };
 
   const handleUserPress = (user: User) => {
+    // Convert Date objects to strings to avoid serialization issues
+    const serializableUserData = {
+      ...user,
+      createdTime: user.createdTime?.toISOString(),
+      updatedTime: user.updatedTime?.toISOString(),
+      lastActive: user.lastActive?.toISOString(),
+    };
+    
     navigation.navigate("UserProfile", {
       userId: user.uid,
-      userData: user,
+      userData: serializableUserData,
     });
   };
 

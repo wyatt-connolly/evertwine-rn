@@ -579,9 +579,18 @@ export default function MessageDetailsScreen({
 
           if (otherUserId) {
 
+            // Convert Date objects to strings to avoid serialization issues
+            const userData = mockUsers[otherUserId];
+            const serializableUserData = userData ? {
+              ...userData,
+              createdTime: userData.createdTime?.toISOString(),
+              updatedTime: userData.updatedTime?.toISOString(),
+              lastActive: userData.lastActive?.toISOString(),
+            } : null;
+            
             navigation.navigate("UserProfile", {
               userId: otherUserId,
-              userData: mockUsers[otherUserId],
+              userData: serializableUserData,
               fromMessage: true,
             });
           } else {
@@ -745,9 +754,18 @@ export default function MessageDetailsScreen({
 
               if (otherUserId) {
 
+                // Convert Date objects to strings to avoid serialization issues
+                const userData = mockUsers[otherUserId];
+                const serializableUserData = userData ? {
+                  ...userData,
+                  createdTime: userData.createdTime?.toISOString(),
+                  updatedTime: userData.updatedTime?.toISOString(),
+                  lastActive: userData.lastActive?.toISOString(),
+                } : null;
+                
                 navigation.navigate("UserProfile", {
                   userId: otherUserId,
-                  userData: mockUsers[otherUserId],
+                  userData: serializableUserData,
                   fromMessage: true,
                 });
               } else {
