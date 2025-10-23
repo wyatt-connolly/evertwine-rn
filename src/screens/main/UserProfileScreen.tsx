@@ -55,11 +55,11 @@ export default function UserProfileScreen({
     console.log("🔍 DEBUG: handleMessagePress called");
     console.log("🔍 DEBUG: navigation object:", navigation);
     console.log("🔍 DEBUG: navigation state:", navigation.getState());
-    
+
     const currentUser = useAuthStore.getState().user;
     console.log("🔍 DEBUG: currentUser:", currentUser);
     console.log("🔍 DEBUG: userData:", userData);
-    
+
     if (!currentUser) {
       Alert.alert("Error", "You must be logged in to send messages");
       return;
@@ -81,20 +81,40 @@ export default function UserProfileScreen({
         return;
       }
 
-      console.log("🔍 DEBUG: Attempting navigation to MessageDetails with roomId:", room.id);
-      console.log("🔍 DEBUG: Available navigation routes:", navigation.getState().routes);
-      console.log("🔍 DEBUG: Current route name:", navigation.getState().routeNames);
+      console.log(
+        "🔍 DEBUG: Attempting navigation to MessageDetails with roomId:",
+        room.id
+      );
+      console.log(
+        "🔍 DEBUG: Available navigation routes:",
+        navigation.getState().routes
+      );
+      console.log(
+        "🔍 DEBUG: Current route name:",
+        navigation.getState().routeNames
+      );
       console.log("🔍 DEBUG: Navigation canGoBack:", navigation.canGoBack());
-      
+
       // Try to get the parent navigator
       const parent = navigation.getParent();
       console.log("🔍 DEBUG: Parent navigator:", parent);
       if (parent) {
         console.log("🔍 DEBUG: Parent navigator state:", parent.getState());
-        console.log("🔍 DEBUG: Parent navigator routes:", parent.getState().routes);
+        console.log(
+          "🔍 DEBUG: Parent navigator routes:",
+          parent.getState().routes
+        );
       }
-      
-      navigation.navigate("MessageDetails", { roomId: room.id });
+
+      // Navigate to Messages tab first, then to MessageDetails
+      console.log("🔍 DEBUG: Navigating to Messages tab first");
+      navigation.navigate("MainTabs", {
+        screen: "Messages",
+        params: {
+          screen: "MessageDetails",
+          params: { roomId: room.id }
+        }
+      });
       console.log("🔍 DEBUG: Navigation call completed");
     } catch (error) {
       console.error("🔍 DEBUG: Error starting conversation:", error);
