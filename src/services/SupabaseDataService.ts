@@ -325,6 +325,48 @@ export class SupabaseDataService {
     return this.mapMessageRoomFromDB(data);
   }
 
+  // Find existing direct message room between two users
+  static async findDirectMessageRoom(userId1: string, userId2: string): Promise<MessageRoom | null> {
+    const { data, error } = await supabase
+      .from("message_rooms")
+      .select("*")
+      .eq("type", "direct")
+      .contains("participants", [userId1])
+      .contains("participants", [userId2]);
+    
+    if (error) throw error;
+    if (!data || data.length === 0) return null;
+    
+    return this.mapMessageRoomFromDB(data[0]);
+  }
+
+  // Create a new direct message room
+  static async createDirectMessageRoom(userId1: string, userId2: string, otherUserData: User): Promise<MessageRoom> {
+    const roomData = {
+      type: "direct",
+      participants: [userId1, userId2],
+      admins: [],
+      name: otherUserData.displayName,
+      avatar: otherUserData.profilePictures?.[0] || null,
+      settings: {
+        allow_invites: false,
+        allow_media: true,
+        allow_reactions: true,
+      },
+      created_time: new Date().toISOString(),
+      updated_time: new Date().toISOString(),
+    };
+
+    const { data, error } = await supabase
+      .from("message_rooms")
+      .insert(roomData)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return this.mapMessageRoomFromDB(data);
+  }
+
   static async createMessageRoom(room: Partial<MessageRoom>) {
     const { data, error } = await supabase
       .from("message_rooms")

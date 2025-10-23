@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
-  TouchableOpacity,
   FlatList,
   ActivityIndicator,
   Alert,
@@ -13,6 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { useAuthStore } from "../../hooks/useAuthStore";
 import { DataService } from "../../services/DataService";
 import { User } from "../../types";
 import CommunityUserCard from "../../components/CommunityUserCard";
@@ -62,11 +62,38 @@ export default function CommunityScreen({ navigation }: any) {
     });
   };
 
+  const handleMessagePress = async (user: User) => {
+    const currentUser = useAuthStore.getState().user;
+    if (!currentUser) {
+      Alert.alert("Error", "You must be logged in to send messages");
+      return;
+    }
+
+    try {
+      const { room, error } = await DataService.findOrCreateDirectMessage(
+        currentUser.uid,
+        user.uid,
+        user
+      );
+
+      if (error || !room) {
+        Alert.alert("Error", "Could not start conversation. Please try again.");
+        return;
+      }
+
+      navigation.navigate("MessageDetails", { roomId: room.id });
+    } catch (error) {
+      console.error("Error starting conversation:", error);
+      Alert.alert("Error", "Could not start conversation. Please try again.");
+    }
+  };
+
   const renderFeaturedUser = ({ item }: { item: User }) => (
     <CommunityUserCard
       user={item}
       variant="large"
       onPress={() => handleUserPress(item)}
+      onMessagePress={() => handleMessagePress(item)}
       showBadge={true}
       badgeText="Featured"
       badgeColor="#8B5CF6"
@@ -78,6 +105,7 @@ export default function CommunityScreen({ navigation }: any) {
       user={item}
       variant="small"
       onPress={() => handleUserPress(item)}
+      onMessagePress={() => handleMessagePress(item)}
       showBadge={true}
       badgeText="Active"
       badgeColor="#10B981"
@@ -123,11 +151,21 @@ export default function CommunityScreen({ navigation }: any) {
         style={[styles.container, { backgroundColor: colors.background }]}
       >
         {/* App Bar */}
-        <View style={[styles.appBar, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <View
+          style={[
+            styles.appBar,
+            {
+              backgroundColor: colors.surface,
+              borderBottomColor: colors.border,
+            },
+          ]}
+        >
           <Text style={[styles.appBarTitle, { color: colors.text }]}>
             Featured Members
           </Text>
-          <Text style={[styles.appBarSubtitle, { color: colors.textSecondary }]}>
+          <Text
+            style={[styles.appBarSubtitle, { color: colors.textSecondary }]}
+          >
             Standout community members this week
           </Text>
         </View>
@@ -147,7 +185,12 @@ export default function CommunityScreen({ navigation }: any) {
       style={[styles.container, { backgroundColor: colors.background }]}
     >
       {/* App Bar */}
-      <View style={[styles.appBar, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+      <View
+        style={[
+          styles.appBar,
+          { backgroundColor: colors.surface, borderBottomColor: colors.border },
+        ]}
+      >
         <Text style={[styles.appBarTitle, { color: colors.text }]}>
           Featured Members
         </Text>
@@ -216,6 +259,7 @@ export default function CommunityScreen({ navigation }: any) {
                   user={item}
                   variant="small"
                   onPress={() => handleUserPress(item)}
+                  onMessagePress={() => handleMessagePress(item)}
                   showBadge={true}
                   badgeText="New"
                   badgeColor="#F59E0B"

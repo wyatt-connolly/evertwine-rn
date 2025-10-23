@@ -127,6 +127,47 @@ export class DataService {
     return { rooms: [], error: "Not implemented" };
   }
 
+  static async findOrCreateDirectMessage(
+    currentUserId: string,
+    otherUserId: string,
+    otherUserData: User
+  ): Promise<{ room: MessageRoom | null; error: string | null }> {
+    if (this.isDeveloperMode) {
+      // In dev mode, return a mock room
+      const mockRoom: MessageRoom = {
+        id: `room_${currentUserId}_${otherUserId}`,
+        type: "direct",
+        participants: [currentUserId, otherUserId],
+        admins: [],
+        name: otherUserData.displayName,
+        avatar: otherUserData.profilePictures?.[0],
+        settings: {
+          allowInvites: false,
+          allowMedia: true,
+          allowReactions: true,
+        },
+        createdTime: new Date(),
+        updatedTime: new Date(),
+      };
+      return { room: mockRoom, error: null };
+    }
+
+    try {
+      // Check if conversation already exists
+      let room = await SupabaseDataService.findDirectMessageRoom(currentUserId, otherUserId);
+      
+      // If not, create a new one
+      if (!room) {
+        room = await SupabaseDataService.createDirectMessageRoom(currentUserId, otherUserId, otherUserData);
+      }
+      
+      return { room, error: null };
+    } catch (error) {
+      console.error("Error finding/creating direct message:", error);
+      return { room: null, error: String(error) };
+    }
+  }
+
   // Activity Feed Methods
   static async getActivityFeed(
     page: number = 0,

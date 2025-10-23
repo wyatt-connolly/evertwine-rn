@@ -14,6 +14,7 @@ interface CommunityUserCardProps {
   user: User;
   variant?: "large" | "small" | "grid";
   onPress?: () => void;
+  onMessagePress?: () => void;
   showBadge?: boolean;
   badgeText?: string;
   badgeColor?: string;
@@ -25,6 +26,7 @@ export default function CommunityUserCard({
   user,
   variant = "large",
   onPress,
+  onMessagePress,
   showBadge = false,
   badgeText,
   badgeColor = "#3B82F6",
@@ -230,6 +232,22 @@ export default function CommunityUserCard({
             </View>
           </View>
         )}
+
+        {/* Message Button */}
+        {onMessagePress && (
+          <TouchableOpacity
+            style={[styles.messageButton, { backgroundColor: colors.primary }]}
+            onPress={(e) => {
+              e.stopPropagation();
+              onMessagePress();
+            }}
+          >
+            <Ionicons name="chatbubble" size={16} color={colors.onPrimary} />
+            <Text style={[styles.messageButtonText, { color: colors.onPrimary }]}>
+              Message
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Gradient Overlay for Large Cards */}
@@ -331,6 +349,20 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 10,
     marginTop: 2,
+  },
+  messageButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 12,
+    gap: 6,
+  },
+  messageButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
   },
   gradientOverlay: {
     position: "absolute",

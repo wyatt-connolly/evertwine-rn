@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -8,9 +8,12 @@ import {
   Image,
   Dimensions,
   FlatList,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { useAuthStore } from "../../hooks/useAuthStore";
+import { DataService } from "../../services/DataService";
 import { Ionicons } from "@expo/vector-icons";
 import { getMeetupsByCreator } from "../../data/mockData";
 
@@ -40,6 +43,32 @@ export default function UserProfileScreen({
     const contentOffsetX = event.nativeEvent.contentOffset.x;
     const index = Math.round(contentOffsetX / width);
     setCurrentPhotoIndex(index);
+  };
+
+  const handleMessagePress = async () => {
+    const currentUser = useAuthStore.getState().user;
+    if (!currentUser) {
+      Alert.alert("Error", "You must be logged in to send messages");
+      return;
+    }
+
+    try {
+      const { room, error } = await DataService.findOrCreateDirectMessage(
+        currentUser.uid,
+        userData.uid,
+        userData
+      );
+
+      if (error || !room) {
+        Alert.alert("Error", "Could not start conversation. Please try again.");
+        return;
+      }
+
+      navigation.navigate("MessageDetails", { roomId: room.id });
+    } catch (error) {
+      console.error("Error starting conversation:", error);
+      Alert.alert("Error", "Could not start conversation. Please try again.");
+    }
   };
 
   const renderPhoto = ({ item, index }: { item: string; index: number }) => (
@@ -165,6 +194,7 @@ export default function UserProfileScreen({
                   styles.primaryButton,
                   { backgroundColor: colors.primary },
                 ]}
+                onPress={handleMessagePress}
               >
                 <Ionicons
                   name="chatbubble"
