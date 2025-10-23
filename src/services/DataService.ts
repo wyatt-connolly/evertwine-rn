@@ -154,13 +154,20 @@ export class DataService {
 
     try {
       // Check if conversation already exists
-      let room = await SupabaseDataService.findDirectMessageRoom(currentUserId, otherUserId);
-      
+      let room = await SupabaseDataService.findDirectMessageRoom(
+        currentUserId,
+        otherUserId
+      );
+
       // If not, create a new one
       if (!room) {
-        room = await SupabaseDataService.createDirectMessageRoom(currentUserId, otherUserId, otherUserData);
+        room = await SupabaseDataService.createDirectMessageRoom(
+          currentUserId,
+          otherUserId,
+          otherUserData
+        );
       }
-      
+
       return { room, error: null };
     } catch (error) {
       console.error("Error finding/creating direct message:", error);
