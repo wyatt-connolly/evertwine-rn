@@ -157,7 +157,7 @@ export default function CommunityUserCard({
         >
           {user.displayName}
         </Text>
-        
+
         <Text
           style={[
             styles.userBio,
@@ -167,7 +167,7 @@ export default function CommunityUserCard({
         >
           {user.bio}
         </Text>
-        
+
         <View style={styles.locationContainer}>
           <Ionicons
             name="location-outline"
@@ -209,9 +209,7 @@ export default function CommunityUserCard({
       </View>
 
       {/* Gradient Overlay for Large Cards */}
-      {variant === "large" && (
-        <View style={styles.gradientOverlay} />
-      )}
+      {variant === "large" && <View style={styles.gradientOverlay} />}
     </TouchableOpacity>
   );
 }

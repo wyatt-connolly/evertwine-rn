@@ -32,7 +32,7 @@ export default function CommunityScreen({ navigation }: any) {
   const loadCommunityData = async () => {
     try {
       setIsLoading(true);
-      
+
       const [featured, active, newUsers] = await Promise.all([
         DataService.getFeaturedUsers(),
         DataService.getActiveUsers(),
@@ -56,14 +56,17 @@ export default function CommunityScreen({ navigation }: any) {
   };
 
   const handleUserPress = (user: User) => {
-    navigation.navigate("UserProfile", { 
-      userId: user.uid, 
-      userData: user 
+    navigation.navigate("UserProfile", {
+      userId: user.uid,
+      userData: user,
     });
   };
 
   const handleBrowseAll = () => {
-    Alert.alert("Coming Soon", "Browse all members feature will be available soon!");
+    Alert.alert(
+      "Coming Soon",
+      "Browse all members feature will be available soon!"
+    );
   };
 
   const renderFeaturedUser = ({ item }: { item: User }) => (
@@ -123,7 +126,9 @@ export default function CommunityScreen({ navigation }: any) {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text }]}>
             Discover Community
@@ -132,7 +137,7 @@ export default function CommunityScreen({ navigation }: any) {
             <Ionicons name="search-outline" size={24} color={colors.primary} />
           </TouchableOpacity>
         </View>
-        
+
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={[styles.loadingText, { color: colors.text }]}>
@@ -144,7 +149,9 @@ export default function CommunityScreen({ navigation }: any) {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
@@ -172,7 +179,7 @@ export default function CommunityScreen({ navigation }: any) {
             "Featured Members",
             "Standout community members this week"
           )}
-          
+
           {featuredUsers.length > 0 ? (
             <FlatList
               data={featuredUsers}
@@ -193,7 +200,7 @@ export default function CommunityScreen({ navigation }: any) {
             "Active This Week",
             "Members who've been active recently"
           )}
-          
+
           {activeUsers.length > 0 ? (
             <FlatList
               data={activeUsers}
@@ -210,11 +217,8 @@ export default function CommunityScreen({ navigation }: any) {
 
         {/* New Members Section */}
         <View style={styles.section}>
-          {renderSectionHeader(
-            "New Members",
-            "Recently joined the community"
-          )}
-          
+          {renderSectionHeader("New Members", "Recently joined the community")}
+
           {newMembers.length > 0 ? (
             <View style={styles.gridContainer}>
               {newMembers.map((user) => (
@@ -237,7 +241,10 @@ export default function CommunityScreen({ navigation }: any) {
         {/* Browse All Button */}
         <View style={styles.section}>
           <TouchableOpacity
-            style={[styles.browseAllButton, { backgroundColor: colors.primary }]}
+            style={[
+              styles.browseAllButton,
+              { backgroundColor: colors.primary },
+            ]}
             onPress={handleBrowseAll}
           >
             <Ionicons name="people" size={24} color="#FFFFFF" />

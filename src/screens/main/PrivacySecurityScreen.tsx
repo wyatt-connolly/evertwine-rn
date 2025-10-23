@@ -20,7 +20,8 @@ export default function PrivacySecurityScreen({ navigation }: any) {
   const { user } = useAuthStore();
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [dataSharingEnabled, setDataSharingEnabled] = useState(true);
-  const [showInCommunityHighlights, setShowInCommunityHighlights] = useState(true);
+  const [showInCommunityHighlights, setShowInCommunityHighlights] =
+    useState(true);
   const [blockedUsersCount] = useState(0);
 
   // Load user privacy settings on mount
@@ -69,7 +70,7 @@ export default function PrivacySecurityScreen({ navigation }: any) {
 
   const handleCommunityHighlightsToggle = async (value: boolean) => {
     setShowInCommunityHighlights(value);
-    
+
     if (user?.uid) {
       try {
         // TODO: Update user's showInCommunityHighlights preference in Supabase
@@ -189,7 +190,9 @@ export default function PrivacySecurityScreen({ navigation }: any) {
               <Text style={[styles.menuText, { color: colors.text }]}>
                 Show in Community Highlights
               </Text>
-              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.menuSubtext, { color: colors.textSecondary }]}
+              >
                 Appear in featured and active member sections
               </Text>
             </View>

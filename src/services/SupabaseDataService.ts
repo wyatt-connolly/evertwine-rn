@@ -74,22 +74,28 @@ export class SupabaseDataService {
     const { data, error } = await supabase
       .from("users")
       .select("*")
-      .eq("show_in_community_highlights", true)
-      .order("RANDOM()")
-      .limit(limit);
+      .order("created_time", { ascending: false })
+      .limit(limit * 2); // Get more users to filter from
     if (error) throw error;
-    return data.map(this.mapUserFromDB);
+    // Filter for users who are likely to be featured (have profile pictures, bio, etc.)
+    const featuredCandidates = data.filter(user => 
+      user.profile_pictures && 
+      user.profile_pictures.length > 0 && 
+      user.bio && 
+      user.bio.length > 10
+    );
+    // Shuffle and take the requested number
+    const shuffled = featuredCandidates.sort(() => Math.random() - 0.5).slice(0, limit);
+    return shuffled.map(this.mapUserFromDB);
   }
 
   static async getActiveUsers(limit = 8): Promise<User[]> {
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    
+    // For now, get recent users as a proxy for "active" users
+    // In the future, we can add proper activity tracking
     const { data, error } = await supabase
       .from("users")
       .select("*")
-      .gte("last_active", sevenDaysAgo.toISOString())
-      .order("last_active", { ascending: false })
+      .order("created_time", { ascending: false })
       .limit(limit);
     if (error) throw error;
     return data.map(this.mapUserFromDB);
@@ -98,7 +104,7 @@ export class SupabaseDataService {
   static async getNewMembers(limit = 8): Promise<User[]> {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
+
     const { data, error } = await supabase
       .from("users")
       .select("*")

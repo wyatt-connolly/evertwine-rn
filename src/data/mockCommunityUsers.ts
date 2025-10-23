@@ -9,7 +9,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Female",
     pronouns: "she/her",
     bio: "Marketing Director & Coffee Enthusiast ☕️ Building connections through shared passions",
-    about: "Passionate marketing professional with 6+ years of experience in digital marketing and brand strategy. I love connecting with like-minded professionals and exploring new coffee shops around the city. When I'm not working on campaigns, you'll find me hiking local trails or trying new restaurants with friends.",
+    about:
+      "Passionate marketing professional with 6+ years of experience in digital marketing and brand strategy. I love connecting with like-minded professionals and exploring new coffee shops around the city. When I'm not working on campaigns, you'll find me hiking local trails or trying new restaurants with friends.",
     profilePictures: [
       "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
@@ -26,7 +27,12 @@ export const mockCommunityUsers: User[] = [
     hometown: "Portland, OR",
     starSign: "Leo",
     hobbies: ["Coffee", "Hiking", "Photography", "Cooking", "Yoga"],
-    interests: ["Marketing", "Technology", "Outdoor Activities", "Food & Dining"],
+    interests: [
+      "Marketing",
+      "Technology",
+      "Outdoor Activities",
+      "Food & Dining",
+    ],
     lookingFor: ["Friends", "Business", "Networking"],
     onboardingComplete: true,
     isVerified: "verified",
@@ -48,7 +54,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Male",
     pronouns: "he/him",
     bio: "Software Engineer & Rock Climbing Enthusiast 🧗‍♂️ Always up for an adventure",
-    about: "Senior software engineer with a passion for clean code and outdoor adventures. I've been climbing for 8 years and love introducing others to the sport. When I'm not coding or climbing, I enjoy board games, craft beer, and exploring new hiking trails. I believe in the power of community and love connecting with fellow tech professionals and outdoor enthusiasts.",
+    about:
+      "Senior software engineer with a passion for clean code and outdoor adventures. I've been climbing for 8 years and love introducing others to the sport. When I'm not coding or climbing, I enjoy board games, craft beer, and exploring new hiking trails. I believe in the power of community and love connecting with fellow tech professionals and outdoor enthusiasts.",
     profilePictures: [
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
@@ -87,7 +94,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Female",
     pronouns: "she/her",
     bio: "UX Designer & Yoga Instructor 🧘‍♀️ Creating beautiful experiences and mindful moments",
-    about: "Creative UX designer with a background in psychology and a passion for wellness. I teach yoga on weekends and love helping people find balance in their lives. My design work focuses on creating inclusive and accessible digital experiences. I'm always excited to meet fellow creatives, wellness enthusiasts, and anyone interested in mindfulness and personal growth.",
+    about:
+      "Creative UX designer with a background in psychology and a passion for wellness. I teach yoga on weekends and love helping people find balance in their lives. My design work focuses on creating inclusive and accessible digital experiences. I'm always excited to meet fellow creatives, wellness enthusiasts, and anyone interested in mindfulness and personal growth.",
     profilePictures: [
       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
@@ -126,7 +134,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Non-binary",
     pronouns: "they/them",
     bio: "Product Manager & Foodie 🍕 Building products that bring people together",
-    about: "Product manager with a passion for creating meaningful user experiences. I love exploring the city's food scene and believe that great products, like great food, bring people together. When I'm not working on product strategy, you'll find me at farmers markets, trying new restaurants, or hosting dinner parties for friends. I'm always excited to meet fellow food lovers and product enthusiasts.",
+    about:
+      "Product manager with a passion for creating meaningful user experiences. I love exploring the city's food scene and believe that great products, like great food, bring people together. When I'm not working on product strategy, you'll find me at farmers markets, trying new restaurants, or hosting dinner parties for friends. I'm always excited to meet fellow food lovers and product enthusiasts.",
     profilePictures: [
       "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop",
@@ -142,7 +151,13 @@ export const mockCommunityUsers: User[] = [
     professionalLevel: "Senior",
     hometown: "Los Angeles, CA",
     starSign: "Gemini",
-    hobbies: ["Cooking", "Product Management", "Food Photography", "Travel", "Wine Tasting"],
+    hobbies: [
+      "Cooking",
+      "Product Management",
+      "Food Photography",
+      "Travel",
+      "Wine Tasting",
+    ],
     interests: ["Product Management", "Food & Dining", "Technology", "Travel"],
     lookingFor: ["Friends", "Business", "Networking"],
     onboardingComplete: true,
@@ -165,7 +180,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Female",
     pronouns: "she/her",
     bio: "Graphic Designer & Art Enthusiast 🎨 Creating beauty in everyday life",
-    about: "Creative graphic designer with a love for all things artistic. I specialize in branding and visual identity design, and I'm passionate about using design to tell meaningful stories. When I'm not designing, I love visiting art galleries, trying new art techniques, and exploring the city's creative scene. I believe art has the power to connect people and inspire positive change.",
+    about:
+      "Creative graphic designer with a love for all things artistic. I specialize in branding and visual identity design, and I'm passionate about using design to tell meaningful stories. When I'm not designing, I love visiting art galleries, trying new art techniques, and exploring the city's creative scene. I believe art has the power to connect people and inspire positive change.",
     profilePictures: [
       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop",
@@ -204,7 +220,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Male",
     pronouns: "he/him",
     bio: "Data Scientist & Chess Player ♟️ Turning data into insights and strategies",
-    about: "Senior data scientist with a passion for machine learning and strategic thinking. I love the intellectual challenge of chess and apply similar strategic thinking to data analysis. When I'm not working with data, I enjoy playing chess, reading about AI, and exploring the city's tech meetups. I believe in the power of data to drive positive change and love connecting with fellow data enthusiasts.",
+    about:
+      "Senior data scientist with a passion for machine learning and strategic thinking. I love the intellectual challenge of chess and apply similar strategic thinking to data analysis. When I'm not working with data, I enjoy playing chess, reading about AI, and exploring the city's tech meetups. I believe in the power of data to drive positive change and love connecting with fellow data enthusiasts.",
     profilePictures: [
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
@@ -220,7 +237,13 @@ export const mockCommunityUsers: User[] = [
     professionalLevel: "Senior",
     hometown: "Boston, MA",
     starSign: "Virgo",
-    hobbies: ["Chess", "Machine Learning", "Reading", "Tech Meetups", "Puzzles"],
+    hobbies: [
+      "Chess",
+      "Machine Learning",
+      "Reading",
+      "Tech Meetups",
+      "Puzzles",
+    ],
     interests: ["Data Science", "AI", "Chess", "Technology", "Analytics"],
     lookingFor: ["Friends", "Business", "Networking"],
     onboardingComplete: true,
@@ -243,7 +266,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Female",
     pronouns: "she/her",
     bio: "Marketing Manager & Fitness Enthusiast 💪 Building brands and healthy habits",
-    about: "Dynamic marketing manager with a passion for fitness and wellness. I love combining my marketing expertise with my fitness journey to inspire others. When I'm not working on campaigns, you'll find me at the gym, trying new fitness classes, or exploring the city's healthy food scene. I believe in the power of community to achieve both personal and professional goals.",
+    about:
+      "Dynamic marketing manager with a passion for fitness and wellness. I love combining my marketing expertise with my fitness journey to inspire others. When I'm not working on campaigns, you'll find me at the gym, trying new fitness classes, or exploring the city's healthy food scene. I believe in the power of community to achieve both personal and professional goals.",
     profilePictures: [
       "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
@@ -282,7 +306,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Male",
     pronouns: "he/him",
     bio: "Sales Director & Wine Enthusiast 🍷 Building relationships through shared passions",
-    about: "Experienced sales director with a deep appreciation for wine and fine dining. I believe that great relationships, like great wine, take time to develop. When I'm not closing deals, you'll find me at wine tastings, exploring new restaurants, or hosting dinner parties for friends. I love connecting with fellow wine enthusiasts and business professionals who share my passion for quality and craftsmanship.",
+    about:
+      "Experienced sales director with a deep appreciation for wine and fine dining. I believe that great relationships, like great wine, take time to develop. When I'm not closing deals, you'll find me at wine tastings, exploring new restaurants, or hosting dinner parties for friends. I love connecting with fellow wine enthusiasts and business professionals who share my passion for quality and craftsmanship.",
     profilePictures: [
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
@@ -321,7 +346,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Female",
     pronouns: "she/her",
     bio: "UX Researcher & Travel Blogger ✈️ Understanding users and exploring the world",
-    about: "Passionate UX researcher with a love for travel and cultural exploration. I believe that understanding users requires understanding the world, so I combine my research skills with my love for travel. When I'm not conducting user studies, you'll find me planning my next adventure, writing about my travels, or exploring the city's diverse cultural scene. I love connecting with fellow researchers and travel enthusiasts.",
+    about:
+      "Passionate UX researcher with a love for travel and cultural exploration. I believe that understanding users requires understanding the world, so I combine my research skills with my love for travel. When I'm not conducting user studies, you'll find me planning my next adventure, writing about my travels, or exploring the city's diverse cultural scene. I love connecting with fellow researchers and travel enthusiasts.",
     profilePictures: [
       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop",
@@ -337,7 +363,13 @@ export const mockCommunityUsers: User[] = [
     professionalLevel: "Mid-level",
     hometown: "Mexico City, Mexico",
     starSign: "Sagittarius",
-    hobbies: ["Travel", "Research", "Photography", "Languages", "Cultural Events"],
+    hobbies: [
+      "Travel",
+      "Research",
+      "Photography",
+      "Languages",
+      "Cultural Events",
+    ],
     interests: ["UX Research", "Travel", "Culture", "Photography", "Languages"],
     lookingFor: ["Friends", "Business", "Dating"],
     onboardingComplete: true,
@@ -360,7 +392,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Male",
     pronouns: "he/him",
     bio: "DevOps Engineer & Music Producer 🎵 Automating systems and creating beats",
-    about: "DevOps engineer by day, music producer by night. I love the intersection of technology and creativity, whether I'm automating deployment pipelines or crafting electronic beats. When I'm not managing infrastructure, you'll find me in my home studio, attending music events, or exploring the city's vibrant music scene. I believe technology and art can work together to create amazing experiences.",
+    about:
+      "DevOps engineer by day, music producer by night. I love the intersection of technology and creativity, whether I'm automating deployment pipelines or crafting electronic beats. When I'm not managing infrastructure, you'll find me in my home studio, attending music events, or exploring the city's vibrant music scene. I believe technology and art can work together to create amazing experiences.",
     profilePictures: [
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop",
@@ -377,7 +410,13 @@ export const mockCommunityUsers: User[] = [
     hometown: "Seattle, WA",
     starSign: "Aquarius",
     hobbies: ["Music Production", "DevOps", "DJing", "Concerts", "Technology"],
-    interests: ["Technology", "Music", "DevOps", "Electronic Music", "Concerts"],
+    interests: [
+      "Technology",
+      "Music",
+      "DevOps",
+      "Electronic Music",
+      "Concerts",
+    ],
     lookingFor: ["Friends", "Business", "Dating"],
     onboardingComplete: true,
     isVerified: "verified",
@@ -399,7 +438,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Female",
     pronouns: "she/her",
     bio: "Content Creator & Yoga Instructor 🧘‍♀️ Sharing wellness and mindful living",
-    about: "Creative content creator with a passion for wellness and mindful living. I create content about yoga, meditation, and healthy lifestyle choices, and I love connecting with people who share these values. When I'm not creating content or teaching yoga, you'll find me practicing meditation, reading about wellness, or exploring the city's wellness scene. I believe in the power of community to support personal growth.",
+    about:
+      "Creative content creator with a passion for wellness and mindful living. I create content about yoga, meditation, and healthy lifestyle choices, and I love connecting with people who share these values. When I'm not creating content or teaching yoga, you'll find me practicing meditation, reading about wellness, or exploring the city's wellness scene. I believe in the power of community to support personal growth.",
     profilePictures: [
       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
@@ -415,8 +455,20 @@ export const mockCommunityUsers: User[] = [
     professionalLevel: "Junior",
     hometown: "Boulder, CO",
     starSign: "Taurus",
-    hobbies: ["Yoga", "Content Creation", "Meditation", "Wellness", "Photography"],
-    interests: ["Wellness", "Yoga", "Content Creation", "Mindfulness", "Health"],
+    hobbies: [
+      "Yoga",
+      "Content Creation",
+      "Meditation",
+      "Wellness",
+      "Photography",
+    ],
+    interests: [
+      "Wellness",
+      "Yoga",
+      "Content Creation",
+      "Mindfulness",
+      "Health",
+    ],
     lookingFor: ["Friends", "Business", "Dating"],
     onboardingComplete: true,
     isVerified: "verified",
@@ -438,7 +490,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Male",
     pronouns: "he/him",
     bio: "Financial Advisor & Chess Master ♟️ Strategic thinking in finance and games",
-    about: "Experienced financial advisor with a passion for strategic thinking and chess. I believe that good financial planning, like chess, requires thinking several moves ahead. When I'm not helping clients with their finances, you'll find me playing chess, reading about investment strategies, or exploring the city's intellectual scene. I love connecting with fellow strategic thinkers and chess enthusiasts.",
+    about:
+      "Experienced financial advisor with a passion for strategic thinking and chess. I believe that good financial planning, like chess, requires thinking several moves ahead. When I'm not helping clients with their finances, you'll find me playing chess, reading about investment strategies, or exploring the city's intellectual scene. I love connecting with fellow strategic thinkers and chess enthusiasts.",
     profilePictures: [
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
@@ -454,7 +507,13 @@ export const mockCommunityUsers: User[] = [
     professionalLevel: "Senior",
     hometown: "New York, NY",
     starSign: "Capricorn",
-    hobbies: ["Chess", "Finance", "Reading", "Investment Research", "Strategy Games"],
+    hobbies: [
+      "Chess",
+      "Finance",
+      "Reading",
+      "Investment Research",
+      "Strategy Games",
+    ],
     interests: ["Finance", "Chess", "Investment", "Strategy", "Economics"],
     lookingFor: ["Friends", "Business", "Networking"],
     onboardingComplete: true,
@@ -477,7 +536,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Female",
     pronouns: "she/her",
     bio: "Event Planner & Wine Enthusiast 🍷 Creating memorable experiences",
-    about: "Creative event planner with a passion for creating unforgettable experiences and a love for fine wine. I specialize in corporate events and private celebrations, and I believe that great events, like great wine, bring people together. When I'm not planning events, you'll find me at wine tastings, exploring new venues, or hosting dinner parties for friends. I love connecting with fellow event professionals and wine enthusiasts.",
+    about:
+      "Creative event planner with a passion for creating unforgettable experiences and a love for fine wine. I specialize in corporate events and private celebrations, and I believe that great events, like great wine, bring people together. When I'm not planning events, you'll find me at wine tastings, exploring new venues, or hosting dinner parties for friends. I love connecting with fellow event professionals and wine enthusiasts.",
     profilePictures: [
       "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
@@ -493,8 +553,20 @@ export const mockCommunityUsers: User[] = [
     professionalLevel: "Mid-level",
     hometown: "Santa Barbara, CA",
     starSign: "Libra",
-    hobbies: ["Event Planning", "Wine Tasting", "Networking", "Travel", "Fine Dining"],
-    interests: ["Event Planning", "Wine", "Networking", "Hospitality", "Travel"],
+    hobbies: [
+      "Event Planning",
+      "Wine Tasting",
+      "Networking",
+      "Travel",
+      "Fine Dining",
+    ],
+    interests: [
+      "Event Planning",
+      "Wine",
+      "Networking",
+      "Hospitality",
+      "Travel",
+    ],
     lookingFor: ["Friends", "Business", "Networking"],
     onboardingComplete: true,
     isVerified: "verified",
@@ -516,7 +588,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Male",
     pronouns: "he/him",
     bio: "Mobile App Developer & Photography Enthusiast 📱 Capturing moments in code and photos",
-    about: "Passionate mobile app developer with a love for photography and visual storytelling. I believe that great apps, like great photos, capture the essence of a moment. When I'm not coding, you'll find me with my camera exploring the city, attending photography workshops, or editing photos. I love connecting with fellow developers and photography enthusiasts who share my passion for technology and visual arts.",
+    about:
+      "Passionate mobile app developer with a love for photography and visual storytelling. I believe that great apps, like great photos, capture the essence of a moment. When I'm not coding, you'll find me with my camera exploring the city, attending photography workshops, or editing photos. I love connecting with fellow developers and photography enthusiasts who share my passion for technology and visual arts.",
     profilePictures: [
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
@@ -532,8 +605,20 @@ export const mockCommunityUsers: User[] = [
     professionalLevel: "Mid-level",
     hometown: "Irvine, CA",
     starSign: "Scorpio",
-    hobbies: ["Mobile Development", "Photography", "Coding", "Photo Editing", "Tech Meetups"],
-    interests: ["Mobile Development", "Photography", "Technology", "Visual Arts", "Coding"],
+    hobbies: [
+      "Mobile Development",
+      "Photography",
+      "Coding",
+      "Photo Editing",
+      "Tech Meetups",
+    ],
+    interests: [
+      "Mobile Development",
+      "Photography",
+      "Technology",
+      "Visual Arts",
+      "Coding",
+    ],
     lookingFor: ["Friends", "Business", "Dating"],
     onboardingComplete: true,
     isVerified: "verified",
@@ -555,7 +640,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Female",
     pronouns: "she/her",
     bio: "Fashion Designer & Sustainability Advocate 🌱 Creating beautiful, conscious fashion",
-    about: "Creative fashion designer with a passion for sustainable and ethical fashion. I believe that style and sustainability can go hand in hand, and I love creating beautiful pieces that are also environmentally conscious. When I'm not designing, you'll find me at thrift stores, attending fashion events, or exploring the city's sustainable fashion scene. I love connecting with fellow designers and sustainability advocates.",
+    about:
+      "Creative fashion designer with a passion for sustainable and ethical fashion. I believe that style and sustainability can go hand in hand, and I love creating beautiful pieces that are also environmentally conscious. When I'm not designing, you'll find me at thrift stores, attending fashion events, or exploring the city's sustainable fashion scene. I love connecting with fellow designers and sustainability advocates.",
     profilePictures: [
       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop",
@@ -571,7 +657,13 @@ export const mockCommunityUsers: User[] = [
     professionalLevel: "Junior",
     hometown: "New York, NY",
     starSign: "Gemini",
-    hobbies: ["Fashion Design", "Sustainability", "Thrifting", "Fashion Events", "Art"],
+    hobbies: [
+      "Fashion Design",
+      "Sustainability",
+      "Thrifting",
+      "Fashion Events",
+      "Art",
+    ],
     interests: ["Fashion", "Sustainability", "Design", "Art", "Environment"],
     lookingFor: ["Friends", "Business", "Dating"],
     onboardingComplete: true,
@@ -594,7 +686,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Male",
     pronouns: "he/him",
     bio: "Real Estate Agent & Golf Enthusiast ⛳ Building homes and perfecting swings",
-    about: "Experienced real estate agent with a passion for helping people find their perfect home and a love for golf. I believe that finding the right home, like perfecting your golf swing, requires patience and attention to detail. When I'm not showing properties, you'll find me on the golf course, attending real estate networking events, or exploring the city's neighborhoods. I love connecting with fellow real estate professionals and golf enthusiasts.",
+    about:
+      "Experienced real estate agent with a passion for helping people find their perfect home and a love for golf. I believe that finding the right home, like perfecting your golf swing, requires patience and attention to detail. When I'm not showing properties, you'll find me on the golf course, attending real estate networking events, or exploring the city's neighborhoods. I love connecting with fellow real estate professionals and golf enthusiasts.",
     profilePictures: [
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop",
@@ -610,8 +703,20 @@ export const mockCommunityUsers: User[] = [
     professionalLevel: "Senior",
     hometown: "Sacramento, CA",
     starSign: "Leo",
-    hobbies: ["Real Estate", "Golf", "Networking", "Home Improvement", "Golf Tournaments"],
-    interests: ["Real Estate", "Golf", "Networking", "Home Improvement", "Business"],
+    hobbies: [
+      "Real Estate",
+      "Golf",
+      "Networking",
+      "Home Improvement",
+      "Golf Tournaments",
+    ],
+    interests: [
+      "Real Estate",
+      "Golf",
+      "Networking",
+      "Home Improvement",
+      "Business",
+    ],
     lookingFor: ["Friends", "Business", "Networking"],
     onboardingComplete: true,
     isVerified: "verified",
@@ -633,7 +738,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Female",
     pronouns: "she/her",
     bio: "HR Manager & Book Club Organizer 📚 Building teams and sharing stories",
-    about: "People-focused HR manager with a passion for building strong teams and organizing book clubs. I believe that great teams, like great books, have compelling stories and strong characters. When I'm not working on HR initiatives, you'll find me reading, organizing book club meetings, or exploring the city's literary scene. I love connecting with fellow book lovers and HR professionals who share my passion for people and stories.",
+    about:
+      "People-focused HR manager with a passion for building strong teams and organizing book clubs. I believe that great teams, like great books, have compelling stories and strong characters. When I'm not working on HR initiatives, you'll find me reading, organizing book club meetings, or exploring the city's literary scene. I love connecting with fellow book lovers and HR professionals who share my passion for people and stories.",
     profilePictures: [
       "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
@@ -649,8 +755,20 @@ export const mockCommunityUsers: User[] = [
     professionalLevel: "Mid-level",
     hometown: "Davis, CA",
     starSign: "Cancer",
-    hobbies: ["HR", "Reading", "Book Clubs", "Team Building", "Literary Events"],
-    interests: ["HR", "Books", "Team Building", "Literature", "People Development"],
+    hobbies: [
+      "HR",
+      "Reading",
+      "Book Clubs",
+      "Team Building",
+      "Literary Events",
+    ],
+    interests: [
+      "HR",
+      "Books",
+      "Team Building",
+      "Literature",
+      "People Development",
+    ],
     lookingFor: ["Friends", "Business", "Networking"],
     onboardingComplete: true,
     isVerified: "verified",
@@ -672,7 +790,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Male",
     pronouns: "he/him",
     bio: "Cybersecurity Expert & Coffee Roaster ☕ Protecting data and perfecting brews",
-    about: "Cybersecurity expert with a passion for protecting digital assets and a love for coffee roasting. I believe that good security, like good coffee, requires attention to detail and proper processes. When I'm not securing systems, you'll find me roasting coffee beans, attending security conferences, or exploring the city's coffee scene. I love connecting with fellow security professionals and coffee enthusiasts.",
+    about:
+      "Cybersecurity expert with a passion for protecting digital assets and a love for coffee roasting. I believe that good security, like good coffee, requires attention to detail and proper processes. When I'm not securing systems, you'll find me roasting coffee beans, attending security conferences, or exploring the city's coffee scene. I love connecting with fellow security professionals and coffee enthusiasts.",
     profilePictures: [
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
@@ -688,8 +807,20 @@ export const mockCommunityUsers: User[] = [
     professionalLevel: "Senior",
     hometown: "Pittsburgh, PA",
     starSign: "Virgo",
-    hobbies: ["Cybersecurity", "Coffee Roasting", "Security Research", "Coffee Tasting", "Tech Conferences"],
-    interests: ["Cybersecurity", "Coffee", "Technology", "Security", "Coffee Roasting"],
+    hobbies: [
+      "Cybersecurity",
+      "Coffee Roasting",
+      "Security Research",
+      "Coffee Tasting",
+      "Tech Conferences",
+    ],
+    interests: [
+      "Cybersecurity",
+      "Coffee",
+      "Technology",
+      "Security",
+      "Coffee Roasting",
+    ],
     lookingFor: ["Friends", "Business", "Networking"],
     onboardingComplete: true,
     isVerified: "verified",
@@ -711,7 +842,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Female",
     pronouns: "she/her",
     bio: "Interior Designer & Plant Parent 🌱 Creating beautiful spaces with nature",
-    about: "Creative interior designer with a passion for creating beautiful, functional spaces and a love for plants. I believe that great design incorporates natural elements and sustainable practices. When I'm not designing spaces, you'll find me at plant nurseries, attending design events, or exploring the city's design scene. I love connecting with fellow designers and plant enthusiasts who share my passion for beautiful, sustainable living.",
+    about:
+      "Creative interior designer with a passion for creating beautiful, functional spaces and a love for plants. I believe that great design incorporates natural elements and sustainable practices. When I'm not designing spaces, you'll find me at plant nurseries, attending design events, or exploring the city's design scene. I love connecting with fellow designers and plant enthusiasts who share my passion for beautiful, sustainable living.",
     profilePictures: [
       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop",
@@ -727,8 +859,20 @@ export const mockCommunityUsers: User[] = [
     professionalLevel: "Mid-level",
     hometown: "Providence, RI",
     starSign: "Taurus",
-    hobbies: ["Interior Design", "Plants", "Design Events", "Plant Care", "Sustainable Living"],
-    interests: ["Interior Design", "Plants", "Sustainability", "Design", "Green Living"],
+    hobbies: [
+      "Interior Design",
+      "Plants",
+      "Design Events",
+      "Plant Care",
+      "Sustainable Living",
+    ],
+    interests: [
+      "Interior Design",
+      "Plants",
+      "Sustainability",
+      "Design",
+      "Green Living",
+    ],
     lookingFor: ["Friends", "Business", "Dating"],
     onboardingComplete: true,
     isVerified: "verified",
@@ -750,7 +894,8 @@ export const mockCommunityUsers: User[] = [
     gender: "Male",
     pronouns: "he/him",
     bio: "Investment Banker & Marathon Runner 🏃‍♂️ Managing portfolios and personal records",
-    about: "Experienced investment banker with a passion for financial markets and a love for marathon running. I believe that success in both finance and running requires discipline, strategy, and endurance. When I'm not analyzing markets, you'll find me training for marathons, attending financial conferences, or exploring the city's running scene. I love connecting with fellow finance professionals and running enthusiasts.",
+    about:
+      "Experienced investment banker with a passion for financial markets and a love for marathon running. I believe that success in both finance and running requires discipline, strategy, and endurance. When I'm not analyzing markets, you'll find me training for marathons, attending financial conferences, or exploring the city's running scene. I love connecting with fellow finance professionals and running enthusiasts.",
     profilePictures: [
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
@@ -766,7 +911,13 @@ export const mockCommunityUsers: User[] = [
     professionalLevel: "Senior",
     hometown: "Boston, MA",
     starSign: "Capricorn",
-    hobbies: ["Investment Banking", "Marathon Running", "Financial Analysis", "Running Events", "Market Research"],
+    hobbies: [
+      "Investment Banking",
+      "Marathon Running",
+      "Financial Analysis",
+      "Running Events",
+      "Market Research",
+    ],
     interests: ["Finance", "Running", "Investment", "Marathons", "Business"],
     lookingFor: ["Friends", "Business", "Networking"],
     onboardingComplete: true,

@@ -158,10 +158,7 @@ function CommunityStackNavigator() {
         headerShown: false,
       }}
     >
-      <CommunityStack.Screen
-        name="CommunityMain"
-        component={CommunityScreen}
-      />
+      <CommunityStack.Screen name="CommunityMain" component={CommunityScreen} />
       <CommunityStack.Screen name="Map" component={MapScreen} />
     </CommunityStack.Navigator>
   );
