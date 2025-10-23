@@ -1,6 +1,5 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
-import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../hooks/useThemeStore";
 import AnimatedTabIcon from "../components/AnimatedTabIcon";
@@ -34,6 +33,8 @@ import NotificationsScreen from "../screens/main/NotificationsScreen";
 import AllHappyHourEventsScreen from "../screens/main/AllHappyHourEventsScreen";
 import AllMeetupsScreen from "../screens/main/AllMeetupsScreen";
 import FollowingScreen from "../screens/main/FollowingScreen";
+import PrivacySecurityScreen from "../screens/main/PrivacySecurityScreen";
+import HelpSupportScreen from "../screens/main/HelpSupportScreen";
 
 export type MainTabParamList = {
   Home: undefined;
@@ -48,6 +49,9 @@ export type ProfileStackParamList = {
   Settings: undefined;
   PreferenceSetup: undefined;
   ActivityFeed: undefined;
+  Notifications: undefined;
+  PrivacySecurity: undefined;
+  HelpSupport: undefined;
 };
 
 export type HomeStackParamList = {
@@ -105,10 +109,6 @@ function ProfileStackNavigator() {
     >
       <ProfileStack.Screen name="ProfileMain" component={ProfileScreen} />
       <ProfileStack.Screen
-        name="Notifications"
-        component={NotificationsScreen}
-      />
-      <ProfileStack.Screen
         name="EditProfile"
         component={EditProfileScreen}
         options={{
@@ -122,6 +122,15 @@ function ProfileStackNavigator() {
         component={PreferenceSetupScreen}
       />
       <ProfileStack.Screen name="ActivityFeed" component={ActivityFeedScreen} />
+      <ProfileStack.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+      />
+      <ProfileStack.Screen
+        name="PrivacySecurity"
+        component={PrivacySecurityScreen}
+      />
+      <ProfileStack.Screen name="HelpSupport" component={HelpSupportScreen} />
     </ProfileStack.Navigator>
   );
 }

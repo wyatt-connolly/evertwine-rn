@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,8 +12,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
-import { usePreferenceStore } from "../../hooks/usePreferenceStore";
-import { getPreferenceCompletionPercentage } from "../../constants/preferences";
 import { SupabaseAuthService } from "../../services/supabase";
 import { SupabaseDataService } from "../../services/SupabaseDataService";
 import { SupabaseStorageService } from "../../services/SupabaseStorageService";
@@ -22,9 +20,17 @@ import { DataService } from "../../services/DataService";
 export default function SettingsScreen({ navigation }: any) {
   const { user, logout } = useAuthStore();
   const { isDarkMode, toggleTheme, colors } = useThemeStore();
-  const { preferences, getCompletionPercentage } = usePreferenceStore();
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [locationEnabled, setLocationEnabled] = useState(true);
+  
+  // Enhanced notification states
+  const [pushNotifications, setPushNotifications] = useState(true);
+  const [meetupNotifications, setMeetupNotifications] = useState(true);
+  const [messageNotifications, setMessageNotifications] = useState(true);
+  const [activityNotifications, setActivityNotifications] = useState(true);
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  
+  // App preferences states
+  const [autoPlayVideos, setAutoPlayVideos] = useState(false);
+  const [distanceUnit, setDistanceUnit] = useState<"miles" | "km">("miles");
 
   // Load user settings from Supabase on mount
   useEffect(() => {
@@ -37,76 +43,71 @@ export default function SettingsScreen({ navigation }: any) {
     try {
       const userData = await DataService.getUser(user.uid);
       if (userData.user) {
-        // Load notification settings, location settings, etc.
-        setNotificationsEnabled(userData.user.notificationsEnabled ?? true);
-        setLocationEnabled(userData.user.locationEnabled ?? true);
+        // TODO: Load notification settings when User type is updated
+        console.log("User settings loaded");
       }
-    } catch (error) {}
-  };
-
-  // Save notification settings changes
-  const handleNotificationToggle = async (value: boolean) => {
-    setNotificationsEnabled(value);
-
-    if (user?.uid) {
-      try {
-        if (!DataService.isInDeveloperMode()) {
-          await SupabaseDataService.updateUser(user.uid, {
-            notificationsEnabled: value,
-          });
-        }
-      } catch (error) {
-        // Revert on error
-        setNotificationsEnabled(!value);
-        Alert.alert("Error", "Failed to save setting");
-      }
+    } catch (error) {
+      console.error("Error loading user settings:", error);
     }
   };
 
-  // Save location settings
-  const handleLocationToggle = async (value: boolean) => {
-    setLocationEnabled(value);
-
-    if (user?.uid) {
-      try {
-        if (!DataService.isInDeveloperMode()) {
-          await SupabaseDataService.updateUser(user.uid, {
-            locationEnabled: value,
-          });
-        }
-      } catch (error) {
-        setLocationEnabled(!value);
-        Alert.alert("Error", "Failed to save setting");
-      }
-    }
+  // Notification handlers
+  const handlePushNotificationsToggle = async (value: boolean) => {
+    setPushNotifications(value);
+    // TODO: Save to backend when User type includes these fields
+    console.log("Push notifications:", value);
   };
 
-  const handlePrivacy = () => {
-    Alert.alert("Privacy Policy", "Privacy policy content coming soon!");
+  const handleMeetupNotificationsToggle = async (value: boolean) => {
+    setMeetupNotifications(value);
+    console.log("Meetup notifications:", value);
   };
 
-  const handleTerms = () => {
-    Alert.alert("Terms of Service", "Terms of service content coming soon!");
+  const handleMessageNotificationsToggle = async (value: boolean) => {
+    setMessageNotifications(value);
+    console.log("Message notifications:", value);
   };
 
-  const handleDataExport = () => {
-    Alert.alert("Export Data", "Data export feature coming soon!");
+  const handleActivityNotificationsToggle = async (value: boolean) => {
+    setActivityNotifications(value);
+    console.log("Activity notifications:", value);
   };
 
-  const handleClearCache = () => {
-    Alert.alert(
-      "Clear Cache",
-      "Are you sure you want to clear the app cache?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Clear",
-          onPress: () => Alert.alert("Success", "Cache cleared!"),
-        },
-      ]
-    );
+  const handleEmailNotificationsToggle = async (value: boolean) => {
+    setEmailNotifications(value);
+    console.log("Email notifications:", value);
   };
 
+  // App preferences handlers
+  const handleAutoPlayVideosToggle = (value: boolean) => {
+    setAutoPlayVideos(value);
+    console.log("Auto-play videos:", value);
+  };
+
+  const handleDistanceUnitToggle = () => {
+    const newUnit = distanceUnit === "miles" ? "km" : "miles";
+    setDistanceUnit(newUnit);
+    console.log("Distance unit:", newUnit);
+  };
+
+  // Navigation handlers
+  const handlePrivacySecurity = () => {
+    navigation.navigate("PrivacySecurity");
+  };
+
+  const handleHelpSupport = () => {
+    navigation.navigate("HelpSupport");
+  };
+
+  const handleLanguage = () => {
+    Alert.alert("Language", "Language selection coming soon!");
+  };
+
+  const handleDefaultLocation = () => {
+    Alert.alert("Default Location", "Location selection coming soon!");
+  };
+
+  // Delete account functionality (keep existing)
   const handleDeleteAccount = () => {
     Alert.alert(
       "Delete Account",
@@ -150,7 +151,6 @@ export default function SettingsScreen({ navigation }: any) {
       );
 
       // Delete all user files from storage first
-
       try {
         await SupabaseStorageService.deleteAllUserFiles(user.uid);
       } catch (storageError) {
@@ -198,26 +198,6 @@ export default function SettingsScreen({ navigation }: any) {
     }
   };
 
-  const handleAbout = () => {
-    Alert.alert(
-      "About Evertwine",
-      "Version 1.0.0\n\nEvertwine helps you connect with people who share your interests through local meetups and events.\n\n© 2024 Evertwine"
-    );
-  };
-
-  const handleContact = () => {
-    Alert.alert(
-      "Contact Support",
-      "support@evertwine.com\n\nWe're here to help!"
-    );
-  };
-
-  const handlePreferences = () => {
-    navigation.navigate("PreferenceSetup");
-  };
-
-  const completionPercentage = getCompletionPercentage();
-
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -237,41 +217,6 @@ export default function SettingsScreen({ navigation }: any) {
         style={styles.scrollView}
         contentContainerStyle={styles.content}
       >
-        {/* Account Section */}
-        <View style={[styles.section, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Account
-          </Text>
-
-          <TouchableOpacity
-            style={[styles.menuItem, { borderBottomColor: colors.border }]}
-          >
-            <Text style={[styles.menuText, { color: colors.text }]}>
-              Edit Profile
-            </Text>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.textTertiary}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.menuItem, { borderBottomColor: colors.border }]}
-          >
-            <Text style={[styles.menuText, { color: colors.text }]}>
-              Change Password
-            </Text>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.textTertiary}
-            />
-          </TouchableOpacity>
-
-        </View>
-
-
         {/* Notifications Section */}
         <View style={[styles.section, { backgroundColor: colors.surface }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -279,52 +224,127 @@ export default function SettingsScreen({ navigation }: any) {
           </Text>
 
           <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
-            <Text style={[styles.menuText, { color: colors.text }]}>
-              Push Notifications
-            </Text>
+            <View style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}>
+              <Ionicons name="notifications-outline" size={20} color="#FFFFFF" />
+            </View>
+            <View style={styles.menuItemText}>
+              <Text style={[styles.menuText, { color: colors.text }]}>
+                Push Notifications
+              </Text>
+              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+                Receive notifications on your device
+              </Text>
+            </View>
             <Switch
-              value={notificationsEnabled}
-              onValueChange={handleNotificationToggle}
+              value={pushNotifications}
+              onValueChange={handlePushNotificationsToggle}
               trackColor={{ false: colors.border, true: "#10B981" }}
               thumbColor={colors.surface}
             />
           </View>
 
           <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
-            <Text style={[styles.menuText, { color: colors.text }]}>
-              Email Notifications
-            </Text>
+            <View style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}>
+              <Ionicons name="people-outline" size={20} color="#FFFFFF" />
+            </View>
+            <View style={styles.menuItemText}>
+              <Text style={[styles.menuText, { color: colors.text }]}>
+                Meetup Notifications
+              </Text>
+              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+                Invites, updates, and reminders
+              </Text>
+            </View>
             <Switch
-              value={notificationsEnabled}
-              onValueChange={handleNotificationToggle}
+              value={meetupNotifications}
+              onValueChange={handleMeetupNotificationsToggle}
+              trackColor={{ false: colors.border, true: "#10B981" }}
+              thumbColor={colors.surface}
+            />
+          </View>
+
+          <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
+            <View style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}>
+              <Ionicons name="chatbubble-outline" size={20} color="#FFFFFF" />
+            </View>
+            <View style={styles.menuItemText}>
+              <Text style={[styles.menuText, { color: colors.text }]}>
+                Message Notifications
+              </Text>
+              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+                New messages and replies
+              </Text>
+            </View>
+            <Switch
+              value={messageNotifications}
+              onValueChange={handleMessageNotificationsToggle}
+              trackColor={{ false: colors.border, true: "#10B981" }}
+              thumbColor={colors.surface}
+            />
+          </View>
+
+          <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
+            <View style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}>
+              <Ionicons name="heart-outline" size={20} color="#FFFFFF" />
+            </View>
+            <View style={styles.menuItemText}>
+              <Text style={[styles.menuText, { color: colors.text }]}>
+                Activity Notifications
+              </Text>
+              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+                Likes, follows, and comments
+              </Text>
+            </View>
+            <Switch
+              value={activityNotifications}
+              onValueChange={handleActivityNotificationsToggle}
+              trackColor={{ false: colors.border, true: "#10B981" }}
+              thumbColor={colors.surface}
+            />
+          </View>
+
+          <View style={[styles.menuItem, { borderBottomWidth: 0 }]}>
+            <View style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}>
+              <Ionicons name="mail-outline" size={20} color="#FFFFFF" />
+            </View>
+            <View style={styles.menuItemText}>
+              <Text style={[styles.menuText, { color: colors.text }]}>
+                Email Notifications
+              </Text>
+              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+                Newsletter, updates, and promotions
+              </Text>
+            </View>
+            <Switch
+              value={emailNotifications}
+              onValueChange={handleEmailNotificationsToggle}
               trackColor={{ false: colors.border, true: "#10B981" }}
               thumbColor={colors.surface}
             />
           </View>
         </View>
 
-        {/* Privacy Section */}
+        {/* App Preferences Section */}
         <View style={[styles.section, { backgroundColor: colors.surface }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Privacy & Security
+            App Preferences
           </Text>
 
-          <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
-            <Text style={[styles.menuText, { color: colors.text }]}>
-              Location Services
-            </Text>
-            <Switch
-              value={locationEnabled}
-              onValueChange={handleLocationToggle}
-              trackColor={{ false: colors.border, true: "#10B981" }}
-              thumbColor={colors.surface}
-            />
-          </View>
-
-          <TouchableOpacity style={[styles.menuItem, { borderBottomWidth: 0 }]} onPress={handlePrivacy}>
-            <Text style={[styles.menuText, { color: colors.text }]}>
-              Privacy Policy
-            </Text>
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={handleLanguage}
+          >
+            <View style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}>
+              <Ionicons name="language-outline" size={20} color="#FFFFFF" />
+            </View>
+            <View style={styles.menuItemText}>
+              <Text style={[styles.menuText, { color: colors.text }]}>
+                Language
+              </Text>
+              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+                English
+              </Text>
+            </View>
             <Ionicons
               name="chevron-forward"
               size={20}
@@ -332,10 +352,92 @@ export default function SettingsScreen({ navigation }: any) {
             />
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.menuItem, { borderBottomWidth: 0 }]} onPress={handleTerms}>
-            <Text style={[styles.menuText, { color: colors.text }]}>
-              Terms of Service
-            </Text>
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={handleDefaultLocation}
+          >
+            <View style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}>
+              <Ionicons name="location-outline" size={20} color="#FFFFFF" />
+            </View>
+            <View style={styles.menuItemText}>
+              <Text style={[styles.menuText, { color: colors.text }]}>
+                Default Location
+              </Text>
+              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+                Set your search location
+              </Text>
+            </View>
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={colors.textTertiary}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={handleDistanceUnitToggle}
+          >
+            <View style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}>
+              <Ionicons name="resize-outline" size={20} color="#FFFFFF" />
+            </View>
+            <View style={styles.menuItemText}>
+              <Text style={[styles.menuText, { color: colors.text }]}>
+                Distance Units
+              </Text>
+              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+                {distanceUnit === "miles" ? "Miles" : "Kilometers"}
+              </Text>
+            </View>
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={colors.textTertiary}
+            />
+          </TouchableOpacity>
+
+          <View style={[styles.menuItem, { borderBottomWidth: 0 }]}>
+            <View style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}>
+              <Ionicons name="play-outline" size={20} color="#FFFFFF" />
+            </View>
+            <View style={styles.menuItemText}>
+              <Text style={[styles.menuText, { color: colors.text }]}>
+                Auto-play Videos
+              </Text>
+              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+                Automatically play videos in feeds
+              </Text>
+            </View>
+            <Switch
+              value={autoPlayVideos}
+              onValueChange={handleAutoPlayVideosToggle}
+              trackColor={{ false: colors.border, true: "#10B981" }}
+              thumbColor={colors.surface}
+            />
+          </View>
+        </View>
+
+        {/* Privacy & Security Section */}
+        <View style={[styles.section, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Privacy & Security
+          </Text>
+
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomWidth: 0 }]}
+            onPress={handlePrivacySecurity}
+          >
+            <View style={[styles.iconContainer, { backgroundColor: "#10B981" }]}>
+              <Ionicons name="shield-checkmark-outline" size={20} color="#FFFFFF" />
+            </View>
+            <View style={styles.menuItemText}>
+              <Text style={[styles.menuText, { color: colors.text }]}>
+                Privacy & Security
+              </Text>
+              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+                Location, data, blocked users, legal
+              </Text>
+            </View>
             <Ionicons
               name="chevron-forward"
               size={20}
@@ -350,10 +452,18 @@ export default function SettingsScreen({ navigation }: any) {
             Appearance
           </Text>
 
-          <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
-            <Text style={[styles.menuText, { color: colors.text }]}>
-              Dark Mode
-            </Text>
+          <View style={[styles.menuItem, { borderBottomWidth: 0 }]}>
+            <View style={[styles.iconContainer, { backgroundColor: "#F59E0B" }]}>
+              <Ionicons name="color-palette-outline" size={20} color="#FFFFFF" />
+            </View>
+            <View style={styles.menuItemText}>
+              <Text style={[styles.menuText, { color: colors.text }]}>
+                Dark Mode
+              </Text>
+              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+                Always use dark theme
+              </Text>
+            </View>
             <Switch
               value={isDarkMode}
               onValueChange={toggleTheme}
@@ -363,26 +473,27 @@ export default function SettingsScreen({ navigation }: any) {
           </View>
         </View>
 
-
-        {/* Support Section */}
+        {/* Help & Support Section */}
         <View style={[styles.section, { backgroundColor: colors.surface }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Support
+            Help & Support
           </Text>
 
-          <TouchableOpacity style={styles.menuItem} onPress={handleContact}>
-            <Text style={[styles.menuText, { color: colors.text }]}>
-              Contact Support
-            </Text>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.textTertiary}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem} onPress={handleAbout}>
-            <Text style={[styles.menuText, { color: colors.text }]}>About</Text>
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomWidth: 0 }]}
+            onPress={handleHelpSupport}
+          >
+            <View style={[styles.iconContainer, { backgroundColor: "#06B6D4" }]}>
+              <Ionicons name="help-circle-outline" size={20} color="#FFFFFF" />
+            </View>
+            <View style={styles.menuItemText}>
+              <Text style={[styles.menuText, { color: colors.text }]}>
+                Help & Support
+              </Text>
+              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+                Contact us, report bugs, send feedback
+              </Text>
+            </View>
             <Ionicons
               name="chevron-forward"
               size={20}
@@ -391,19 +502,27 @@ export default function SettingsScreen({ navigation }: any) {
           </TouchableOpacity>
         </View>
 
-        {/* Danger Zone */}
+        {/* Danger Zone Section */}
         <View style={[styles.section, { backgroundColor: colors.surface }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Danger Zone
           </Text>
 
           <TouchableOpacity
-            style={[styles.dangerItem, { borderBottomColor: colors.border }]}
+            style={[styles.menuItem, { borderBottomWidth: 0 }]}
             onPress={handleDeleteAccount}
           >
-            <Text style={[styles.dangerText, { color: colors.error }]}>
-              Delete Account
-            </Text>
+            <View style={[styles.iconContainer, { backgroundColor: "#EF4444" }]}>
+              <Ionicons name="warning-outline" size={20} color="#FFFFFF" />
+            </View>
+            <View style={styles.menuItemText}>
+              <Text style={[styles.menuText, { color: colors.error }]}>
+                Delete Account
+              </Text>
+              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+                Permanently delete your account and data
+              </Text>
+            </View>
             <Ionicons
               name="chevron-forward"
               size={20}
@@ -422,21 +541,21 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
   },
   backButton: {
-    padding: 8,
+    padding: 4,
   },
   title: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "600",
   },
   placeholder: {
-    width: 40,
+    width: 32,
   },
   scrollView: {
     flex: 1,
@@ -448,54 +567,38 @@ const styles = StyleSheet.create({
   section: {
     borderRadius: 12,
     marginBottom: 20,
+    paddingVertical: 8,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "600",
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 8,
+    marginBottom: 8,
+    paddingHorizontal: 16,
   },
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-  },
-  menuText: {
-    flex: 1,
-    fontSize: 16,
-  },
-  preferenceTextContainer: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  preferenceMainText: {
-    fontSize: 16,
-  },
-  preferenceSubtext: {
-    fontSize: 12,
-    marginTop: 2,
-    opacity: 0.7,
-  },
-  dangerItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  dangerText: {
-    flex: 1,
-    fontSize: 16,
   },
   iconContainer: {
     width: 32,
     height: 32,
     borderRadius: 8,
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
+  },
+  menuItemText: {
+    flex: 1,
+  },
+  menuText: {
+    fontSize: 16,
+    fontWeight: "500",
+    marginBottom: 2,
+  },
+  menuSubtext: {
+    fontSize: 14,
   },
 });

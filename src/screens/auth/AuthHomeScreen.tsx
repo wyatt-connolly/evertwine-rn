@@ -1,13 +1,5 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  Dimensions,
-  Modal,
-} from "react-native";
+import { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
@@ -18,6 +10,7 @@ import GradientBackground from "../../components/GradientBackground";
 import AnimatedButton from "../../components/AnimatedButton";
 import AnimatedCard from "../../components/AnimatedCard";
 import { Ionicons } from "@expo/vector-icons";
+import * as WebBrowser from "expo-web-browser";
 
 type AuthHomeScreenNavigationProp = StackNavigationProp<
   OnboardingStackParamList,
@@ -96,7 +89,6 @@ export default function AuthHomeScreen({ navigation }: Props) {
       setAuthenticated(true);
       setOnboardingComplete(false);
 
-
       // Navigate to ProfileSetup to start onboarding UI testing
       setTimeout(() => {
         setLoading(false);
@@ -104,6 +96,26 @@ export default function AuthHomeScreen({ navigation }: Props) {
       }, 500);
     } catch (error) {
       setLoading(false);
+    }
+  };
+
+  const handleTermsPress = async () => {
+    try {
+      await WebBrowser.openBrowserAsync(
+        "https://www.evertwine.social/legal?doc=terms-of-service"
+      );
+    } catch (error) {
+      Alert.alert("Error", "Unable to open Terms of Service");
+    }
+  };
+
+  const handlePrivacyPress = async () => {
+    try {
+      await WebBrowser.openBrowserAsync(
+        "https://www.evertwine.social/legal?doc=privacy-policy"
+      );
+    } catch (error) {
+      Alert.alert("Error", "Unable to open Privacy Policy");
     }
   };
 
@@ -211,13 +223,17 @@ export default function AuthHomeScreen({ navigation }: Props) {
             <View style={styles.footer}>
               <Text style={[styles.footerText, { color: "#AEAEB2" }]}>
                 By continuing, you agree to our{" "}
-                <Text style={[styles.linkText, { color: "#FFFFFF" }]}>
-                  Terms of Service
-                </Text>{" "}
+                <TouchableOpacity onPress={handleTermsPress}>
+                  <Text style={[styles.linkText, { color: "#FFFFFF" }]}>
+                    Terms of Service
+                  </Text>
+                </TouchableOpacity>{" "}
                 and{" "}
-                <Text style={[styles.linkText, { color: "#FFFFFF" }]}>
-                  Privacy Policy
-                </Text>
+                <TouchableOpacity onPress={handlePrivacyPress}>
+                  <Text style={[styles.linkText, { color: "#FFFFFF" }]}>
+                    Privacy Policy
+                  </Text>
+                </TouchableOpacity>
               </Text>
             </View>
           </AnimatedCard>
@@ -226,8 +242,6 @@ export default function AuthHomeScreen({ navigation }: Props) {
     </GradientBackground>
   );
 }
-
-const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {

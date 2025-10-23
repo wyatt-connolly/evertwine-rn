@@ -208,7 +208,7 @@ export default function ProfileScreen({ navigation, route }: any) {
   };
 
   const handlePrivacy = () => {
-    Alert.alert("Privacy", "Privacy settings coming soon!");
+    navigation.navigate("PrivacySecurity");
   };
 
   const handleNotifications = () => {
@@ -216,7 +216,7 @@ export default function ProfileScreen({ navigation, route }: any) {
   };
 
   const handleHelp = () => {
-    Alert.alert("Help & Support", "Help center coming soon!");
+    navigation.navigate("HelpSupport");
   };
 
   // Show loading state
@@ -392,25 +392,6 @@ export default function ProfileScreen({ navigation, route }: any) {
             </View>
             <Text style={[styles.menuText, { color: colors.text }]}>
               Notifications
-            </Text>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.textTertiary}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.menuItem, { borderBottomColor: colors.border }]}
-            onPress={() => navigation.navigate("Settings")}
-          >
-            <View
-              style={[styles.iconContainer, { backgroundColor: "#6366F1" }]}
-            >
-              <Ionicons name="settings-outline" size={20} color="#FFFFFF" />
-            </View>
-            <Text style={[styles.menuText, { color: colors.text }]}>
-              Settings
             </Text>
             <Ionicons
               name="chevron-forward"
