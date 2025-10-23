@@ -62,7 +62,6 @@ export default function CommunityScreen({ navigation }: any) {
     });
   };
 
-
   const renderFeaturedUser = ({ item }: { item: User }) => (
     <CommunityUserCard
       user={item}

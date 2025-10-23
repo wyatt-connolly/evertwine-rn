@@ -121,19 +121,39 @@ export default function CommunityUserCard({
     >
       {/* Profile Image */}
       <View style={styles.imageContainer}>
-        <Image
-          source={{
-            uri: user.profilePictures[user.standoutPhotoIndex || 0],
-          }}
-          style={[
-            styles.profileImage,
-            {
-              width: imageSize,
-              height: imageSize,
-            },
-          ]}
-          resizeMode="cover"
-        />
+        {user.profilePictures && user.profilePictures.length > 0 ? (
+          <Image
+            source={{
+              uri: user.profilePictures[user.standoutPhotoIndex || 0],
+            }}
+            style={[
+              styles.profileImage,
+              {
+                width: imageSize,
+                height: imageSize,
+              },
+            ]}
+            resizeMode="cover"
+          />
+        ) : (
+          <View
+            style={[
+              styles.profileImage,
+              styles.placeholderImage,
+              {
+                width: imageSize,
+                height: imageSize,
+                backgroundColor: colors.border,
+              },
+            ]}
+          >
+            <Ionicons
+              name="person"
+              size={imageSize * 0.4}
+              color={colors.textTertiary}
+            />
+          </View>
+        )}
         {user.isVerified === "verified" && (
           <View style={[styles.verifiedBadge, { backgroundColor: "#10B981" }]}>
             <Ionicons name="checkmark" size={12} color="#FFFFFF" />
@@ -237,6 +257,10 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     borderWidth: 2,
     borderColor: "#FFFFFF",
+  },
+  placeholderImage: {
+    alignItems: "center",
+    justifyContent: "center",
   },
   verifiedBadge: {
     position: "absolute",
