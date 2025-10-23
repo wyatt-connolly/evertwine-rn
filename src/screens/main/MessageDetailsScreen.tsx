@@ -55,13 +55,16 @@ export default function MessageDetailsScreen({
   useEffect(() => {
     if (!roomId) return;
 
-    const unsubscribe = DataService.setupMessageListener(roomId, (newMessages) => {
-      setMessages(newMessages);
-      // Auto-scroll to bottom on new message
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }, 100);
-    });
+    const unsubscribe = DataService.setupMessageListener(
+      roomId,
+      (newMessages) => {
+        setMessages(newMessages);
+        // Auto-scroll to bottom on new message
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+    );
 
     return () => unsubscribe();
   }, [roomId]);
@@ -84,13 +87,14 @@ export default function MessageDetailsScreen({
       setMessages(messagesData);
 
       // Fetch all participant user data
-      const participantUsers = await DataService.getUsersByIds(roomData.participants);
+      const participantUsers = await DataService.getUsersByIds(
+        roomData.participants
+      );
       const usersMap: Record<string, User> = {};
-      participantUsers.forEach(user => {
+      participantUsers.forEach((user) => {
         usersMap[user.uid] = user;
       });
       setUsers(usersMap);
-
     } catch (error) {
       console.error("Error loading message data:", error);
       Alert.alert("Error", "Failed to load messages");
@@ -132,7 +136,8 @@ export default function MessageDetailsScreen({
   };
 
   const getSenderAvatar = (senderId: string): string | null => {
-    if (senderId === currentUser?.uid) return (currentUser as any).profilePictures?.[0] || null;
+    if (senderId === currentUser?.uid)
+      return (currentUser as any).profilePictures?.[0] || null;
     return users[senderId]?.profilePictures?.[0] || null;
   };
 
@@ -142,10 +147,12 @@ export default function MessageDetailsScreen({
     const senderAvatar = getSenderAvatar(item.senderRef);
 
     return (
-      <View style={[
-        styles.messageContainer,
-        isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage
-      ]}>
+      <View
+        style={[
+          styles.messageContainer,
+          isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage,
+        ]}
+      >
         {!isCurrentUser && (
           <View style={styles.messageHeader}>
             <Image
@@ -157,23 +164,27 @@ export default function MessageDetailsScreen({
             </Text>
           </View>
         )}
-        <View style={[
-          styles.messageBubble,
-          {
-            backgroundColor: isCurrentUser ? colors.primary : colors.surface,
-          }
-        ]}>
-          <Text style={[
-            styles.messageText,
-            { color: isCurrentUser ? colors.onPrimary : colors.text }
-          ]}>
+        <View
+          style={[
+            styles.messageBubble,
+            {
+              backgroundColor: isCurrentUser ? colors.primary : colors.surface,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.messageText,
+              { color: isCurrentUser ? colors.onPrimary : colors.text },
+            ]}
+          >
             {item.text}
           </Text>
         </View>
         <Text style={[styles.timestamp, { color: colors.textTertiary }]}>
-          {new Date(item.createdTime).toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
+          {new Date(item.createdTime).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
           })}
         </Text>
       </View>
@@ -183,19 +194,34 @@ export default function MessageDetailsScreen({
   const renderHeader = () => {
     if (!room) return null;
 
-    const otherParticipants = room.participants.filter(id => id !== currentUser?.uid);
-    const otherUser = otherParticipants.length > 0 ? users[otherParticipants[0]] : null;
+    const otherParticipants = room.participants.filter(
+      (id) => id !== currentUser?.uid
+    );
+    const otherUser =
+      otherParticipants.length > 0 ? users[otherParticipants[0]] : null;
 
     return (
-      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colors.surface, borderBottomColor: colors.border },
+        ]}
+      >
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
           <Ionicons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
-        
+
         <View style={styles.headerInfo}>
           {otherUser && (
             <Image
-              source={{ uri: otherUser.profilePictures?.[0] || "https://via.placeholder.com/40" }}
+              source={{
+                uri:
+                  otherUser.profilePictures?.[0] ||
+                  "https://via.placeholder.com/40",
+              }}
               style={styles.headerAvatar}
             />
           )}
@@ -203,8 +229,12 @@ export default function MessageDetailsScreen({
             <Text style={[styles.headerTitle, { color: colors.text }]}>
               {room.name || otherUser?.displayName || "Chat"}
             </Text>
-            <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
-              {room.type === "direct" ? "Direct message" : `${room.participants.length} participants`}
+            <Text
+              style={[styles.headerSubtitle, { color: colors.textSecondary }]}
+            >
+              {room.type === "direct"
+                ? "Direct message"
+                : `${room.participants.length} participants`}
             </Text>
           </View>
         </View>
@@ -218,7 +248,11 @@ export default function MessageDetailsScreen({
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons name="chatbubbles-outline" size={64} color={colors.textTertiary} />
+      <Ionicons
+        name="chatbubbles-outline"
+        size={64}
+        color={colors.textTertiary}
+      />
       <Text style={[styles.emptyTitle, { color: colors.text }]}>
         No messages yet
       </Text>
@@ -230,7 +264,9 @@ export default function MessageDetailsScreen({
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
         {renderHeader()}
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -243,10 +279,12 @@ export default function MessageDetailsScreen({
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       {renderHeader()}
-      
-      <KeyboardAvoidingView 
+
+      <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
@@ -260,13 +298,23 @@ export default function MessageDetailsScreen({
             renderItem={renderMessage}
             style={styles.messagesList}
             contentContainerStyle={styles.messagesContent}
-            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+            onContentSizeChange={() =>
+              flatListRef.current?.scrollToEnd({ animated: true })
+            }
           />
         )}
 
-        <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
+        <View
+          style={[
+            styles.inputContainer,
+            { backgroundColor: colors.surface, borderTopColor: colors.border },
+          ]}
+        >
           <TextInput
-            style={[styles.textInput, { color: colors.text, backgroundColor: colors.background }]}
+            style={[
+              styles.textInput,
+              { color: colors.text, backgroundColor: colors.background },
+            ]}
             value={newMessage}
             onChangeText={setNewMessage}
             placeholder="Type a message..."
@@ -277,7 +325,11 @@ export default function MessageDetailsScreen({
           <TouchableOpacity
             style={[
               styles.sendButton,
-              { backgroundColor: newMessage.trim() ? colors.primary : colors.border }
+              {
+                backgroundColor: newMessage.trim()
+                  ? colors.primary
+                  : colors.border,
+              },
             ]}
             onPress={handleSendMessage}
             disabled={!newMessage.trim() || isSending}

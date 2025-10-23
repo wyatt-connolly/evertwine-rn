@@ -313,7 +313,6 @@ export class SupabaseDataService {
     return data.map(this.mapMessageRoomFromDB);
   }
 
-
   // Find existing direct message room between two users
   static async findDirectMessageRoom(
     userId1: string,
@@ -415,19 +414,19 @@ export class SupabaseDataService {
       .select("*")
       .eq("id", roomId)
       .single();
-    
+
     if (error) throw error;
     if (!data) return null;
-    
+
     return this.mapMessageRoomFromDB(data);
   }
 
   static async getUsersByIds(userIds: string[]): Promise<User[]> {
     const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .in('uid', userIds);
-    
+      .from("users")
+      .select("*")
+      .in("uid", userIds);
+
     if (error) throw error;
     return data.map(this.mapUserFromDB);
   }
@@ -438,13 +437,14 @@ export class SupabaseDataService {
   ): () => void {
     const subscription = supabase
       .channel(`messages:${roomId}`)
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'messages',
-          filter: `message_room_ref=eq.${roomId}`
-        }, 
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "messages",
+          filter: `message_room_ref=eq.${roomId}`,
+        },
         async () => {
           // Fetch updated messages and call callback
           const messages = await this.getMessages(roomId);

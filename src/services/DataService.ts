@@ -1,4 +1,4 @@
-import { User, Meetup, MessageRoom, ActivityItem } from "../types";
+import { User, Meetup, MessageRoom, ActivityItem, Message } from "../types";
 import {
   getMockUsers,
   getMockMeetups,
@@ -8,7 +8,6 @@ import {
   getMockUserStats,
 } from "../data/mockData";
 import { getMockCommunityUsers } from "../data/mockCommunityUsers";
-import { Message, MessageRoom, User } from "../types";
 import { SupabaseDataService } from "./SupabaseDataService";
 
 export class DataService {
@@ -442,7 +441,7 @@ export class DataService {
     if (this.isDeveloperMode) {
       // Return mock users for development
       const mockUsers = getMockCommunityUsers();
-      return mockUsers.filter(user => userIds.includes(user.uid));
+      return mockUsers.filter((user) => userIds.includes(user.uid));
     }
     try {
       return await SupabaseDataService.getUsersByIds(userIds);

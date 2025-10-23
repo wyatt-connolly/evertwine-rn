@@ -39,7 +39,6 @@ export default function UserProfileScreen({
   const { userData } = route.params;
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
-
   const handlePhotoScroll = (event: any) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
     const index = Math.round(contentOffsetX / width);
@@ -48,7 +47,7 @@ export default function UserProfileScreen({
 
   const handleMessagePress = async () => {
     const currentUser = useAuthStore.getState().user;
-    
+
     if (!currentUser) {
       Alert.alert("Error", "You must be logged in to send messages");
       return;
