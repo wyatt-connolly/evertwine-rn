@@ -40,7 +40,7 @@ export type MainTabParamList = {
   Home: undefined;
   Community: undefined;
   Messages: undefined;
-  Profile: undefined;
+  Settings: undefined;
 };
 
 export type ProfileStackParamList = {
@@ -202,8 +202,8 @@ function MainTabsNavigator() {
             iconName = focused ? "people" : "people-outline";
           } else if (route.name === "Messages") {
             iconName = focused ? "chatbubbles" : "chatbubbles-outline";
-          } else if (route.name === "Profile") {
-            iconName = focused ? "person" : "person-outline";
+          } else if (route.name === "Settings") {
+            iconName = focused ? "settings" : "settings-outline";
           } else {
             iconName = "help-outline";
           }
@@ -227,7 +227,7 @@ function MainTabsNavigator() {
       <Tab.Screen name="Home" component={HomeStackNavigator} />
       <Tab.Screen name="Community" component={CommunityStackNavigator} />
       <Tab.Screen name="Messages" component={MessagesStackNavigator} />
-      <Tab.Screen name="Profile" component={ProfileStackNavigator} />
+      <Tab.Screen name="Settings" component={ProfileStackNavigator} />
     </Tab.Navigator>
   );
 }

@@ -20,14 +20,14 @@ import { DataService } from "../../services/DataService";
 export default function SettingsScreen({ navigation }: any) {
   const { user, logout } = useAuthStore();
   const { isDarkMode, toggleTheme, colors } = useThemeStore();
-  
+
   // Enhanced notification states
   const [pushNotifications, setPushNotifications] = useState(true);
   const [meetupNotifications, setMeetupNotifications] = useState(true);
   const [messageNotifications, setMessageNotifications] = useState(true);
   const [activityNotifications, setActivityNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
-  
+
   // App preferences states
   const [autoPlayVideos, setAutoPlayVideos] = useState(false);
   const [distanceUnit, setDistanceUnit] = useState<"miles" | "km">("miles");
@@ -224,14 +224,22 @@ export default function SettingsScreen({ navigation }: any) {
           </Text>
 
           <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
-            <View style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}>
-              <Ionicons name="notifications-outline" size={20} color="#FFFFFF" />
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}
+            >
+              <Ionicons
+                name="notifications-outline"
+                size={20}
+                color="#FFFFFF"
+              />
             </View>
             <View style={styles.menuItemText}>
               <Text style={[styles.menuText, { color: colors.text }]}>
                 Push Notifications
               </Text>
-              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.menuSubtext, { color: colors.textSecondary }]}
+              >
                 Receive notifications on your device
               </Text>
             </View>
@@ -244,14 +252,18 @@ export default function SettingsScreen({ navigation }: any) {
           </View>
 
           <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
-            <View style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}
+            >
               <Ionicons name="people-outline" size={20} color="#FFFFFF" />
             </View>
             <View style={styles.menuItemText}>
               <Text style={[styles.menuText, { color: colors.text }]}>
                 Meetup Notifications
               </Text>
-              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.menuSubtext, { color: colors.textSecondary }]}
+              >
                 Invites, updates, and reminders
               </Text>
             </View>
@@ -264,14 +276,18 @@ export default function SettingsScreen({ navigation }: any) {
           </View>
 
           <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
-            <View style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}
+            >
               <Ionicons name="chatbubble-outline" size={20} color="#FFFFFF" />
             </View>
             <View style={styles.menuItemText}>
               <Text style={[styles.menuText, { color: colors.text }]}>
                 Message Notifications
               </Text>
-              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.menuSubtext, { color: colors.textSecondary }]}
+              >
                 New messages and replies
               </Text>
             </View>
@@ -284,14 +300,18 @@ export default function SettingsScreen({ navigation }: any) {
           </View>
 
           <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
-            <View style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}
+            >
               <Ionicons name="heart-outline" size={20} color="#FFFFFF" />
             </View>
             <View style={styles.menuItemText}>
               <Text style={[styles.menuText, { color: colors.text }]}>
                 Activity Notifications
               </Text>
-              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.menuSubtext, { color: colors.textSecondary }]}
+              >
                 Likes, follows, and comments
               </Text>
             </View>
@@ -304,14 +324,18 @@ export default function SettingsScreen({ navigation }: any) {
           </View>
 
           <View style={[styles.menuItem, { borderBottomWidth: 0 }]}>
-            <View style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}
+            >
               <Ionicons name="mail-outline" size={20} color="#FFFFFF" />
             </View>
             <View style={styles.menuItemText}>
               <Text style={[styles.menuText, { color: colors.text }]}>
                 Email Notifications
               </Text>
-              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.menuSubtext, { color: colors.textSecondary }]}
+              >
                 Newsletter, updates, and promotions
               </Text>
             </View>
@@ -334,14 +358,18 @@ export default function SettingsScreen({ navigation }: any) {
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
             onPress={handleLanguage}
           >
-            <View style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}
+            >
               <Ionicons name="language-outline" size={20} color="#FFFFFF" />
             </View>
             <View style={styles.menuItemText}>
               <Text style={[styles.menuText, { color: colors.text }]}>
                 Language
               </Text>
-              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.menuSubtext, { color: colors.textSecondary }]}
+              >
                 English
               </Text>
             </View>
@@ -356,14 +384,18 @@ export default function SettingsScreen({ navigation }: any) {
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
             onPress={handleDefaultLocation}
           >
-            <View style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}
+            >
               <Ionicons name="location-outline" size={20} color="#FFFFFF" />
             </View>
             <View style={styles.menuItemText}>
               <Text style={[styles.menuText, { color: colors.text }]}>
                 Default Location
               </Text>
-              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.menuSubtext, { color: colors.textSecondary }]}
+              >
                 Set your search location
               </Text>
             </View>
@@ -378,14 +410,18 @@ export default function SettingsScreen({ navigation }: any) {
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
             onPress={handleDistanceUnitToggle}
           >
-            <View style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}
+            >
               <Ionicons name="resize-outline" size={20} color="#FFFFFF" />
             </View>
             <View style={styles.menuItemText}>
               <Text style={[styles.menuText, { color: colors.text }]}>
                 Distance Units
               </Text>
-              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.menuSubtext, { color: colors.textSecondary }]}
+              >
                 {distanceUnit === "miles" ? "Miles" : "Kilometers"}
               </Text>
             </View>
@@ -397,14 +433,18 @@ export default function SettingsScreen({ navigation }: any) {
           </TouchableOpacity>
 
           <View style={[styles.menuItem, { borderBottomWidth: 0 }]}>
-            <View style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}
+            >
               <Ionicons name="play-outline" size={20} color="#FFFFFF" />
             </View>
             <View style={styles.menuItemText}>
               <Text style={[styles.menuText, { color: colors.text }]}>
                 Auto-play Videos
               </Text>
-              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.menuSubtext, { color: colors.textSecondary }]}
+              >
                 Automatically play videos in feeds
               </Text>
             </View>
@@ -427,14 +467,22 @@ export default function SettingsScreen({ navigation }: any) {
             style={[styles.menuItem, { borderBottomWidth: 0 }]}
             onPress={handlePrivacySecurity}
           >
-            <View style={[styles.iconContainer, { backgroundColor: "#10B981" }]}>
-              <Ionicons name="shield-checkmark-outline" size={20} color="#FFFFFF" />
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#10B981" }]}
+            >
+              <Ionicons
+                name="shield-checkmark-outline"
+                size={20}
+                color="#FFFFFF"
+              />
             </View>
             <View style={styles.menuItemText}>
               <Text style={[styles.menuText, { color: colors.text }]}>
                 Privacy & Security
               </Text>
-              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.menuSubtext, { color: colors.textSecondary }]}
+              >
                 Location, data, blocked users, legal
               </Text>
             </View>
@@ -453,14 +501,22 @@ export default function SettingsScreen({ navigation }: any) {
           </Text>
 
           <View style={[styles.menuItem, { borderBottomWidth: 0 }]}>
-            <View style={[styles.iconContainer, { backgroundColor: "#F59E0B" }]}>
-              <Ionicons name="color-palette-outline" size={20} color="#FFFFFF" />
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#F59E0B" }]}
+            >
+              <Ionicons
+                name="color-palette-outline"
+                size={20}
+                color="#FFFFFF"
+              />
             </View>
             <View style={styles.menuItemText}>
               <Text style={[styles.menuText, { color: colors.text }]}>
                 Dark Mode
               </Text>
-              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.menuSubtext, { color: colors.textSecondary }]}
+              >
                 Always use dark theme
               </Text>
             </View>
@@ -483,14 +539,18 @@ export default function SettingsScreen({ navigation }: any) {
             style={[styles.menuItem, { borderBottomWidth: 0 }]}
             onPress={handleHelpSupport}
           >
-            <View style={[styles.iconContainer, { backgroundColor: "#06B6D4" }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#06B6D4" }]}
+            >
               <Ionicons name="help-circle-outline" size={20} color="#FFFFFF" />
             </View>
             <View style={styles.menuItemText}>
               <Text style={[styles.menuText, { color: colors.text }]}>
                 Help & Support
               </Text>
-              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.menuSubtext, { color: colors.textSecondary }]}
+              >
                 Contact us, report bugs, send feedback
               </Text>
             </View>
@@ -512,14 +572,18 @@ export default function SettingsScreen({ navigation }: any) {
             style={[styles.menuItem, { borderBottomWidth: 0 }]}
             onPress={handleDeleteAccount}
           >
-            <View style={[styles.iconContainer, { backgroundColor: "#EF4444" }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: "#EF4444" }]}
+            >
               <Ionicons name="warning-outline" size={20} color="#FFFFFF" />
             </View>
             <View style={styles.menuItemText}>
               <Text style={[styles.menuText, { color: colors.error }]}>
                 Delete Account
               </Text>
-              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.menuSubtext, { color: colors.textSecondary }]}
+              >
                 Permanently delete your account and data
               </Text>
             </View>
