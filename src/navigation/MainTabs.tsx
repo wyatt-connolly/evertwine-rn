@@ -47,12 +47,13 @@ export type MainTabParamList = {
 export type ProfileStackParamList = {
   ProfileMain: { userId?: string; userData?: any } | undefined;
   EditProfile: undefined;
-  Settings: undefined;
+  SettingsMain: undefined;
   PreferenceSetup: undefined;
   ActivityFeed: undefined;
   Notifications: undefined;
   PrivacySecurity: undefined;
   HelpSupport: undefined;
+  MessageDetails: { roomId: string };
 };
 
 export type HomeStackParamList = {
@@ -117,7 +118,7 @@ function ProfileStackNavigator() {
           gestureEnabled: true,
         }}
       />
-      <ProfileStack.Screen name="Settings" component={SettingsScreen} />
+      <ProfileStack.Screen name="SettingsMain" component={SettingsScreen} />
       <ProfileStack.Screen
         name="PreferenceSetup"
         component={PreferenceSetupScreen}
@@ -132,6 +133,10 @@ function ProfileStackNavigator() {
         component={PrivacySecurityScreen}
       />
       <ProfileStack.Screen name="HelpSupport" component={HelpSupportScreen} />
+      <ProfileStack.Screen
+        name="MessageDetails"
+        component={MessageDetailsScreen}
+      />
     </ProfileStack.Navigator>
   );
 }

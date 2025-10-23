@@ -36,7 +36,6 @@ export default function CommunityScreen({ navigation }: any) {
     return users.filter((user) => user.uid !== currentUser.uid);
   };
 
-
   const loadCommunityData = async () => {
     try {
       setIsLoading(true);
