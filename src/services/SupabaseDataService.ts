@@ -78,14 +78,17 @@ export class SupabaseDataService {
       .limit(limit * 2); // Get more users to filter from
     if (error) throw error;
     // Filter for users who are likely to be featured (have profile pictures, bio, etc.)
-    const featuredCandidates = data.filter(user => 
-      user.profile_pictures && 
-      user.profile_pictures.length > 0 && 
-      user.bio && 
-      user.bio.length > 10
+    const featuredCandidates = data.filter(
+      (user) =>
+        user.profile_pictures &&
+        user.profile_pictures.length > 0 &&
+        user.bio &&
+        user.bio.length > 10
     );
     // Shuffle and take the requested number
-    const shuffled = featuredCandidates.sort(() => Math.random() - 0.5).slice(0, limit);
+    const shuffled = featuredCandidates
+      .sort(() => Math.random() - 0.5)
+      .slice(0, limit);
     return shuffled.map(this.mapUserFromDB);
   }
 

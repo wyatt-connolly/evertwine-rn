@@ -62,12 +62,6 @@ export default function CommunityScreen({ navigation }: any) {
     });
   };
 
-  const handleBrowseAll = () => {
-    Alert.alert(
-      "Coming Soon",
-      "Browse all members feature will be available soon!"
-    );
-  };
 
   const renderFeaturedUser = ({ item }: { item: User }) => (
     <CommunityUserCard
@@ -220,37 +214,26 @@ export default function CommunityScreen({ navigation }: any) {
           {renderSectionHeader("New Members", "Recently joined the community")}
 
           {newMembers.length > 0 ? (
-            <View style={styles.gridContainer}>
-              {newMembers.map((user) => (
+            <FlatList
+              data={newMembers}
+              renderItem={({ item }) => (
                 <CommunityUserCard
-                  key={user.uid}
-                  user={user}
-                  variant="grid"
-                  onPress={() => handleUserPress(user)}
+                  user={item}
+                  variant="small"
+                  onPress={() => handleUserPress(item)}
                   showBadge={true}
                   badgeText="New"
                   badgeColor="#F59E0B"
                 />
-              ))}
-            </View>
+              )}
+              keyExtractor={(item) => item.uid}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalList}
+            />
           ) : (
             renderEmptyState("No new members yet")
           )}
-        </View>
-
-        {/* Browse All Button */}
-        <View style={styles.section}>
-          <TouchableOpacity
-            style={[
-              styles.browseAllButton,
-              { backgroundColor: colors.primary },
-            ]}
-            onPress={handleBrowseAll}
-          >
-            <Ionicons name="people" size={24} color="#FFFFFF" />
-            <Text style={styles.browseAllText}>Browse All Members</Text>
-            <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
-          </TouchableOpacity>
         </View>
 
         {/* Bottom Spacing */}
@@ -313,12 +296,6 @@ const styles = StyleSheet.create({
   horizontalList: {
     paddingHorizontal: 20,
   },
-  gridContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-  },
   emptyState: {
     alignItems: "center",
     paddingVertical: 40,
@@ -328,21 +305,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     marginTop: 12,
-  },
-  browseAllButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginHorizontal: 20,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-  },
-  browseAllText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
-    marginHorizontal: 12,
   },
   bottomSpacing: {
     height: 20,
