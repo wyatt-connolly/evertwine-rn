@@ -263,7 +263,7 @@ export default function ProfileScreen({ navigation, route }: any) {
         ]}
       >
         <Text style={[styles.title, { color: colors.text }]}>
-          {isViewingOtherProfile ? "Profile" : "Profile"}
+          {isViewingOtherProfile ? "Profile" : "Settings"}
         </Text>
       </View>
 
