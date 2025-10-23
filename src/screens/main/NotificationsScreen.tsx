@@ -1,378 +1,291 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Switch,
   ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
-import { SupabaseDataService } from "../../services/SupabaseDataService";
+
+interface Notification {
+  id: string;
+  type: 'like' | 'follow' | 'message' | 'meetup' | 'comment' | 'system';
+  title: string;
+  message: string;
+  timestamp: string;
+  isRead: boolean;
+  userAvatar?: string;
+  userName?: string;
+  actionData?: any;
+}
 
 export default function NotificationsScreen({ navigation }: any) {
   const { colors } = useThemeStore();
   const { user } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // Notification settings state
-  const [notificationSettings, setNotificationSettings] = useState({
-    // Meetup Notifications
-    meetup_invites: true,
-    meetup_reminders: true,
-    meetup_updates: true,
-    meetup_cancelled: true,
-
-    // Message Notifications
-    new_messages: true,
-    message_replies: true,
-
-    // Social Notifications
-    new_followers: true,
-    profile_views: false,
-    friend_requests: true,
-    profile_likes: false,
-
-    // System Notifications
-    app_updates: true,
-    promotions: false,
-    verification_updates: true,
-  });
-
-  // Load notification preferences from Supabase
+  // Load notifications from Supabase
   useEffect(() => {
-    const loadNotificationPreferences = async () => {
-      console.log(
-        "🔔 NotificationsScreen: Starting to load preferences for user:",
-        user?.uid
+    loadNotifications();
+  }, []);
+
+  const loadNotifications = async () => {
+    if (!user?.uid) return;
+
+    try {
+      setIsLoading(true);
+      
+      // TODO: Replace with actual Supabase query when notifications table is ready
+      // For now, show mock data
+      const mockNotifications: Notification[] = [
+        {
+          id: "1",
+          type: "like",
+          title: "New Like",
+          message: "Sarah liked your meetup 'Coffee & Conversation'",
+          timestamp: "2 minutes ago",
+          isRead: false,
+          userName: "Sarah Johnson",
+        },
+        {
+          id: "2",
+          type: "follow",
+          title: "New Follower",
+          message: "Mike Chen started following you",
+          timestamp: "1 hour ago",
+          isRead: false,
+          userName: "Mike Chen",
+        },
+        {
+          id: "3",
+          type: "message",
+          title: "New Message",
+          message: "You have a new message from Alex",
+          timestamp: "3 hours ago",
+          isRead: true,
+          userName: "Alex Rodriguez",
+        },
+        {
+          id: "4",
+          type: "meetup",
+          title: "Meetup Invitation",
+          message: "You're invited to 'Weekend Hiking' by Emma",
+          timestamp: "1 day ago",
+          isRead: true,
+          userName: "Emma Wilson",
+        },
+        {
+          id: "5",
+          type: "comment",
+          title: "New Comment",
+          message: "Tom commented on your meetup",
+          timestamp: "2 days ago",
+          isRead: true,
+          userName: "Tom Anderson",
+        },
+        {
+          id: "6",
+          type: "system",
+          title: "Welcome to Evertwine!",
+          message: "Your account has been successfully created",
+          timestamp: "1 week ago",
+          isRead: true,
+        },
+      ];
+
+      setNotifications(mockNotifications);
+    } catch (error) {
+      console.error("Error loading notifications:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await loadNotifications();
+    setIsRefreshing(false);
+  };
+
+  const markAsRead = async (notificationId: string) => {
+    try {
+      // TODO: Update notification as read in Supabase
+      setNotifications(prev => 
+        prev.map(notification => 
+          notification.id === notificationId 
+            ? { ...notification, isRead: true }
+            : notification
+        )
       );
-
-      if (!user?.uid) {
-        console.log("🔔 NotificationsScreen: No user UID, skipping load");
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        console.log(
-          "🔔 NotificationsScreen: Fetching user data from Supabase..."
-        );
-        const userData = await SupabaseDataService.getUser(user.uid);
-        console.log("🔔 NotificationsScreen: User data received:", {
-          hasUserData: !!userData,
-          hasNotificationPreferences: !!userData?.notificationPreferences,
-          notificationPreferences: userData?.notificationPreferences,
-        });
-
-        if (userData?.notificationPreferences) {
-          console.log(
-            "🔔 NotificationsScreen: Setting notification preferences from database"
-          );
-          setNotificationSettings(userData.notificationPreferences);
-        } else {
-          console.log(
-            "🔔 NotificationsScreen: No notification preferences found, using defaults"
-          );
-        }
-      } catch (error) {
-        console.error(
-          "🔔 NotificationsScreen: Error loading notification preferences:",
-          error
-        );
-      } finally {
-        console.log("🔔 NotificationsScreen: Loading complete");
-        setIsLoading(false);
-      }
-    };
-
-    loadNotificationPreferences();
-  }, [user?.uid]);
-
-  const handleToggle = async (settingId: string) => {
-    console.log(
-      "🔔 NotificationsScreen: Toggle triggered for setting:",
-      settingId
-    );
-
-    const newValue =
-      !notificationSettings[settingId as keyof typeof notificationSettings];
-
-    console.log(
-      "🔔 NotificationsScreen: New value for",
-      settingId,
-      ":",
-      newValue
-    );
-
-    // Update local state immediately for responsive UI
-    setNotificationSettings((prev) => ({
-      ...prev,
-      [settingId]: newValue,
-    }));
-
-    // Save to Supabase
-    if (user?.uid) {
-      try {
-        const updatedPreferences = {
-          ...notificationSettings,
-          [settingId]: newValue,
-        };
-
-        console.log("🔔 NotificationsScreen: Saving to Supabase:", {
-          userId: user.uid,
-          settingId,
-          newValue,
-          updatedPreferences,
-        });
-
-        const result = await SupabaseDataService.updateUser(user.uid, {
-          notificationPreferences: updatedPreferences,
-        });
-
-        console.log("🔔 NotificationsScreen: Supabase update result:", result);
-        console.log(
-          "🔔 NotificationsScreen: Successfully saved notification preferences"
-        );
-      } catch (error) {
-        console.error(
-          "🔔 NotificationsScreen: Error saving notification preferences:",
-          error
-        );
-        // Revert local state on error
-        setNotificationSettings((prev) => ({
-          ...prev,
-          [settingId]: !newValue,
-        }));
-        console.log(
-          "🔔 NotificationsScreen: Reverted local state due to error"
-        );
-      }
-    } else {
-      console.log("🔔 NotificationsScreen: No user UID available for saving");
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
     }
   };
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case "Meetups":
-        return "#F97316";
-      case "Messages":
-        return "#10B981";
-      case "Social":
-        return "#EC4899";
-      case "System":
-        return "#6B7280";
+  const markAllAsRead = async () => {
+    try {
+      // TODO: Mark all notifications as read in Supabase
+      setNotifications(prev => 
+        prev.map(notification => ({ ...notification, isRead: true }))
+      );
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+    }
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'like':
+        return 'heart';
+      case 'follow':
+        return 'person-add';
+      case 'message':
+        return 'chatbubble';
+      case 'meetup':
+        return 'calendar';
+      case 'comment':
+        return 'chatbubble-outline';
+      case 'system':
+        return 'information-circle';
       default:
-        return "#3B82F6";
+        return 'notifications';
     }
   };
 
-  const settingsData = [
-    {
-      category: "Meetups",
-      items: [
-        {
-          id: "meetup_invites",
-          title: "Meetup Invites",
-          description: "When someone invites you to a meetup",
-          icon: "calendar-outline",
-        },
-        {
-          id: "meetup_reminders",
-          title: "Meetup Reminders",
-          description: "Reminders before your meetups start",
-          icon: "time-outline",
-        },
-        {
-          id: "meetup_updates",
-          title: "Meetup Updates",
-          description: "When meetup details are changed",
-          icon: "refresh-outline",
-        },
-        {
-          id: "meetup_cancelled",
-          title: "Meetup Cancelled",
-          description: "When a meetup you're attending is cancelled",
-          icon: "close-circle-outline",
-        },
-      ],
-    },
-    {
-      category: "Messages",
-      items: [
-        {
-          id: "new_messages",
-          title: "New Messages",
-          description: "When you receive a new message",
-          icon: "mail-outline",
-        },
-        {
-          id: "message_replies",
-          title: "Message Replies",
-          description: "When someone replies to your message",
-          icon: "chatbubble-outline",
-        },
-      ],
-    },
-    {
-      category: "Social",
-      items: [
-        {
-          id: "new_followers",
-          title: "New Followers",
-          description: "When someone follows you",
-          icon: "person-add-outline",
-        },
-        {
-          id: "profile_views",
-          title: "Profile Views",
-          description: "When someone views your profile",
-          icon: "eye-outline",
-        },
-        {
-          id: "friend_requests",
-          title: "Friend Requests",
-          description: "When someone sends you a friend request",
-          icon: "people-outline",
-        },
-        {
-          id: "profile_likes",
-          title: "Profile Likes",
-          description: "When someone likes your profile",
-          icon: "heart-outline",
-        },
-      ],
-    },
-    {
-      category: "System",
-      items: [
-        {
-          id: "app_updates",
-          title: "App Updates",
-          description: "Important app updates and new features",
-          icon: "sparkles-outline",
-        },
-        {
-          id: "promotions",
-          title: "Promotions",
-          description: "Special offers and promotional content",
-          icon: "gift-outline",
-        },
-        {
-          id: "verification_updates",
-          title: "Verification Updates",
-          description: "Updates about your account verification",
-          icon: "checkmark-done-circle-outline",
-        },
-      ],
-    },
-  ];
+  const getNotificationColor = (type: string) => {
+    switch (type) {
+      case 'like':
+        return '#EF4444';
+      case 'follow':
+        return '#3B82F6';
+      case 'message':
+        return '#10B981';
+      case 'meetup':
+        return '#8B5CF6';
+      case 'comment':
+        return '#F59E0B';
+      case 'system':
+        return '#6B7280';
+      default:
+        return '#6B7280';
+    }
+  };
 
-  return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
+  const renderNotification = (notification: Notification) => (
+    <TouchableOpacity
+      key={notification.id}
+      style={[
+        styles.notificationItem,
+        { 
+          backgroundColor: notification.isRead ? colors.surface : colors.background,
+          borderBottomColor: colors.border 
+        }
+      ]}
+      onPress={() => markAsRead(notification.id)}
     >
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <View style={styles.leftContainer}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
-          </TouchableOpacity>
+      <View style={styles.notificationContent}>
+        <View style={[styles.iconContainer, { backgroundColor: getNotificationColor(notification.type) }]}>
+          <Ionicons 
+            name={getNotificationIcon(notification.type)} 
+            size={20} 
+            color="#FFFFFF" 
+          />
         </View>
-        <View style={styles.titleContainer}>
-          <Text style={[styles.title, { color: colors.text }]}>
-            Notification Settings
+        
+        <View style={styles.notificationText}>
+          <Text style={[styles.notificationTitle, { color: colors.text }]}>
+            {notification.title}
+          </Text>
+          <Text style={[styles.notificationMessage, { color: colors.textSecondary }]}>
+            {notification.message}
+          </Text>
+          <Text style={[styles.notificationTime, { color: colors.textTertiary }]}>
+            {notification.timestamp}
           </Text>
         </View>
-        <View style={styles.rightContainer} />
+        
+        {!notification.isRead && (
+          <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />
+        )}
       </View>
+    </TouchableOpacity>
+  );
 
-      {/* Settings List */}
-      {isLoading ? (
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.primary} />
+          </TouchableOpacity>
+          <Text style={[styles.title, { color: colors.text }]}>Notifications</Text>
+          <View style={styles.placeholder} />
+        </View>
+        
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={[styles.loadingText, { color: colors.text }]}>
-            Loading notification settings...
+            Loading notifications...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.primary} />
+        </TouchableOpacity>
+        <Text style={[styles.title, { color: colors.text }]}>Notifications</Text>
+        {unreadCount > 0 && (
+          <TouchableOpacity onPress={markAllAsRead} style={styles.markAllButton}>
+            <Text style={[styles.markAllText, { color: colors.primary }]}>
+              Mark all read
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {notifications.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="notifications-outline" size={64} color={colors.textTertiary} />
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>
+            No notifications yet
+          </Text>
+          <Text style={[styles.emptyMessage, { color: colors.textSecondary }]}>
+            When you get likes, follows, or messages, they'll appear here
           </Text>
         </View>
       ) : (
         <ScrollView
           style={styles.scrollView}
-          contentContainerStyle={{ paddingBottom: 40 }}
-          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={colors.primary}
+            />
+          }
         >
-          {settingsData.map((section, sectionIndex) => (
-            <View key={section.category} style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                {section.category}
-              </Text>
-
-              <View
-                style={[
-                  styles.sectionContent,
-                  { backgroundColor: colors.surface },
-                ]}
-              >
-                {section.items.map((item, itemIndex) => (
-                  <View key={item.id}>
-                    <View style={styles.settingRow}>
-                      <View style={styles.settingLeft}>
-                        <View style={styles.settingText}>
-                          <Text
-                            style={[
-                              styles.settingTitle,
-                              { color: colors.text },
-                            ]}
-                          >
-                            {item.title}
-                          </Text>
-                          <Text
-                            style={[
-                              styles.settingDescription,
-                              { color: colors.textSecondary },
-                            ]}
-                          >
-                            {item.description}
-                          </Text>
-                        </View>
-                      </View>
-                      <Switch
-                        value={
-                          notificationSettings[
-                            item.id as keyof typeof notificationSettings
-                          ]
-                        }
-                        onValueChange={() => handleToggle(item.id)}
-                        trackColor={{
-                          false: colors.border,
-                          true: "#10B981",
-                        }}
-                        thumbColor={
-                          notificationSettings[
-                            item.id as keyof typeof notificationSettings
-                          ]
-                            ? "#FFFFFF"
-                            : colors.textTertiary
-                        }
-                      />
-                    </View>
-                    {itemIndex < section.items.length - 1 && (
-                      <View
-                        style={[
-                          styles.separator,
-                          { backgroundColor: colors.border },
-                        ]}
-                      />
-                    )}
-                  </View>
-                ))}
-              </View>
-            </View>
-          ))}
+          {notifications.map(renderNotification)}
         </ScrollView>
       )}
     </SafeAreaView>
@@ -386,78 +299,30 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
   },
-  leftContainer: {
-    width: 40,
-    alignItems: "flex-start",
-  },
-  titleContainer: {
-    flex: 1,
-    alignItems: "center",
+  backButton: {
+    padding: 4,
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "600",
   },
-  rightContainer: {
-    width: 40,
-    alignItems: "flex-end",
+  placeholder: {
+    width: 32,
+  },
+  markAllButton: {
+    padding: 4,
+  },
+  markAllText: {
+    fontSize: 14,
+    fontWeight: "500",
   },
   scrollView: {
     flex: 1,
-  },
-  section: {
-    marginTop: 24,
-    paddingHorizontal: 20,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 12,
-    paddingLeft: 4,
-  },
-  sectionContent: {
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  settingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-  settingLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  settingText: {
-    flex: 1,
-  },
-  settingTitle: {
-    fontSize: 16,
-    fontWeight: "500",
-    marginBottom: 2,
-  },
-  settingDescription: {
-    fontSize: 14,
-    lineHeight: 18,
-  },
-  separator: {
-    height: 1,
-    marginLeft: 16,
   },
   loadingContainer: {
     flex: 1,
@@ -469,5 +334,61 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
     textAlign: "center",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 40,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyMessage: {
+    fontSize: 16,
+    textAlign: "center",
+    lineHeight: 24,
+  },
+  notificationItem: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  notificationContent: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  notificationText: {
+    flex: 1,
+  },
+  notificationTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  notificationMessage: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 4,
+  },
+  notificationTime: {
+    fontSize: 12,
+  },
+  unreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginTop: 6,
   },
 });
