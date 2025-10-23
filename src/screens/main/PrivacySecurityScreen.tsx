@@ -20,6 +20,7 @@ export default function PrivacySecurityScreen({ navigation }: any) {
   const { user } = useAuthStore();
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [dataSharingEnabled, setDataSharingEnabled] = useState(true);
+  const [showInCommunityHighlights, setShowInCommunityHighlights] = useState(true);
   const [blockedUsersCount] = useState(0);
 
   // Load user privacy settings on mount
@@ -64,6 +65,20 @@ export default function PrivacySecurityScreen({ navigation }: any) {
   const handleDataSharingToggle = async (value: boolean) => {
     setDataSharingEnabled(value);
     // TODO: Save to backend when data sharing preferences are implemented
+  };
+
+  const handleCommunityHighlightsToggle = async (value: boolean) => {
+    setShowInCommunityHighlights(value);
+    
+    if (user?.uid) {
+      try {
+        // TODO: Update user's showInCommunityHighlights preference in Supabase
+        // when the User type is updated to include this field
+        console.log("Community highlights preference:", value);
+      } catch (error) {
+        console.error("Error updating community highlights preference:", error);
+      }
+    }
   };
 
   const handleBlockedUsers = () => {
@@ -164,6 +179,23 @@ export default function PrivacySecurityScreen({ navigation }: any) {
             <Switch
               value={dataSharingEnabled}
               onValueChange={handleDataSharingToggle}
+              trackColor={{ false: colors.border, true: "#10B981" }}
+              thumbColor={colors.surface}
+            />
+          </View>
+
+          <View style={[styles.menuItem, { borderBottomWidth: 0 }]}>
+            <View style={styles.menuItemLeft}>
+              <Text style={[styles.menuText, { color: colors.text }]}>
+                Show in Community Highlights
+              </Text>
+              <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>
+                Appear in featured and active member sections
+              </Text>
+            </View>
+            <Switch
+              value={showInCommunityHighlights}
+              onValueChange={handleCommunityHighlightsToggle}
               trackColor={{ false: colors.border, true: "#10B981" }}
               thumbColor={colors.surface}
             />
@@ -327,6 +359,13 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 16,
     flex: 1,
+  },
+  menuItemLeft: {
+    flex: 1,
+  },
+  menuSubtext: {
+    fontSize: 14,
+    marginTop: 2,
   },
   menuItemRight: {
     flexDirection: "row",

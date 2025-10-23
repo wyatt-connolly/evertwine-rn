@@ -69,6 +69,46 @@ export class SupabaseDataService {
     return data.map(this.mapUserFromDB);
   }
 
+  // ==================== COMMUNITY USERS ====================
+  static async getFeaturedUsers(limit = 5): Promise<User[]> {
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("show_in_community_highlights", true)
+      .order("RANDOM()")
+      .limit(limit);
+    if (error) throw error;
+    return data.map(this.mapUserFromDB);
+  }
+
+  static async getActiveUsers(limit = 8): Promise<User[]> {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .gte("last_active", sevenDaysAgo.toISOString())
+      .order("last_active", { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return data.map(this.mapUserFromDB);
+  }
+
+  static async getNewMembers(limit = 8): Promise<User[]> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .gte("created_time", thirtyDaysAgo.toISOString())
+      .order("created_time", { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return data.map(this.mapUserFromDB);
+  }
+
   // ==================== POSTS ====================
   static async getPosts(limit = 50): Promise<Post[]> {
     const { data, error } = await supabase

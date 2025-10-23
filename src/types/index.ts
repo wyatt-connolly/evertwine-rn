@@ -84,6 +84,9 @@ export interface User {
     verification_updates: boolean;
   };
 
+  // Community Visibility
+  showInCommunityHighlights?: boolean;
+
   // Timestamps
   createdTime: Date;
   updatedTime: Date;

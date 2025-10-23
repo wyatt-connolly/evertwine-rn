@@ -7,6 +7,7 @@ import {
   getUserNotifications,
   getMockUserStats,
 } from "../data/mockData";
+import { getMockCommunityUsers } from "../data/mockCommunityUsers";
 import { SupabaseDataService } from "./SupabaseDataService";
 
 export class DataService {
@@ -260,5 +261,51 @@ export class DataService {
 
     // TODO: Implement with Supabase
     return { stats: null, error: "Not implemented" };
+  }
+
+  // ==================== COMMUNITY USERS ====================
+  static async getFeaturedUsers(): Promise<User[]> {
+    if (this.isDeveloperMode) {
+      // Return 5 random mock community users
+      const mockUsers = getMockCommunityUsers();
+      return mockUsers.slice(0, 5);
+    }
+
+    try {
+      return await SupabaseDataService.getFeaturedUsers();
+    } catch (error) {
+      console.error("Error fetching featured users:", error);
+      return [];
+    }
+  }
+
+  static async getActiveUsers(): Promise<User[]> {
+    if (this.isDeveloperMode) {
+      // Return 8 mock community users (simulating active users)
+      const mockUsers = getMockCommunityUsers();
+      return mockUsers.slice(0, 8);
+    }
+
+    try {
+      return await SupabaseDataService.getActiveUsers();
+    } catch (error) {
+      console.error("Error fetching active users:", error);
+      return [];
+    }
+  }
+
+  static async getNewMembers(): Promise<User[]> {
+    if (this.isDeveloperMode) {
+      // Return 8 mock community users (simulating new members)
+      const mockUsers = getMockCommunityUsers();
+      return mockUsers.slice(0, 8);
+    }
+
+    try {
+      return await SupabaseDataService.getNewMembers();
+    } catch (error) {
+      console.error("Error fetching new members:", error);
+      return [];
+    }
   }
 }

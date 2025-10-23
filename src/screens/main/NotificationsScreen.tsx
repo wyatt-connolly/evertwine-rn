@@ -15,7 +15,7 @@ import { useAuthStore } from "../../hooks/useAuthStore";
 
 interface Notification {
   id: string;
-  type: 'like' | 'follow' | 'message' | 'meetup' | 'comment' | 'system';
+  type: "like" | "follow" | "message" | "meetup" | "comment" | "system";
   title: string;
   message: string;
   timestamp: string;
@@ -42,7 +42,7 @@ export default function NotificationsScreen({ navigation }: any) {
 
     try {
       setIsLoading(true);
-      
+
       // TODO: Replace with actual Supabase query when notifications table is ready
       // For now, show mock data
       const mockNotifications: Notification[] = [
@@ -118,9 +118,9 @@ export default function NotificationsScreen({ navigation }: any) {
   const markAsRead = async (notificationId: string) => {
     try {
       // TODO: Update notification as read in Supabase
-      setNotifications(prev => 
-        prev.map(notification => 
-          notification.id === notificationId 
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification.id === notificationId
             ? { ...notification, isRead: true }
             : notification
         )
@@ -133,8 +133,8 @@ export default function NotificationsScreen({ navigation }: any) {
   const markAllAsRead = async () => {
     try {
       // TODO: Mark all notifications as read in Supabase
-      setNotifications(prev => 
-        prev.map(notification => ({ ...notification, isRead: true }))
+      setNotifications((prev) =>
+        prev.map((notification) => ({ ...notification, isRead: true }))
       );
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
@@ -143,39 +143,39 @@ export default function NotificationsScreen({ navigation }: any) {
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'like':
-        return 'heart';
-      case 'follow':
-        return 'person-add';
-      case 'message':
-        return 'chatbubble';
-      case 'meetup':
-        return 'calendar';
-      case 'comment':
-        return 'chatbubble-outline';
-      case 'system':
-        return 'information-circle';
+      case "like":
+        return "heart";
+      case "follow":
+        return "person-add";
+      case "message":
+        return "chatbubble";
+      case "meetup":
+        return "calendar";
+      case "comment":
+        return "chatbubble-outline";
+      case "system":
+        return "information-circle";
       default:
-        return 'notifications';
+        return "notifications";
     }
   };
 
   const getNotificationColor = (type: string) => {
     switch (type) {
-      case 'like':
-        return '#EF4444';
-      case 'follow':
-        return '#3B82F6';
-      case 'message':
-        return '#10B981';
-      case 'meetup':
-        return '#8B5CF6';
-      case 'comment':
-        return '#F59E0B';
-      case 'system':
-        return '#6B7280';
+      case "like":
+        return "#EF4444";
+      case "follow":
+        return "#3B82F6";
+      case "message":
+        return "#10B981";
+      case "meetup":
+        return "#8B5CF6";
+      case "comment":
+        return "#F59E0B";
+      case "system":
+        return "#6B7280";
       default:
-        return '#6B7280';
+        return "#6B7280";
     }
   };
 
@@ -184,36 +184,52 @@ export default function NotificationsScreen({ navigation }: any) {
       key={notification.id}
       style={[
         styles.notificationItem,
-        { 
-          backgroundColor: notification.isRead ? colors.surface : colors.background,
-          borderBottomColor: colors.border 
-        }
+        {
+          backgroundColor: notification.isRead
+            ? colors.surface
+            : colors.background,
+          borderBottomColor: colors.border,
+        },
       ]}
       onPress={() => markAsRead(notification.id)}
     >
       <View style={styles.notificationContent}>
-        <View style={[styles.iconContainer, { backgroundColor: getNotificationColor(notification.type) }]}>
-          <Ionicons 
-            name={getNotificationIcon(notification.type)} 
-            size={20} 
-            color="#FFFFFF" 
+        <View
+          style={[
+            styles.iconContainer,
+            { backgroundColor: getNotificationColor(notification.type) },
+          ]}
+        >
+          <Ionicons
+            name={getNotificationIcon(notification.type)}
+            size={20}
+            color="#FFFFFF"
           />
         </View>
-        
+
         <View style={styles.notificationText}>
           <Text style={[styles.notificationTitle, { color: colors.text }]}>
             {notification.title}
           </Text>
-          <Text style={[styles.notificationMessage, { color: colors.textSecondary }]}>
+          <Text
+            style={[
+              styles.notificationMessage,
+              { color: colors.textSecondary },
+            ]}
+          >
             {notification.message}
           </Text>
-          <Text style={[styles.notificationTime, { color: colors.textTertiary }]}>
+          <Text
+            style={[styles.notificationTime, { color: colors.textTertiary }]}
+          >
             {notification.timestamp}
           </Text>
         </View>
-        
+
         {!notification.isRead && (
-          <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />
+          <View
+            style={[styles.unreadDot, { backgroundColor: colors.primary }]}
+          />
         )}
       </View>
     </TouchableOpacity>
@@ -221,7 +237,9 @@ export default function NotificationsScreen({ navigation }: any) {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => navigation.goBack()}
@@ -229,10 +247,12 @@ export default function NotificationsScreen({ navigation }: any) {
           >
             <Ionicons name="arrow-back" size={24} color={colors.primary} />
           </TouchableOpacity>
-          <Text style={[styles.title, { color: colors.text }]}>Notifications</Text>
+          <Text style={[styles.title, { color: colors.text }]}>
+            Notifications
+          </Text>
           <View style={styles.placeholder} />
         </View>
-        
+
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={[styles.loadingText, { color: colors.text }]}>
@@ -243,10 +263,12 @@ export default function NotificationsScreen({ navigation }: any) {
     );
   }
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -254,9 +276,14 @@ export default function NotificationsScreen({ navigation }: any) {
         >
           <Ionicons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: colors.text }]}>Notifications</Text>
+        <Text style={[styles.title, { color: colors.text }]}>
+          Notifications
+        </Text>
         {unreadCount > 0 && (
-          <TouchableOpacity onPress={markAllAsRead} style={styles.markAllButton}>
+          <TouchableOpacity
+            onPress={markAllAsRead}
+            style={styles.markAllButton}
+          >
             <Text style={[styles.markAllText, { color: colors.primary }]}>
               Mark all read
             </Text>
@@ -266,7 +293,11 @@ export default function NotificationsScreen({ navigation }: any) {
 
       {notifications.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="notifications-outline" size={64} color={colors.textTertiary} />
+          <Ionicons
+            name="notifications-outline"
+            size={64}
+            color={colors.textTertiary}
+          />
           <Text style={[styles.emptyTitle, { color: colors.text }]}>
             No notifications yet
           </Text>

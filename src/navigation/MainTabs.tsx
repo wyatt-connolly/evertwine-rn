@@ -5,7 +5,7 @@ import { useThemeStore } from "../hooks/useThemeStore";
 import AnimatedTabIcon from "../components/AnimatedTabIcon";
 import CustomTabBar from "../components/CustomTabBar";
 import HomeScreen from "../screens/main/HomeScreen";
-import AnimatedAvatarScreen from "../screens/main/AnimatedAvatarScreen";
+// import AnimatedAvatarScreen from "../screens/main/AnimatedAvatarScreen";
 import MessagesScreen from "../screens/main/MessagesScreen";
 import ProfileScreen from "../screens/main/ProfileScreen";
 import EditProfileScreen from "../screens/main/EditProfileScreen";
@@ -35,6 +35,7 @@ import AllMeetupsScreen from "../screens/main/AllMeetupsScreen";
 import FollowingScreen from "../screens/main/FollowingScreen";
 import PrivacySecurityScreen from "../screens/main/PrivacySecurityScreen";
 import HelpSupportScreen from "../screens/main/HelpSupportScreen";
+import CommunityScreen from "../screens/main/CommunityScreen";
 
 export type MainTabParamList = {
   Home: undefined;
@@ -159,7 +160,7 @@ function CommunityStackNavigator() {
     >
       <CommunityStack.Screen
         name="CommunityMain"
-        component={AnimatedAvatarScreen}
+        component={CommunityScreen}
       />
       <CommunityStack.Screen name="Map" component={MapScreen} />
     </CommunityStack.Navigator>
