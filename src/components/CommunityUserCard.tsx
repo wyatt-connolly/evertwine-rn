@@ -178,32 +178,36 @@ export default function CommunityUserCard({
           {user.displayName}
         </Text>
 
-        <Text
-          style={[
-            styles.userBio,
-            { color: colors.textSecondary, fontSize: textSizes.bio },
-          ]}
-          numberOfLines={variant === "grid" ? 2 : 1}
-        >
-          {user.bio}
-        </Text>
-
-        <View style={styles.locationContainer}>
-          <Ionicons
-            name="location-outline"
-            size={12}
-            color={colors.textTertiary}
-          />
+        {user.bio && (
           <Text
             style={[
-              styles.locationText,
-              { color: colors.textTertiary, fontSize: textSizes.location },
+              styles.userBio,
+              { color: colors.textSecondary, fontSize: textSizes.bio },
             ]}
-            numberOfLines={1}
+            numberOfLines={variant === "grid" ? 2 : 1}
           >
-            {user.locationName}
+            {user.bio}
           </Text>
-        </View>
+        )}
+
+        {user.locationName && (
+          <View style={styles.locationContainer}>
+            <Ionicons
+              name="location-outline"
+              size={12}
+              color={colors.textTertiary}
+            />
+            <Text
+              style={[
+                styles.locationText,
+                { color: colors.textTertiary, fontSize: textSizes.location },
+              ]}
+              numberOfLines={1}
+            >
+              {user.locationName}
+            </Text>
+          </View>
+        )}
 
         {/* Activity Stats */}
         {variant === "large" && (
