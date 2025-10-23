@@ -60,7 +60,10 @@ export default function MessageDetailsScreen({
     const unsubscribe = DataService.setupMessageListener(
       roomId,
       (newMessages) => {
-        console.log("🔄 Real-time subscription received messages:", newMessages.length);
+        console.log(
+          "🔄 Real-time subscription received messages:",
+          newMessages.length
+        );
         setMessages(newMessages);
         // Auto-scroll to bottom on new message
         setTimeout(() => {
@@ -124,7 +127,7 @@ export default function MessageDetailsScreen({
     console.log("📤 Sending message:", newMessage.trim());
     console.log("📤 Current user:", currentUser.uid);
     console.log("📤 Room ID:", roomId);
-    
+
     setIsSending(true);
     try {
       const message: Partial<Message> = {

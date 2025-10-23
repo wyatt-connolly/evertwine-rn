@@ -397,7 +397,7 @@ export class DataService {
 
   static async sendMessage(message: Partial<Message>): Promise<Message | null> {
     console.log("📤 DataService.sendMessage called:", message);
-    
+
     if (this.isDeveloperMode) {
       console.log("📤 Developer mode: returning mock message");
       // In dev mode, just return a mock message

@@ -58,7 +58,6 @@ export default function AppNavigator() {
           setOnboardingComplete(false);
         }
       } catch (error) {
-
         setAuthenticated(false);
         setUser(null);
         setOnboardingComplete(false);
@@ -73,26 +72,21 @@ export default function AppNavigator() {
     const {
       data: { subscription },
     } = SupabaseAuthService.onAuthStateChange(async (supabaseUser) => {
-
       if (supabaseUser) {
         // Check if this is a new user (different from current user)
         const currentUser = get().user;
         const isNewUser = !currentUser || currentUser.uid !== supabaseUser.uid;
 
         if (isNewUser) {
-
           resetOnboardingState();
         }
 
         // User is signed in, load their profile data from database
         try {
-
           const fullProfile = await SupabaseDataService.getUser(
             supabaseUser.uid
           );
           if (fullProfile) {
-
-
             setUser(fullProfile as any);
             setAuthenticated(true);
             setOnboardingComplete(fullProfile.onboardingComplete || false);
@@ -108,7 +102,6 @@ export default function AppNavigator() {
                 supabaseUser
               );
               if (createdUser) {
-
                 setUser(createdUser as any);
                 setAuthenticated(true);
                 setOnboardingComplete(createdUser.onboardingComplete || false);
@@ -121,14 +114,12 @@ export default function AppNavigator() {
                 setOnboardingComplete(supabaseUser.onboardingComplete || false);
               }
             } catch (error) {
-
               setUser(supabaseUser);
               setAuthenticated(true);
               setOnboardingComplete(supabaseUser.onboardingComplete || false);
             }
           }
         } catch (error) {
-
           setUser(supabaseUser);
           setAuthenticated(true);
           setOnboardingComplete(supabaseUser.onboardingComplete || false);
@@ -162,7 +153,6 @@ export default function AppNavigator() {
     // Check if app was opened with a deep link
     Linking.getInitialURL().then((url) => {
       if (url) {
-
         handleDeepLink({ url });
       }
     });
@@ -180,7 +170,6 @@ export default function AppNavigator() {
       // Only update store if user profile shows onboarding is complete and store shows incomplete
       // This prevents overriding a local completion with stale database data
       if (userOnboardingComplete && !onboardingComplete) {
-
         setOnboardingComplete(userOnboardingComplete);
       }
     }
@@ -217,7 +206,7 @@ export default function AppNavigator() {
         headerShown: false,
       }}
     >
-      <Stack.Screen name="MainTabs" component={MainTabs} />
+      <Stack.Screen name="MainApp" component={MainTabs} />
       <Stack.Screen
         name="MessageDetails"
         component={MessageDetailsScreen}
