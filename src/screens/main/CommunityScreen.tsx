@@ -36,39 +36,6 @@ export default function CommunityScreen({ navigation }: any) {
     return users.filter((user) => user.uid !== currentUser.uid);
   };
 
-  // Helper function to ensure no user appears in multiple sections
-  const deduplicateUsers = (featured: User[], active: User[], newUsers: User[]) => {
-    const seenUserIds = new Set<string>();
-    const deduplicatedFeatured: User[] = [];
-    const deduplicatedActive: User[] = [];
-    const deduplicatedNew: User[] = [];
-
-    // Process featured users first (highest priority)
-    for (const user of featured) {
-      if (!seenUserIds.has(user.uid)) {
-        seenUserIds.add(user.uid);
-        deduplicatedFeatured.push(user);
-      }
-    }
-
-    // Process active users (second priority)
-    for (const user of active) {
-      if (!seenUserIds.has(user.uid)) {
-        seenUserIds.add(user.uid);
-        deduplicatedActive.push(user);
-      }
-    }
-
-    // Process new users (lowest priority)
-    for (const user of newUsers) {
-      if (!seenUserIds.has(user.uid)) {
-        seenUserIds.add(user.uid);
-        deduplicatedNew.push(user);
-      }
-    }
-
-    return { featured: deduplicatedFeatured, active: deduplicatedActive, new: deduplicatedNew };
-  };
 
   const loadCommunityData = async () => {
     try {
@@ -81,17 +48,9 @@ export default function CommunityScreen({ navigation }: any) {
       ]);
 
       // Filter out current user from all lists
-      const filteredFeatured = filterOutCurrentUser(featured);
-      const filteredActive = filterOutCurrentUser(active);
-      const filteredNew = filterOutCurrentUser(newUsers);
-
-      // Ensure no user appears in multiple sections
-      const { featured: deduplicatedFeatured, active: deduplicatedActive, new: deduplicatedNew } = 
-        deduplicateUsers(filteredFeatured, filteredActive, filteredNew);
-
-      setFeaturedUsers(deduplicatedFeatured);
-      setActiveUsers(deduplicatedActive);
-      setNewMembers(deduplicatedNew);
+      setFeaturedUsers(filterOutCurrentUser(featured));
+      setActiveUsers(filterOutCurrentUser(active));
+      setNewMembers(filterOutCurrentUser(newUsers));
     } catch (error) {
       console.error("Error loading community data:", error);
     } finally {
