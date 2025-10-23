@@ -47,7 +47,7 @@ export type MainTabParamList = {
 export type ProfileStackParamList = {
   ProfileMain: { userId?: string; userData?: any } | undefined;
   EditProfile: undefined;
-  SettingsMain: undefined;
+  SettingsPage: undefined;
   PreferenceSetup: undefined;
   ActivityFeed: undefined;
   Notifications: undefined;
@@ -118,7 +118,7 @@ function ProfileStackNavigator() {
           gestureEnabled: true,
         }}
       />
-      <ProfileStack.Screen name="SettingsMain" component={SettingsScreen} />
+      <ProfileStack.Screen name="SettingsPage" component={SettingsScreen} />
       <ProfileStack.Screen
         name="PreferenceSetup"
         component={PreferenceSetupScreen}
