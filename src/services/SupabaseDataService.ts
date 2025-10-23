@@ -399,11 +399,19 @@ export class SupabaseDataService {
   }
 
   static async sendMessage(message: Partial<Message>) {
+    console.log("📤 SupabaseDataService.sendMessage called");
+    console.log("📤 Message to insert:", message);
+    console.log("📤 Mapped message:", this.mapMessageToDB(message));
+    
     const { data, error } = await supabase
       .from("messages")
       .insert([this.mapMessageToDB(message)])
       .select()
       .single();
+      
+    console.log("📤 Supabase response - data:", data);
+    console.log("📤 Supabase response - error:", error);
+    
     if (error) throw error;
     return this.mapMessageFromDB(data);
   }

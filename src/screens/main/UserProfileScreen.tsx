@@ -65,14 +65,8 @@ export default function UserProfileScreen({
         return;
       }
 
-      // Navigate to Messages tab first, then to MessageDetails
-      navigation.navigate("MainTabs", {
-        screen: "Messages",
-        params: {
-          screen: "MessageDetails",
-          params: { roomId: room.id },
-        },
-      });
+      // Navigate to MessageDetails at root level
+      navigation.navigate("MessageDetails", { roomId: room.id });
     } catch (error) {
       console.error("Error starting conversation:", error);
       Alert.alert("Error", "Could not start conversation. Please try again.");

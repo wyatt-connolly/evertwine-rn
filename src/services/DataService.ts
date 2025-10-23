@@ -396,7 +396,10 @@ export class DataService {
   }
 
   static async sendMessage(message: Partial<Message>): Promise<Message | null> {
+    console.log("📤 DataService.sendMessage called:", message);
+    
     if (this.isDeveloperMode) {
+      console.log("📤 Developer mode: returning mock message");
       // In dev mode, just return a mock message
       return {
         id: Date.now().toString(),
@@ -414,9 +417,12 @@ export class DataService {
       };
     }
     try {
-      return await SupabaseDataService.sendMessage(message);
+      console.log("📤 Calling SupabaseDataService.sendMessage");
+      const result = await SupabaseDataService.sendMessage(message);
+      console.log("📤 SupabaseDataService.sendMessage result:", result);
+      return result;
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("📤 Error in DataService.sendMessage:", error);
       return null;
     }
   }

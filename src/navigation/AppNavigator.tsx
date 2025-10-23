@@ -1,12 +1,16 @@
 import React, { useEffect } from "react";
 import { Linking, View, StyleSheet } from "react-native";
+import { createStackNavigator } from "@react-navigation/stack";
 import { useAuthStore } from "../hooks/useAuthStore";
 import OnboardingStack from "./OnboardingStack";
 import MainTabs from "./MainTabs";
+import MessageDetailsScreen from "../screens/main/MessageDetailsScreen";
 import { SupabaseAuthService } from "../services/supabase";
 import { SupabaseDataService } from "../services/SupabaseDataService";
 import LoadingIndicator from "../components/LoadingIndicator";
 import { useThemeStore } from "../hooks/useThemeStore";
+
+const Stack = createStackNavigator();
 
 export default function AppNavigator() {
   const { colors } = useThemeStore();
@@ -207,7 +211,24 @@ export default function AppNavigator() {
     return <OnboardingStack key="onboarding" hasSeenIntro={hasSeenIntro} />;
   }
 
-  return <MainTabs />;
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name="MainTabs" component={MainTabs} />
+      <Stack.Screen
+        name="MessageDetails"
+        component={MessageDetailsScreen}
+        options={{
+          presentation: "modal",
+          gestureEnabled: true,
+          headerShown: false,
+        }}
+      />
+    </Stack.Navigator>
+  );
 }
 
 const styles = StyleSheet.create({

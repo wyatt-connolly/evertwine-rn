@@ -48,6 +48,7 @@ export default function MessageDetailsScreen({
 
   // Load initial data
   useEffect(() => {
+    console.log("📱 MessageDetailsScreen mounted with roomId:", roomId);
     loadInitialData();
   }, [roomId]);
 
@@ -55,9 +56,11 @@ export default function MessageDetailsScreen({
   useEffect(() => {
     if (!roomId) return;
 
+    console.log("🔄 Setting up real-time subscription for room:", roomId);
     const unsubscribe = DataService.setupMessageListener(
       roomId,
       (newMessages) => {
+        console.log("🔄 Real-time subscription received messages:", newMessages.length);
         setMessages(newMessages);
         // Auto-scroll to bottom on new message
         setTimeout(() => {
@@ -66,16 +69,23 @@ export default function MessageDetailsScreen({
       }
     );
 
-    return () => unsubscribe();
+    return () => {
+      console.log("🔄 Cleaning up real-time subscription for room:", roomId);
+      unsubscribe();
+    };
   }, [roomId]);
 
   const loadInitialData = async () => {
     try {
+      console.log("📱 Loading message data for room:", roomId);
       setIsLoading(true);
 
       // Fetch room details
+      console.log("📱 Fetching room details...");
       const roomData = await DataService.getMessageRoom(roomId);
+      console.log("📱 Room data:", roomData);
       if (!roomData) {
+        console.log("📱 Room not found, navigating back");
         Alert.alert("Error", "Room not found");
         navigation.goBack();
         return;
@@ -83,20 +93,25 @@ export default function MessageDetailsScreen({
       setRoom(roomData);
 
       // Fetch messages
+      console.log("📱 Fetching messages...");
       const messagesData = await DataService.getMessages(roomId);
+      console.log("📱 Messages fetched:", messagesData.length);
       setMessages(messagesData);
 
       // Fetch all participant user data
+      console.log("📱 Fetching participant users:", roomData.participants);
       const participantUsers = await DataService.getUsersByIds(
         roomData.participants
       );
+      console.log("📱 Users fetched:", participantUsers.length);
       const usersMap: Record<string, User> = {};
       participantUsers.forEach((user) => {
         usersMap[user.uid] = user;
       });
       setUsers(usersMap);
+      console.log("📱 Users map created:", Object.keys(usersMap));
     } catch (error) {
-      console.error("Error loading message data:", error);
+      console.error("📱 Error loading message data:", error);
       Alert.alert("Error", "Failed to load messages");
     } finally {
       setIsLoading(false);
@@ -106,6 +121,10 @@ export default function MessageDetailsScreen({
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !currentUser || !room) return;
 
+    console.log("📤 Sending message:", newMessage.trim());
+    console.log("📤 Current user:", currentUser.uid);
+    console.log("📤 Room ID:", roomId);
+    
     setIsSending(true);
     try {
       const message: Partial<Message> = {
@@ -120,10 +139,12 @@ export default function MessageDetailsScreen({
         isDeleted: false,
       };
 
-      await DataService.sendMessage(message);
+      console.log("📤 Message object created:", message);
+      const result = await DataService.sendMessage(message);
+      console.log("📤 Message send result:", result);
       setNewMessage("");
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("📤 Error sending message:", error);
       Alert.alert("Error", "Failed to send message");
     } finally {
       setIsSending(false);
