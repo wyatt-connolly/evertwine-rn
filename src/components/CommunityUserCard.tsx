@@ -230,7 +230,6 @@ export default function CommunityUserCard({
             </View>
           </View>
         )}
-
       </View>
 
       {/* Gradient Overlay for Large Cards */}

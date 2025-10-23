@@ -12,12 +12,14 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { useAuthStore } from "../../hooks/useAuthStore";
 import { DataService } from "../../services/DataService";
 import { User } from "../../types";
 import CommunityUserCard from "../../components/CommunityUserCard";
 
 export default function CommunityScreen({ navigation }: any) {
   const { colors } = useThemeStore();
+  const { user: currentUser } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [featuredUsers, setFeaturedUsers] = useState<User[]>([]);
@@ -27,6 +29,12 @@ export default function CommunityScreen({ navigation }: any) {
   useEffect(() => {
     loadCommunityData();
   }, []);
+
+  // Helper function to filter out current user from community lists
+  const filterOutCurrentUser = (users: User[]): User[] => {
+    if (!currentUser) return users;
+    return users.filter(user => user.uid !== currentUser.uid);
+  };
 
   const loadCommunityData = async () => {
     try {
@@ -38,9 +46,10 @@ export default function CommunityScreen({ navigation }: any) {
         DataService.getNewMembers(),
       ]);
 
-      setFeaturedUsers(featured);
-      setActiveUsers(active);
-      setNewMembers(newUsers);
+      // Filter out current user from all lists
+      setFeaturedUsers(filterOutCurrentUser(featured));
+      setActiveUsers(filterOutCurrentUser(active));
+      setNewMembers(filterOutCurrentUser(newUsers));
     } catch (error) {
       console.error("Error loading community data:", error);
     } finally {
@@ -60,7 +69,6 @@ export default function CommunityScreen({ navigation }: any) {
       userData: user,
     });
   };
-
 
   const renderFeaturedUser = ({ item }: { item: User }) => (
     <CommunityUserCard
