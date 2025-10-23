@@ -136,6 +136,10 @@ function ProfileStackNavigator() {
       <ProfileStack.Screen
         name="MessageDetails"
         component={MessageDetailsScreen}
+        options={{
+          presentation: "modal",
+          gestureEnabled: true,
+        }}
       />
     </ProfileStack.Navigator>
   );
@@ -180,6 +184,10 @@ function MessagesStackNavigator() {
       <MessagesStack.Screen
         name="MessageDetails"
         component={MessageDetailsScreen}
+        options={{
+          presentation: "modal",
+          gestureEnabled: true,
+        }}
       />
       <MessagesStack.Screen
         name="ComposeMessage"
