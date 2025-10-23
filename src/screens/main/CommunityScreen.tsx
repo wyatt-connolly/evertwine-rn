@@ -122,13 +122,14 @@ export default function CommunityScreen({ navigation }: any) {
       <SafeAreaView
         style={[styles.container, { backgroundColor: colors.background }]}
       >
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>
-            Discover Community
+        {/* App Bar */}
+        <View style={[styles.appBar, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+          <Text style={[styles.appBarTitle, { color: colors.text }]}>
+            Featured Members
           </Text>
-          <TouchableOpacity style={styles.searchButton}>
-            <Ionicons name="search-outline" size={24} color={colors.primary} />
-          </TouchableOpacity>
+          <Text style={[styles.appBarSubtitle, { color: colors.textSecondary }]}>
+            Standout community members this week
+          </Text>
         </View>
 
         <View style={styles.loadingContainer}>
@@ -145,6 +146,16 @@ export default function CommunityScreen({ navigation }: any) {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
+      {/* App Bar */}
+      <View style={[styles.appBar, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <Text style={[styles.appBarTitle, { color: colors.text }]}>
+          Featured Members
+        </Text>
+        <Text style={[styles.appBarSubtitle, { color: colors.textSecondary }]}>
+          Standout community members this week
+        </Text>
+      </View>
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
@@ -156,23 +167,8 @@ export default function CommunityScreen({ navigation }: any) {
           />
         }
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>
-            Discover Community
-          </Text>
-          <TouchableOpacity style={styles.searchButton}>
-            <Ionicons name="search-outline" size={24} color={colors.primary} />
-          </TouchableOpacity>
-        </View>
-
         {/* Featured Members Section */}
         <View style={styles.section}>
-          {renderSectionHeader(
-            "Featured Members",
-            "Standout community members this week"
-          )}
-
           {featuredUsers.length > 0 ? (
             <FlatList
               data={featuredUsers}
@@ -246,19 +242,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  appBar: {
     paddingHorizontal: 20,
     paddingVertical: 16,
+    borderBottomWidth: 1,
   },
-  title: {
+  appBarTitle: {
     fontSize: 24,
     fontWeight: "700",
+    marginBottom: 4,
   },
-  searchButton: {
-    padding: 8,
+  appBarSubtitle: {
+    fontSize: 14,
   },
   scrollView: {
     flex: 1,
