@@ -313,17 +313,6 @@ export class SupabaseDataService {
     return data.map(this.mapMessageRoomFromDB);
   }
 
-  static async getMessageRoom(id: string): Promise<MessageRoom | null> {
-    const { data, error } = await supabase
-      .from("message_rooms")
-      .select("*")
-      .eq("id", id)
-      .single();
-    if (error) {
-      return null;
-    }
-    return this.mapMessageRoomFromDB(data);
-  }
 
   // Find existing direct message room between two users
   static async findDirectMessageRoom(
@@ -418,6 +407,55 @@ export class SupabaseDataService {
       .single();
     if (error) throw error;
     return this.mapMessageFromDB(data);
+  }
+
+  static async getMessageRoom(roomId: string): Promise<MessageRoom | null> {
+    const { data, error } = await supabase
+      .from("message_rooms")
+      .select("*")
+      .eq("id", roomId)
+      .single();
+    
+    if (error) throw error;
+    if (!data) return null;
+    
+    return this.mapMessageRoomFromDB(data);
+  }
+
+  static async getUsersByIds(userIds: string[]): Promise<User[]> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .in('uid', userIds);
+    
+    if (error) throw error;
+    return data.map(this.mapUserFromDB);
+  }
+
+  static setupMessageListener(
+    roomId: string,
+    callback: (messages: Message[]) => void
+  ): () => void {
+    const subscription = supabase
+      .channel(`messages:${roomId}`)
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'messages',
+          filter: `message_room_ref=eq.${roomId}`
+        }, 
+        async () => {
+          // Fetch updated messages and call callback
+          const messages = await this.getMessages(roomId);
+          callback(messages);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }
 
   static async updateMessage(id: string, updates: Partial<Message>) {

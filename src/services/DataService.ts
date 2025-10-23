@@ -8,6 +8,7 @@ import {
   getMockUserStats,
 } from "../data/mockData";
 import { getMockCommunityUsers } from "../data/mockCommunityUsers";
+import { Message, MessageRoom, User } from "../types";
 import { SupabaseDataService } from "./SupabaseDataService";
 
 export class DataService {
@@ -350,6 +351,103 @@ export class DataService {
       return await SupabaseDataService.getNewMembers();
     } catch (error) {
       console.error("Error fetching new members:", error);
+      return [];
+    }
+  }
+
+  // ==================== MESSAGING ====================
+  static async getMessageRoom(roomId: string): Promise<MessageRoom | null> {
+    if (this.isDeveloperMode) {
+      // Return mock room for development
+      return {
+        id: roomId,
+        type: "direct",
+        participants: ["user1", "user2"],
+        admins: [],
+        name: "Mock Room",
+        avatar: undefined,
+        settings: {
+          allowInvites: false,
+          allowMedia: true,
+          allowReactions: true,
+        },
+        createdTime: new Date(),
+        updatedTime: new Date(),
+      };
+    }
+    try {
+      return await SupabaseDataService.getMessageRoom(roomId);
+    } catch (error) {
+      console.error("Error fetching message room:", error);
+      return null;
+    }
+  }
+
+  static async getMessages(roomId: string, limit = 100): Promise<Message[]> {
+    if (this.isDeveloperMode) {
+      // Return mock messages for development
+      return [];
+    }
+    try {
+      return await SupabaseDataService.getMessages(roomId, limit);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      return [];
+    }
+  }
+
+  static async sendMessage(message: Partial<Message>): Promise<Message | null> {
+    if (this.isDeveloperMode) {
+      // In dev mode, just return a mock message
+      return {
+        id: Date.now().toString(),
+        messageRoomRef: message.messageRoomRef || "",
+        senderRef: message.senderRef || "",
+        text: message.text || "",
+        messageType: message.messageType || "text",
+        isEdited: false,
+        reactions: {},
+        isRead: false,
+        readBy: {},
+        isDeleted: false,
+        createdTime: new Date(),
+        updatedTime: new Date(),
+      };
+    }
+    try {
+      return await SupabaseDataService.sendMessage(message);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      return null;
+    }
+  }
+
+  static setupMessageListener(
+    roomId: string,
+    callback: (messages: Message[]) => void
+  ): () => void {
+    if (this.isDeveloperMode) {
+      // In dev mode, return a no-op unsubscribe function
+      return () => {};
+    }
+    try {
+      return SupabaseDataService.setupMessageListener(roomId, callback);
+    } catch (error) {
+      console.error("Error setting up message listener:", error);
+      return () => {};
+    }
+  }
+
+  static async getUsersByIds(userIds: string[]): Promise<User[]> {
+    if (this.isDeveloperMode) {
+      // Return mock users for development
+      const mockUsers = getMockCommunityUsers();
+      return mockUsers.filter(user => userIds.includes(user.uid));
+    }
+    try {
+      return await SupabaseDataService.getUsersByIds(userIds);
+    } catch (error) {
+      console.error("Error fetching users by IDs:", error);
       return [];
     }
   }

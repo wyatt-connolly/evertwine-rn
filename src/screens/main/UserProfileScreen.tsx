@@ -39,11 +39,6 @@ export default function UserProfileScreen({
   const { userData } = route.params;
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
-  // Debug navigation context
-  console.log("🔍 DEBUG: UserProfileScreen mounted");
-  console.log("🔍 DEBUG: navigation object:", navigation);
-  console.log("🔍 DEBUG: navigation state:", navigation.getState());
-  console.log("🔍 DEBUG: route params:", route.params);
 
   const handlePhotoScroll = (event: any) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
@@ -52,72 +47,35 @@ export default function UserProfileScreen({
   };
 
   const handleMessagePress = async () => {
-    console.log("🔍 DEBUG: handleMessagePress called");
-    console.log("🔍 DEBUG: navigation object:", navigation);
-    console.log("🔍 DEBUG: navigation state:", navigation.getState());
-
     const currentUser = useAuthStore.getState().user;
-    console.log("🔍 DEBUG: currentUser:", currentUser);
-    console.log("🔍 DEBUG: userData:", userData);
-
+    
     if (!currentUser) {
       Alert.alert("Error", "You must be logged in to send messages");
       return;
     }
 
     try {
-      console.log("🔍 DEBUG: Calling DataService.findOrCreateDirectMessage");
       const { room, error } = await DataService.findOrCreateDirectMessage(
         currentUser.uid,
         userData.uid,
         userData
       );
 
-      console.log("🔍 DEBUG: DataService result:", { room, error });
-
       if (error || !room) {
-        console.log("🔍 DEBUG: Error or no room:", { error, room });
         Alert.alert("Error", "Could not start conversation. Please try again.");
         return;
       }
 
-      console.log(
-        "🔍 DEBUG: Attempting navigation to MessageDetails with roomId:",
-        room.id
-      );
-      console.log(
-        "🔍 DEBUG: Available navigation routes:",
-        navigation.getState().routes
-      );
-      console.log(
-        "🔍 DEBUG: Current route name:",
-        navigation.getState().routeNames
-      );
-      console.log("🔍 DEBUG: Navigation canGoBack:", navigation.canGoBack());
-
-      // Try to get the parent navigator
-      const parent = navigation.getParent();
-      console.log("🔍 DEBUG: Parent navigator:", parent);
-      if (parent) {
-        console.log("🔍 DEBUG: Parent navigator state:", parent.getState());
-        console.log(
-          "🔍 DEBUG: Parent navigator routes:",
-          parent.getState().routes
-        );
-      }
-
       // Navigate to Messages tab first, then to MessageDetails
-      console.log("🔍 DEBUG: Navigating to Messages tab first");
       navigation.navigate("MainTabs", {
         screen: "Messages",
         params: {
           screen: "MessageDetails",
-          params: { roomId: room.id }
-        }
+          params: { roomId: room.id },
+        },
       });
-      console.log("🔍 DEBUG: Navigation call completed");
     } catch (error) {
-      console.error("🔍 DEBUG: Error starting conversation:", error);
+      console.error("Error starting conversation:", error);
       Alert.alert("Error", "Could not start conversation. Please try again.");
     }
   };
