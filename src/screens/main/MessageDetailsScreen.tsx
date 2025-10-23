@@ -231,41 +231,46 @@ export default function MessageDetailsScreen({
           { backgroundColor: colors.surface, borderBottomColor: colors.border },
         ]}
       >
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.primary} />
-        </TouchableOpacity>
+        {/* Swipe indicator */}
+        <View style={[styles.swipeIndicator, { backgroundColor: colors.border }]} />
+        
+        <View style={styles.headerContent}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.primary} />
+          </TouchableOpacity>
 
-        <View style={styles.headerInfo}>
-          {otherUser && (
-            <Image
-              source={{
-                uri:
-                  otherUser.profilePictures?.[0] ||
-                  "https://via.placeholder.com/40",
-              }}
-              style={styles.headerAvatar}
-            />
-          )}
-          <View style={styles.headerText}>
-            <Text style={[styles.headerTitle, { color: colors.text }]}>
-              {room.name || otherUser?.displayName || "Chat"}
-            </Text>
-            <Text
-              style={[styles.headerSubtitle, { color: colors.textSecondary }]}
-            >
-              {room.type === "direct"
-                ? "Direct message"
-                : `${room.participants.length} participants`}
-            </Text>
+          <View style={styles.headerInfo}>
+            {otherUser && (
+              <Image
+                source={{
+                  uri:
+                    otherUser.profilePictures?.[0] ||
+                    "https://via.placeholder.com/40",
+                }}
+                style={styles.headerAvatar}
+              />
+            )}
+            <View style={styles.headerText}>
+              <Text style={[styles.headerTitle, { color: colors.text }]}>
+                {room.name || otherUser?.displayName || "Chat"}
+              </Text>
+              <Text
+                style={[styles.headerSubtitle, { color: colors.textSecondary }]}
+              >
+                {room.type === "direct"
+                  ? "Direct message"
+                  : `${room.participants.length} participants`}
+              </Text>
+            </View>
           </View>
-        </View>
 
-        <TouchableOpacity style={styles.menuButton}>
-          <Ionicons name="ellipsis-vertical" size={24} color={colors.text} />
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.menuButton}>
+            <Ionicons name="ellipsis-vertical" size={24} color={colors.text} />
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
@@ -375,11 +380,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    paddingTop: 8,
+    borderBottomWidth: 1,
+  },
+  swipeIndicator: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: "center",
+    marginBottom: 8,
+  },
+  headerContent: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 1,
   },
   backButton: {
     marginRight: 12,
