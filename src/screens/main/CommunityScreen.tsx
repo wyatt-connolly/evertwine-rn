@@ -70,7 +70,7 @@ export default function CommunityScreen({ navigation }: any) {
       updatedTime: user.updatedTime?.toISOString(),
       lastActive: user.lastActive?.toISOString(),
     };
-    
+
     navigation.navigate("UserProfile", {
       userId: user.uid,
       userData: serializableUserData,

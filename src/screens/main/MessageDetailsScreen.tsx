@@ -569,7 +569,6 @@ export default function MessageDetailsScreen({
     setShowMenu(false);
     switch (action) {
       case "view_profile":
-
         // Handle navigation based on conversation type
         if (currentRoom.type === "direct") {
           // For direct messages, navigate to the other user's profile
@@ -578,27 +577,26 @@ export default function MessageDetailsScreen({
           );
 
           if (otherUserId) {
-
             // Convert Date objects to strings to avoid serialization issues
             const userData = mockUsers[otherUserId];
-            const serializableUserData = userData ? {
-              ...userData,
-              createdTime: userData.createdTime?.toISOString(),
-              updatedTime: userData.updatedTime?.toISOString(),
-              lastActive: userData.lastActive?.toISOString(),
-            } : null;
-            
+            const serializableUserData = userData
+              ? {
+                  ...userData,
+                  createdTime: userData.createdTime?.toISOString(),
+                  updatedTime: userData.updatedTime?.toISOString(),
+                  lastActive: userData.lastActive?.toISOString(),
+                }
+              : null;
+
             navigation.navigate("UserProfile", {
               userId: otherUserId,
               userData: serializableUserData,
               fromMessage: true,
             });
           } else {
-
           }
         } else if (currentRoom.type === "meetup") {
           // For meetup conversations, navigate to meetup details
-
 
           const meetupData = {
             id: currentRoom.meetupRef || "meetup2",
@@ -744,7 +742,6 @@ export default function MessageDetailsScreen({
         <TouchableOpacity
           style={styles.headerInfo}
           onPress={() => {
-
             // Handle navigation based on conversation type
             if (currentRoom.type === "direct") {
               // For direct messages, navigate to the other user's profile
@@ -753,27 +750,26 @@ export default function MessageDetailsScreen({
               );
 
               if (otherUserId) {
-
                 // Convert Date objects to strings to avoid serialization issues
                 const userData = mockUsers[otherUserId];
-                const serializableUserData = userData ? {
-                  ...userData,
-                  createdTime: userData.createdTime?.toISOString(),
-                  updatedTime: userData.updatedTime?.toISOString(),
-                  lastActive: userData.lastActive?.toISOString(),
-                } : null;
-                
+                const serializableUserData = userData
+                  ? {
+                      ...userData,
+                      createdTime: userData.createdTime?.toISOString(),
+                      updatedTime: userData.updatedTime?.toISOString(),
+                      lastActive: userData.lastActive?.toISOString(),
+                    }
+                  : null;
+
                 navigation.navigate("UserProfile", {
                   userId: otherUserId,
                   userData: serializableUserData,
                   fromMessage: true,
                 });
               } else {
-
               }
             } else if (currentRoom.type === "meetup") {
               // For meetup conversations, navigate to meetup details
-
 
               const meetupData = {
                 id: currentRoom.meetupRef || "meetup2",
