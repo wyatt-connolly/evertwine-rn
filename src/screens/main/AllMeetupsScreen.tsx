@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -9,19 +9,19 @@ import {
   Modal,
   ScrollView,
   Animated,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useMeetupFilterStore } from "../../hooks/useMeetupFilterStore";
 import { useNavigation } from "@react-navigation/native";
-import { useMeetupStore } from "../../hooks/useMeetupStore";
+// import { useMeetupStore } from "../../hooks/useMeetupStore"; // No longer needed
 import { Meetup } from "../../types";
 import MeetupCard from "../../components/MeetupCard";
-import { getMockMeetups } from "../../data/mockData";
-import { DataService } from "../../services/DataService";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
 
-const { width, height } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 
 // Filter options to match MeetupsCarousel
 const filterOptions = [
@@ -40,9 +40,40 @@ export default function AllMeetupsScreen() {
   const { colors } = useThemeStore();
   const { activeFilter, selectedFilters, setActiveFilter, setSelectedFilters } =
     useMeetupFilterStore();
-  const { meetups: localMeetups } = useMeetupStore();
+  // const { meetups: localMeetups } = useMeetupStore(); // No longer needed
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [allMeetups, setAllMeetups] = useState<Meetup[]>([]);
+  // const [loading, setLoading] = useState(true); // Not used in UI
+  const [refreshing, setRefreshing] = useState(false);
   const slideAnim = useRef(new Animated.Value(0)).current;
+
+  // Load meetups from Supabase
+  const loadMeetups = async () => {
+    try {
+      const meetupsData = await SupabaseDataService.getMeetups();
+      setAllMeetups(meetupsData || []);
+    } catch (error) {
+      console.error("Error loading meetups:", error);
+      setAllMeetups([]);
+    }
+  };
+
+  // Handle pull-to-refresh
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const meetupsData = await SupabaseDataService.getMeetups();
+      setAllMeetups(meetupsData || []);
+    } catch (error) {
+      console.error("Error refreshing meetups:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    loadMeetups();
+  }, []);
 
   useEffect(() => {
     if (showAdvancedFilters) {
@@ -60,8 +91,7 @@ export default function AllMeetupsScreen() {
     }
   }, [showAdvancedFilters, slideAnim]);
 
-  // Get meetups from store or mock data
-  const allMeetups = getMockMeetups();
+  // Meetups are now loaded from Supabase in useEffect
 
   const getFilteredMeetups = () => {
     let filtered = [...allMeetups];
@@ -441,6 +471,14 @@ export default function AllMeetupsScreen() {
         contentContainerStyle={styles.meetupsContent}
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons

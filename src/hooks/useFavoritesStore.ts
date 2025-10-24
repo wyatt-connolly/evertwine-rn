@@ -19,9 +19,9 @@ interface FavoritesState {
 export const useFavoritesStore = create<FavoritesState>()(
   persist(
     (set, get) => ({
-      // Pre-populate with mock favorites for demo (only IDs that exist in mock data)
-      favoriteMeetups: ["meetup1", "meetup2"],
-      favoriteEvents: ["event1", "event2"],
+      // Pre-populate with mock favorites for demo
+      favoriteMeetups: ["meetup1", "meetup2", "meetup4", "meetup5"],
+      favoriteEvents: ["event1", "event2", "event3", "event5"],
       favoritePlaces: [],
 
       addMeetupToFavorites: (meetupId: string) => {

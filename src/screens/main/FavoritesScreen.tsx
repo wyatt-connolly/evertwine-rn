@@ -10,18 +10,25 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
-// Removed useFavoritesStore - using Supabase only
+import { useFavoritesStore } from "../../hooks/useFavoritesStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
-// Removed mock data imports - using Supabase only
+import { getMockMeetups, getMockEvents } from "../../data/mockData";
+import { getUserJoinedMeetups } from "../../data/userMeetups";
 import { Meetup, Event } from "../../types";
 import EventCard from "../../components/EventCard";
 import EnhancedMeetupCard from "../../components/EnhancedMeetupCard";
 import { SupabaseDataService } from "../../services/SupabaseDataService";
+import { DataService } from "../../services/DataService";
 
 export default function FavoritesScreen({ navigation }: any) {
   const { colors } = useThemeStore();
   const { user: currentUser } = useAuthStore();
-  // Removed useFavoritesStore destructuring - using Supabase only
+  const {
+    favoriteMeetups,
+    favoriteEvents,
+    removeMeetupFromFavorites,
+    removeEventFromFavorites,
+  } = useFavoritesStore();
 
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<"favorites" | "joined">(
@@ -35,7 +42,7 @@ export default function FavoritesScreen({ navigation }: any) {
   const [joinedHappyHoursData, setJoinedHappyHoursData] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load data from Supabase
+  // Load data from Supabase or fallback to mock data
   useEffect(() => {
     loadUserData();
   }, [currentUser]);
@@ -47,17 +54,22 @@ export default function FavoritesScreen({ navigation }: any) {
     }
 
     try {
-      // Use Supabase data
-      const [favorites, joinedMeetups, joinedEvents] = await Promise.all([
-        SupabaseDataService.getUserFavorites(currentUser.uid),
-        SupabaseDataService.getUserJoinedMeetups(currentUser.uid),
-        SupabaseDataService.getUserJoinedEvents(currentUser.uid),
-      ]);
+      // Use mock data
+      const allMeetups = getMockMeetups();
+      const allEvents = getMockEvents();
 
-      setFavoriteMeetupsData(favorites.meetups);
-      setFavoriteHappyHoursData(favorites.events);
-      setJoinedMeetupsData(joinedMeetups);
-      setJoinedHappyHoursData(joinedEvents);
+      setFavoriteMeetupsData(
+        allMeetups.filter((meetup) => favoriteMeetups.includes(meetup.id))
+      );
+      setFavoriteHappyHoursData(
+        allEvents.filter((event) => favoriteEvents.includes(event.id))
+      );
+      setJoinedMeetupsData(
+        getUserJoinedMeetups(currentUser.uid).map((um) => um.meetup)
+      );
+      setJoinedHappyHoursData(
+        allEvents.filter((event) => ["event1", "event3"].includes(event.id))
+      );
     } catch (error) {
       console.error("Error loading user data:", error);
     } finally {
@@ -82,6 +94,7 @@ export default function FavoritesScreen({ navigation }: any) {
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.error }]}
           onPress={async () => {
+            removeMeetupFromFavorites(meetup.id);
             if (currentUser) {
               try {
                 await SupabaseDataService.removeFromFavorites(
@@ -89,8 +102,6 @@ export default function FavoritesScreen({ navigation }: any) {
                   meetup.id,
                   "meetup"
                 );
-                // Reload data after removal
-                await loadUserData();
               } catch (error) {
                 console.error("Error removing meetup from favorites:", error);
               }
@@ -143,6 +154,7 @@ export default function FavoritesScreen({ navigation }: any) {
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.error }]}
           onPress={async () => {
+            removeEventFromFavorites(event.id);
             if (currentUser) {
               try {
                 await SupabaseDataService.removeFromFavorites(
@@ -150,8 +162,6 @@ export default function FavoritesScreen({ navigation }: any) {
                   event.id,
                   "event"
                 );
-                // Reload data after removal
-                await loadUserData();
               } catch (error) {
                 console.error("Error removing event from favorites:", error);
               }
@@ -208,7 +218,7 @@ export default function FavoritesScreen({ navigation }: any) {
   const getTabCount = (tab: string) => {
     switch (tab) {
       case "favorites":
-        return favoriteMeetupsData.length + favoriteHappyHoursData.length;
+        return favoriteMeetups.length + favoriteEvents.length;
       case "joined":
         return joinedMeetupsData.length + joinedHappyHoursData.length;
       default:

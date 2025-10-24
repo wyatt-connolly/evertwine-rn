@@ -65,12 +65,10 @@ export type HomeStackParamList = {
   ActivityFeed: undefined;
   Notifications: undefined;
   NotificationsList: undefined;
-  Map: undefined;
 };
 
 export type CommunityStackParamList = {
   CommunityMain: undefined;
-  Map: undefined;
 };
 
 export type MessagesStackParamList = {
@@ -81,6 +79,7 @@ export type MessagesStackParamList = {
 
 export type MainStackParamList = {
   MainTabs: undefined;
+  Map: undefined;
   MeetupDetails: { meetupId: string };
   EditMeetup: { meetupId: string };
   EventDetails: { eventId: string; event?: any };
@@ -169,7 +168,7 @@ function HomeStackNavigator() {
         name="NotificationsList"
         component={NotificationsScreen}
       />
-      <HomeStack.Screen name="Map" component={MapScreen} />
+      {/* Map moved to MainStack to remove bottom tabs */}
     </HomeStack.Navigator>
   );
 }
@@ -182,7 +181,7 @@ function CommunityStackNavigator() {
       }}
     >
       <CommunityStack.Screen name="CommunityMain" component={CommunityScreen} />
-      <CommunityStack.Screen name="Map" component={MapScreen} />
+      {/* Map moved to MainStack to remove bottom tabs */}
     </CommunityStack.Navigator>
   );
 }
@@ -265,6 +264,7 @@ export default function MainTabs() {
       }}
     >
       <MainStack.Screen name="MainTabs" component={MainTabsNavigator} />
+      <MainStack.Screen name="Map" component={MapScreen} />
       <MainStack.Screen name="MeetupDetails" component={MeetupDetailsScreen} />
       <MainStack.Screen name="EditMeetup" component={EditMeetupScreen} />
       <MainStack.Screen name="EventDetails" component={EventDetailsScreen} />

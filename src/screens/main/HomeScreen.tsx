@@ -16,19 +16,18 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
-import { useMeetupStore } from "../../hooks/useMeetupStore";
+// import { useMeetupStore } from "../../hooks/useMeetupStore"; // No longer needed
 import { usePreferenceStore } from "../../hooks/usePreferenceStore";
+import { useNotificationStore } from "../../hooks/useNotificationStore";
 import EnhancedMeetupCard from "../../components/EnhancedMeetupCard";
 import EnhancedPostCard from "../../components/EnhancedPostCard";
 import EventCard from "../../components/EventCard";
-import { getHappyHourEvents } from "../../components/HappyHourCarousel";
 import SkeletonLoader from "../../components/SkeletonLoader";
 import ContentPrompt from "../../components/ContentPrompt";
 import ExpandableFAB from "../../components/ExpandableFAB";
-import { getUserNotifications } from "../../data/mockData";
 import { SupabaseDataService } from "../../services/SupabaseDataService";
 import LoadingIndicator from "../../components/LoadingIndicator";
-import { Meetup, Notification, Post, Event } from "../../types";
+import { Meetup, Post, Event } from "../../types";
 
 type FilterType = "all" | "meetups" | "posts" | "happy_hours";
 type DateFilter = "all" | "today" | "this_week" | "this_weekend";
@@ -77,15 +76,18 @@ export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const { colors, isDarkMode } = useThemeStore();
   const { user: currentUser, isLoading: isInitialLoading } = useAuthStore();
-  const { meetups } = useMeetupStore();
+  // const { meetups } = useMeetupStore(); // No longer needed - using Supabase directly
   const { preferences } = usePreferenceStore();
+  const { notifications } = useNotificationStore();
   const flatListRef = useRef<FlatList>(null);
 
   // State
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  // const [notifications, setNotifications] = useState<Notification[]>([]); // Handled by useNotificationStore
   const [posts, setPosts] = useState<Post[]>([]);
+  const [allMeetups, setAllMeetups] = useState<Meetup[]>([]);
+  const [happyHourEvents, setHappyHourEvents] = useState<Event[]>([]);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [selectedDateFilter, setSelectedDateFilter] =
     useState<DateFilter>("all");
@@ -128,34 +130,46 @@ export default function HomeScreen() {
   // Modal animation state
   const modalSlideY = useRef(new Animated.Value(800)).current;
 
-  // Mock data
-  const allMeetups = meetups;
+  // Load data from Supabase
+  const loadData = async () => {
+    try {
+      const [meetupsData, eventsData] = await Promise.all([
+        SupabaseDataService.getMeetups(),
+        SupabaseDataService.getHappyHours(),
+      ]);
+      setAllMeetups(meetupsData || []);
+      setHappyHourEvents(eventsData || []);
+    } catch (error) {
+      console.error("Error loading data:", error);
+      setAllMeetups([]);
+      setHappyHourEvents([]);
+    }
+  };
 
-  // Get happy hour events
-  const happyHourEvents = getHappyHourEvents();
-
-  // Initialize posts from Supabase
+  // Initialize data from Supabase
   useEffect(() => {
-    const loadPosts = async () => {
+    const loadAllData = async () => {
       try {
         // Fetch posts from Supabase
         const postsData = await SupabaseDataService.getPosts();
         setPosts(postsData || []);
+
+        // Load meetups and events
+        await loadData();
       } catch (error) {
+        console.error("Error loading initial data:", error);
         setPosts([]);
+        setAllMeetups([]);
+        setHappyHourEvents([]);
       } finally {
         setLoading(false);
       }
     };
 
-    loadPosts();
+    loadAllData();
   }, []);
 
-  useEffect(() => {
-    if (currentUser) {
-      setNotifications(getUserNotifications(currentUser.uid));
-    }
-  }, [currentUser]);
+  // Notifications are handled by useNotificationStore
 
   // Rotate content prompts every 5 items
   useEffect(() => {
@@ -763,8 +777,18 @@ export default function HomeScreen() {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Reload all data from Supabase
+      const [postsData, meetupsData, eventsData] = await Promise.all([
+        SupabaseDataService.getPosts(),
+        SupabaseDataService.getMeetups(),
+        SupabaseDataService.getHappyHours(),
+      ]);
+
+      setPosts(postsData || []);
+      setAllMeetups(meetupsData || []);
+      setHappyHourEvents(eventsData || []);
     } catch (error) {
+      console.error("Error refreshing data:", error);
     } finally {
       setRefreshing(false);
     }
