@@ -1233,7 +1233,22 @@ export default function HomeScreen() {
 
               <TouchableOpacity
                 style={[styles.iconButton, { backgroundColor: colors.surface }]}
-                onPress={() => navigation.navigate("NotificationsList")}
+                onPress={() => {
+                  console.log(
+                    "🔔 Bell icon pressed - navigating to NotificationsList"
+                  );
+                  try {
+                    navigation.navigate("NotificationsList");
+                    console.log(
+                      "🔔 Navigation to NotificationsList successful"
+                    );
+                  } catch (error) {
+                    console.error(
+                      "🔔 Error navigating to NotificationsList:",
+                      error
+                    );
+                  }
+                }}
                 activeOpacity={0.7}
               >
                 <Ionicons

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,136 +12,104 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
-import { useNotificationStore } from "../../hooks/useNotificationStore";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
 import { Notification, NotificationType } from "../../types";
 
 export default function NotificationsScreen({ navigation }: any) {
   const { colors } = useThemeStore();
   const { user } = useAuthStore();
-  const {
-    notifications,
-    unreadCount,
-    isLoading,
-    error,
-    loadNotifications,
-    refreshNotifications,
-    markAsRead,
-    markAllAsRead,
-    clearError,
-    startSubscription,
-    stopSubscription,
-  } = useNotificationStore();
 
-  // Load notifications on mount and start subscription
+  // Simple local state - no complex store
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load notifications function
+  const loadNotifications = async () => {
+    if (!user?.uid) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = await SupabaseDataService.getNotifications(user.uid);
+      setNotifications(data);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to load notifications"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Simple useEffect - no complex dependencies
   useEffect(() => {
     if (user?.uid) {
       loadNotifications();
-      startSubscription();
-    } else {
-      stopSubscription();
     }
-
-    // Cleanup subscription on unmount
-    return () => {
-      stopSubscription();
-    };
   }, [user?.uid]);
 
   const handleRefresh = async () => {
-    await refreshNotifications();
+    await loadNotifications();
   };
 
   const handleNotificationPress = async (notification: Notification) => {
-    // Mark as read if not already read
-    if (!notification.isRead) {
-      await markAsRead(notification.id);
-    }
-
-    // Navigate to notification context
-    if (notification.metadata?.deepLink) {
-      // Handle deep linking
-      console.log("Navigate to:", notification.metadata.deepLink);
-      // TODO: Implement navigation based on deep link
+    try {
+      await SupabaseDataService.markNotificationAsRead(notification.id);
+      // Update local state
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n.id === notification.id
+            ? { ...n, isRead: true, readAt: new Date() }
+            : n
+        )
+      );
+    } catch (err) {
+      console.error("Error marking notification as read:", err);
     }
   };
 
   const getNotificationIcon = (notificationType: NotificationType) => {
     switch (notificationType) {
-      case NotificationType.profileView:
-      case NotificationType.profileLike:
-        return "person";
-      case NotificationType.newFollower:
-      case NotificationType.friendRequest:
-        return "person-add";
-      case NotificationType.message:
-        return "chatbubble";
       case NotificationType.meetupRequest:
       case NotificationType.meetupAccepted:
-      case NotificationType.meetupDeclined:
-      case NotificationType.meetupReminder:
-      case NotificationType.meetupStartingSoon:
-      case NotificationType.meetupCancelled:
-        return "calendar";
+        return "calendar-outline";
+      case NotificationType.newFollower:
+      case NotificationType.friendRequest:
+        return "person-add-outline";
+      case NotificationType.message:
+        return "chatbubble-outline";
       case NotificationType.postLiked:
       case NotificationType.meetupLiked:
-        return "heart";
+        return "heart-outline";
       case NotificationType.postCommented:
-      case NotificationType.commentReply:
-      case NotificationType.commentLiked:
-        return "chatbubble-outline";
-      case NotificationType.verificationComplete:
-      case NotificationType.newFeature:
-        return "information-circle";
-      case NotificationType.happyHourInvite:
-      case NotificationType.happyHourStartingSoon:
-        return "wine";
+      case NotificationType.meetupCommented:
+        return "chatbubbles-outline";
       default:
-        return "notifications";
+        return "notifications-outline";
     }
   };
 
   const getNotificationColor = (notificationType: NotificationType) => {
     switch (notificationType) {
-      case NotificationType.postLiked:
-      case NotificationType.meetupLiked:
-        return "#EF4444";
-      case NotificationType.newFollower:
-      case NotificationType.friendRequest:
-        return "#3B82F6";
-      case NotificationType.message:
-        return "#10B981";
       case NotificationType.meetupRequest:
       case NotificationType.meetupAccepted:
-      case NotificationType.meetupReminder:
-      case NotificationType.meetupStartingSoon:
-        return "#8B5CF6";
+        return colors.primary;
+      case NotificationType.newFollower:
+      case NotificationType.friendRequest:
+        return colors.success;
+      case NotificationType.message:
+        return colors.info;
+      case NotificationType.postLiked:
+      case NotificationType.meetupLiked:
+        return colors.error;
       case NotificationType.postCommented:
-      case NotificationType.commentReply:
-      case NotificationType.commentLiked:
-        return "#F59E0B";
-      case NotificationType.verificationComplete:
-      case NotificationType.newFeature:
-        return "#6B7280";
-      case NotificationType.happyHourInvite:
-      case NotificationType.happyHourStartingSoon:
-        return "#EC4899";
+      case NotificationType.meetupCommented:
+        return colors.warning;
       default:
-        return "#6B7280";
+        return colors.text;
     }
-  };
-
-  const formatTimestamp = (createdAt: Date) => {
-    const now = new Date();
-    const diffMs = now.getTime() - createdAt.getTime();
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffMinutes < 1) return "Just now";
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return createdAt.toLocaleDateString();
   };
 
   const renderNotification = (notification: Notification) => (
@@ -152,92 +120,71 @@ export default function NotificationsScreen({ navigation }: any) {
         {
           backgroundColor: notification.isRead
             ? colors.surface
-            : colors.background,
-          borderBottomColor: colors.border,
+            : colors.primary + "10",
+          borderLeftColor: notification.isRead ? "transparent" : colors.primary,
         },
       ]}
       onPress={() => handleNotificationPress(notification)}
+      activeOpacity={0.7}
     >
       <View style={styles.notificationContent}>
-        <View
-          style={[
-            styles.iconContainer,
-            {
-              backgroundColor: getNotificationColor(
-                notification.notificationType
-              ),
-            },
-          ]}
-        >
+        <View style={styles.notificationHeader}>
           <Ionicons
-            name={getNotificationIcon(notification.notificationType) as any}
+            name={getNotificationIcon(notification.notificationType)}
             size={20}
-            color="#FFFFFF"
+            color={getNotificationColor(notification.notificationType)}
+            style={styles.notificationIcon}
           />
-        </View>
-
-        <View style={styles.notificationText}>
           <Text style={[styles.notificationTitle, { color: colors.text }]}>
             {notification.title}
           </Text>
-          <Text
-            style={[
-              styles.notificationMessage,
-              { color: colors.textSecondary },
-            ]}
-          >
-            {notification.message}
-          </Text>
-          <Text
-            style={[styles.notificationTime, { color: colors.textTertiary }]}
-          >
-            {formatTimestamp(notification.createdAt)}
-          </Text>
         </View>
 
-        {!notification.isRead && (
-          <View
-            style={[styles.unreadDot, { backgroundColor: colors.primary }]}
-          />
-        )}
+        <Text
+          style={[styles.notificationMessage, { color: colors.textSecondary }]}
+        >
+          {notification.message}
+        </Text>
+
+        <Text
+          style={[styles.notificationTime, { color: colors.textSecondary }]}
+        >
+          {new Date(notification.createdAt).toLocaleDateString()} at{" "}
+          {new Date(notification.createdAt).toLocaleTimeString()}
+        </Text>
       </View>
     </TouchableOpacity>
   );
 
-  if (isLoading) {
+  if (error) {
     return (
       <SafeAreaView
         style={[styles.container, { backgroundColor: colors.background }]}
       >
-        <View style={styles.header}>
+        <View style={styles.errorContainer}>
+          <Ionicons
+            name="alert-circle-outline"
+            size={48}
+            color={colors.error}
+          />
+          <Text style={[styles.errorTitle, { color: colors.text }]}>
+            Error Loading Notifications
+          </Text>
+          <Text style={[styles.errorMessage, { color: colors.textSecondary }]}>
+            {error}
+          </Text>
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
+            style={[styles.retryButton, { backgroundColor: colors.primary }]}
+            onPress={loadNotifications}
           >
-            <Ionicons name="arrow-back" size={24} color={colors.primary} />
+            <Text style={[styles.retryButtonText, { color: colors.surface }]}>
+              Try Again
+            </Text>
           </TouchableOpacity>
-          <Text style={[styles.title, { color: colors.text }]}>
-            Notifications
-          </Text>
-          <View style={styles.placeholder} />
-        </View>
-
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.loadingText, { color: colors.text }]}>
-            Loading notifications...
-          </Text>
         </View>
       </SafeAreaView>
     );
   }
-
-  // Clear any errors when component mounts
-  useEffect(() => {
-    if (error) {
-      clearError();
-    }
-  }, [error, clearError]);
 
   return (
     <SafeAreaView
@@ -245,38 +192,37 @@ export default function NotificationsScreen({ navigation }: any) {
     >
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
           style={styles.backButton}
+          onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={24} color={colors.primary} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: colors.text }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>
           Notifications
         </Text>
-        {unreadCount > 0 && (
-          <TouchableOpacity
-            onPress={markAllAsRead}
-            style={styles.markAllButton}
-          >
-            <Text style={[styles.markAllText, { color: colors.primary }]}>
-              Mark all read
-            </Text>
-          </TouchableOpacity>
-        )}
+        <View style={styles.headerRight} />
       </View>
 
-      {notifications.length === 0 ? (
+      {isLoading && notifications.length === 0 ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+            Loading notifications...
+          </Text>
+        </View>
+      ) : notifications.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons
             name="notifications-outline"
             size={64}
-            color={colors.textTertiary}
+            color={colors.textSecondary}
           />
           <Text style={[styles.emptyTitle, { color: colors.text }]}>
-            No notifications yet
+            No Notifications
           </Text>
           <Text style={[styles.emptyMessage, { color: colors.textSecondary }]}>
-            When you get likes, follows, or messages, they'll appear here
+            You'll see notifications from other users here when they interact
+            with your content.
           </Text>
         </View>
       ) : (
@@ -305,46 +251,67 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
   },
   backButton: {
-    padding: 4,
+    padding: 8,
   },
-  title: {
+  headerTitle: {
     fontSize: 18,
     fontWeight: "600",
   },
-  placeholder: {
-    width: 32,
-  },
-  markAllButton: {
-    padding: 4,
-  },
-  markAllText: {
-    fontSize: 14,
-    fontWeight: "500",
+  headerRight: {
+    width: 40,
   },
   scrollView: {
     flex: 1,
+  },
+  notificationItem: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+    borderLeftWidth: 4,
+  },
+  notificationContent: {
+    flex: 1,
+  },
+  notificationHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  notificationIcon: {
+    marginRight: 12,
+  },
+  notificationTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    flex: 1,
+  },
+  notificationMessage: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 8,
+  },
+  notificationTime: {
+    fontSize: 12,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    textAlign: "center",
   },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 40,
+    paddingHorizontal: 32,
   },
   emptyTitle: {
     fontSize: 20,
@@ -357,43 +324,31 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 24,
   },
-  notificationItem: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  notificationContent: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  notificationText: {
+  errorContainer: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
   },
-  notificationTitle: {
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  errorMessage: {
+    fontSize: 16,
+    textAlign: "center",
+    lineHeight: 24,
+    marginBottom: 24,
+  },
+  retryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    marginBottom: 4,
-  },
-  notificationMessage: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 4,
-  },
-  notificationTime: {
-    fontSize: 12,
-  },
-  unreadDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginTop: 6,
   },
 });

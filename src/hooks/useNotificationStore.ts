@@ -47,24 +47,44 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
 
   // Data fetching
   loadNotifications: async () => {
+    console.log("🔔 useNotificationStore: loadNotifications called");
     const { user } = useAuthStore.getState();
-    if (!user?.uid) return;
+    console.log("🔔 useNotificationStore: user from auth store:", user?.uid);
+    if (!user?.uid) {
+      console.log("🔔 useNotificationStore: No user, returning early");
+      return;
+    }
 
+    console.log("🔔 useNotificationStore: Setting loading state");
     set({ isLoading: true, error: null });
 
     try {
+      console.log(
+        "🔔 useNotificationStore: Fetching notifications from Supabase"
+      );
       const notifications = await SupabaseDataService.getNotifications(
         user.uid
       );
+      console.log(
+        "🔔 useNotificationStore: Fetched notifications:",
+        notifications.length
+      );
       const unreadCount = notifications.filter((n) => !n.isRead).length;
+      console.log("🔔 useNotificationStore: Unread count:", unreadCount);
 
       set({
         notifications,
         unreadCount,
         isLoading: false,
       });
+      console.log(
+        "🔔 useNotificationStore: State updated successfully - this might trigger re-render"
+      );
     } catch (error) {
-      console.error("Error loading notifications:", error);
+      console.error(
+        "🔔 useNotificationStore: Error loading notifications:",
+        error
+      );
       set({
         error:
           error instanceof Error
@@ -81,28 +101,51 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
 
   // Real-time subscription
   startSubscription: () => {
+    console.log("🔔 useNotificationStore: startSubscription called");
     const { user } = useAuthStore.getState();
-    if (!user?.uid) return;
+    console.log("🔔 useNotificationStore: user for subscription:", user?.uid);
+    if (!user?.uid) {
+      console.log(
+        "🔔 useNotificationStore: No user for subscription, returning"
+      );
+      return;
+    }
 
+    console.log("🔔 useNotificationStore: Stopping existing subscription");
     // Stop existing subscription if any
     get().stopSubscription();
 
+    console.log(
+      "🔔 useNotificationStore: Setting up new notification listener"
+    );
     const subscription = SupabaseDataService.setupNotificationListener(
       user.uid,
       (notifications) => {
+        console.log(
+          "🔔 useNotificationStore: Real-time notification received:",
+          notifications.length
+        );
         const unreadCount = notifications.filter((n) => !n.isRead).length;
+        console.log(
+          "🔔 useNotificationStore: Setting state from real-time update - this might trigger re-render"
+        );
         set({ notifications, unreadCount });
       }
     );
 
     set({ subscription });
+    console.log("🔔 useNotificationStore: Subscription set successfully");
   },
 
   stopSubscription: () => {
+    console.log("🔔 useNotificationStore: stopSubscription called");
     const { subscription } = get();
     if (subscription) {
+      console.log("🔔 useNotificationStore: Unsubscribing from notifications");
       subscription();
       set({ subscription: null });
+    } else {
+      console.log("🔔 useNotificationStore: No active subscription to stop");
     }
   },
 
