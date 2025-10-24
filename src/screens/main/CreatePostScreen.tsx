@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { DataService } from "../../services/DataService";
+import { User } from "../../types";
 
 export default function CreatePostScreen({ navigation }: any) {
   const { colors } = useThemeStore();
@@ -26,6 +27,37 @@ export default function CreatePostScreen({ navigation }: any) {
   const [message, setMessage] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [userProfile, setUserProfile] = useState<User | null>(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+
+  // Fetch user profile data on component mount
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!currentUser?.uid) {
+        setIsLoadingProfile(false);
+        return;
+      }
+
+      try {
+        setIsLoadingProfile(true);
+        const result = await DataService.getUser(currentUser.uid);
+
+        if (result.user) {
+          setUserProfile(result.user);
+        } else {
+          // If user doesn't exist in Supabase, use auth user data
+          setUserProfile(null);
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        setUserProfile(null);
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [currentUser?.uid]);
 
   const handlePost = async () => {
     if (!title.trim() || !message.trim()) {
@@ -224,14 +256,16 @@ export default function CreatePostScreen({ navigation }: any) {
             />
             <View style={styles.userDetails}>
               <Text style={[styles.userName, { color: colors.text }]}>
-                {currentUser?.displayName || "You"}
+                {userProfile?.displayName || currentUser?.displayName || "You"}
               </Text>
               <Text
                 style={[styles.userLocation, { color: colors.textSecondary }]}
               >
-                {currentUser?.location?.latitude
-                  ? "San Francisco, CA"
-                  : "San Francisco, CA"}
+                {isLoadingProfile
+                  ? "Loading..."
+                  : userProfile?.locationName
+                  ? userProfile.locationName
+                  : "Location not set"}
               </Text>
             </View>
           </View>

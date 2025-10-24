@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Image,
   Modal,
   FlatList,
+  Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -99,10 +100,51 @@ export default function CreateMeetupStep1Screen({
   const [selectedImageType, setSelectedImageType] = useState<string>("general");
   const [showActivityModal, setShowActivityModal] = useState(false);
 
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(300)).current;
+
   const updateFormData = (field: string, value: string) => {
     const newData = { ...formData, [field]: value };
     setFormData(newData);
     onUpdate(newData);
+  };
+
+  // Animation functions
+  const openActivityModal = () => {
+    setShowActivityModal(true);
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const closeActivityModal = () => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 300,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowActivityModal(false);
+      // Reset animation values for next time
+      fadeAnim.setValue(0);
+      slideAnim.setValue(300);
+    });
   };
 
   const pickImage = async (type: string) => {
@@ -171,18 +213,31 @@ export default function CreateMeetupStep1Screen({
     <Modal
       visible={showActivityModal}
       transparent={true}
-      animationType="slide"
-      onRequestClose={() => setShowActivityModal(false)}
+      animationType="none"
+      onRequestClose={closeActivityModal}
     >
-      <View style={styles.modalOverlay}>
-        <View style={[styles.modal, { backgroundColor: colors.surface }]}>
+      <Animated.View style={[styles.modalOverlay, { opacity: fadeAnim }]}>
+        <TouchableOpacity
+          style={StyleSheet.absoluteFillObject}
+          activeOpacity={1}
+          onPress={closeActivityModal}
+        />
+        <Animated.View
+          style={[
+            styles.modal,
+            {
+              backgroundColor: colors.surface,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
           <View
             style={[styles.modalHeader, { borderBottomColor: colors.border }]}
           >
             <Text style={[styles.modalTitle, { color: colors.text }]}>
               Select Activity
             </Text>
-            <TouchableOpacity onPress={() => setShowActivityModal(false)}>
+            <TouchableOpacity onPress={closeActivityModal}>
               <Ionicons name="close" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
@@ -196,7 +251,7 @@ export default function CreateMeetupStep1Screen({
                 ]}
                 onPress={() => {
                   updateFormData("activity", item);
-                  setShowActivityModal(false);
+                  closeActivityModal();
                 }}
               >
                 <Text style={[styles.activityText, { color: colors.text }]}>
@@ -207,8 +262,8 @@ export default function CreateMeetupStep1Screen({
             keyExtractor={(item) => item}
             style={styles.activityList}
           />
-        </View>
-      </View>
+        </Animated.View>
+      </Animated.View>
     </Modal>
   );
 
@@ -307,7 +362,7 @@ export default function CreateMeetupStep1Screen({
                 styles.selector,
                 { backgroundColor: colors.surface, borderColor: colors.border },
               ]}
-              onPress={() => setShowActivityModal(true)}
+              onPress={openActivityModal}
             >
               <Text
                 style={[
