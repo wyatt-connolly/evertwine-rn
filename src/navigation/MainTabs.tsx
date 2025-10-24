@@ -30,6 +30,7 @@ import PlaceDetailsScreen from "../screens/main/PlaceDetailsScreen";
 import PostDetailsScreen from "../screens/main/PostDetailsScreen";
 import CreatePostScreen from "../screens/main/CreatePostScreen";
 import NotificationSettingsScreen from "../screens/main/NotificationSettingsScreen";
+import NotificationsScreen from "../screens/main/NotificationsScreen";
 import AllHappyHourEventsScreen from "../screens/main/AllHappyHourEventsScreen";
 import AllMeetupsScreen from "../screens/main/AllMeetupsScreen";
 import FollowingScreen from "../screens/main/FollowingScreen";
@@ -52,6 +53,7 @@ export type ProfileStackParamList = {
   PreferenceSetup: undefined;
   ActivityFeed: undefined;
   Notifications: undefined;
+  NotificationsList: undefined;
   PrivacySecurity: undefined;
   BlockedUsers: undefined;
   HelpSupport: undefined;
@@ -62,6 +64,7 @@ export type HomeStackParamList = {
   HomeMain: undefined;
   ActivityFeed: undefined;
   Notifications: undefined;
+  NotificationsList: undefined;
   Map: undefined;
 };
 
@@ -95,6 +98,7 @@ export type MainStackParamList = {
   CreateMeetupStep4: { formData: any; onUpdate: (data: any) => void };
   CreateMeetupConfirmation: { formData: any; onUpdate: (data: any) => void };
   CreatePost: undefined;
+  NotificationsList: undefined;
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -131,6 +135,10 @@ function ProfileStackNavigator() {
         component={NotificationSettingsScreen}
       />
       <ProfileStack.Screen
+        name="NotificationsList"
+        component={NotificationsScreen}
+      />
+      <ProfileStack.Screen
         name="PrivacySecurity"
         component={PrivacySecurityScreen}
       />
@@ -158,8 +166,8 @@ function HomeStackNavigator() {
       <HomeStack.Screen name="HomeMain" component={HomeScreen} />
       <HomeStack.Screen name="ActivityFeed" component={ActivityFeedScreen} />
       <HomeStack.Screen
-        name="Notifications"
-        component={NotificationSettingsScreen}
+        name="NotificationsList"
+        component={NotificationsScreen}
       />
       <HomeStack.Screen name="Map" component={MapScreen} />
     </HomeStack.Navigator>
@@ -298,6 +306,10 @@ export default function MainTabs() {
           presentation: "modal",
           gestureEnabled: true,
         }}
+      />
+      <MainStack.Screen
+        name="NotificationsList"
+        component={NotificationsScreen}
       />
     </MainStack.Navigator>
   );

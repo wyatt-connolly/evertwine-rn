@@ -12,7 +12,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
-// import { DataService } from "../../services/DataService";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
+import { PushNotificationService } from "../../services/PushNotificationService";
 
 export default function NotificationSettingsScreen({ navigation }: any) {
   const { colors } = useThemeStore();
@@ -35,21 +36,36 @@ export default function NotificationSettingsScreen({ navigation }: any) {
     if (!user?.uid) return;
 
     try {
-      // TODO: Load notification settings from Supabase when user settings are implemented
-      console.log("Loading notification settings for user:", user.uid);
-    } catch (error) {
-      console.error("Error loading notification settings:", error);
-    }
+      const userData = await SupabaseDataService.getUser(user.uid);
+
+      if (userData?.notificationPreferences) {
+        const prefs = userData.notificationPreferences;
+        setMeetupNotifications(prefs.meetup_invites ?? true);
+        setMessageNotifications(prefs.new_messages ?? true);
+        setActivityNotifications(prefs.new_followers ?? true);
+        setEmailNotifications(prefs.promotions ?? false);
+        setMarketingNotifications(prefs.promotions ?? false);
+      }
+
+      // Check push notification permission
+      const hasPermission = await PushNotificationService.hasPermission();
+      setPushNotifications(hasPermission);
+    } catch (error) {}
   };
 
   // Notification toggle handlers
   const handlePushNotificationsToggle = async (value: boolean) => {
     setPushNotifications(value);
     try {
-      // TODO: Save to Supabase
-      console.log("Push notifications:", value);
+      if (value) {
+        // Request permission and save token
+        const hasPermission =
+          await PushNotificationService.requestPermissions();
+        if (hasPermission.status === "granted") {
+          await PushNotificationService.refreshPushToken();
+        }
+      }
     } catch (error) {
-      console.error("Error updating push notifications:", error);
       setPushNotifications(!value); // Revert on error
     }
   };
@@ -58,9 +74,7 @@ export default function NotificationSettingsScreen({ navigation }: any) {
     setMeetupNotifications(value);
     try {
       // TODO: Save to Supabase
-      console.log("Meetup notifications:", value);
     } catch (error) {
-      console.error("Error updating meetup notifications:", error);
       setMeetupNotifications(!value);
     }
   };
@@ -69,9 +83,7 @@ export default function NotificationSettingsScreen({ navigation }: any) {
     setMessageNotifications(value);
     try {
       // TODO: Save to Supabase
-      console.log("Message notifications:", value);
     } catch (error) {
-      console.error("Error updating message notifications:", error);
       setMessageNotifications(!value);
     }
   };
@@ -80,9 +92,7 @@ export default function NotificationSettingsScreen({ navigation }: any) {
     setActivityNotifications(value);
     try {
       // TODO: Save to Supabase
-      console.log("Activity notifications:", value);
     } catch (error) {
-      console.error("Error updating activity notifications:", error);
       setActivityNotifications(!value);
     }
   };
@@ -91,9 +101,7 @@ export default function NotificationSettingsScreen({ navigation }: any) {
     setEmailNotifications(value);
     try {
       // TODO: Save to Supabase
-      console.log("Email notifications:", value);
     } catch (error) {
-      console.error("Error updating email notifications:", error);
       setEmailNotifications(!value);
     }
   };
@@ -102,25 +110,18 @@ export default function NotificationSettingsScreen({ navigation }: any) {
     setMarketingNotifications(value);
     try {
       // TODO: Save to Supabase
-      console.log("Marketing notifications:", value);
     } catch (error) {
-      console.error("Error updating marketing notifications:", error);
       setMarketingNotifications(!value);
     }
   };
 
   const renderNotificationSetting = (
-    icon: string,
     title: string,
     description: string,
     value: boolean,
-    onToggle: (value: boolean) => void,
-    iconColor: string
+    onToggle: (value: boolean) => void
   ) => (
     <View style={[styles.settingItem, { borderBottomColor: colors.border }]}>
-      <View style={[styles.iconContainer, { backgroundColor: iconColor }]}>
-        <Ionicons name={icon as any} size={20} color="#FFFFFF" />
-      </View>
       <View style={styles.settingText}>
         <Text style={[styles.settingTitle, { color: colors.text }]}>
           {title}
@@ -168,39 +169,31 @@ export default function NotificationSettingsScreen({ navigation }: any) {
           </Text>
 
           {renderNotificationSetting(
-            "notifications-outline",
             "Push Notifications",
             "Receive notifications on your device",
             pushNotifications,
-            handlePushNotificationsToggle,
-            "#3B82F6"
+            handlePushNotificationsToggle
           )}
 
           {renderNotificationSetting(
-            "calendar-outline",
             "Meetup Notifications",
             "Get notified about meetup invitations and updates",
             meetupNotifications,
-            handleMeetupNotificationsToggle,
-            "#8B5CF6"
+            handleMeetupNotificationsToggle
           )}
 
           {renderNotificationSetting(
-            "chatbubble-outline",
             "Message Notifications",
             "Get notified about new messages and conversations",
             messageNotifications,
-            handleMessageNotificationsToggle,
-            "#10B981"
+            handleMessageNotificationsToggle
           )}
 
           {renderNotificationSetting(
-            "heart-outline",
             "Activity Notifications",
             "Get notified about likes, follows, and comments",
             activityNotifications,
-            handleActivityNotificationsToggle,
-            "#EF4444"
+            handleActivityNotificationsToggle
           )}
         </View>
 
@@ -211,21 +204,17 @@ export default function NotificationSettingsScreen({ navigation }: any) {
           </Text>
 
           {renderNotificationSetting(
-            "mail-outline",
             "Email Notifications",
             "Receive important updates via email",
             emailNotifications,
-            handleEmailNotificationsToggle,
-            "#F59E0B"
+            handleEmailNotificationsToggle
           )}
 
           {renderNotificationSetting(
-            "megaphone-outline",
             "Marketing & Updates",
             "Receive promotional content and app updates",
             marketingNotifications,
-            handleMarketingNotificationsToggle,
-            "#6B7280"
+            handleMarketingNotificationsToggle
           )}
         </View>
 
@@ -245,17 +234,12 @@ export default function NotificationSettingsScreen({ navigation }: any) {
                   { text: "Cancel", style: "cancel" },
                   {
                     text: "Set Schedule",
-                    onPress: () => console.log("Set schedule"),
+                    onPress: () => {},
                   },
                 ]
               );
             }}
           >
-            <View
-              style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}
-            >
-              <Ionicons name="time-outline" size={20} color="#FFFFFF" />
-            </View>
             <View style={styles.settingText}>
               <Text style={[styles.settingTitle, { color: colors.text }]}>
                 Quiet Hours
@@ -286,17 +270,12 @@ export default function NotificationSettingsScreen({ navigation }: any) {
                   { text: "Cancel", style: "cancel" },
                   {
                     text: "Customize",
-                    onPress: () => console.log("Customize sounds"),
+                    onPress: () => {},
                   },
                 ]
               );
             }}
           >
-            <View
-              style={[styles.iconContainer, { backgroundColor: "#10B981" }]}
-            >
-              <Ionicons name="volume-high-outline" size={20} color="#FFFFFF" />
-            </View>
             <View style={styles.settingText}>
               <Text style={[styles.settingTitle, { color: colors.text }]}>
                 Sounds & Vibration

@@ -399,18 +399,11 @@ export class SupabaseDataService {
   }
 
   static async sendMessage(message: Partial<Message>) {
-    console.log("📤 SupabaseDataService.sendMessage called");
-    console.log("📤 Message to insert:", message);
-    console.log("📤 Mapped message:", this.mapMessageToDB(message));
-
     const { data, error } = await supabase
       .from("messages")
       .insert([this.mapMessageToDB(message)])
       .select()
       .single();
-
-    console.log("📤 Supabase response - data:", data);
-    console.log("📤 Supabase response - error:", error);
 
     if (error) throw error;
     return this.mapMessageFromDB(data);
@@ -514,6 +507,92 @@ export class SupabaseDataService {
       .single();
     if (error) throw error;
     return this.mapNotificationFromDB(data);
+  }
+
+  static async markAllNotificationsAsRead(userId: string) {
+    const { data, error } = await supabase
+      .from("notifications")
+      .update({ is_read: true, read_at: new Date().toISOString() })
+      .eq("receiver_ref", userId)
+      .eq("is_read", false)
+      .select();
+    if (error) throw error;
+    return data.map(this.mapNotificationFromDB);
+  }
+
+  static async deleteNotification(id: string) {
+    const { error } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("id", id);
+    if (error) throw error;
+  }
+
+  static setupNotificationListener(
+    userId: string,
+    callback: (notifications: Notification[]) => void
+  ): () => void {
+    const subscription = supabase
+      .channel(`notifications:${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "notifications",
+          filter: `receiver_ref=eq.${userId}`,
+        },
+        async () => {
+          // Fetch updated notifications and call callback
+          const notifications = await this.getNotifications(userId);
+          callback(notifications);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }
+
+  // ==================== PUSH NOTIFICATION TOKENS ====================
+  static async savePushToken(
+    userId: string,
+    expoPushToken: string,
+    deviceInfo?: any
+  ) {
+    const { data, error } = await supabase
+      .from("push_notification_tokens")
+      .upsert({
+        user_id: userId,
+        expo_push_token: expoPushToken,
+        device_info: deviceInfo,
+        is_active: true,
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  static async getUserPushTokens(userId: string): Promise<string[]> {
+    const { data, error } = await supabase
+      .from("push_notification_tokens")
+      .select("expo_push_token")
+      .eq("user_id", userId)
+      .eq("is_active", true);
+    if (error) throw error;
+    return data.map((token) => token.expo_push_token);
+  }
+
+  static async deactivatePushToken(userId: string, expoPushToken: string) {
+    const { error } = await supabase
+      .from("push_notification_tokens")
+      .update({ is_active: false })
+      .eq("user_id", userId)
+      .eq("expo_push_token", expoPushToken);
+    if (error) throw error;
   }
 
   // ==================== MAPPING FUNCTIONS ====================
@@ -700,11 +779,15 @@ export class SupabaseDataService {
 
   private static mapMeetupToDB(meetup: Partial<Meetup>): any {
     const mapped: any = {};
+
+    // Basic Info
     if (meetup.id !== undefined) mapped.id = meetup.id;
     if (meetup.title !== undefined) mapped.title = meetup.title;
     if (meetup.description !== undefined)
       mapped.description = meetup.description;
     if (meetup.creatorId !== undefined) mapped.creator_id = meetup.creatorId;
+
+    // Location & Time
     if (meetup.location !== undefined) mapped.location = meetup.location;
     if (meetup.locationName !== undefined)
       mapped.location_name = meetup.locationName;
@@ -712,28 +795,44 @@ export class SupabaseDataService {
     if (meetup.time !== undefined) mapped.time = meetup.time.toISOString();
     if (meetup.duration !== undefined) mapped.duration = meetup.duration;
     if (meetup.timezone !== undefined) mapped.timezone = meetup.timezone;
+
+    // Activity Details
     if (meetup.activity !== undefined) mapped.activity = meetup.activity;
     if (meetup.activityCategory !== undefined)
       mapped.activity_category = meetup.activityCategory;
     if (meetup.tags !== undefined) mapped.tags = meetup.tags;
+
+    // Participant Management
     if (meetup.maxParticipants !== undefined)
       mapped.max_participants = meetup.maxParticipants;
-    if (meetup.currentParticipants !== undefined)
+    if (meetup.currentParticipants !== undefined) {
       mapped.current_participants = meetup.currentParticipants;
+    } else if (meetup.participants !== undefined) {
+      // Set currentParticipants to participants length if not explicitly provided
+      mapped.current_participants = meetup.participants.length;
+    }
     if (meetup.participants !== undefined)
       mapped.participants = meetup.participants;
     if (meetup.waitlist !== undefined) mapped.waitlist = meetup.waitlist;
     if (meetup.declinedUsers !== undefined)
       mapped.declined_users = meetup.declinedUsers;
+
+    // Status & State
     if (meetup.status !== undefined) mapped.status = meetup.status;
     if (meetup.isRecurring !== undefined)
       mapped.is_recurring = meetup.isRecurring;
     if (meetup.recurringPattern !== undefined)
       mapped.recurring_pattern = meetup.recurringPattern;
+
+    // Requirements & Restrictions
     if (meetup.requirements !== undefined)
       mapped.requirements = meetup.requirements;
+
+    // Media
     if (meetup.coverImage !== undefined) mapped.cover_image = meetup.coverImage;
     if (meetup.images !== undefined) mapped.images = meetup.images;
+
+    // Analytics - set defaults if not provided
     if (meetup.views !== undefined) mapped.views = meetup.views;
     if (meetup.joinRequests !== undefined)
       mapped.join_requests = meetup.joinRequests;
@@ -741,8 +840,11 @@ export class SupabaseDataService {
       mapped.completion_rate = meetup.completionRate;
     if (meetup.engagementScore !== undefined)
       mapped.engagement_score = meetup.engagementScore;
+
+    // Timestamps
     if (meetup.completedAt !== undefined)
       mapped.completed_at = meetup.completedAt.toISOString();
+
     return mapped;
   }
 
@@ -1101,6 +1203,182 @@ export class SupabaseDataService {
     }
   }
 
+  // ==================== USER FAVORITES ====================
+  static async getUserFavorites(
+    userId: string
+  ): Promise<{ meetups: Meetup[]; events: Event[] }> {
+    try {
+      // Get user's favorite meetups
+      const { data: favoriteMeetups, error: meetupsError } = await supabase
+        .from("user_favorites")
+        .select(
+          `
+          meetup:meetups(*)
+        `
+        )
+        .eq("user_id", userId)
+        .eq("type", "meetup");
+
+      if (meetupsError) throw meetupsError;
+
+      // Get user's favorite events
+      const { data: favoriteEvents, error: eventsError } = await supabase
+        .from("user_favorites")
+        .select(
+          `
+          event:happy_hours(*)
+        `
+        )
+        .eq("user_id", userId)
+        .eq("type", "event");
+
+      if (eventsError) throw eventsError;
+
+      return {
+        meetups:
+          favoriteMeetups
+            ?.map((item) => this.mapMeetupFromDB(item.meetup))
+            .filter(Boolean) || [],
+        events:
+          favoriteEvents
+            ?.map((item) => this.mapHappyHourFromDB(item.event))
+            .filter(Boolean) || [],
+      };
+    } catch (error) {
+      return { meetups: [], events: [] };
+    }
+  }
+
+  static async addToFavorites(
+    userId: string,
+    itemId: string,
+    type: "meetup" | "event"
+  ): Promise<void> {
+    const { error } = await supabase.from("user_favorites").insert({
+      user_id: userId,
+      item_id: itemId,
+      type: type,
+      created_at: new Date().toISOString(),
+    });
+
+    if (error) throw error;
+  }
+
+  static async removeFromFavorites(
+    userId: string,
+    itemId: string,
+    type: "meetup" | "event"
+  ): Promise<void> {
+    const { error } = await supabase
+      .from("user_favorites")
+      .delete()
+      .eq("user_id", userId)
+      .eq("item_id", itemId)
+      .eq("type", type);
+
+    if (error) throw error;
+  }
+
+  // ==================== USER PARTICIPATION ====================
+  static async getUserJoinedMeetups(userId: string): Promise<Meetup[]> {
+    try {
+      const { data, error } = await supabase
+        .from("meetups")
+        .select("*")
+        .contains("participants", [userId])
+        .order("time", { ascending: true });
+
+      if (error) throw error;
+      return data.map(this.mapMeetupFromDB);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  static async getUserJoinedEvents(userId: string): Promise<Event[]> {
+    try {
+      const { data, error } = await supabase
+        .from("happy_hours")
+        .select("*")
+        .contains("attendees", [userId])
+        .order("start_time", { ascending: true });
+
+      if (error) throw error;
+      return data.map(this.mapHappyHourFromDB);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  // ==================== LOCATION-BASED QUERIES ====================
+  static async getNearbyMeetups(
+    latitude: number,
+    longitude: number,
+    radiusKm: number = 10,
+    limit: number = 50
+  ): Promise<Meetup[]> {
+    try {
+      // Using PostGIS ST_DWithin for efficient distance queries
+      const { data, error } = await supabase.rpc("get_nearby_meetups", {
+        user_lat: latitude,
+        user_lng: longitude,
+        radius_km: radiusKm,
+        result_limit: limit,
+      });
+
+      if (error) {
+        // Fallback to simple query if PostGIS function doesn't exist
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from("meetups")
+          .select("*")
+          .not("location", "is", null)
+          .order("time", { ascending: true })
+          .limit(limit);
+
+        if (fallbackError) throw fallbackError;
+        return fallbackData.map(this.mapMeetupFromDB);
+      }
+
+      return data.map(this.mapMeetupFromDB);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  static async getNearbyEvents(
+    latitude: number,
+    longitude: number,
+    radiusKm: number = 10,
+    limit: number = 50
+  ): Promise<Event[]> {
+    try {
+      // Using PostGIS ST_DWithin for efficient distance queries
+      const { data, error } = await supabase.rpc("get_nearby_events", {
+        user_lat: latitude,
+        user_lng: longitude,
+        radius_km: radiusKm,
+        result_limit: limit,
+      });
+
+      if (error) {
+        // Fallback to simple query if PostGIS function doesn't exist
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from("happy_hours")
+          .select("*")
+          .not("location", "is", null)
+          .order("start_time", { ascending: true })
+          .limit(limit);
+
+        if (fallbackError) throw fallbackError;
+        return fallbackData.map(this.mapHappyHourFromDB);
+      }
+
+      return data.map(this.mapHappyHourFromDB);
+    } catch (error) {
+      return [];
+    }
+  }
+
   // ==================== BLOCKING & REPORTING ====================
   static async blockUser(userId: string, blockedUserId: string): Promise<void> {
     try {
@@ -1164,13 +1442,45 @@ export class SupabaseDataService {
   }
 
   static async getBlockedUserIds(userId: string): Promise<string[]> {
+    // First, let's check what's actually in the blocked_users table
+    const { data: allBlocked, error: allError } = await supabase
+      .from("blocked_users")
+      .select("*");
+
+    // Query for blocked users where current user is either the blocker or the blocked
     const { data, error } = await supabase
       .from("blocked_users")
-      .select("blocked_user_id")
-      .eq("user_id", userId);
+      .select("blocked_user_id, user_id")
+      .or(`user_id.eq.${userId},blocked_user_id.eq.${userId}`);
 
-    if (error) throw error;
-    return data?.map((record) => record.blocked_user_id) || [];
+    if (error) {
+      // If RLS is blocking the query, try a different approach
+      if (error.code === "42501" || error.message?.includes("RLS")) {
+        // Try to get the current user's auth info
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (user?.id === userId) {
+        } else {
+        }
+      }
+      throw error;
+    }
+
+    // Extract blocked user IDs from the results
+    // If current user is the blocker (user_id), get the blocked_user_id
+    // If current user is the blocked (blocked_user_id), get the user_id
+    const blockedIds =
+      data?.map((record) => {
+        if (record.user_id === userId) {
+          return record.blocked_user_id; // Current user blocked someone
+        } else {
+          return record.user_id; // Someone blocked current user
+        }
+      }) || [];
+
+    return blockedIds;
   }
 
   static async deleteDataBetweenUsers(

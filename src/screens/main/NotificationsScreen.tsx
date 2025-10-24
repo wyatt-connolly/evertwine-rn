@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import {
   View,
   Text,
@@ -12,171 +12,136 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
-
-interface Notification {
-  id: string;
-  type: "like" | "follow" | "message" | "meetup" | "comment" | "system";
-  title: string;
-  message: string;
-  timestamp: string;
-  isRead: boolean;
-  userAvatar?: string;
-  userName?: string;
-  actionData?: any;
-}
+import { useNotificationStore } from "../../hooks/useNotificationStore";
+import { Notification, NotificationType } from "../../types";
 
 export default function NotificationsScreen({ navigation }: any) {
   const { colors } = useThemeStore();
   const { user } = useAuthStore();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const {
+    notifications,
+    unreadCount,
+    isLoading,
+    error,
+    loadNotifications,
+    refreshNotifications,
+    markAsRead,
+    markAllAsRead,
+    clearError,
+    startSubscription,
+    stopSubscription,
+  } = useNotificationStore();
 
-  // Load notifications from Supabase
+  // Load notifications on mount and start subscription
   useEffect(() => {
-    loadNotifications();
-  }, []);
-
-  const loadNotifications = async () => {
-    if (!user?.uid) return;
-
-    try {
-      setIsLoading(true);
-
-      // TODO: Replace with actual Supabase query when notifications table is ready
-      // For now, show mock data
-      const mockNotifications: Notification[] = [
-        {
-          id: "1",
-          type: "like",
-          title: "New Like",
-          message: "Sarah liked your meetup 'Coffee & Conversation'",
-          timestamp: "2 minutes ago",
-          isRead: false,
-          userName: "Sarah Johnson",
-        },
-        {
-          id: "2",
-          type: "follow",
-          title: "New Follower",
-          message: "Mike Chen started following you",
-          timestamp: "1 hour ago",
-          isRead: false,
-          userName: "Mike Chen",
-        },
-        {
-          id: "3",
-          type: "message",
-          title: "New Message",
-          message: "You have a new message from Alex",
-          timestamp: "3 hours ago",
-          isRead: true,
-          userName: "Alex Rodriguez",
-        },
-        {
-          id: "4",
-          type: "meetup",
-          title: "Meetup Invitation",
-          message: "You're invited to 'Weekend Hiking' by Emma",
-          timestamp: "1 day ago",
-          isRead: true,
-          userName: "Emma Wilson",
-        },
-        {
-          id: "5",
-          type: "comment",
-          title: "New Comment",
-          message: "Tom commented on your meetup",
-          timestamp: "2 days ago",
-          isRead: true,
-          userName: "Tom Anderson",
-        },
-        {
-          id: "6",
-          type: "system",
-          title: "Welcome to Evertwine!",
-          message: "Your account has been successfully created",
-          timestamp: "1 week ago",
-          isRead: true,
-        },
-      ];
-
-      setNotifications(mockNotifications);
-    } catch (error) {
-      console.error("Error loading notifications:", error);
-    } finally {
-      setIsLoading(false);
+    if (user?.uid) {
+      loadNotifications();
+      startSubscription();
+    } else {
+      stopSubscription();
     }
-  };
+
+    // Cleanup subscription on unmount
+    return () => {
+      stopSubscription();
+    };
+  }, [user?.uid]);
 
   const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await loadNotifications();
-    setIsRefreshing(false);
+    await refreshNotifications();
   };
 
-  const markAsRead = async (notificationId: string) => {
-    try {
-      // TODO: Update notification as read in Supabase
-      setNotifications((prev) =>
-        prev.map((notification) =>
-          notification.id === notificationId
-            ? { ...notification, isRead: true }
-            : notification
-        )
-      );
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
+  const handleNotificationPress = async (notification: Notification) => {
+    // Mark as read if not already read
+    if (!notification.isRead) {
+      await markAsRead(notification.id);
+    }
+
+    // Navigate to notification context
+    if (notification.metadata?.deepLink) {
+      // Handle deep linking
+      console.log("Navigate to:", notification.metadata.deepLink);
+      // TODO: Implement navigation based on deep link
     }
   };
 
-  const markAllAsRead = async () => {
-    try {
-      // TODO: Mark all notifications as read in Supabase
-      setNotifications((prev) =>
-        prev.map((notification) => ({ ...notification, isRead: true }))
-      );
-    } catch (error) {
-      console.error("Error marking all notifications as read:", error);
-    }
-  };
-
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case "like":
-        return "heart";
-      case "follow":
+  const getNotificationIcon = (notificationType: NotificationType) => {
+    switch (notificationType) {
+      case NotificationType.profileView:
+      case NotificationType.profileLike:
+        return "person";
+      case NotificationType.newFollower:
+      case NotificationType.friendRequest:
         return "person-add";
-      case "message":
+      case NotificationType.message:
         return "chatbubble";
-      case "meetup":
+      case NotificationType.meetupRequest:
+      case NotificationType.meetupAccepted:
+      case NotificationType.meetupDeclined:
+      case NotificationType.meetupReminder:
+      case NotificationType.meetupStartingSoon:
+      case NotificationType.meetupCancelled:
         return "calendar";
-      case "comment":
+      case NotificationType.postLiked:
+      case NotificationType.meetupLiked:
+        return "heart";
+      case NotificationType.postCommented:
+      case NotificationType.commentReply:
+      case NotificationType.commentLiked:
         return "chatbubble-outline";
-      case "system":
+      case NotificationType.verificationComplete:
+      case NotificationType.newFeature:
         return "information-circle";
+      case NotificationType.happyHourInvite:
+      case NotificationType.happyHourStartingSoon:
+        return "wine";
       default:
         return "notifications";
     }
   };
 
-  const getNotificationColor = (type: string) => {
-    switch (type) {
-      case "like":
+  const getNotificationColor = (notificationType: NotificationType) => {
+    switch (notificationType) {
+      case NotificationType.postLiked:
+      case NotificationType.meetupLiked:
         return "#EF4444";
-      case "follow":
+      case NotificationType.newFollower:
+      case NotificationType.friendRequest:
         return "#3B82F6";
-      case "message":
+      case NotificationType.message:
         return "#10B981";
-      case "meetup":
+      case NotificationType.meetupRequest:
+      case NotificationType.meetupAccepted:
+      case NotificationType.meetupReminder:
+      case NotificationType.meetupStartingSoon:
         return "#8B5CF6";
-      case "comment":
+      case NotificationType.postCommented:
+      case NotificationType.commentReply:
+      case NotificationType.commentLiked:
         return "#F59E0B";
-      case "system":
+      case NotificationType.verificationComplete:
+      case NotificationType.newFeature:
         return "#6B7280";
+      case NotificationType.happyHourInvite:
+      case NotificationType.happyHourStartingSoon:
+        return "#EC4899";
       default:
         return "#6B7280";
     }
+  };
+
+  const formatTimestamp = (createdAt: Date) => {
+    const now = new Date();
+    const diffMs = now.getTime() - createdAt.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMinutes < 1) return "Just now";
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return createdAt.toLocaleDateString();
   };
 
   const renderNotification = (notification: Notification) => (
@@ -191,17 +156,21 @@ export default function NotificationsScreen({ navigation }: any) {
           borderBottomColor: colors.border,
         },
       ]}
-      onPress={() => markAsRead(notification.id)}
+      onPress={() => handleNotificationPress(notification)}
     >
       <View style={styles.notificationContent}>
         <View
           style={[
             styles.iconContainer,
-            { backgroundColor: getNotificationColor(notification.type) },
+            {
+              backgroundColor: getNotificationColor(
+                notification.notificationType
+              ),
+            },
           ]}
         >
           <Ionicons
-            name={getNotificationIcon(notification.type)}
+            name={getNotificationIcon(notification.notificationType) as any}
             size={20}
             color="#FFFFFF"
           />
@@ -222,7 +191,7 @@ export default function NotificationsScreen({ navigation }: any) {
           <Text
             style={[styles.notificationTime, { color: colors.textTertiary }]}
           >
-            {notification.timestamp}
+            {formatTimestamp(notification.createdAt)}
           </Text>
         </View>
 
@@ -263,7 +232,12 @@ export default function NotificationsScreen({ navigation }: any) {
     );
   }
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  // Clear any errors when component mounts
+  useEffect(() => {
+    if (error) {
+      clearError();
+    }
+  }, [error, clearError]);
 
   return (
     <SafeAreaView
@@ -310,7 +284,7 @@ export default function NotificationsScreen({ navigation }: any) {
           style={styles.scrollView}
           refreshControl={
             <RefreshControl
-              refreshing={isRefreshing}
+              refreshing={isLoading}
               onRefresh={handleRefresh}
               tintColor={colors.primary}
             />

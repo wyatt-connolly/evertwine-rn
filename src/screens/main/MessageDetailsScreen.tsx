@@ -21,6 +21,7 @@ import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { Message, MessageRoom, User } from "../../types";
 import { DataService } from "../../services/DataService";
+import { NotificationService } from "../../services/NotificationService";
 
 interface MessageDetailsScreenProps {
   route: {
@@ -60,18 +61,14 @@ export default function MessageDetailsScreen({
 
   const loadInitialData = useCallback(async () => {
     try {
-      console.log("📱 Loading message data for room:", roomId);
       setIsLoading(true);
 
       // Fetch room details
-      console.log("📱 Fetching room details...");
       const roomData = await DataService.getMessageRoom(
         roomId,
         currentUser?.uid
       );
-      console.log("📱 Room data:", roomData);
       if (!roomData) {
-        console.log("📱 Room not found, navigating back");
         Alert.alert("Error", "Room not found");
         navigation.goBack();
         return;
@@ -79,25 +76,19 @@ export default function MessageDetailsScreen({
       setRoom(roomData);
 
       // Fetch messages
-      console.log("📱 Fetching messages...");
       const messagesData = await DataService.getMessages(roomId);
-      console.log("📱 Messages fetched:", messagesData.length);
       setMessages(messagesData);
 
       // Fetch all participant user data
-      console.log("📱 Fetching participant users:", roomData.participants);
       const participantUsers = await DataService.getUsersByIds(
         roomData.participants
       );
-      console.log("📱 Users fetched:", participantUsers.length);
       const usersMap: Record<string, User> = {};
       participantUsers.forEach((user) => {
         usersMap[user.uid] = user;
       });
       setUsers(usersMap);
-      console.log("📱 Users map created:", Object.keys(usersMap));
     } catch (error) {
-      console.error("📱 Error loading message data:", error);
       Alert.alert("Error", "Failed to load messages");
     } finally {
       setIsLoading(false);
@@ -106,7 +97,6 @@ export default function MessageDetailsScreen({
 
   // Load initial data
   useEffect(() => {
-    console.log("📱 MessageDetailsScreen mounted with roomId:", roomId);
     loadInitialData();
   }, [roomId, loadInitialData]); // Include loadInitialData in dependencies
 
@@ -114,14 +104,9 @@ export default function MessageDetailsScreen({
   useEffect(() => {
     if (!roomId) return;
 
-    console.log("🔄 Setting up real-time subscription for room:", roomId);
     const unsubscribe = DataService.setupMessageListener(
       roomId,
       (newMessages) => {
-        console.log(
-          "🔄 Real-time subscription received messages:",
-          newMessages.length
-        );
         setMessages(newMessages);
         // Auto-scroll to bottom on new message
         setTimeout(() => {
@@ -131,7 +116,6 @@ export default function MessageDetailsScreen({
     );
 
     return () => {
-      console.log("🔄 Cleaning up real-time subscription for room:", roomId);
       unsubscribe();
     };
   }, [roomId]); // Only depend on roomId
@@ -150,9 +134,6 @@ export default function MessageDetailsScreen({
     if (!newMessage.trim() || !currentUser || !room) return;
 
     const messageText = newMessage.trim();
-    console.log("📤 Sending message:", messageText);
-    console.log("📤 Current user:", currentUser.uid);
-    console.log("📤 Room ID:", roomId);
 
     setIsSending(true);
 
@@ -172,26 +153,40 @@ export default function MessageDetailsScreen({
         isDeleted: false,
       };
 
-      console.log("📤 Message object created:", message);
       const result = await DataService.sendMessage(message);
-      console.log("📤 Message send result:", result);
+
+      // Send notification to other participants (if not in the same room)
+      if (room && room.participants) {
+        const otherParticipants = room.participants.filter(
+          (participantId) => participantId !== currentUser.uid
+        );
+
+        for (const participantId of otherParticipants) {
+          try {
+            await NotificationService.createNewMessageNotification(
+              currentUser.uid,
+              participantId,
+              roomId,
+              currentUser.displayName || "Someone",
+              messageText.length > 50
+                ? messageText.substring(0, 50) + "..."
+                : messageText
+            );
+          } catch (error) {}
+        }
+      }
 
       // Manually refresh messages after sending to ensure UI updates
       try {
-        console.log("📤 Manually refreshing messages after send");
         const updatedMessages = await DataService.getMessages(roomId);
-        console.log("📤 Updated messages count:", updatedMessages.length);
         setMessages(updatedMessages);
-      } catch (error) {
-        console.error("📤 Error refreshing messages:", error);
-      }
+      } catch (error) {}
 
       // Force scroll to bottom after sending
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 200);
     } catch (error) {
-      console.error("📤 Error sending message:", error);
       Alert.alert("Error", "Failed to send message");
       // Restore the message text if sending failed
       setNewMessage(messageText);
@@ -237,7 +232,6 @@ export default function MessageDetailsScreen({
                 );
               }
             } catch (error) {
-              console.error("Error blocking user:", error);
               Alert.alert("Error", "Failed to block user. Please try again.");
             } finally {
               setIsBlocking(false);
@@ -312,7 +306,6 @@ export default function MessageDetailsScreen({
                     [{ text: "OK", onPress: () => navigation.goBack() }]
                   );
                 } catch (error) {
-                  console.error("Error blocking user after report:", error);
                   Alert.alert(
                     "Error",
                     "Report submitted but failed to block user."
@@ -324,7 +317,6 @@ export default function MessageDetailsScreen({
         );
       }
     } catch (error) {
-      console.error("Error submitting report:", error);
       Alert.alert("Error", "Failed to submit report. Please try again.");
     } finally {
       setIsReporting(false);

@@ -61,9 +61,7 @@ export default function AllMeetupsScreen() {
   }, [showAdvancedFilters, slideAnim]);
 
   // Get meetups from store or mock data
-  const allMeetups = DataService.isInDeveloperMode()
-    ? getMockMeetups()
-    : localMeetups;
+  const allMeetups = getMockMeetups();
 
   const getFilteredMeetups = () => {
     let filtered = [...allMeetups];
@@ -124,7 +122,6 @@ export default function AllMeetupsScreen() {
             }
           });
         } catch (error) {
-
           return false;
         }
       });

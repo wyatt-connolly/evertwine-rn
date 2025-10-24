@@ -49,7 +49,6 @@ export default class ErrorBoundary extends Component<Props, State> {
     }
 
     // Log error to crash analytics service
-
   }
 
   handleRetry = () => {
@@ -85,22 +84,6 @@ export default class ErrorBoundary extends Component<Props, State> {
               <Ionicons name="refresh" size={20} color="#FFFFFF" />
               <Text style={styles.retryButtonText}>Try Again</Text>
             </TouchableOpacity>
-
-            {__DEV__ && (
-              <View style={styles.errorDetails}>
-                <Text style={styles.errorDetailsTitle}>
-                  Error Details (Dev Mode):
-                </Text>
-                <Text style={styles.errorDetailsText}>
-                  {this.state.error?.toString()}
-                </Text>
-                {this.state.errorInfo && (
-                  <Text style={styles.errorDetailsText}>
-                    {this.state.errorInfo.componentStack}
-                  </Text>
-                )}
-              </View>
-            )}
           </ScrollView>
         </View>
       );

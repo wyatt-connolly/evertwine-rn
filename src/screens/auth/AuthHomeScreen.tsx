@@ -30,9 +30,6 @@ export default function AuthHomeScreen({ navigation }: Props) {
     setLoading(true);
 
     try {
-      // Enable developer mode to use mock data
-      DataService.setDeveloperMode(true);
-
       // Create a developer user with complete data
       const developerUser = {
         uid: "developer_demo_user",
@@ -67,9 +64,6 @@ export default function AuthHomeScreen({ navigation }: Props) {
     setLoading(true);
 
     try {
-      // Enable developer mode to use mock data
-      DataService.setDeveloperMode(true);
-
       // Create a local user for onboarding testing (no backend)
       const localUser = {
         uid: "local_onboarding_user",

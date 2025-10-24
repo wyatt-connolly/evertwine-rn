@@ -682,7 +682,7 @@ export default function AnimatedAvatarScreen({ navigation }: any) {
     );
   };
 
-  if (!DataService.isInDeveloperMode()) {
+  if (false) {
     return (
       <SafeAreaView
         style={[styles.container, { backgroundColor: colors.background }]}

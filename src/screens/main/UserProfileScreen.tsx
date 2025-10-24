@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -19,6 +20,7 @@ import { useAuthStore } from "../../hooks/useAuthStore";
 import { DataService } from "../../services/DataService";
 import { Ionicons } from "@expo/vector-icons";
 import { getMeetupsByCreator } from "../../data/mockData";
+import { NotificationService } from "../../services/NotificationService";
 
 const { width, height } = Dimensions.get("window");
 const PHOTO_HEIGHT = height * 0.3;
@@ -39,6 +41,7 @@ export default function UserProfileScreen({
   navigation,
 }: UserProfileScreenProps) {
   const { colors } = useThemeStore();
+  const { user: currentUser } = useAuthStore();
   const { userData } = route.params;
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
@@ -46,11 +49,51 @@ export default function UserProfileScreen({
   const [showMenu, setShowMenu] = useState(false);
   const [isBlocking, setIsBlocking] = useState(false);
   const [isReporting, setIsReporting] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
 
   // Animation refs
   const menuScale = useRef(new Animated.Value(0)).current;
   const menuOpacity = useRef(new Animated.Value(0)).current;
   const menuButtonRef = useRef<View>(null);
+
+  // Track profile view
+  useEffect(() => {
+    if (currentUser && userData && currentUser.uid !== userData.uid) {
+      // Send profile view notification
+      NotificationService.createProfileViewNotification(
+        currentUser.uid,
+        userData.uid,
+        currentUser.displayName || "Someone"
+      ).catch((error) => {});
+    }
+  }, [currentUser, userData]);
+
+  // Check if user is blocked
+  useEffect(() => {
+    checkIfBlocked();
+  }, []);
+
+  // Refresh blocked state when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      refreshBlockedState();
+    }, [])
+  );
+
+  const checkIfBlocked = async () => {
+    const currentUser = useAuthStore.getState().user;
+    if (!currentUser || !userData?.uid) return;
+
+    try {
+      const blockedUsers = await DataService.getBlockedUsers(currentUser.uid);
+      const isUserBlocked = blockedUsers.includes(userData.uid);
+      setIsBlocked(isUserBlocked);
+    } catch (error) {}
+  };
+
+  const refreshBlockedState = async () => {
+    await checkIfBlocked();
+  };
 
   const handlePhotoScroll = (event: any) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
@@ -81,9 +124,39 @@ export default function UserProfileScreen({
       // Navigate to MessageDetails at root level
       navigation.navigate("MessageDetails", { roomId: room.id });
     } catch (error) {
-      console.error("Error starting conversation:", error);
       Alert.alert("Error", "Could not start conversation. Please try again.");
     }
+  };
+
+  const handleUnblockUser = async () => {
+    Alert.alert(
+      "Unblock User",
+      `Are you sure you want to unblock ${userData?.displayName}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Unblock",
+          style: "default",
+          onPress: async () => {
+            try {
+              const currentUser = useAuthStore.getState().user;
+              if (currentUser && userData?.uid) {
+                await DataService.unblockUser(currentUser.uid, userData.uid);
+                setIsBlocked(false);
+                // Refresh state from database to ensure sync
+                await refreshBlockedState();
+                Alert.alert(
+                  "Success",
+                  `${userData.displayName} has been unblocked.`
+                );
+              }
+            } catch (error) {
+              Alert.alert("Error", "Failed to unblock user. Please try again.");
+            }
+          },
+        },
+      ]
+    );
   };
 
   const renderPhoto = ({ item, index }: { item: string; index: number }) => (
@@ -141,6 +214,12 @@ export default function UserProfileScreen({
   const handleBlockUser = async () => {
     setShowMenu(false);
 
+    // Check if user is already blocked
+    if (isBlocked) {
+      Alert.alert("Already Blocked", "This user is already blocked.");
+      return;
+    }
+
     Alert.alert(
       "Block User",
       "Are you sure you want to block this user? This will:\n\n• Remove all messages between you\n• Delete your conversation\n• Hide you from each other everywhere\n• Remove you from shared meetups\n\nThis action cannot be undone.",
@@ -155,15 +234,28 @@ export default function UserProfileScreen({
               const currentUser = useAuthStore.getState().user;
               if (currentUser && userData?.uid) {
                 await DataService.blockUser(currentUser.uid, userData.uid);
+                setIsBlocked(true);
+                // Refresh state from database to ensure sync
+                await refreshBlockedState();
                 Alert.alert(
                   "User Blocked",
                   "This user has been blocked and all data between you has been removed.",
-                  [{ text: "OK", onPress: () => navigation.goBack() }]
+                  [{ text: "OK" }]
                 );
               }
             } catch (error) {
-              console.error("Error blocking user:", error);
-              Alert.alert("Error", "Failed to block user. Please try again.");
+              // Check if it's a duplicate key error
+              if (
+                error &&
+                typeof error === "object" &&
+                "code" in error &&
+                error.code === "23505"
+              ) {
+                Alert.alert("Already Blocked", "This user is already blocked.");
+                setIsBlocked(true);
+              } else {
+                Alert.alert("Error", "Failed to block user. Please try again.");
+              }
             } finally {
               setIsBlocking(false);
             }
@@ -208,11 +300,6 @@ export default function UserProfileScreen({
       if (currentUser && userData?.uid) {
         // For profile reports, we'll show a success message
         // In a real app, you'd create a separate profile report table
-        console.log("Profile report submitted:", {
-          reporterId: currentUser.uid,
-          reportedUserId: userData.uid,
-          reason,
-        });
 
         // Ask if user wants to block after reporting
         Alert.alert(
@@ -232,7 +319,6 @@ export default function UserProfileScreen({
                     [{ text: "OK", onPress: () => navigation.goBack() }]
                   );
                 } catch (error) {
-                  console.error("Error blocking user after report:", error);
                   Alert.alert(
                     "Error",
                     "Report submitted but failed to block user."
@@ -244,7 +330,6 @@ export default function UserProfileScreen({
         );
       }
     } catch (error) {
-      console.error("Error submitting report:", error);
       Alert.alert("Error", "Failed to submit report. Please try again.");
     } finally {
       setIsReporting(false);
@@ -364,27 +449,47 @@ export default function UserProfileScreen({
 
             {/* Action Buttons */}
             <View style={styles.actionButtons}>
-              <TouchableOpacity
-                style={[
-                  styles.primaryButton,
-                  { backgroundColor: colors.primary },
-                ]}
-                onPress={handleMessagePress}
-              >
-                <Ionicons
-                  name="chatbubble"
-                  size={20}
-                  color={colors.onPrimary}
-                />
-                <Text
+              {isBlocked ? (
+                <TouchableOpacity
                   style={[
-                    styles.primaryButtonText,
-                    { color: colors.onPrimary },
+                    styles.primaryButton,
+                    { backgroundColor: colors.border },
                   ]}
+                  onPress={handleUnblockUser}
                 >
-                  Message
-                </Text>
-              </TouchableOpacity>
+                  <Ionicons name="ban" size={20} color={colors.textTertiary} />
+                  <Text
+                    style={[
+                      styles.primaryButtonText,
+                      { color: colors.textTertiary },
+                    ]}
+                  >
+                    Blocked
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={[
+                    styles.primaryButton,
+                    { backgroundColor: colors.primary },
+                  ]}
+                  onPress={handleMessagePress}
+                >
+                  <Ionicons
+                    name="chatbubble"
+                    size={20}
+                    color={colors.onPrimary}
+                  />
+                  <Text
+                    style={[
+                      styles.primaryButtonText,
+                      { color: colors.onPrimary },
+                    ]}
+                  >
+                    Message
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </View>
@@ -769,7 +874,7 @@ export default function UserProfileScreen({
                 },
               ]}
             >
-              {/* Block User */}
+              {/* Block/Unblock User */}
               <TouchableOpacity
                 style={[
                   styles.menuItem,
@@ -780,15 +885,30 @@ export default function UserProfileScreen({
                       : "transparent",
                   },
                 ]}
-                onPress={handleBlockUser}
+                onPress={isBlocked ? handleUnblockUser : handleBlockUser}
                 disabled={isBlocking}
                 activeOpacity={0.7}
               >
                 <View style={styles.menuIconContainer}>
-                  <Ionicons name="ban-outline" size={20} color="#EF4444" />
+                  <Ionicons
+                    name={
+                      isBlocked ? "checkmark-circle-outline" : "ban-outline"
+                    }
+                    size={20}
+                    color={isBlocked ? "#10B981" : "#EF4444"}
+                  />
                 </View>
-                <Text style={[styles.menuText, { color: "#EF4444" }]}>
-                  {isBlocking ? "Blocking..." : "Block User"}
+                <Text
+                  style={[
+                    styles.menuText,
+                    { color: isBlocked ? "#10B981" : "#EF4444" },
+                  ]}
+                >
+                  {isBlocking
+                    ? "Blocking..."
+                    : isBlocked
+                    ? "Unblock User"
+                    : "Block User"}
                 </Text>
                 {isBlocking && (
                   <ActivityIndicator

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -10,11 +10,14 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
+import { DataService } from "../../services/DataService";
 
 export default function CreatePostScreen({ navigation }: any) {
   const { colors } = useThemeStore();
@@ -22,8 +25,9 @@ export default function CreatePostScreen({ navigation }: any) {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [images, setImages] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handlePost = () => {
+  const handlePost = async () => {
     if (!title.trim() || !message.trim()) {
       Alert.alert(
         "Missing Information",
@@ -32,27 +36,122 @@ export default function CreatePostScreen({ navigation }: any) {
       return;
     }
 
-    // Here you would implement the actual post creation logic
+    if (!currentUser) {
+      Alert.alert("Error", "You must be logged in to create a post.");
+      return;
+    }
 
-    // Show success message and navigate back
+    setIsLoading(true);
+
+    try {
+      // Create the post data
+      const postData = {
+        userId: currentUser.uid,
+        title: title.trim(),
+        message: message.trim(),
+        images: images,
+        likes: [],
+        isAnnouncement: false,
+      };
+
+      // Create the post using DataService
+      const result = await DataService.createPost(postData);
+
+      if (result.success) {
+        Alert.alert(
+          "Post Created!",
+          "Your post has been shared with the community.",
+          [
+            {
+              text: "OK",
+              onPress: () => navigation.goBack(),
+            },
+          ]
+        );
+      } else {
+        Alert.alert("Error", result.error || "Failed to create post.");
+      }
+    } catch (error) {
+      console.error("Error creating post:", error);
+      Alert.alert("Error", "Failed to create post. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddImage = async () => {
+    // Check if we already have the maximum number of images
+    if (images.length >= 5) {
+      Alert.alert("Maximum Images", "You can only add up to 5 images.");
+      return;
+    }
+
+    // Request permission to access media library
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission Required",
+        "Please grant permission to access your photo library."
+      );
+      return;
+    }
+
+    // Show action sheet for image selection
     Alert.alert(
-      "Post Created!",
-      "Your post has been shared with the community.",
+      "Add Image",
+      "Choose an option",
       [
         {
-          text: "OK",
-          onPress: () => navigation.goBack(),
+          text: "Camera",
+          onPress: () => openCamera(),
         },
-      ]
+        {
+          text: "Photo Library",
+          onPress: () => openImageLibrary(),
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ],
+      { cancelable: true }
     );
   };
 
-  const handleAddImage = () => {
-    // Here you would implement image picker functionality
-    Alert.alert(
-      "Add Image",
-      "Image picker functionality would be implemented here."
-    );
+  const openCamera = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission Required",
+        "Please grant permission to access your camera."
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setImages([...images, result.assets[0].uri]);
+    }
+  };
+
+  const openImageLibrary = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+      allowsMultipleSelection: false,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setImages([...images, result.assets[0].uri]);
+    }
   };
 
   const handleRemoveImage = (index: number) => {
@@ -79,27 +178,31 @@ export default function CreatePostScreen({ navigation }: any) {
             styles.postButton,
             {
               backgroundColor:
-                title.trim() && message.trim()
+                title.trim() && message.trim() && !isLoading
                   ? colors.accentSecondary
                   : colors.textTertiary,
             },
           ]}
           onPress={handlePost}
-          disabled={!title.trim() || !message.trim()}
+          disabled={!title.trim() || !message.trim() || isLoading}
         >
-          <Text
-            style={[
-              styles.postButtonText,
-              {
-                color:
-                  title.trim() && message.trim()
-                    ? colors.onAccent
-                    : colors.textSecondary,
-              },
-            ]}
-          >
-            Post
-          </Text>
+          {isLoading ? (
+            <ActivityIndicator color={colors.onAccent} />
+          ) : (
+            <Text
+              style={[
+                styles.postButtonText,
+                {
+                  color:
+                    title.trim() && message.trim()
+                      ? colors.onAccent
+                      : colors.textSecondary,
+                },
+              ]}
+            >
+              Post
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -115,9 +218,7 @@ export default function CreatePostScreen({ navigation }: any) {
           <View style={styles.userInfo}>
             <Image
               source={{
-                uri:
-                  currentUser?.profilePictures?.[0] ||
-                  "https://via.placeholder.com/40",
+                uri: currentUser?.photoURL || "https://via.placeholder.com/40",
               }}
               style={styles.avatar}
             />
@@ -128,7 +229,9 @@ export default function CreatePostScreen({ navigation }: any) {
               <Text
                 style={[styles.userLocation, { color: colors.textSecondary }]}
               >
-                {currentUser?.locationName || "San Francisco, CA"}
+                {currentUser?.location?.latitude
+                  ? "San Francisco, CA"
+                  : "San Francisco, CA"}
               </Text>
             </View>
           </View>

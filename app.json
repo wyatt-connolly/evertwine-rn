@@ -45,7 +45,15 @@
         }
       ],
       "expo-web-browser",
-      "expo-audio"
+      "expo-audio",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#ffffff",
+          "defaultChannel": "default"
+        }
+      ]
     ]
   }
 }

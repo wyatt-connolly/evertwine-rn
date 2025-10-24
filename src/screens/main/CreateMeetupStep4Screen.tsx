@@ -12,6 +12,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useMeetupStore } from "../../hooks/useMeetupStore";
+import { useAuthStore } from "../../hooks/useAuthStore";
+import { Meetup } from "../../types";
 
 interface CreateMeetupStep4ScreenProps {
   navigation: any;
@@ -29,6 +31,7 @@ export default function CreateMeetupStep4Screen({
 }: CreateMeetupStep4ScreenProps) {
   const { colors } = useThemeStore();
   const { createMeetup } = useMeetupStore();
+  const user = useAuthStore((state) => state.user);
   const { formData, onUpdate } = route.params;
 
   const [isPublishing, setIsPublishing] = useState(false);
@@ -68,29 +71,49 @@ export default function CreateMeetupStep4Screen({
     setIsPublishing(true);
 
     try {
-      // Create the meetup object
-      const meetupData = {
-        id: Date.now().toString(),
+      // Validate user is authenticated
+      if (!user?.uid) {
+        Alert.alert("Error", "You must be logged in to create a meetup.", [
+          { text: "OK" },
+        ]);
+        return;
+      }
+
+      // Create the meetup object with proper TypeScript typing
+      const meetupData: Omit<Meetup, "id" | "createdAt" | "updatedAt"> = {
         title: formData.title,
         description: formData.description,
+        creatorId: user.uid,
+        creatorRef: user.uid,
+        location: formData.location || { latitude: 0, longitude: 0 }, // TODO: get from formData
         locationName: formData.locationName,
         address: formData.address,
-        activity: formData.activity,
-        activityCategory: formData.activityCategory,
         time: new Date(formData.time),
         duration: parseInt(formData.duration),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+        activity: formData.activity,
+        activityCategory: formData.activityCategory,
+        tags: formData.tags || [],
         maxParticipants: formData.maxParticipants
           ? parseInt(formData.maxParticipants)
-          : undefined,
-        ageRange: formData.ageRange,
-        verificationRequired: formData.verificationRequired,
-        coverImage: formData.coverImage,
-        organizerId: "current-user-id", // This should come from auth
-        organizerName: "You", // This should come from auth
-        participants: [],
+          : 50,
+        currentParticipants: 1, // Creator counts as first participant
+        participants: [user.uid],
         waitlist: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        declinedUsers: [],
+        status: "active",
+        isRecurring: false,
+        requirements: {
+          minAge: formData.ageRange?.min,
+          maxAge: formData.ageRange?.max,
+          verificationRequired: formData.verificationRequired || false,
+        },
+        coverImage: formData.coverImage,
+        images: formData.images || [],
+        views: 0,
+        joinRequests: 0,
+        completionRate: 0,
+        engagementScore: 0,
       };
 
       await createMeetup(meetupData);
@@ -106,6 +129,7 @@ export default function CreateMeetupStep4Screen({
         ]
       );
     } catch (error) {
+      console.error("Error creating meetup:", error);
       Alert.alert("Error", "Failed to create meetup. Please try again.", [
         { text: "OK" },
       ]);

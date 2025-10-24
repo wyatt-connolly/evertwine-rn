@@ -106,28 +106,17 @@ export default function ProfileScreen({ navigation, route }: any) {
           if (statsResult.stats) {
             setUserStats(statsResult.stats);
           } else {
-            // Fallback to mock stats in developer mode
-            if (DataService.isInDeveloperMode()) {
-              setUserStats(getMockUserStats(profileUserId));
-            }
+            // Fallback to mock stats
+            setUserStats(getMockUserStats(profileUserId));
           }
         } catch (statsError) {
           // Don't fail the entire loading process for stats
-          if (DataService.isInDeveloperMode()) {
-            setUserStats(getMockUserStats(profileUserId));
-          }
+          setUserStats(getMockUserStats(profileUserId));
         }
       } catch (error) {
-        // In developer mode, fallback to mock data
-        if (DataService.isInDeveloperMode()) {
-          setProfileUserData(mockUsers[0]);
-          setUserStats(getMockUserStats(profileUserId));
-        } else {
-          // In production, try to use current user data as fallback
-          if (user) {
-            setProfileUserData(user);
-          }
-        }
+        // Fallback to mock data
+        setProfileUserData(mockUsers[0]);
+        setUserStats(getMockUserStats(profileUserId));
       } finally {
         setIsLoading(false);
       }

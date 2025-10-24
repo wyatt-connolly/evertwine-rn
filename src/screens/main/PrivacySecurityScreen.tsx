@@ -73,7 +73,7 @@ export default function PrivacySecurityScreen({ navigation }: any) {
 
     if (user?.uid) {
       try {
-        if (!DataService.isInDeveloperMode()) {
+        if (true) {
           // TODO: Update when User type includes locationEnabled field
           // await SupabaseDataService.updateUser(user.uid, {
           //   locationEnabled: value,

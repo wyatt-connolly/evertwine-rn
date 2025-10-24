@@ -59,7 +59,7 @@ export default function FollowingScreen() {
   }, [currentUser]);
 
   const loadFollowingData = async () => {
-    if (!currentUser || !DataService.isInDeveloperMode()) {
+    if (!currentUser) {
       setLoading(false);
       return;
     }
@@ -74,7 +74,6 @@ export default function FollowingScreen() {
       const activity = getFollowingActivity(following.map((u) => u.uid));
       setActivityData(activity);
     } catch (error) {
-
     } finally {
       setLoading(false);
     }

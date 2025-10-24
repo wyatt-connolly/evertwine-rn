@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useMeetupStore } from "../../hooks/useMeetupStore";
+import { usePreferenceStore } from "../../hooks/usePreferenceStore";
 import EnhancedMeetupCard from "../../components/EnhancedMeetupCard";
 import EnhancedPostCard from "../../components/EnhancedPostCard";
 import EventCard from "../../components/EventCard";
@@ -30,6 +31,7 @@ import {
   getUserNotifications,
 } from "../../data/mockData";
 import { DataService } from "../../services/DataService";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
 import LoadingIndicator from "../../components/LoadingIndicator";
 import { Meetup, Notification, Post, Event } from "../../types";
 
@@ -81,6 +83,7 @@ export default function HomeScreen() {
   const { colors, isDarkMode } = useThemeStore();
   const { user: currentUser, isLoading: isInitialLoading } = useAuthStore();
   const { meetups } = useMeetupStore();
+  const { preferences } = usePreferenceStore();
   const flatListRef = useRef<FlatList>(null);
 
   // State
@@ -128,26 +131,30 @@ export default function HomeScreen() {
   const scrollThreshold = 50; // Minimum scroll distance to trigger hide/show
 
   // Mock data
-  const allMeetups = DataService.isInDeveloperMode()
-    ? getMockMeetups()
-    : meetups;
+  const allMeetups = meetups;
 
   // Get happy hour events
-  const happyHourEvents = DataService.isInDeveloperMode()
-    ? getHappyHourEvents()
-    : [];
+  const happyHourEvents = [];
 
-  // Initialize posts from mock data
+  // Initialize posts from Supabase
   useEffect(() => {
-    if (DataService.isInDeveloperMode()) {
-      setPosts(getMockPosts());
-    }
-    // Simulate loading
-    setTimeout(() => setLoading(false), 1500);
+    const loadPosts = async () => {
+      try {
+        // Fetch posts from Supabase
+        const postsData = await SupabaseDataService.getPosts();
+        setPosts(postsData || []);
+      } catch (error) {
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPosts();
   }, []);
 
   useEffect(() => {
-    if (currentUser && DataService.isInDeveloperMode()) {
+    if (currentUser) {
       setNotifications(getUserNotifications(currentUser.uid));
     }
   }, [currentUser]);
@@ -159,6 +166,52 @@ export default function HomeScreen() {
     }, 30000); // Change every 30 seconds
     return () => clearInterval(interval);
   }, []);
+
+  // Helper function to check if meetup matches group size preferences
+  const meetsGroupSizeFilter = (meetup: Meetup): boolean => {
+    if (preferences.groupSizePreference.preferredSizes.length === 0)
+      return true;
+
+    const maxParticipants = meetup.maxParticipants;
+
+    return preferences.groupSizePreference.preferredSizes.some((size) => {
+      switch (size) {
+        case "one-on-one":
+          return maxParticipants === 2;
+        case "small-group":
+          return maxParticipants >= 2 && maxParticipants <= 4;
+        case "medium-group":
+          return maxParticipants >= 5 && maxParticipants <= 8;
+        case "large-group":
+          return maxParticipants >= 9;
+        default:
+          return false;
+      }
+    });
+  };
+
+  // Helper function to check if meetup/event matches time preferences
+  const meetsTimePreference = (item: Meetup | Event): boolean => {
+    if (preferences.timePreference.availableTimes.length === 0) return true;
+
+    const time = "time" in item ? item.time : item.startTime;
+    const hour = time.getHours();
+
+    return preferences.timePreference.availableTimes.some((timeSlot) => {
+      switch (timeSlot) {
+        case "morning":
+          return hour >= 6 && hour < 12;
+        case "afternoon":
+          return hour >= 12 && hour < 18;
+        case "evening":
+          return hour >= 18 && hour < 22;
+        case "night":
+          return hour >= 22 || hour < 6;
+        default:
+          return false;
+      }
+    });
+  };
 
   // Helper function to check if meetup matches activity filters
   const meetsMeetupActivityFilter = (meetup: Meetup): boolean => {
@@ -220,6 +273,149 @@ export default function HomeScreen() {
             meetupActivity.includes("walk") ||
             meetupTags.some(
               (tag) => tag.includes("outdoor") || tag.includes("hiking")
+            )
+          );
+        default:
+          return false;
+      }
+    });
+  };
+
+  // Helper function to check if meetup matches preference-based activities
+  const meetsPreferenceActivityFilter = (meetup: Meetup): boolean => {
+    if (preferences.activityPreference.interests.length === 0) return true;
+
+    const meetupActivity = meetup.activity?.toLowerCase() || "";
+    const meetupCategory = meetup.activityCategory?.toLowerCase() || "";
+    const meetupTags = meetup.tags.map((tag) => tag.toLowerCase());
+
+    return preferences.activityPreference.interests.some((interest) => {
+      switch (interest) {
+        case "coffee":
+          return (
+            meetupActivity.includes("coffee") ||
+            meetupActivity.includes("tea") ||
+            meetupTags.some(
+              (tag) => tag.includes("coffee") || tag.includes("tea")
+            )
+          );
+        case "food":
+          return (
+            meetupActivity.includes("cooking") ||
+            meetupActivity.includes("dining") ||
+            meetupCategory.includes("food") ||
+            meetupTags.some(
+              (tag) => tag.includes("food") || tag.includes("cooking")
+            )
+          );
+        case "outdoor":
+          return (
+            meetupActivity.includes("hiking") ||
+            meetupActivity.includes("walk") ||
+            meetupActivity.includes("outdoor") ||
+            meetupTags.some(
+              (tag) => tag.includes("outdoor") || tag.includes("hiking")
+            )
+          );
+        case "fitness":
+          return (
+            meetupActivity.includes("fitness") ||
+            meetupActivity.includes("sports") ||
+            meetupCategory.includes("fitness") ||
+            meetupTags.some(
+              (tag) => tag.includes("fitness") || tag.includes("sports")
+            )
+          );
+        case "arts":
+          return (
+            meetupCategory.includes("art") ||
+            meetupActivity.includes("gallery") ||
+            meetupActivity.includes("museum") ||
+            meetupTags.some(
+              (tag) => tag.includes("art") || tag.includes("culture")
+            )
+          );
+        case "music":
+          return (
+            meetupActivity.includes("music") ||
+            meetupActivity.includes("concert") ||
+            meetupTags.some(
+              (tag) => tag.includes("music") || tag.includes("concert")
+            )
+          );
+        case "movies":
+          return (
+            meetupActivity.includes("movie") ||
+            meetupActivity.includes("cinema") ||
+            meetupTags.some(
+              (tag) => tag.includes("movie") || tag.includes("cinema")
+            )
+          );
+        case "gaming":
+          return (
+            meetupActivity.includes("gaming") ||
+            meetupActivity.includes("game") ||
+            meetupTags.some(
+              (tag) => tag.includes("gaming") || tag.includes("game")
+            )
+          );
+        case "books":
+          return (
+            meetupActivity.includes("book") ||
+            meetupActivity.includes("reading") ||
+            meetupTags.some(
+              (tag) => tag.includes("book") || tag.includes("reading")
+            )
+          );
+        case "travel":
+          return (
+            meetupActivity.includes("travel") ||
+            meetupActivity.includes("adventure") ||
+            meetupTags.some(
+              (tag) => tag.includes("travel") || tag.includes("adventure")
+            )
+          );
+        case "volunteer":
+          return (
+            meetupActivity.includes("volunteer") ||
+            meetupActivity.includes("charity") ||
+            meetupTags.some(
+              (tag) => tag.includes("volunteer") || tag.includes("charity")
+            )
+          );
+        case "networking":
+          return (
+            meetupActivity.includes("networking") ||
+            meetupActivity.includes("professional") ||
+            meetupCategory.includes("professional") ||
+            meetupTags.some(
+              (tag) =>
+                tag.includes("networking") || tag.includes("professional")
+            )
+          );
+        case "learning":
+          return (
+            meetupActivity.includes("learning") ||
+            meetupActivity.includes("education") ||
+            meetupActivity.includes("workshop") ||
+            meetupTags.some(
+              (tag) => tag.includes("learning") || tag.includes("education")
+            )
+          );
+        case "photography":
+          return (
+            meetupActivity.includes("photography") ||
+            meetupActivity.includes("photo") ||
+            meetupTags.some(
+              (tag) => tag.includes("photography") || tag.includes("photo")
+            )
+          );
+        case "cooking":
+          return (
+            meetupActivity.includes("cooking") ||
+            meetupActivity.includes("baking") ||
+            meetupTags.some(
+              (tag) => tag.includes("cooking") || tag.includes("baking")
             )
           );
         default:
@@ -459,6 +655,11 @@ export default function HomeScreen() {
         // Apply activity type filter
         if (!meetsMeetupActivityFilter(meetup)) return;
 
+        // Apply preference-based filters
+        const matchesPreferenceActivity = meetsPreferenceActivityFilter(meetup);
+        const matchesGroupSize = meetsGroupSizeFilter(meetup);
+        const matchesTime = meetsTimePreference(meetup);
+
         let priority = 100;
 
         // Meetups happening TODAY get highest priority
@@ -478,6 +679,14 @@ export default function HomeScreen() {
           priority = 200;
         }
 
+        // Apply preference priority boost (lower number = higher priority)
+        let preferenceBoost = 0;
+        if (matchesPreferenceActivity) preferenceBoost += 5;
+        if (matchesGroupSize) preferenceBoost += 5;
+        if (matchesTime) preferenceBoost += 5;
+
+        priority = Math.max(1, priority - preferenceBoost);
+
         combined.push({
           id: `meetup_${meetup.id}`,
           type: "meetup",
@@ -493,6 +702,9 @@ export default function HomeScreen() {
       happyHourEvents.forEach((event) => {
         // Apply happy hour type filter
         if (!meetsHappyHourTypeFilter(event)) return;
+
+        // Apply preference-based filters for events
+        const matchesTime = meetsTimePreference(event);
 
         const hoursUntilEvent =
           (event.startTime.getTime() - now.getTime()) / (1000 * 60 * 60);
@@ -514,6 +726,12 @@ export default function HomeScreen() {
         else {
           priority = 200;
         }
+
+        // Apply preference priority boost for events
+        let preferenceBoost = 0;
+        if (matchesTime) preferenceBoost += 5;
+
+        priority = Math.max(1, priority - preferenceBoost);
 
         combined.push({
           id: `happy_hour_${event.id}`,
@@ -567,12 +785,75 @@ export default function HomeScreen() {
   };
 
   const handleOpenFilterModal = () => {
-    // Initialize temp filters with current applied values
-    setTempActiveFilter(activeFilter);
-    setTempSelectedDateFilter(selectedDateFilter);
-    setTempSelectedMeetupActivities(appliedMeetupActivities);
-    setTempSelectedHappyHourTypes(appliedHappyHourTypes);
-    setTempSelectedPostTypes(appliedPostTypes);
+    // Check if user has preferences and current filters are at default
+    const hasPreferences =
+      preferences.activityPreference.interests.length > 0 ||
+      preferences.timePreference.availableTimes.length > 0 ||
+      preferences.groupSizePreference.preferredSizes.length > 0;
+
+    const isDefaultFilter =
+      activeFilter === "all" &&
+      selectedDateFilter === "all" &&
+      appliedMeetupActivities.length === 0 &&
+      appliedHappyHourTypes.length === 0 &&
+      appliedPostTypes.length === 0;
+
+    // If user has preferences and filters are at default, pre-populate with preferences
+    if (hasPreferences && isDefaultFilter) {
+      // Map preference activities to filter activities
+      const preferenceActivities = preferences.activityPreference.interests
+        .map((interest) => {
+          switch (interest) {
+            case "coffee":
+              return "food";
+            case "food":
+              return "food";
+            case "outdoor":
+              return "outdoor";
+            case "fitness":
+              return "fitness";
+            case "arts":
+              return "art";
+            case "music":
+              return "art";
+            case "movies":
+              return "art";
+            case "gaming":
+              return "technology";
+            case "books":
+              return "art";
+            case "travel":
+              return "outdoor";
+            case "volunteer":
+              return "networking";
+            case "networking":
+              return "networking";
+            case "learning":
+              return "technology";
+            case "photography":
+              return "photography";
+            case "cooking":
+              return "food";
+            default:
+              return null;
+          }
+        })
+        .filter(Boolean) as string[];
+
+      setTempActiveFilter(activeFilter);
+      setTempSelectedDateFilter(selectedDateFilter);
+      setTempSelectedMeetupActivities(preferenceActivities);
+      setTempSelectedHappyHourTypes(appliedHappyHourTypes);
+      setTempSelectedPostTypes(appliedPostTypes);
+    } else {
+      // Use current applied filters
+      setTempActiveFilter(activeFilter);
+      setTempSelectedDateFilter(selectedDateFilter);
+      setTempSelectedMeetupActivities(appliedMeetupActivities);
+      setTempSelectedHappyHourTypes(appliedHappyHourTypes);
+      setTempSelectedPostTypes(appliedPostTypes);
+    }
+
     setShowFilterModal(true);
   };
 
@@ -634,10 +915,35 @@ export default function HomeScreen() {
     });
   };
 
+  // Helper function to check if content matches user preferences
+  const matchesUserPreferences = (item: Meetup | Event): boolean => {
+    if ("time" in item) {
+      // It's a meetup
+      const meetup = item as Meetup;
+      const matchesActivity = meetsPreferenceActivityFilter(meetup);
+      const matchesGroupSize = meetsGroupSizeFilter(meetup);
+      const matchesTime = meetsTimePreference(meetup);
+
+      // Count how many preferences match
+      const matchCount = [
+        matchesActivity,
+        matchesGroupSize,
+        matchesTime,
+      ].filter(Boolean).length;
+      return matchCount >= 2; // Show indicator if 2+ preferences match
+    } else {
+      // It's an event
+      const event = item as Event;
+      const matchesTime = meetsTimePreference(event);
+      return matchesTime;
+    }
+  };
+
   const renderItem = ({ item }: { item: FeedItem }) => {
     switch (item.type) {
       case "happy_hour":
         const event = item.data as Event;
+        const eventMatchesPreferences = matchesUserPreferences(event);
         return (
           <View style={styles.eventWrapper}>
             <EventCard
@@ -657,6 +963,7 @@ export default function HomeScreen() {
                 });
               }}
               style={styles.eventCard}
+              matchesPreferences={eventMatchesPreferences}
             />
           </View>
         );
@@ -692,6 +999,8 @@ export default function HomeScreen() {
 
       case "recommended_meetup":
         const recommendedMeetup = item.data as Meetup;
+        const recommendedMatchesPreferences =
+          matchesUserPreferences(recommendedMeetup);
         return (
           <View style={styles.recommendedMeetupWrapper}>
             <EnhancedMeetupCard
@@ -703,6 +1012,7 @@ export default function HomeScreen() {
               }
               onInterested={handleMeetupInterested}
               isInterested={interestedMeetups.has(recommendedMeetup.id)}
+              matchesPreferences={recommendedMatchesPreferences}
             />
           </View>
         );
@@ -740,6 +1050,7 @@ export default function HomeScreen() {
         const isUpcoming =
           meetup.time.getTime() > new Date().getTime() &&
           meetup.time.getTime() - new Date().getTime() < 24 * 60 * 60 * 1000;
+        const meetupMatchesPreferences = matchesUserPreferences(meetup);
 
         return (
           <EnhancedMeetupCard
@@ -751,6 +1062,7 @@ export default function HomeScreen() {
             isInterested={interestedMeetups.has(meetup.id)}
             timeLabel={timeLabel}
             isUpcoming={isUpcoming}
+            matchesPreferences={meetupMatchesPreferences}
           />
         );
 
@@ -830,9 +1142,7 @@ export default function HomeScreen() {
         <Text
           style={[styles.emptyDescription, { color: colors.textSecondary }]}
         >
-          {DataService.isInDeveloperMode()
-            ? "Your feed is empty. Posts and meetups will appear here."
-            : "Sign in with Developer Login to see posts and meetups"}
+          Your feed is empty. Posts and meetups will appear here.
         </Text>
       </View>
     );
@@ -923,7 +1233,7 @@ export default function HomeScreen() {
 
               <TouchableOpacity
                 style={[styles.iconButton, { backgroundColor: colors.surface }]}
-                onPress={() => navigation.navigate("Notifications")}
+                onPress={() => navigation.navigate("NotificationsList")}
                 activeOpacity={0.7}
               >
                 <Ionicons

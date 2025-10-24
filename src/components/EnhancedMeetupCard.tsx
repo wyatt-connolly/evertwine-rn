@@ -18,6 +18,7 @@ interface EnhancedMeetupCardProps {
   isUpcoming?: boolean;
   hideActionButtons?: boolean;
   customActionButton?: React.ReactNode;
+  matchesPreferences?: boolean;
 }
 
 export default function EnhancedMeetupCard({
@@ -32,6 +33,7 @@ export default function EnhancedMeetupCard({
   isUpcoming = false,
   hideActionButtons = false,
   customActionButton,
+  matchesPreferences = false,
 }: EnhancedMeetupCardProps) {
   const { colors } = useThemeStore();
   const { user: currentUser } = useAuthStore();
@@ -77,6 +79,18 @@ export default function EnhancedMeetupCard({
       >
         <Ionicons name="people" size={16} color={colors.accentTertiary} />
       </View>
+
+      {/* Preference Match Indicator */}
+      {matchesPreferences && (
+        <View
+          style={[
+            styles.preferenceMatchBadge,
+            { backgroundColor: colors.accent + "20" },
+          ]}
+        >
+          <Ionicons name="sparkles" size={12} color={colors.accent} />
+        </View>
+      )}
 
       {meetup.coverImage && (
         <Image source={{ uri: meetup.coverImage }} style={styles.meetupImage} />
@@ -396,5 +410,17 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: 14,
     fontWeight: "500",
+  },
+  preferenceMatchBadge: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
   },
 });

@@ -143,8 +143,8 @@ export default function InterestSelectionScreen({ navigation }: Props) {
         interests: selectedInterests,
       });
 
-      // Only connect to Supabase if not in developer mode
-      if (!DataService.isInDeveloperMode() && user?.uid) {
+      // Connect to Supabase
+      if (user?.uid) {
         const result = await SupabaseDataService.updateUser(user.uid, {
           interests: selectedInterests,
         });
@@ -155,13 +155,11 @@ export default function InterestSelectionScreen({ navigation }: Props) {
           return;
         }
       } else {
-
       }
 
       navigation.navigate("AppFeatures");
     } catch (error) {
       Alert.alert("Error", "Failed to save interests. Please try again.");
-
     } finally {
       setLoading(false);
     }

@@ -66,7 +66,7 @@ export default function MeetupsCarousel({
   }, [showAdvancedFilters, slideAnim]);
 
   // Mock data for meetups
-  const allMeetups = DataService.isInDeveloperMode() ? getMockMeetups() : [];
+  const allMeetups = getMockMeetups();
 
   // Advanced filter options
   const filterOptions: FilterOption[] = [
@@ -89,9 +89,7 @@ export default function MeetupsCarousel({
 
   // Filter meetups based on active filter
   const getFilteredMeetups = () => {
-    if (!DataService.isInDeveloperMode()) {
-      return [];
-    }
+    return [];
 
     let filtered = [...allMeetups];
 
@@ -315,8 +313,8 @@ export default function MeetupsCarousel({
 
   return (
     <View style={styles.container}>
-      {/* Sticky App Bar with Filter Tabs - Only for Developer Login */}
-      {DataService.isInDeveloperMode() && (
+      {/* Sticky App Bar with Filter Tabs */}
+      {true && (
         <View
           style={[styles.stickyAppBar, { backgroundColor: colors.background }]}
         >
@@ -411,10 +409,7 @@ export default function MeetupsCarousel({
         renderItem={renderMeetup}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        style={[
-          styles.meetupsList,
-          { paddingTop: DataService.isInDeveloperMode() ? 70 : 0 },
-        ]}
+        style={[styles.meetupsList, { paddingTop: 70 }]}
         contentContainerStyle={styles.meetupsContent}
         ItemSeparatorComponent={() => <View style={{ height: 20 }} />}
         refreshControl={

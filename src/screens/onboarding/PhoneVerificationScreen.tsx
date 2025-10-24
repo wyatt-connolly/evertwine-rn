@@ -98,7 +98,6 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
         "Error",
         "Failed to send verification code. Please try again."
       );
-
     } finally {
       setLoading(false);
     }
@@ -114,19 +113,12 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
     try {
       // Ensure we're in production mode for phone authentication
 
-      const { DataService } = await import("../../services/DataService");
-      DataService.setDeveloperMode(false);
-
-      );
-
       const result = await SupabaseAuthService.verifyPhoneOTP(
         verificationId,
         verificationCode
       );
 
-
       if (result.error) {
-
         Alert.alert("Error", result.error);
         return;
       }
@@ -134,18 +126,13 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
       // Try to load user profile from Supabase
       let userProfile = null;
       try {
-
         const profileResult = await DataService.getUser(result.user.uid);
-
 
         if (profileResult.user) {
           userProfile = profileResult.user;
         } else {
-
         }
-      } catch (profileError) {
-
-      }
+      } catch (profileError) {}
 
       // Create user object with available data
       const user = {
@@ -167,7 +154,6 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
         bio: userProfile?.bio || undefined,
       };
 
-
       // Set user and authentication state
       setUser(user);
       setAuthenticated(true);
@@ -180,12 +166,9 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
       } else {
         setOnboardingComplete(false);
 
-
         try {
           navigation.navigate("ProfileSetup");
-
         } catch (navError) {
-
           Alert.alert(
             "Navigation Error",
             "Unable to navigate to profile setup. Please try again."
@@ -193,11 +176,9 @@ export default function PhoneVerificationScreen({ navigation }: Props) {
         }
       }
     } catch (error) {
-
       Alert.alert("Error", "Invalid verification code. Please try again.");
     } finally {
       setLoading(false);
-
     }
   };
 

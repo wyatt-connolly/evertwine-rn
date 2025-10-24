@@ -74,7 +74,6 @@ export default function EditProfileScreen() {
 
       return uploadedUrl; // Public URL of uploaded image
     } catch (error) {
-      console.error("❌ Error uploading image:", error);
       Alert.alert("Error", "Failed to upload image");
       return null;
     } finally {
@@ -89,7 +88,6 @@ export default function EditProfileScreen() {
         setIsLoading(true);
 
         if (!user?.uid) {
-          console.error("❌ No user UID available");
           return;
         }
 
@@ -136,20 +134,12 @@ export default function EditProfileScreen() {
             if (newUserResult.user) {
               setProfileData(newUserResult.user);
             }
-          } else {
-            console.error(
-              "❌ Failed to create user record:",
-              createResult.error
-            );
           }
         }
 
         // Load user stats (always use mock for now)
-        if (DataService.isInDeveloperMode()) {
-          setUserStats(getMockUserStats(user.uid) || null);
-        }
+        setUserStats(getMockUserStats(user.uid) || null);
       } catch (error) {
-        console.error("❌ Error loading profile data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -230,7 +220,6 @@ export default function EditProfileScreen() {
         );
       }
     } catch (error) {
-      console.error("❌ Error selecting photo:", error);
       Alert.alert("Error", "Failed to select photo. Please try again.");
     }
   };
@@ -276,14 +265,9 @@ export default function EditProfileScreen() {
           );
 
           Alert.alert("Success", "Photo uploaded successfully!");
-        } else {
-          console.error("❌ No profileData.uid available");
         }
-      } else {
-        console.warn("⚠️ No valid URLs after upload");
       }
     } catch (error) {
-      console.error("❌ Error uploading photo:", error);
       Alert.alert("Error", "Failed to upload photo. Please try again.");
     } finally {
       setUploadingPhotos(false);
@@ -292,7 +276,6 @@ export default function EditProfileScreen() {
 
   const handleRemovePhoto = async (index: number) => {
     if (!profileData) {
-      console.error("❌ No profileData available for removing photo");
       return;
     }
 
@@ -325,7 +308,6 @@ export default function EditProfileScreen() {
 
   const handleSetStandoutPhoto = async (index: number) => {
     if (!profileData) {
-      console.error("❌ No profileData available for setting standout photo");
       return;
     }
 
@@ -388,12 +370,10 @@ export default function EditProfileScreen() {
           break;
       }
 
-      // Save to Supabase (or local storage in dev mode)
-      if (!DataService.isInDeveloperMode()) {
-        const result = await SupabaseDataService.updateUser(user.uid, updates);
-        if ((result as any).error) {
-          throw new Error((result as any).error);
-        }
+      // Save to Supabase
+      const result = await SupabaseDataService.updateUser(user.uid, updates);
+      if ((result as any).error) {
+        throw new Error((result as any).error);
       }
 
       // Update local state
@@ -408,7 +388,6 @@ export default function EditProfileScreen() {
       setTempData({});
       Alert.alert("Success", "Profile updated successfully");
     } catch (error) {
-      console.error("Error saving profile:", error);
       Alert.alert("Error", "Failed to save changes. Please try again.");
     } finally {
       setIsLoading(false);

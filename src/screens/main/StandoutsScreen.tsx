@@ -39,19 +39,12 @@ export default function StandoutsScreen({ navigation }: any) {
   useEffect(() => {
     const loadStandouts = async () => {
       try {
-        if (DataService.isInDeveloperMode()) {
-          // Use mock data in developer mode
-          const mockStandouts = getMockStandouts().filter(
-            (item) => item.type === "user"
-          );
-          setStandouts(mockStandouts);
-        } else {
-          // In production mode, we don't have standouts data yet
-          // For now, keep empty to show empty state
-          setStandouts([]);
-        }
+        // Use mock data
+        const mockStandouts = getMockStandouts().filter(
+          (item) => item.type === "user"
+        );
+        setStandouts(mockStandouts);
       } catch (error) {
-
         setStandouts([]);
       } finally {
         setIsLoading(false);

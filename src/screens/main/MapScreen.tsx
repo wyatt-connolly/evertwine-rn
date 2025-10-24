@@ -16,7 +16,8 @@ import { getMockMeetups, mockUsers } from "../../data/mockData";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import { DataService } from "../../services/DataService";
-import { Event } from "../../types";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
+import { Event, Meetup } from "../../types";
 
 // Happy Hour Events - San Diego locations
 const getHappyHourEvents = (): Event[] => [
@@ -385,12 +386,52 @@ export default function MapScreen({ navigation }: any) {
     useState<Location.LocationObject | null>(null);
   const [locationPermission, setLocationPermission] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [meetups, setMeetups] = useState<Meetup[]>([]);
+  const [happyHours, setHappyHours] = useState<Event[]>([]);
 
-  // Only load mock data in developer mode
-  const meetups = DataService.isInDeveloperMode() ? getMockMeetups() : [];
-  const happyHours = DataService.isInDeveloperMode()
-    ? getHappyHourEvents()
-    : [];
+  // Load data from Supabase or fallback to mock data
+  useEffect(() => {
+    loadMapData();
+  }, [currentLocation, selectedFilter]);
+
+  const loadMapData = async () => {
+    try {
+      if (currentLocation) {
+        // Use Supabase location-based queries
+        const [nearbyMeetups, nearbyEvents] = await Promise.all([
+          SupabaseDataService.getNearbyMeetups(
+            currentLocation.coords.latitude,
+            currentLocation.coords.longitude,
+            10, // 10km radius
+            50
+          ),
+          SupabaseDataService.getNearbyEvents(
+            currentLocation.coords.latitude,
+            currentLocation.coords.longitude,
+            10, // 10km radius
+            50
+          ),
+        ]);
+
+        setMeetups(nearbyMeetups);
+        setHappyHours(nearbyEvents);
+      } else {
+        // Fallback to all data if no location
+        const [allMeetups, allEvents] = await Promise.all([
+          SupabaseDataService.getMeetups(50),
+          SupabaseDataService.getHappyHours(50),
+        ]);
+
+        setMeetups(allMeetups);
+        setHappyHours(allEvents);
+      }
+    } catch (error) {
+      console.error("Error loading map data:", error);
+      // Fallback to empty arrays
+      setMeetups([]);
+      setHappyHours([]);
+    }
+  };
 
   const getCreatorInfo = (creatorId: string) => {
     return mockUsers.find((user) => user.uid === creatorId);
@@ -431,7 +472,6 @@ export default function MapScreen({ navigation }: any) {
         const location = await Location.getCurrentPositionAsync({});
         setCurrentLocation(location);
       } catch (error) {
-
         Alert.alert(
           "Location Error",
           "Unable to get your current location. Please try again.",
@@ -484,8 +524,8 @@ export default function MapScreen({ navigation }: any) {
             showsCompass={true}
             showsScale={true}
           >
-            {/* Only show markers in developer mode */}
-            {DataService.isInDeveloperMode() && (
+            {/* Show markers */}
+            {true && (
               <>
                 {/* Meetup Markers */}
                 {selectedFilter !== "happy_hours" &&
@@ -499,7 +539,6 @@ export default function MapScreen({ navigation }: any) {
                       pinColor={colors.accentTertiary}
                       tracksViewChanges={false}
                       onPress={() => {
-
                         handleMarkerPress(meetup);
                       }}
                     />
@@ -517,7 +556,6 @@ export default function MapScreen({ navigation }: any) {
                       pinColor={colors.accentQuaternary}
                       tracksViewChanges={false}
                       onPress={() => {
-
                         handleMarkerPress(event);
                       }}
                     />

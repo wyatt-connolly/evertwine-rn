@@ -1,7 +1,15 @@
-import { User, Meetup, MessageRoom, ActivityItem, Message } from "../types";
+import {
+  User,
+  Meetup,
+  MessageRoom,
+  ActivityItem,
+  Message,
+  Post,
+} from "../types";
 import {
   getMockUsers,
   getMockMeetups,
+  getMockPosts,
   getActivityFeed,
   mockMessageRooms,
   getUserNotifications,
@@ -11,29 +19,10 @@ import { getMockCommunityUsers } from "../data/mockCommunityUsers";
 import { SupabaseDataService } from "./SupabaseDataService";
 
 export class DataService {
-  private static isDeveloperMode = false;
-
-  // Set developer mode
-  static setDeveloperMode(enabled: boolean) {
-    this.isDeveloperMode = enabled;
-  }
-
-  static isInDeveloperMode(): boolean {
-    return this.isDeveloperMode;
-  }
-
   // User Data Methods
   static async getUser(
     uid: string
   ): Promise<{ user: User | null; error: string | null }> {
-    if (this.isDeveloperMode) {
-      // Return mock user data in developer mode
-      const mockUsers = getMockUsers();
-      const user = mockUsers.find((u) => u.uid === uid) || mockUsers[0];
-      return { user, error: null };
-    }
-
-    // Use Supabase in production mode
     try {
       const user = await SupabaseDataService.getUser(uid);
       return { user, error: null };
@@ -46,17 +35,10 @@ export class DataService {
   }
 
   static async createUser(
-    userData: Partial<User>,
-    userUid?: string
+    userData: Partial<User>
   ): Promise<{ success: boolean; error: string | null }> {
-    if (this.isDeveloperMode) {
-      // Simulate user creation in developer mode
-      return { success: true, error: null };
-    }
-
-    // Use Supabase in production mode
     try {
-      const result = await SupabaseDataService.createUser(userData);
+      await SupabaseDataService.createUser(userData);
       return { success: true, error: null };
     } catch (error) {
       return {
@@ -70,14 +52,8 @@ export class DataService {
     uid: string,
     updates: Partial<User>
   ): Promise<{ success: boolean; error: string | null }> {
-    if (this.isDeveloperMode) {
-      // Simulate user update in developer mode
-      return { success: true, error: null };
-    }
-
-    // Use Supabase in production mode
     try {
-      const result = await SupabaseDataService.updateUser(uid, updates);
+      await SupabaseDataService.updateUser(uid, updates);
       return { success: true, error: null };
     } catch (error) {
       return {
@@ -92,37 +68,21 @@ export class DataService {
     meetups: Meetup[];
     error: string | null;
   }> {
-    if (this.isDeveloperMode) {
-      // Return mock meetup data in developer mode
-      const meetups = getMockMeetups();
-      return { meetups, error: null };
-    }
-
     // TODO: Implement with Supabase
     return { meetups: [], error: "Not implemented" };
   }
 
   static async createMeetup(
-    meetupData: Partial<Meetup>
+    _meetupData: Partial<Meetup>
   ): Promise<{ success: boolean; error: string | null }> {
-    if (this.isDeveloperMode) {
-      // Simulate meetup creation in developer mode
-      return { success: true, error: null };
-    }
-
     // TODO: Implement with Supabase
     return { success: false, error: "Not implemented" };
   }
 
   // Message Data Methods
   static async getMessageRooms(
-    userId: string
+    _userId: string
   ): Promise<{ rooms: MessageRoom[]; error: string | null }> {
-    if (this.isDeveloperMode) {
-      // Return mock message rooms
-      return { rooms: mockMessageRooms, error: null };
-    }
-
     // TODO: Implement with Supabase
     return { rooms: [], error: "Not implemented" };
   }
@@ -132,26 +92,6 @@ export class DataService {
     otherUserId: string,
     otherUserData: User
   ): Promise<{ room: MessageRoom | null; error: string | null }> {
-    if (this.isDeveloperMode) {
-      // In dev mode, return a mock room
-      const mockRoom: MessageRoom = {
-        id: `room_${currentUserId}_${otherUserId}`,
-        type: "direct",
-        participants: [currentUserId, otherUserId],
-        admins: [],
-        name: otherUserData.displayName,
-        avatar: otherUserData.profilePictures?.[0],
-        settings: {
-          allowInvites: false,
-          allowMedia: true,
-          allowReactions: true,
-        },
-        createdTime: new Date(),
-        updatedTime: new Date(),
-      };
-      return { room: mockRoom, error: null };
-    }
-
     try {
       // Check if conversation already exists
       let room = await SupabaseDataService.findDirectMessageRoom(
@@ -170,7 +110,6 @@ export class DataService {
 
       return { room, error: null };
     } catch (error) {
-      console.error("Error finding/creating direct message:", error);
       return { room: null, error: String(error) };
     }
   }
@@ -180,102 +119,56 @@ export class DataService {
     page: number = 0,
     limit: number = 5
   ): Promise<{ activities: ActivityItem[]; error: string | null }> {
-    if (this.isDeveloperMode) {
-      // Return mock activity feed
-      const activities = getActivityFeed(page, limit);
-      return { activities, error: null };
-    }
-
     // TODO: Implement with Supabase
     return { activities: [], error: "Not implemented" };
   }
 
   // Authentication Methods
-  static async signInWithPhone(phoneNumber: string) {
-    if (this.isDeveloperMode) {
-      // Return mock phone auth for developer mode
-      return {
-        confirmationResult: null,
-        error: "Use Developer Login for mock data",
-      };
-    }
-
+  static async signInWithPhone(_phoneNumber: string) {
     // TODO: Implement with Supabase
     return { confirmationResult: null, error: "Not implemented" };
   }
 
   static async signInWithGoogle() {
-    if (this.isDeveloperMode) {
-      // Return mock Google auth for developer mode
-      return { user: null, error: "Use Developer Login for mock data" };
-    }
-
     // TODO: Implement with Supabase
     return { user: null, error: "Not implemented" };
   }
 
   static async signInWithApple() {
-    if (this.isDeveloperMode) {
-      // Return mock Apple auth for developer mode
-      return { user: null, error: "Use Developer Login for mock data" };
-    }
-
     // TODO: Implement with Supabase
     return { user: null, error: "Not implemented" };
   }
 
-  static async loadUserProfile(uid: string) {
-    if (this.isDeveloperMode) {
-      // Return mock user profile for developer mode
-      const mockUsers = getMockUsers();
-      const user = mockUsers.find((u) => u.uid === uid) || mockUsers[0];
-      return { user, error: null };
-    }
-
+  static async loadUserProfile(_uid: string) {
     // TODO: Implement with Supabase
     return { user: null, error: "Not implemented" };
   }
 
   // Real-time Data Listeners
-  static setupUserListener(uid: string, callback: (user: User | null) => void) {
-    if (this.isDeveloperMode) {
-      // Simulate real-time updates in developer mode
-      return () => {}; // Return unsubscribe function
-    }
-
+  static setupUserListener(
+    _uid: string,
+    _callback: (user: User | null) => void
+  ) {
     // TODO: Implement with Supabase
     return () => {}; // Return unsubscribe function
   }
 
-  static setupMeetupsListener(callback: (meetups: Meetup[]) => void) {
-    if (this.isDeveloperMode) {
-      // Simulate real-time updates in developer mode
-      return () => {}; // Return unsubscribe function
-    }
-
+  static setupMeetupsListener(_callback: (meetups: Meetup[]) => void) {
     // TODO: Implement with Supabase
     return () => {}; // Return unsubscribe function
   }
 
   static setupMessagesListener(
-    userId: string,
-    callback: (rooms: MessageRoom[]) => void
+    _userId: string,
+    _callback: (rooms: MessageRoom[]) => void
   ) {
-    if (this.isDeveloperMode) {
-      // Simulate real-time updates in developer mode
-      return () => {}; // Return unsubscribe function
-    }
-
     // TODO: Implement with Supabase
     return () => {}; // Return unsubscribe function
   }
 
-  static setupActivityListener(callback: (activities: ActivityItem[]) => void) {
-    if (this.isDeveloperMode) {
-      // Simulate real-time updates in developer mode
-      return () => {}; // Return unsubscribe function
-    }
-
+  static setupActivityListener(
+    _callback: (activities: ActivityItem[]) => void
+  ) {
     // TODO: Implement with Supabase
     return () => {}; // Return unsubscribe function
   }
@@ -284,12 +177,6 @@ export class DataService {
   static async getNotifications(
     uid: string
   ): Promise<{ notifications: any[]; error: string | null }> {
-    if (this.isDeveloperMode) {
-      // Return mock notifications in developer mode
-      const notifications = getUserNotifications(uid);
-      return { notifications, error: null };
-    }
-
     // TODO: Implement with Supabase
     return { notifications: [], error: "Not implemented" };
   }
@@ -298,24 +185,42 @@ export class DataService {
   static async getUserStats(
     uid: string
   ): Promise<{ stats: any | null; error: string | null }> {
-    if (this.isDeveloperMode) {
-      // Return mock stats in developer mode
-      const stats = getMockUserStats(uid);
-      return { stats, error: null };
-    }
-
     // TODO: Implement with Supabase
     return { stats: null, error: "Not implemented" };
   }
 
+  // ==================== POSTS ====================
+  static async getPosts(): Promise<{
+    data: Post[] | null;
+    error: string | null;
+  }> {
+    try {
+      const posts = await SupabaseDataService.getPosts();
+      return { data: posts, error: null };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  }
+
+  static async createPost(
+    postData: Partial<Post>
+  ): Promise<{ success: boolean; error: string | null }> {
+    try {
+      await SupabaseDataService.createPost(postData);
+      return { success: true, error: null };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  }
+
   // ==================== COMMUNITY USERS ====================
   static async getFeaturedUsers(currentUserId?: string): Promise<User[]> {
-    if (this.isDeveloperMode) {
-      // Return 5 random mock community users
-      const mockUsers = getMockCommunityUsers();
-      return mockUsers.slice(0, 5);
-    }
-
     try {
       const users = await SupabaseDataService.getFeaturedUsers();
 
@@ -327,18 +232,11 @@ export class DataService {
 
       return users;
     } catch (error) {
-      console.error("Error fetching featured users:", error);
       return [];
     }
   }
 
   static async getActiveUsers(currentUserId?: string): Promise<User[]> {
-    if (this.isDeveloperMode) {
-      // Return 8 mock community users (simulating active users)
-      const mockUsers = getMockCommunityUsers();
-      return mockUsers.slice(0, 8);
-    }
-
     try {
       const users = await SupabaseDataService.getActiveUsers();
 
@@ -350,18 +248,11 @@ export class DataService {
 
       return users;
     } catch (error) {
-      console.error("Error fetching active users:", error);
       return [];
     }
   }
 
   static async getNewMembers(currentUserId?: string): Promise<User[]> {
-    if (this.isDeveloperMode) {
-      // Return 8 mock community users (simulating new members)
-      const mockUsers = getMockCommunityUsers();
-      return mockUsers.slice(0, 8);
-    }
-
     try {
       const users = await SupabaseDataService.getNewMembers();
 
@@ -373,7 +264,6 @@ export class DataService {
 
       return users;
     } catch (error) {
-      console.error("Error fetching new members:", error);
       return [];
     }
   }
@@ -383,24 +273,6 @@ export class DataService {
     roomId: string,
     currentUserId?: string
   ): Promise<MessageRoom | null> {
-    if (this.isDeveloperMode) {
-      // Return mock room for development
-      return {
-        id: roomId,
-        type: "direct",
-        participants: ["user1", "user2"],
-        admins: [],
-        name: "Mock Room",
-        avatar: undefined,
-        settings: {
-          allowInvites: false,
-          allowMedia: true,
-          allowReactions: true,
-        },
-        createdTime: new Date(),
-        updatedTime: new Date(),
-      };
-    }
     try {
       const room = await SupabaseDataService.getMessageRoom(roomId);
 
@@ -418,52 +290,23 @@ export class DataService {
 
       return room;
     } catch (error) {
-      console.error("Error fetching message room:", error);
       return null;
     }
   }
 
   static async getMessages(roomId: string, limit = 100): Promise<Message[]> {
-    if (this.isDeveloperMode) {
-      // Return mock messages for development
-      return [];
-    }
     try {
       return await SupabaseDataService.getMessages(roomId, limit);
     } catch (error) {
-      console.error("Error fetching messages:", error);
       return [];
     }
   }
 
   static async sendMessage(message: Partial<Message>): Promise<Message | null> {
-    console.log("📤 DataService.sendMessage called:", message);
-
-    if (this.isDeveloperMode) {
-      console.log("📤 Developer mode: returning mock message");
-      // In dev mode, just return a mock message
-      return {
-        id: Date.now().toString(),
-        messageRoomRef: message.messageRoomRef || "",
-        senderRef: message.senderRef || "",
-        text: message.text || "",
-        messageType: message.messageType || "text",
-        isEdited: false,
-        reactions: {},
-        isRead: false,
-        readBy: {},
-        isDeleted: false,
-        createdTime: new Date(),
-        updatedTime: new Date(),
-      };
-    }
     try {
-      console.log("📤 Calling SupabaseDataService.sendMessage");
       const result = await SupabaseDataService.sendMessage(message);
-      console.log("📤 SupabaseDataService.sendMessage result:", result);
       return result;
     } catch (error) {
-      console.error("📤 Error in DataService.sendMessage:", error);
       return null;
     }
   }
@@ -472,14 +315,9 @@ export class DataService {
     roomId: string,
     callback: (messages: Message[]) => void
   ): () => void {
-    if (this.isDeveloperMode) {
-      // In dev mode, return a no-op unsubscribe function
-      return () => {};
-    }
     try {
       return SupabaseDataService.setupMessageListener(roomId, callback);
     } catch (error) {
-      console.error("Error setting up message listener:", error);
       return () => {};
     }
   }
@@ -488,11 +326,6 @@ export class DataService {
     userIds: string[],
     currentUserId?: string
   ): Promise<User[]> {
-    if (this.isDeveloperMode) {
-      // Return mock users for development
-      const mockUsers = getMockCommunityUsers();
-      return mockUsers.filter((user) => userIds.includes(user.uid));
-    }
     try {
       const users = await SupabaseDataService.getUsersByIds(userIds);
 
@@ -504,7 +337,6 @@ export class DataService {
 
       return users;
     } catch (error) {
-      console.error("Error fetching users by IDs:", error);
       return [];
     }
   }
@@ -515,11 +347,6 @@ export class DataService {
   private static CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
   static async blockUser(userId: string, blockedUserId: string): Promise<void> {
-    if (this.isDeveloperMode) {
-      console.log("🚫 Dev mode: Block user", { userId, blockedUserId });
-      return;
-    }
-
     try {
       await SupabaseDataService.blockUser(userId, blockedUserId);
       // Clear cache for both users
@@ -528,7 +355,6 @@ export class DataService {
       this.cacheExpiry.delete(userId);
       this.cacheExpiry.delete(blockedUserId);
     } catch (error) {
-      console.error("Error blocking user:", error);
       // If table doesn't exist or RLS policy fails, show user-friendly error
       if (error && typeof error === "object" && "code" in error) {
         if (error.code === "PGRST205") {
@@ -536,9 +362,6 @@ export class DataService {
             "Blocking functionality is not available. Please contact support."
           );
         } else if (error.code === "42501") {
-          console.log(
-            "⚠️ Blocking failed due to RLS policy - database setup needed"
-          );
           throw new Error(
             "Blocking is temporarily unavailable. Please contact support."
           );
@@ -549,15 +372,12 @@ export class DataService {
   }
 
   static async getBlockedUsers(userId: string): Promise<string[]> {
-    if (this.isDeveloperMode) {
-      return []; // No blocked users in dev mode
-    }
-
     // Check cache first
     const cached = this.blockedUsersCache.get(userId);
     const expiry = this.cacheExpiry.get(userId);
+    const isCacheValid = cached && expiry && Date.now() < expiry;
 
-    if (cached && expiry && Date.now() < expiry) {
+    if (isCacheValid) {
       return cached;
     }
 
@@ -572,7 +392,6 @@ export class DataService {
 
       return blockedUserIds;
     } catch (error) {
-      console.error("Error fetching blocked users:", error);
       // If table doesn't exist, return empty array and don't cache
       if (
         error &&
@@ -580,7 +399,6 @@ export class DataService {
         "code" in error &&
         error.code === "PGRST205"
       ) {
-        console.log("Blocked users table not found, returning empty array");
         return [];
       }
       return [];
@@ -591,11 +409,6 @@ export class DataService {
     userId: string,
     unblockedUserId: string
   ): Promise<void> {
-    if (this.isDeveloperMode) {
-      console.log("🚫 Dev mode: Unblock user", { userId, unblockedUserId });
-      return;
-    }
-
     try {
       await SupabaseDataService.unblockUser(userId, unblockedUserId);
       // Clear cache for both users
@@ -604,7 +417,6 @@ export class DataService {
       this.cacheExpiry.delete(userId);
       this.cacheExpiry.delete(unblockedUserId);
     } catch (error) {
-      console.error("Error unblocking user:", error);
       throw new Error("Unable to unblock user. Please try again later.");
     }
   }
@@ -615,16 +427,6 @@ export class DataService {
     roomId: string,
     reason: string
   ): Promise<void> {
-    if (this.isDeveloperMode) {
-      console.log("🚩 Dev mode: Report conversation", {
-        reporterId,
-        reportedUserId,
-        roomId,
-        reason,
-      });
-      return;
-    }
-
     try {
       await SupabaseDataService.reportConversation(
         reporterId,
@@ -633,7 +435,6 @@ export class DataService {
         reason
       );
     } catch (error) {
-      console.error("Error reporting conversation:", error);
       throw error;
     }
   }

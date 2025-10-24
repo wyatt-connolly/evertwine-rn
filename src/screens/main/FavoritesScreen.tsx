@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -17,6 +17,8 @@ import { getUserJoinedMeetups } from "../../data/userMeetups";
 import { Meetup, Event } from "../../types";
 import EventCard from "../../components/EventCard";
 import EnhancedMeetupCard from "../../components/EnhancedMeetupCard";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
+import { DataService } from "../../services/DataService";
 
 export default function FavoritesScreen({ navigation }: any) {
   const { colors } = useThemeStore();
@@ -32,28 +34,53 @@ export default function FavoritesScreen({ navigation }: any) {
   const [activeTab, setActiveTab] = useState<"favorites" | "joined">(
     "favorites"
   );
-
-  const allMeetups = getMockMeetups();
-  const allEvents = getMockEvents();
-
-  const favoriteMeetupsData = allMeetups.filter((meetup) =>
-    favoriteMeetups.includes(meetup.id)
+  const [favoriteMeetupsData, setFavoriteMeetupsData] = useState<Meetup[]>([]);
+  const [favoriteHappyHoursData, setFavoriteHappyHoursData] = useState<Event[]>(
+    []
   );
-  const favoriteHappyHoursData = allEvents.filter((event) =>
-    favoriteEvents.includes(event.id)
-  );
-  const joinedMeetupsData = currentUser
-    ? getUserJoinedMeetups(currentUser.uid).map((um) => um.meetup)
-    : [];
+  const [joinedMeetupsData, setJoinedMeetupsData] = useState<Meetup[]>([]);
+  const [joinedHappyHoursData, setJoinedHappyHoursData] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock joined happy hours (events user is attending)
-  const joinedHappyHoursData = allEvents.filter((event) =>
-    ["event1", "event3"].includes(event.id)
-  );
+  // Load data from Supabase or fallback to mock data
+  useEffect(() => {
+    loadUserData();
+  }, [currentUser]);
 
-  const onRefresh = () => {
+  const loadUserData = async () => {
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Use mock data
+      const allMeetups = getMockMeetups();
+      const allEvents = getMockEvents();
+
+      setFavoriteMeetupsData(
+        allMeetups.filter((meetup) => favoriteMeetups.includes(meetup.id))
+      );
+      setFavoriteHappyHoursData(
+        allEvents.filter((event) => favoriteEvents.includes(event.id))
+      );
+      setJoinedMeetupsData(
+        getUserJoinedMeetups(currentUser.uid).map((um) => um.meetup)
+      );
+      setJoinedHappyHoursData(
+        allEvents.filter((event) => ["event1", "event3"].includes(event.id))
+      );
+    } catch (error) {
+      console.error("Error loading user data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1000);
+    await loadUserData();
+    setRefreshing(false);
   };
 
   const renderFavoriteMeetupCard = (meetup: Meetup) => (
@@ -66,7 +93,20 @@ export default function FavoritesScreen({ navigation }: any) {
       customActionButton={
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.error }]}
-          onPress={() => removeMeetupFromFavorites(meetup.id)}
+          onPress={async () => {
+            removeMeetupFromFavorites(meetup.id);
+            if (currentUser) {
+              try {
+                await SupabaseDataService.removeFromFavorites(
+                  currentUser.uid,
+                  meetup.id,
+                  "meetup"
+                );
+              } catch (error) {
+                console.error("Error removing meetup from favorites:", error);
+              }
+            }
+          }}
           activeOpacity={0.8}
         >
           <Ionicons name="heart-dislike" size={16} color="#fff" />
@@ -113,7 +153,20 @@ export default function FavoritesScreen({ navigation }: any) {
       customActionButton={
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.error }]}
-          onPress={() => removeEventFromFavorites(event.id)}
+          onPress={async () => {
+            removeEventFromFavorites(event.id);
+            if (currentUser) {
+              try {
+                await SupabaseDataService.removeFromFavorites(
+                  currentUser.uid,
+                  event.id,
+                  "event"
+                );
+              } catch (error) {
+                console.error("Error removing event from favorites:", error);
+              }
+            }
+          }}
           activeOpacity={0.8}
         >
           <Ionicons name="heart-dislike" size={16} color="#fff" />

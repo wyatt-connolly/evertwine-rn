@@ -31,11 +31,9 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
   const { loadPreferences } = usePreferenceStore();
 
   const handleGetStarted = async () => {
-
     setLoading(true);
 
     try {
-
       // Load preferences
 
       await loadPreferences();
@@ -45,9 +43,8 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
       setOnboardingComplete(true);
       updateUserProfile({ onboardingComplete: true });
 
-      // Only connect to Supabase if not in developer mode
-      if (!DataService.isInDeveloperMode() && user?.uid) {
-
+      // Connect to Supabase
+      if (user?.uid) {
         // Write default preferences to Supabase
         const result = await SupabaseDataService.updateUser(user.uid, {
           onboardingComplete: true,
@@ -55,20 +52,13 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
         });
 
         if (result.error) {
-
         } else {
-
-
         }
       } else {
-
-
       }
     } catch (error) {
-
     } finally {
       setLoading(false);
-
     }
   };
 

@@ -44,50 +44,40 @@ export default function SettingsScreen({ navigation }: any) {
       const userData = await DataService.getUser(user.uid);
       if (userData.user) {
         // TODO: Load notification settings when User type is updated
-        console.log("User settings loaded");
       }
-    } catch (error) {
-      console.error("Error loading user settings:", error);
-    }
+    } catch (error) {}
   };
 
   // Notification handlers
   const handlePushNotificationsToggle = async (value: boolean) => {
     setPushNotifications(value);
     // TODO: Save to backend when User type includes these fields
-    console.log("Push notifications:", value);
   };
 
   const handleMeetupNotificationsToggle = async (value: boolean) => {
     setMeetupNotifications(value);
-    console.log("Meetup notifications:", value);
   };
 
   const handleMessageNotificationsToggle = async (value: boolean) => {
     setMessageNotifications(value);
-    console.log("Message notifications:", value);
   };
 
   const handleActivityNotificationsToggle = async (value: boolean) => {
     setActivityNotifications(value);
-    console.log("Activity notifications:", value);
   };
 
   const handleEmailNotificationsToggle = async (value: boolean) => {
     setEmailNotifications(value);
-    console.log("Email notifications:", value);
   };
 
   // App preferences handlers
   const handleAutoPlayVideosToggle = (value: boolean) => {
     setAutoPlayVideos(value);
-    console.log("Auto-play videos:", value);
   };
 
   const handleDistanceUnitToggle = () => {
     const newUnit = distanceUnit === "miles" ? "km" : "miles";
     setDistanceUnit(newUnit);
-    console.log("Distance unit:", newUnit);
   };
 
   // Navigation handlers

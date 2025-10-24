@@ -12,8 +12,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useFavoritesStore } from "../../hooks/useFavoritesStore";
+import { useAuthStore } from "../../hooks/useAuthStore";
 import { getMockMeetups, getMockUsers } from "../../data/mockData";
 import Snackbar from "../../components/Snackbar";
+import { NotificationService } from "../../services/NotificationService";
 
 interface MeetupDetailsScreenProps {
   route: {
@@ -30,6 +32,7 @@ export default function MeetupDetailsScreen({
   navigation,
 }: MeetupDetailsScreenProps) {
   const { colors } = useThemeStore();
+  const { user: currentUser } = useAuthStore();
   const { addMeetupToFavorites, removeMeetupFromFavorites, isMeetupFavorite } =
     useFavoritesStore();
   const { meetupId, meetupData } = route.params;
@@ -81,7 +84,7 @@ export default function MeetupDetailsScreen({
     });
   };
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
     if (isJoined) {
       Alert.alert(
         "Leave Meetup",
@@ -104,6 +107,22 @@ export default function MeetupDetailsScreen({
         return;
       }
       setIsJoined(true);
+
+      // Send notification to meetup creator
+      if (currentUser && meetup.creatorId !== currentUser.uid) {
+        try {
+          await NotificationService.createMeetupInviteNotification(
+            currentUser.uid,
+            meetup.creatorId,
+            meetup.id,
+            currentUser.displayName || "Someone",
+            meetup.title
+          );
+        } catch (error) {
+          console.error("Error creating meetup notification:", error);
+        }
+      }
+
       Alert.alert("Success", "You've joined the meetup!");
     }
   };

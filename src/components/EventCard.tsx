@@ -9,6 +9,7 @@ interface EventCardProps {
   onPress?: () => void;
   style?: any;
   customActionButton?: React.ReactNode;
+  matchesPreferences?: boolean;
 }
 
 export default function EventCard({
@@ -16,6 +17,7 @@ export default function EventCard({
   onPress,
   style,
   customActionButton,
+  matchesPreferences = false,
 }: EventCardProps) {
   const { colors } = useThemeStore();
 
@@ -48,6 +50,18 @@ export default function EventCard({
       >
         <Ionicons name="wine" size={16} color={colors.accentQuaternary} />
       </View>
+
+      {/* Preference Match Indicator */}
+      {matchesPreferences && (
+        <View
+          style={[
+            styles.preferenceMatchBadge,
+            { backgroundColor: colors.accent + "20" },
+          ]}
+        >
+          <Ionicons name="sparkles" size={12} color={colors.accent} />
+        </View>
+      )}
 
       {event.coverImage && (
         <View style={styles.imageContainer}>
@@ -289,5 +303,17 @@ const styles = StyleSheet.create({
   customActionContainer: {
     alignItems: "center",
     marginTop: 12,
+  },
+  preferenceMatchBadge: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
   },
 });
