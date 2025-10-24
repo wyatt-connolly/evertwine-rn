@@ -25,12 +25,7 @@ import { getHappyHourEvents } from "../../components/HappyHourCarousel";
 import SkeletonLoader from "../../components/SkeletonLoader";
 import ContentPrompt from "../../components/ContentPrompt";
 import ExpandableFAB from "../../components/ExpandableFAB";
-import {
-  getMockMeetups,
-  getMockPosts,
-  getUserNotifications,
-} from "../../data/mockData";
-import { DataService } from "../../services/DataService";
+import { getUserNotifications } from "../../data/mockData";
 import { SupabaseDataService } from "../../services/SupabaseDataService";
 import LoadingIndicator from "../../components/LoadingIndicator";
 import { Meetup, Notification, Post, Event } from "../../types";
@@ -130,11 +125,14 @@ export default function HomeScreen() {
   const lastScrollY = useRef(0);
   const scrollThreshold = 50; // Minimum scroll distance to trigger hide/show
 
+  // Modal animation state
+  const modalSlideY = useRef(new Animated.Value(800)).current;
+
   // Mock data
   const allMeetups = meetups;
 
   // Get happy hour events
-  const happyHourEvents = [];
+  const happyHourEvents = getHappyHourEvents();
 
   // Initialize posts from Supabase
   useEffect(() => {
@@ -855,6 +853,26 @@ export default function HomeScreen() {
     }
 
     setShowFilterModal(true);
+
+    // Animate modal content sliding up
+    Animated.timing(modalSlideY, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleCloseFilterModal = () => {
+    // Animate modal content sliding down
+    Animated.timing(modalSlideY, {
+      toValue: 800,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowFilterModal(false);
+      // Reset animation value for next time
+      modalSlideY.setValue(800);
+    });
   };
 
   const handleApplyFilters = () => {
@@ -870,7 +888,7 @@ export default function HomeScreen() {
       flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
     }, 100);
 
-    setShowFilterModal(false);
+    handleCloseFilterModal();
   };
 
   // Handle scroll events for app bar visibility
@@ -1316,16 +1334,22 @@ export default function HomeScreen() {
         <Modal
           visible={showFilterModal}
           transparent
-          animationType="slide"
-          onRequestClose={() => setShowFilterModal(false)}
+          animationType="fade"
+          onRequestClose={handleCloseFilterModal}
         >
           <TouchableOpacity
             style={styles.modalOverlay}
             activeOpacity={1}
-            onPress={() => setShowFilterModal(false)}
+            onPress={handleCloseFilterModal}
           >
-            <View
-              style={[styles.modalContent, { backgroundColor: colors.surface }]}
+            <Animated.View
+              style={[
+                styles.modalContent,
+                {
+                  backgroundColor: colors.surface,
+                  transform: [{ translateY: modalSlideY }],
+                },
+              ]}
             >
               <View
                 style={[
@@ -1337,7 +1361,7 @@ export default function HomeScreen() {
                   Feed Filters
                 </Text>
                 <TouchableOpacity
-                  onPress={() => setShowFilterModal(false)}
+                  onPress={handleCloseFilterModal}
                   style={styles.modalClose}
                 >
                   <Ionicons
@@ -1793,7 +1817,7 @@ export default function HomeScreen() {
                   Apply Filters
                 </Text>
               </TouchableOpacity>
-            </View>
+            </Animated.View>
           </TouchableOpacity>
         </Modal>
 
@@ -2102,6 +2126,10 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalContent: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingBottom: 32,
