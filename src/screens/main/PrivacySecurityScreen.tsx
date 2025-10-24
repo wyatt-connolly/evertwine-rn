@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { DataService } from "../../services/DataService";
+import { useFocusEffect } from "@react-navigation/native";
 import * as WebBrowser from "expo-web-browser";
 
 export default function PrivacySecurityScreen({ navigation }: any) {
@@ -22,12 +23,21 @@ export default function PrivacySecurityScreen({ navigation }: any) {
   const [dataSharingEnabled, setDataSharingEnabled] = useState(true);
   const [showInCommunityHighlights, setShowInCommunityHighlights] =
     useState(true);
-  const [blockedUsersCount] = useState(0);
+  const [blockedUsersCount, setBlockedUsersCount] = useState(0);
 
   // Load user privacy settings on mount
   useEffect(() => {
     loadPrivacySettings();
   }, []);
+
+  // Refresh blocked users count when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      if (user?.uid) {
+        loadBlockedUsersCount();
+      }
+    }, [user?.uid])
+  );
 
   const loadPrivacySettings = async () => {
     if (!user?.uid) return;
@@ -39,8 +49,22 @@ export default function PrivacySecurityScreen({ navigation }: any) {
         // when the User type is updated to include privacy preferences
         console.log("Privacy settings loaded");
       }
+
+      // Load blocked users count
+      await loadBlockedUsersCount();
     } catch (error) {
       console.error("Error loading privacy settings:", error);
+    }
+  };
+
+  const loadBlockedUsersCount = async () => {
+    if (!user?.uid) return;
+
+    try {
+      const blockedUsers = await DataService.getBlockedUsers(user.uid);
+      setBlockedUsersCount(blockedUsers.length);
+    } catch (error) {
+      console.error("Error loading blocked users count:", error);
     }
   };
 
@@ -83,7 +107,7 @@ export default function PrivacySecurityScreen({ navigation }: any) {
   };
 
   const handleBlockedUsers = () => {
-    Alert.alert("Blocked Users", "Blocked users management coming soon!");
+    navigation.navigate("BlockedUsers");
   };
 
   const handleExportData = () => {

@@ -29,19 +29,20 @@ import HappyHourDetailsScreen from "../screens/main/HappyHourDetailsScreen";
 import PlaceDetailsScreen from "../screens/main/PlaceDetailsScreen";
 import PostDetailsScreen from "../screens/main/PostDetailsScreen";
 import CreatePostScreen from "../screens/main/CreatePostScreen";
-import NotificationsScreen from "../screens/main/NotificationsScreen";
+import NotificationSettingsScreen from "../screens/main/NotificationSettingsScreen";
 import AllHappyHourEventsScreen from "../screens/main/AllHappyHourEventsScreen";
 import AllMeetupsScreen from "../screens/main/AllMeetupsScreen";
 import FollowingScreen from "../screens/main/FollowingScreen";
 import PrivacySecurityScreen from "../screens/main/PrivacySecurityScreen";
 import HelpSupportScreen from "../screens/main/HelpSupportScreen";
 import CommunityScreen from "../screens/main/CommunityScreen";
+import BlockedUsersScreen from "../screens/main/BlockedUsersScreen";
 
 export type MainTabParamList = {
   Home: undefined;
   Community: undefined;
   Messages: undefined;
-  Settings: undefined;
+  Profile: undefined;
 };
 
 export type ProfileStackParamList = {
@@ -52,6 +53,7 @@ export type ProfileStackParamList = {
   ActivityFeed: undefined;
   Notifications: undefined;
   PrivacySecurity: undefined;
+  BlockedUsers: undefined;
   HelpSupport: undefined;
   MessageDetails: { roomId: string };
 };
@@ -126,12 +128,13 @@ function ProfileStackNavigator() {
       <ProfileStack.Screen name="ActivityFeed" component={ActivityFeedScreen} />
       <ProfileStack.Screen
         name="Notifications"
-        component={NotificationsScreen}
+        component={NotificationSettingsScreen}
       />
       <ProfileStack.Screen
         name="PrivacySecurity"
         component={PrivacySecurityScreen}
       />
+      <ProfileStack.Screen name="BlockedUsers" component={BlockedUsersScreen} />
       <ProfileStack.Screen name="HelpSupport" component={HelpSupportScreen} />
       <ProfileStack.Screen
         name="MessageDetails"
@@ -154,7 +157,10 @@ function HomeStackNavigator() {
     >
       <HomeStack.Screen name="HomeMain" component={HomeScreen} />
       <HomeStack.Screen name="ActivityFeed" component={ActivityFeedScreen} />
-      <HomeStack.Screen name="Notifications" component={NotificationsScreen} />
+      <HomeStack.Screen
+        name="Notifications"
+        component={NotificationSettingsScreen}
+      />
       <HomeStack.Screen name="Map" component={MapScreen} />
     </HomeStack.Navigator>
   );
@@ -213,8 +219,8 @@ function MainTabsNavigator() {
             iconName = focused ? "people" : "people-outline";
           } else if (route.name === "Messages") {
             iconName = focused ? "chatbubbles" : "chatbubbles-outline";
-          } else if (route.name === "Settings") {
-            iconName = focused ? "settings" : "settings-outline";
+          } else if (route.name === "Profile") {
+            iconName = focused ? "person" : "person-outline";
           } else {
             iconName = "help-outline";
           }
@@ -238,7 +244,7 @@ function MainTabsNavigator() {
       <Tab.Screen name="Home" component={HomeStackNavigator} />
       <Tab.Screen name="Community" component={CommunityStackNavigator} />
       <Tab.Screen name="Messages" component={MessagesStackNavigator} />
-      <Tab.Screen name="Settings" component={ProfileStackNavigator} />
+      <Tab.Screen name="Profile" component={ProfileStackNavigator} />
     </Tab.Navigator>
   );
 }

@@ -1100,4 +1100,208 @@ export class SupabaseDataService {
       return { success: false, error };
     }
   }
+
+  // ==================== BLOCKING & REPORTING ====================
+  static async blockUser(userId: string, blockedUserId: string): Promise<void> {
+    try {
+      // Insert two-way block records (A blocks B, B blocks A)
+      const { error: blockError } = await supabase
+        .from("blocked_users")
+        .insert([
+          {
+            user_id: userId,
+            blocked_user_id: blockedUserId,
+            created_at: new Date().toISOString(),
+          },
+          {
+            user_id: blockedUserId,
+            blocked_user_id: userId,
+            created_at: new Date().toISOString(),
+          },
+        ]);
+
+      if (blockError) throw blockError;
+
+      // Delete all data between the two users
+      await this.deleteDataBetweenUsers(userId, blockedUserId);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async unblockUser(
+    userId: string,
+    unblockedUserId: string
+  ): Promise<void> {
+    try {
+      // Delete both block records (A unblocks B, B unblocks A)
+      const { error: unblockError } = await supabase
+        .from("blocked_users")
+        .delete()
+        .or(
+          `and(user_id.eq.${userId},blocked_user_id.eq.${unblockedUserId}),and(user_id.eq.${unblockedUserId},blocked_user_id.eq.${userId})`
+        );
+
+      if (unblockError) throw unblockError;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async isUserBlocked(
+    userId: string,
+    blockedUserId: string
+  ): Promise<boolean> {
+    const { data, error } = await supabase
+      .from("blocked_users")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("blocked_user_id", blockedUserId)
+      .single();
+
+    if (error && error.code !== "PGRST116") throw error;
+    return !!data;
+  }
+
+  static async getBlockedUserIds(userId: string): Promise<string[]> {
+    const { data, error } = await supabase
+      .from("blocked_users")
+      .select("blocked_user_id")
+      .eq("user_id", userId);
+
+    if (error) throw error;
+    return data?.map((record) => record.blocked_user_id) || [];
+  }
+
+  static async deleteDataBetweenUsers(
+    userId1: string,
+    userId2: string
+  ): Promise<void> {
+    try {
+      // 1. Delete all messages in direct message rooms between the two users
+      const { error: messagesError } = await supabase
+        .from("messages")
+        .delete()
+        .or(`sender_ref.eq.${userId1},sender_ref.eq.${userId2}`)
+        .in(
+          "message_room_ref",
+          await this.getDirectMessageRoomIds(userId1, userId2)
+        );
+
+      if (messagesError) throw messagesError;
+
+      // 2. Delete the direct message room between them
+      const { error: roomError } = await supabase
+        .from("message_rooms")
+        .delete()
+        .eq("type", "direct")
+        .contains("participants", [userId1])
+        .contains("participants", [userId2]);
+
+      if (roomError) throw roomError;
+
+      // 3. Remove each user from shared meetups
+      // First get meetups where both users are participants
+      const { data: sharedMeetups, error: meetupsQueryError } = await supabase
+        .from("meetups")
+        .select("id, participants")
+        .contains("participants", [userId1])
+        .contains("participants", [userId2]);
+
+      if (meetupsQueryError) throw meetupsQueryError;
+
+      // Update each meetup to remove the blocked user
+      if (sharedMeetups && sharedMeetups.length > 0) {
+        for (const meetup of sharedMeetups) {
+          const updatedParticipants = meetup.participants.filter(
+            (id: string) => id !== userId1 && id !== userId2
+          );
+
+          const { error: meetupUpdateError } = await supabase
+            .from("meetups")
+            .update({ participants: updatedParticipants })
+            .eq("id", meetup.id);
+
+          if (meetupUpdateError) throw meetupUpdateError;
+        }
+      }
+
+      // 4. Delete notifications between the users
+      const { error: notificationsError } = await supabase
+        .from("notifications")
+        .delete()
+        .or(
+          `and(receiver_ref.eq.${userId1},sender_ref.eq.${userId2}),and(receiver_ref.eq.${userId2},sender_ref.eq.${userId1})`
+        );
+
+      if (notificationsError) throw notificationsError;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  private static async getDirectMessageRoomIds(
+    userId1: string,
+    userId2: string
+  ): Promise<string[]> {
+    const { data, error } = await supabase
+      .from("message_rooms")
+      .select("id")
+      .eq("type", "direct")
+      .contains("participants", [userId1])
+      .contains("participants", [userId2]);
+
+    if (error) throw error;
+    return data?.map((room) => room.id) || [];
+  }
+
+  static async reportConversation(
+    reporterId: string,
+    reportedUserId: string,
+    roomId: string,
+    reason: string
+  ): Promise<void> {
+    try {
+      // Fetch conversation content (last 50 messages)
+      const messages = await this.getMessages(roomId, 50);
+
+      // Get room metadata
+      const room = await this.getMessageRoom(roomId);
+
+      // Prepare conversation content
+      const conversationContent = {
+        room_metadata: {
+          id: room?.id,
+          type: room?.type,
+          participants: room?.participants,
+          created_time: room?.createdTime,
+          name: room?.name,
+        },
+        messages: messages.map((msg) => ({
+          id: msg.id,
+          sender_ref: msg.senderRef,
+          text: msg.text,
+          message_type: msg.messageType,
+          created_time: msg.createdTime,
+          is_deleted: msg.isDeleted,
+        })),
+        reported_at: new Date().toISOString(),
+        total_messages: messages.length,
+      };
+
+      const { error } = await supabase.from("conversation_reports").insert({
+        reporter_id: reporterId,
+        reported_user_id: reportedUserId,
+        room_id: roomId,
+        reason: reason,
+        conversation_content: conversationContent,
+        status: "pending",
+        created_at: new Date().toISOString(),
+      });
+
+      if (error) throw error;
+    } catch (error) {
+      throw error;
+    }
+  }
 }

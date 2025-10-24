@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,9 @@ import {
   Dimensions,
   FlatList,
   Alert,
+  Modal,
+  Animated,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeStore } from "../../hooks/useThemeStore";
@@ -38,6 +41,16 @@ export default function UserProfileScreen({
   const { colors } = useThemeStore();
   const { userData } = route.params;
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+
+  // Menu state
+  const [showMenu, setShowMenu] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(false);
+  const [isReporting, setIsReporting] = useState(false);
+
+  // Animation refs
+  const menuScale = useRef(new Animated.Value(0)).current;
+  const menuOpacity = useRef(new Animated.Value(0)).current;
+  const menuButtonRef = useRef<View>(null);
 
   const handlePhotoScroll = (event: any) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
@@ -89,6 +102,155 @@ export default function UserProfileScreen({
     </View>
   );
 
+  // Menu handlers
+  const handleMenuPress = () => {
+    setShowMenu(true);
+    Animated.parallel([
+      Animated.spring(menuScale, {
+        toValue: 1,
+        tension: 100,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.timing(menuOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const handleCloseMenu = () => {
+    Animated.parallel([
+      Animated.spring(menuScale, {
+        toValue: 0,
+        tension: 100,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.timing(menuOpacity, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowMenu(false);
+    });
+  };
+
+  const handleBlockUser = async () => {
+    setShowMenu(false);
+
+    Alert.alert(
+      "Block User",
+      "Are you sure you want to block this user? This will:\n\n• Remove all messages between you\n• Delete your conversation\n• Hide you from each other everywhere\n• Remove you from shared meetups\n\nThis action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Block",
+          style: "destructive",
+          onPress: async () => {
+            setIsBlocking(true);
+            try {
+              const currentUser = useAuthStore.getState().user;
+              if (currentUser && userData?.uid) {
+                await DataService.blockUser(currentUser.uid, userData.uid);
+                Alert.alert(
+                  "User Blocked",
+                  "This user has been blocked and all data between you has been removed.",
+                  [{ text: "OK", onPress: () => navigation.goBack() }]
+                );
+              }
+            } catch (error) {
+              console.error("Error blocking user:", error);
+              Alert.alert("Error", "Failed to block user. Please try again.");
+            } finally {
+              setIsBlocking(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleReportConversation = async () => {
+    setShowMenu(false);
+
+    Alert.alert("Report User", "Why are you reporting this user?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Spam",
+        onPress: () => submitReport("spam"),
+      },
+      {
+        text: "Harassment",
+        onPress: () => submitReport("harassment"),
+      },
+      {
+        text: "Inappropriate Content",
+        onPress: () => submitReport("inappropriate"),
+      },
+      {
+        text: "Threats",
+        onPress: () => submitReport("threats"),
+      },
+      {
+        text: "Other",
+        onPress: () => submitReport("other"),
+      },
+    ]);
+  };
+
+  const submitReport = async (reason: string) => {
+    setIsReporting(true);
+    try {
+      const currentUser = useAuthStore.getState().user;
+      if (currentUser && userData?.uid) {
+        // For profile reports, we'll show a success message
+        // In a real app, you'd create a separate profile report table
+        console.log("Profile report submitted:", {
+          reporterId: currentUser.uid,
+          reportedUserId: userData.uid,
+          reason,
+        });
+
+        // Ask if user wants to block after reporting
+        Alert.alert(
+          "Report Submitted",
+          "Thank you for your report. Would you also like to block this user?",
+          [
+            { text: "No", style: "cancel" },
+            {
+              text: "Yes, Block User",
+              style: "destructive",
+              onPress: async () => {
+                try {
+                  await DataService.blockUser(currentUser.uid, userData.uid);
+                  Alert.alert(
+                    "User Blocked",
+                    "This user has been blocked and all data between you has been removed.",
+                    [{ text: "OK", onPress: () => navigation.goBack() }]
+                  );
+                } catch (error) {
+                  console.error("Error blocking user after report:", error);
+                  Alert.alert(
+                    "Error",
+                    "Report submitted but failed to block user."
+                  );
+                }
+              },
+            },
+          ]
+        );
+      }
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      Alert.alert("Error", "Failed to submit report. Please try again.");
+    } finally {
+      setIsReporting(false);
+    }
+  };
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -102,8 +264,8 @@ export default function UserProfileScreen({
         <Text style={[styles.headerTitle, { color: colors.text }]}>
           {userData?.displayName || "User Profile"}
         </Text>
-        <TouchableOpacity>
-          <Ionicons name="ellipsis-horizontal" size={24} color={colors.text} />
+        <TouchableOpacity onPress={handleMenuPress} ref={menuButtonRef}>
+          <Ionicons name="ellipsis-vertical" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -114,7 +276,7 @@ export default function UserProfileScreen({
         {/* Hero Section */}
         <View style={[styles.heroSection, { backgroundColor: colors.surface }]}>
           {/* Photo Gallery */}
-          {userData?.profilePictures && userData.profilePictures.length > 0 && (
+          {userData?.profilePictures && userData.profilePictures.length > 0 ? (
             <View style={styles.photoGalleryContainer}>
               <FlatList
                 data={userData.profilePictures.filter((photo: string) => photo)}
@@ -162,6 +324,17 @@ export default function UserProfileScreen({
                       .length
                   }
                 </Text>
+              </View>
+            </View>
+          ) : (
+            <View style={styles.emptyPhotosContainer}>
+              <View
+                style={[
+                  styles.profilePhotoPlaceholder,
+                  { backgroundColor: colors.border },
+                ]}
+              >
+                <Ionicons name="person" size={80} color={colors.textTertiary} />
               </View>
             </View>
           )}
@@ -221,9 +394,19 @@ export default function UserProfileScreen({
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             About
           </Text>
-          <Text style={[styles.bio, { color: colors.text }]}>
-            {userData?.bio || "No bio available"}
-          </Text>
+          {userData?.bio ? (
+            <Text style={[styles.bio, { color: colors.text }]}>
+              {userData.bio}
+            </Text>
+          ) : (
+            <View style={styles.emptyBioContainer}>
+              <Ionicons
+                name="document-text-outline"
+                size={32}
+                color={colors.textTertiary}
+              />
+            </View>
+          )}
         </View>
 
         {/* Interests Section */}
@@ -232,19 +415,47 @@ export default function UserProfileScreen({
             Interests
           </Text>
           <View style={styles.interestsList}>
-            {userData?.hobbies?.map((hobby: string, index: number) => (
-              <View
-                key={index}
-                style={[
-                  styles.interestTag,
-                  { backgroundColor: colors.primary + "20" },
-                ]}
-              >
-                <Text style={[styles.interestText, { color: colors.primary }]}>
-                  {hobby}
+            {userData?.hobbies && userData.hobbies.length > 0 ? (
+              userData.hobbies.map((hobby: string, index: number) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.interestTag,
+                    { backgroundColor: colors.primary + "20" },
+                  ]}
+                >
+                  <Text
+                    style={[styles.interestText, { color: colors.primary }]}
+                  >
+                    {hobby}
+                  </Text>
+                </View>
+              ))
+            ) : (
+              <View style={styles.emptyInterestsContainer}>
+                <Ionicons
+                  name="heart-outline"
+                  size={32}
+                  color={colors.textTertiary}
+                />
+                <Text
+                  style={[
+                    styles.emptyInterestsText,
+                    { color: colors.textTertiary },
+                  ]}
+                >
+                  No interests added yet
+                </Text>
+                <Text
+                  style={[
+                    styles.emptyInterestsSubtext,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  This user hasn't added their interests
                 </Text>
               </View>
-            ))}
+            )}
           </View>
         </View>
 
@@ -525,6 +736,102 @@ export default function UserProfileScreen({
           })()}
         </View>
       </ScrollView>
+
+      {/* Menu Modal */}
+      <Modal
+        visible={showMenu}
+        transparent={true}
+        animationType="none"
+        onRequestClose={handleCloseMenu}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={handleCloseMenu}
+        >
+          <Animated.View
+            style={[
+              styles.menuPositioning,
+              {
+                top: 100,
+                right: 16,
+                opacity: menuOpacity,
+                transform: [{ scale: menuScale }],
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.menuContainer,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
+              {/* Block User */}
+              <TouchableOpacity
+                style={[
+                  styles.menuItem,
+                  {
+                    borderBottomColor: colors.border,
+                    backgroundColor: isBlocking
+                      ? colors.background
+                      : "transparent",
+                  },
+                ]}
+                onPress={handleBlockUser}
+                disabled={isBlocking}
+                activeOpacity={0.7}
+              >
+                <View style={styles.menuIconContainer}>
+                  <Ionicons name="ban-outline" size={20} color="#EF4444" />
+                </View>
+                <Text style={[styles.menuText, { color: "#EF4444" }]}>
+                  {isBlocking ? "Blocking..." : "Block User"}
+                </Text>
+                {isBlocking && (
+                  <ActivityIndicator
+                    size="small"
+                    color="#EF4444"
+                    style={styles.menuLoader}
+                  />
+                )}
+              </TouchableOpacity>
+
+              {/* Report User */}
+              <TouchableOpacity
+                style={[
+                  styles.menuItem,
+                  styles.lastMenuItem,
+                  {
+                    backgroundColor: isReporting
+                      ? colors.background
+                      : "transparent",
+                  },
+                ]}
+                onPress={handleReportConversation}
+                disabled={isReporting}
+                activeOpacity={0.7}
+              >
+                <View style={styles.menuIconContainer}>
+                  <Ionicons name="flag-outline" size={20} color="#EF4444" />
+                </View>
+                <Text style={[styles.menuText, { color: "#EF4444" }]}>
+                  {isReporting ? "Reporting..." : "Report User"}
+                </Text>
+                {isReporting && (
+                  <ActivityIndicator
+                    size="small"
+                    color="#EF4444"
+                    style={styles.menuLoader}
+                  />
+                )}
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -766,6 +1073,46 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
+  emptyInterestsContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    width: "100%",
+  },
+  emptyInterestsText: {
+    fontSize: 16,
+    fontWeight: "500",
+    marginTop: 12,
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  emptyInterestsSubtext: {
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  emptyPhotosContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    width: "100%",
+  },
+  profilePhotoPlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  emptyBioContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+  },
   professionalSection: {
     padding: 20,
     margin: 16,
@@ -927,5 +1274,58 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontStyle: "italic",
     paddingVertical: 20,
+  },
+  // Menu styles (matching MessageDetailsScreen)
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+  },
+  menuPositioning: {
+    position: "absolute",
+    alignItems: "flex-end",
+  },
+  menuContainer: {
+    width: 220,
+    borderRadius: 16,
+    paddingVertical: 8,
+    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 12,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderRadius: 8,
+    marginHorizontal: 8,
+    marginVertical: 2,
+  },
+  menuIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(239, 68, 68, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  menuText: {
+    fontSize: 16,
+    fontWeight: "600",
+    flex: 1,
+  },
+  menuLoader: {
+    marginLeft: 8,
+  },
+  lastMenuItem: {
+    borderBottomWidth: 0,
   },
 });

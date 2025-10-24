@@ -325,11 +325,27 @@ export default function AnimatedAvatarScreen({ navigation }: any) {
           >
             {/* Large Profile Image with Gradient Overlay */}
             <View style={styles.imageContainer}>
-              <Image
-                source={{ uri: item.profilePictures[0] }}
-                style={styles.profileImage}
-                resizeMode="cover"
-              />
+              {item.profilePictures && item.profilePictures.length > 0 ? (
+                <Image
+                  source={{ uri: item.profilePictures[0] }}
+                  style={styles.profileImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View
+                  style={[
+                    styles.profileImage,
+                    styles.profileImagePlaceholder,
+                    { backgroundColor: colors.border },
+                  ]}
+                >
+                  <Ionicons
+                    name="person"
+                    size={80}
+                    color={colors.textTertiary}
+                  />
+                </View>
+              )}
               <View style={styles.gradientOverlay} />
 
               {/* Floating Info Badge */}
@@ -380,21 +396,39 @@ export default function AnimatedAvatarScreen({ navigation }: any) {
 
               {/* Interests Pills */}
               <View style={styles.interestsContainer}>
-                {item.interests.map((interest: string, idx: number) => (
-                  <View
-                    key={idx}
-                    style={[
-                      styles.interestPill,
-                      { backgroundColor: colors.primary + "15" },
-                    ]}
-                  >
-                    <Text
-                      style={[styles.interestText, { color: colors.primary }]}
+                {item.interests && item.interests.length > 0 ? (
+                  item.interests.map((interest: string, idx: number) => (
+                    <View
+                      key={idx}
+                      style={[
+                        styles.interestPill,
+                        { backgroundColor: colors.primary + "15" },
+                      ]}
                     >
-                      {interest}
+                      <Text
+                        style={[styles.interestText, { color: colors.primary }]}
+                      >
+                        {interest}
+                      </Text>
+                    </View>
+                  ))
+                ) : (
+                  <View style={styles.emptyInterestsContainer}>
+                    <Ionicons
+                      name="heart-outline"
+                      size={16}
+                      color={colors.textTertiary}
+                    />
+                    <Text
+                      style={[
+                        styles.emptyInterestsText,
+                        { color: colors.textTertiary },
+                      ]}
+                    >
+                      No interests added
                     </Text>
                   </View>
-                ))}
+                )}
               </View>
 
               {/* Professional Info Compact */}
@@ -860,6 +894,10 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
+  profileImagePlaceholder: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
   gradientOverlay: {
     position: "absolute",
     bottom: 0,
@@ -929,6 +967,20 @@ const styles = StyleSheet.create({
   interestText: {
     fontSize: 13,
     fontWeight: "600",
+  },
+  emptyInterestsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    backgroundColor: "rgba(0,0,0,0.05)",
+  },
+  emptyInterestsText: {
+    fontSize: 12,
+    fontWeight: "500",
+    marginLeft: 4,
   },
   professionalCompact: {
     gap: 8,

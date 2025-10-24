@@ -40,9 +40,9 @@ export default function CommunityScreen({ navigation }: any) {
       setIsLoading(true);
 
       const [featured, active, newUsers] = await Promise.all([
-        DataService.getFeaturedUsers(),
-        DataService.getActiveUsers(),
-        DataService.getNewMembers(),
+        DataService.getFeaturedUsers(currentUser?.uid),
+        DataService.getActiveUsers(currentUser?.uid),
+        DataService.getNewMembers(currentUser?.uid),
       ]);
 
       // Filter out current user from all lists

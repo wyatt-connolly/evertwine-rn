@@ -66,24 +66,24 @@ export const darkTheme: ThemeColors = {
   textSecondary: "#E5E5EA", // Light secondary text
   textTertiary: "#AEAEB2", // Muted tertiary text
 
-  // Primary colors - Neutral white (Instagram-like)
-  primary: "#FFFFFF", // White primary (Instagram-like)
-  primaryVariant: "#F5F5F5", // Off-white variant
-  onPrimary: "#000000", // Black text on white
+  // Primary colors - Vibrant blue (modern messaging)
+  primary: "#007AFF", // iOS blue primary
+  primaryVariant: "#0056CC", // Darker blue variant
+  onPrimary: "#FFFFFF", // White text on blue
 
   // Secondary colors - Consistent with primary
-  secondary: "#FFFFFF", // Same as primary for consistency
-  secondaryVariant: "#F5F5F5",
-  onSecondary: "#000000",
+  secondary: "#007AFF", // Same as primary for consistency
+  secondaryVariant: "#0056CC",
+  onSecondary: "#FFFFFF",
 
-  // Accent colors - Subtle, muted colors
-  accent: "#FFFFFF", // White for call-to-action buttons
-  accentVariant: "#F5F5F5",
+  // Accent colors - Vibrant blue for call-to-action buttons
+  accent: "#007AFF", // Blue for call-to-action buttons
+  accentVariant: "#0056CC",
   accentSecondary: "#8E8E93", // Gray for subtle accents
   accentTertiary: "#6B7280", // Muted gray for meetups
   accentQuaternary: "#9CA3AF", // Muted gray for happy hours
   accentQuinary: "#EF4444", // Red for errors only
-  onAccent: "#000000", // Black text on light accents
+  onAccent: "#FFFFFF", // White text on blue accents
 
   // Status colors - Muted system colors
   success: "#10B981", // Muted green
@@ -120,19 +120,19 @@ export const lightTheme: ThemeColors = {
   textSecondary: "#525252", // Dark gray secondary text
   textTertiary: "#9CA3AF", // Muted tertiary text
 
-  // Primary colors - Dark neutral (Instagram-like)
-  primary: "#262626", // Near-black primary (Instagram-like)
-  primaryVariant: "#171717", // Darker variant
-  onPrimary: "#FFFFFF", // White text on dark
+  // Primary colors - Vibrant blue (modern messaging)
+  primary: "#007AFF", // iOS blue primary
+  primaryVariant: "#0056CC", // Darker blue variant
+  onPrimary: "#FFFFFF", // White text on blue
 
   // Secondary colors - Consistent with primary
-  secondary: "#262626", // Same as primary for consistency
-  secondaryVariant: "#171717",
+  secondary: "#007AFF", // Same as primary for consistency
+  secondaryVariant: "#0056CC",
   onSecondary: "#FFFFFF",
 
-  // Accent colors - Subtle, muted colors
-  accent: "#262626", // Dark for call-to-action buttons
-  accentVariant: "#171717",
+  // Accent colors - Vibrant blue for call-to-action buttons
+  accent: "#007AFF", // Blue for call-to-action buttons
+  accentVariant: "#0056CC",
   accentSecondary: "#6B7280", // Gray for subtle accents
   accentTertiary: "#4B5563", // Darker gray for meetups
   accentQuaternary: "#6B7280", // Gray for happy hours
@@ -193,7 +193,6 @@ export const useThemeStore = create<ThemeState>()((set, get) => ({
 
       set({ isDarkMode, colors });
     } catch (error) {
-
       // Fallback to dark mode
       set({ isDarkMode: true, colors: darkTheme });
     }

@@ -309,7 +309,7 @@ export class DataService {
   }
 
   // ==================== COMMUNITY USERS ====================
-  static async getFeaturedUsers(): Promise<User[]> {
+  static async getFeaturedUsers(currentUserId?: string): Promise<User[]> {
     if (this.isDeveloperMode) {
       // Return 5 random mock community users
       const mockUsers = getMockCommunityUsers();
@@ -317,14 +317,22 @@ export class DataService {
     }
 
     try {
-      return await SupabaseDataService.getFeaturedUsers();
+      const users = await SupabaseDataService.getFeaturedUsers();
+
+      // Filter out blocked users if currentUserId is provided
+      if (currentUserId) {
+        const blockedUsers = await this.getBlockedUsers(currentUserId);
+        return users.filter((user) => !blockedUsers.includes(user.uid));
+      }
+
+      return users;
     } catch (error) {
       console.error("Error fetching featured users:", error);
       return [];
     }
   }
 
-  static async getActiveUsers(): Promise<User[]> {
+  static async getActiveUsers(currentUserId?: string): Promise<User[]> {
     if (this.isDeveloperMode) {
       // Return 8 mock community users (simulating active users)
       const mockUsers = getMockCommunityUsers();
@@ -332,14 +340,22 @@ export class DataService {
     }
 
     try {
-      return await SupabaseDataService.getActiveUsers();
+      const users = await SupabaseDataService.getActiveUsers();
+
+      // Filter out blocked users if currentUserId is provided
+      if (currentUserId) {
+        const blockedUsers = await this.getBlockedUsers(currentUserId);
+        return users.filter((user) => !blockedUsers.includes(user.uid));
+      }
+
+      return users;
     } catch (error) {
       console.error("Error fetching active users:", error);
       return [];
     }
   }
 
-  static async getNewMembers(): Promise<User[]> {
+  static async getNewMembers(currentUserId?: string): Promise<User[]> {
     if (this.isDeveloperMode) {
       // Return 8 mock community users (simulating new members)
       const mockUsers = getMockCommunityUsers();
@@ -347,7 +363,15 @@ export class DataService {
     }
 
     try {
-      return await SupabaseDataService.getNewMembers();
+      const users = await SupabaseDataService.getNewMembers();
+
+      // Filter out blocked users if currentUserId is provided
+      if (currentUserId) {
+        const blockedUsers = await this.getBlockedUsers(currentUserId);
+        return users.filter((user) => !blockedUsers.includes(user.uid));
+      }
+
+      return users;
     } catch (error) {
       console.error("Error fetching new members:", error);
       return [];
@@ -355,7 +379,10 @@ export class DataService {
   }
 
   // ==================== MESSAGING ====================
-  static async getMessageRoom(roomId: string): Promise<MessageRoom | null> {
+  static async getMessageRoom(
+    roomId: string,
+    currentUserId?: string
+  ): Promise<MessageRoom | null> {
     if (this.isDeveloperMode) {
       // Return mock room for development
       return {
@@ -375,7 +402,21 @@ export class DataService {
       };
     }
     try {
-      return await SupabaseDataService.getMessageRoom(roomId);
+      const room = await SupabaseDataService.getMessageRoom(roomId);
+
+      // Check if room contains blocked users
+      if (room && currentUserId) {
+        const blockedUsers = await this.getBlockedUsers(currentUserId);
+        const hasBlockedUser = room.participants.some((participant) =>
+          blockedUsers.includes(participant)
+        );
+
+        if (hasBlockedUser) {
+          return null; // Don't return rooms with blocked users
+        }
+      }
+
+      return room;
     } catch (error) {
       console.error("Error fetching message room:", error);
       return null;
@@ -443,17 +484,157 @@ export class DataService {
     }
   }
 
-  static async getUsersByIds(userIds: string[]): Promise<User[]> {
+  static async getUsersByIds(
+    userIds: string[],
+    currentUserId?: string
+  ): Promise<User[]> {
     if (this.isDeveloperMode) {
       // Return mock users for development
       const mockUsers = getMockCommunityUsers();
       return mockUsers.filter((user) => userIds.includes(user.uid));
     }
     try {
-      return await SupabaseDataService.getUsersByIds(userIds);
+      const users = await SupabaseDataService.getUsersByIds(userIds);
+
+      // Filter out blocked users if currentUserId is provided
+      if (currentUserId) {
+        const blockedUsers = await this.getBlockedUsers(currentUserId);
+        return users.filter((user) => !blockedUsers.includes(user.uid));
+      }
+
+      return users;
     } catch (error) {
       console.error("Error fetching users by IDs:", error);
       return [];
+    }
+  }
+
+  // ==================== BLOCKING & REPORTING ====================
+  private static blockedUsersCache: Map<string, string[]> = new Map();
+  private static cacheExpiry: Map<string, number> = new Map();
+  private static CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+  static async blockUser(userId: string, blockedUserId: string): Promise<void> {
+    if (this.isDeveloperMode) {
+      console.log("🚫 Dev mode: Block user", { userId, blockedUserId });
+      return;
+    }
+
+    try {
+      await SupabaseDataService.blockUser(userId, blockedUserId);
+      // Clear cache for both users
+      this.blockedUsersCache.delete(userId);
+      this.blockedUsersCache.delete(blockedUserId);
+      this.cacheExpiry.delete(userId);
+      this.cacheExpiry.delete(blockedUserId);
+    } catch (error) {
+      console.error("Error blocking user:", error);
+      // If table doesn't exist or RLS policy fails, show user-friendly error
+      if (error && typeof error === "object" && "code" in error) {
+        if (error.code === "PGRST205") {
+          throw new Error(
+            "Blocking functionality is not available. Please contact support."
+          );
+        } else if (error.code === "42501") {
+          console.log(
+            "⚠️ Blocking failed due to RLS policy - database setup needed"
+          );
+          throw new Error(
+            "Blocking is temporarily unavailable. Please contact support."
+          );
+        }
+      }
+      throw error;
+    }
+  }
+
+  static async getBlockedUsers(userId: string): Promise<string[]> {
+    if (this.isDeveloperMode) {
+      return []; // No blocked users in dev mode
+    }
+
+    // Check cache first
+    const cached = this.blockedUsersCache.get(userId);
+    const expiry = this.cacheExpiry.get(userId);
+
+    if (cached && expiry && Date.now() < expiry) {
+      return cached;
+    }
+
+    try {
+      const blockedUserIds = await SupabaseDataService.getBlockedUserIds(
+        userId
+      );
+
+      // Update cache
+      this.blockedUsersCache.set(userId, blockedUserIds);
+      this.cacheExpiry.set(userId, Date.now() + this.CACHE_DURATION);
+
+      return blockedUserIds;
+    } catch (error) {
+      console.error("Error fetching blocked users:", error);
+      // If table doesn't exist, return empty array and don't cache
+      if (
+        error &&
+        typeof error === "object" &&
+        "code" in error &&
+        error.code === "PGRST205"
+      ) {
+        console.log("Blocked users table not found, returning empty array");
+        return [];
+      }
+      return [];
+    }
+  }
+
+  static async unblockUser(
+    userId: string,
+    unblockedUserId: string
+  ): Promise<void> {
+    if (this.isDeveloperMode) {
+      console.log("🚫 Dev mode: Unblock user", { userId, unblockedUserId });
+      return;
+    }
+
+    try {
+      await SupabaseDataService.unblockUser(userId, unblockedUserId);
+      // Clear cache for both users
+      this.blockedUsersCache.delete(userId);
+      this.blockedUsersCache.delete(unblockedUserId);
+      this.cacheExpiry.delete(userId);
+      this.cacheExpiry.delete(unblockedUserId);
+    } catch (error) {
+      console.error("Error unblocking user:", error);
+      throw new Error("Unable to unblock user. Please try again later.");
+    }
+  }
+
+  static async reportConversation(
+    reporterId: string,
+    reportedUserId: string,
+    roomId: string,
+    reason: string
+  ): Promise<void> {
+    if (this.isDeveloperMode) {
+      console.log("🚩 Dev mode: Report conversation", {
+        reporterId,
+        reportedUserId,
+        roomId,
+        reason,
+      });
+      return;
+    }
+
+    try {
+      await SupabaseDataService.reportConversation(
+        reporterId,
+        reportedUserId,
+        roomId,
+        reason
+      );
+    } catch (error) {
+      console.error("Error reporting conversation:", error);
+      throw error;
     }
   }
 }

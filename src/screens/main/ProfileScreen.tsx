@@ -226,9 +226,7 @@ export default function ProfileScreen({ navigation, route }: any) {
         style={[styles.container, { backgroundColor: colors.background }]}
       >
         <View style={styles.loadingContainer}>
-          <Text style={[styles.loadingText, { color: colors.text }]}>
-            Loading profile...
-          </Text>
+          {/* Loading without text */}
         </View>
       </SafeAreaView>
     );
@@ -262,9 +260,7 @@ export default function ProfileScreen({ navigation, route }: any) {
           },
         ]}
       >
-        <Text style={[styles.title, { color: colors.text }]}>
-          {isViewingOtherProfile ? "Profile" : "Settings"}
-        </Text>
+        <Text style={[styles.title, { color: colors.text }]}>Profile</Text>
       </View>
 
       <ScrollView
@@ -640,5 +636,14 @@ const styles = StyleSheet.create({
   experienceText: {
     fontSize: 12,
     textAlign: "right",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    fontSize: 16,
+    fontWeight: "500",
   },
 });
