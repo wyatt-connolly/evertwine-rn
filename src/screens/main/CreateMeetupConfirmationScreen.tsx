@@ -41,7 +41,7 @@ export default function CreateMeetupConfirmationScreen({
         [
           {
             text: "OK",
-            onPress: () => navigation.navigate("Home"),
+            onPress: () => navigation.navigate("MainTabs"),
           },
         ]
       );

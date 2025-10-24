@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   TextInput,
   ScrollView,
   Platform,
+  Modal,
+  Animated,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -55,7 +57,7 @@ export default function CreateMeetupStep2Screen({
     locationName: initialData?.locationName || "",
     address: initialData?.address || "",
     time: initialData?.time || "",
-    duration: initialData?.duration || "60",
+    duration: initialData?.duration || "",
     maxParticipants: initialData?.maxParticipants || "",
     ageRange: initialData?.ageRange || "",
     verificationRequired: initialData?.verificationRequired || false,
@@ -68,10 +70,51 @@ export default function CreateMeetupStep2Screen({
   const [showDurationModal, setShowDurationModal] = useState(false);
   const [showAgeRangeModal, setShowAgeRangeModal] = useState(false);
 
+  // Animation values for date picker
+  const datePickerFadeAnim = useRef(new Animated.Value(0)).current;
+  const datePickerSlideAnim = useRef(new Animated.Value(300)).current;
+
   const updateFormData = (field: string, value: string) => {
     const newData = { ...formData, [field]: value };
     setFormData(newData);
     onUpdate(newData);
+  };
+
+  // Animation functions for date picker
+  const openDatePicker = () => {
+    setShowDatePicker(true);
+    Animated.parallel([
+      Animated.timing(datePickerFadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(datePickerSlideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const closeDatePicker = () => {
+    Animated.parallel([
+      Animated.timing(datePickerFadeAnim, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(datePickerSlideAnim, {
+        toValue: 300,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowDatePicker(false);
+      // Reset animation values for next time
+      datePickerFadeAnim.setValue(0);
+      datePickerSlideAnim.setValue(300);
+    });
   };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
@@ -113,10 +156,10 @@ export default function CreateMeetupStep2Screen({
   };
 
   const handleNext = () => {
-    if (!formData.locationName.trim() || !formData.time) {
+    if (!formData.locationName.trim() || !formData.time || !formData.duration) {
       return;
     }
-    navigation.navigate("CreateMeetupStep3", { formData, onUpdate });
+    navigation.navigate("CreateMeetupStep4", { formData });
   };
 
   const handleBack = () => {
@@ -143,7 +186,7 @@ export default function CreateMeetupStep2Screen({
         ]}
         placeholder={placeholder}
         placeholderTextColor={colors.textSecondary}
-        value={formData[field] as string}
+        value={formData[field] ? String(formData[field]) : ""}
         onChangeText={(text) => updateFormData(field, text)}
         multiline={multiline}
         numberOfLines={multiline ? 3 : 1}
@@ -234,7 +277,7 @@ export default function CreateMeetupStep2Screen({
                 styles.selector,
                 { backgroundColor: colors.surface, borderColor: colors.border },
               ]}
-              onPress={() => setShowDatePicker(true)}
+              onPress={openDatePicker}
             >
               <Text
                 style={[
@@ -264,8 +307,19 @@ export default function CreateMeetupStep2Screen({
               ]}
               onPress={() => setShowDurationModal(true)}
             >
-              <Text style={[styles.selectorText, { color: colors.text }]}>
-                {formatDuration(formData.duration)}
+              <Text
+                style={[
+                  styles.selectorText,
+                  {
+                    color: formData.duration
+                      ? colors.text
+                      : colors.textSecondary,
+                  },
+                ]}
+              >
+                {formData.duration
+                  ? formatDuration(formData.duration)
+                  : "Select duration"}
               </Text>
               <Ionicons
                 name="chevron-down"
@@ -276,11 +330,7 @@ export default function CreateMeetupStep2Screen({
           </View>
 
           {/* Max Participants */}
-          {renderInput(
-            "Max Participants",
-            "maxParticipants",
-            "e.g., 10"
-          )}
+          {renderInput("Max Participants", "maxParticipants", "e.g., 10")}
         </View>
       </ScrollView>
 
@@ -290,13 +340,19 @@ export default function CreateMeetupStep2Screen({
             styles.nextButton,
             {
               backgroundColor:
-                formData.locationName.trim() && formData.time
+                formData.locationName.trim() &&
+                formData.time &&
+                formData.duration
                   ? colors.primary
                   : colors.textSecondary,
             },
           ]}
           onPress={handleNext}
-          disabled={!formData.locationName.trim() || !formData.time}
+          disabled={
+            !formData.locationName.trim() ||
+            !formData.time ||
+            !formData.duration
+          }
         >
           <Text style={[styles.nextButtonText, { color: colors.onPrimary }]}>
             Next
@@ -304,15 +360,71 @@ export default function CreateMeetupStep2Screen({
         </TouchableOpacity>
       </View>
 
-      {showDatePicker && (
-        <DateTimePicker
-          value={selectedDate}
-          mode="datetime"
-          display={Platform.OS === "ios" ? "spinner" : "default"}
-          onChange={handleDateChange}
-          minimumDate={new Date()}
-        />
-      )}
+      <Modal
+        visible={showDatePicker}
+        transparent={true}
+        animationType="none"
+        onRequestClose={closeDatePicker}
+      >
+        <Animated.View
+          style={[styles.datePickerOverlay, { opacity: datePickerFadeAnim }]}
+        >
+          <TouchableOpacity
+            style={StyleSheet.absoluteFillObject}
+            activeOpacity={1}
+            onPress={closeDatePicker}
+          />
+          <Animated.View
+            style={[
+              styles.datePickerModal,
+              {
+                backgroundColor: colors.surface,
+                transform: [{ translateY: datePickerSlideAnim }],
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.datePickerHeader,
+                { borderBottomColor: colors.border },
+              ]}
+            >
+              <Text style={[styles.datePickerTitle, { color: colors.text }]}>
+                Select Date & Time
+              </Text>
+              <TouchableOpacity onPress={closeDatePicker}>
+                <Ionicons name="close" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+            <DateTimePicker
+              value={selectedDate}
+              mode="datetime"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={handleDateChange}
+              minimumDate={new Date()}
+              style={styles.datePicker}
+            />
+            <View style={styles.datePickerFooter}>
+              <TouchableOpacity
+                style={[
+                  styles.datePickerButton,
+                  { backgroundColor: colors.primary },
+                ]}
+                onPress={closeDatePicker}
+              >
+                <Text
+                  style={[
+                    styles.datePickerButtonText,
+                    { color: colors.onPrimary },
+                  ]}
+                >
+                  Done
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </Animated.View>
+      </Modal>
 
       {showDurationModal && renderDurationModal()}
     </SafeAreaView>
@@ -433,5 +545,46 @@ const styles = StyleSheet.create({
   },
   durationText: {
     fontSize: 16,
+  },
+  datePickerOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  datePickerModal: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: "50%",
+  },
+  datePickerHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  datePickerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  datePicker: {
+    height: 200,
+  },
+  datePickerFooter: {
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    paddingBottom: 40,
+    borderTopWidth: 1,
+    borderTopColor: "#E5E5E5",
+  },
+  datePickerButton: {
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  datePickerButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

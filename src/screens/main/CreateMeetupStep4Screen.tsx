@@ -124,7 +124,7 @@ export default function CreateMeetupStep4Screen({
         [
           {
             text: "OK",
-            onPress: () => navigation.navigate("Home"),
+            onPress: () => navigation.navigate("MainTabs"),
           },
         ]
       );
