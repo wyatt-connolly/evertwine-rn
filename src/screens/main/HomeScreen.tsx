@@ -2018,6 +2018,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     minWidth: 180, // Slightly wider
     zIndex: 400, // Higher than overlay
+    borderRadius: 12, // Rounded corners
     // Ensure it doesn't affect layout
     width: "auto",
     height: "auto",
