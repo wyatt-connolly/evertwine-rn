@@ -219,6 +219,35 @@ export class DataService {
     }
   }
 
+  static async updatePost(
+    id: string,
+    updates: Partial<Post>
+  ): Promise<{ success: boolean; error: string | null }> {
+    try {
+      await SupabaseDataService.updatePost(id, updates);
+      return { success: true, error: null };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  }
+
+  static async deletePost(
+    id: string
+  ): Promise<{ success: boolean; error: string | null }> {
+    try {
+      await SupabaseDataService.deletePost(id);
+      return { success: true, error: null };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  }
+
   // ==================== COMMUNITY USERS ====================
   static async getFeaturedUsers(currentUserId?: string): Promise<User[]> {
     try {

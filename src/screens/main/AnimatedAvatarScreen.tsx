@@ -513,12 +513,14 @@ export default function AnimatedAvatarScreen({ navigation }: any) {
                         placeholder={`Message ${item.displayName}...`}
                         placeholderTextColor={colors.textTertiary}
                         value={messageInputs[item.uid] || ""}
-                        onChangeText={(text) =>
+                        onChangeText={(text) => {
+                          // Limit consecutive line breaks to maximum of 2 (one extra line)
+                          const limitedText = text.replace(/\n{3,}/g, "\n\n");
                           setMessageInputs((prev) => ({
                             ...prev,
-                            [item.uid]: text,
-                          }))
-                        }
+                            [item.uid]: limitedText,
+                          }));
+                        }}
                         multiline
                         maxLength={500}
                         autoFocus

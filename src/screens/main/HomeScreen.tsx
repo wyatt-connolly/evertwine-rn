@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
@@ -28,6 +28,7 @@ import ExpandableFAB from "../../components/ExpandableFAB";
 import { SupabaseDataService } from "../../services/SupabaseDataService";
 import LoadingIndicator from "../../components/LoadingIndicator";
 import { Meetup, Post, Event } from "../../types";
+import { Alert } from "react-native";
 
 type FilterType = "all" | "meetups" | "posts" | "happy_hours";
 type DateFilter = "all" | "today" | "this_week" | "this_weekend";
@@ -179,6 +180,39 @@ export default function HomeScreen() {
     return () => clearInterval(interval);
   }, []);
 
+  // Refresh data when screen comes into focus (only when needed)
+  useFocusEffect(
+    React.useCallback(() => {
+      // Check if we need to refresh based on route params
+      const currentRoute = navigation
+        .getState()
+        ?.routes?.find((route: any) => route.name === "Home");
+      const shouldRefresh = (currentRoute?.params as any)?.refresh;
+
+      if (shouldRefresh) {
+        const refreshData = async () => {
+          try {
+            const [postsData, meetupsData, eventsData] = await Promise.all([
+              SupabaseDataService.getPosts(),
+              SupabaseDataService.getMeetups(),
+              SupabaseDataService.getHappyHours(),
+            ]);
+
+            setPosts(postsData || []);
+            setAllMeetups(meetupsData || []);
+            setHappyHourEvents(eventsData || []);
+
+            // Clear the refresh flag
+            navigation.setParams({ refresh: false } as any);
+          } catch (error) {
+            console.error("Error refreshing HomeScreen data:", error);
+          }
+        };
+        refreshData();
+      }
+    }, [navigation])
+  );
+
   // Helper function to check if meetup matches group size preferences
   const meetsGroupSizeFilter = (meetup: Meetup): boolean => {
     if (preferences.groupSizePreference.preferredSizes.length === 0)
@@ -199,6 +233,41 @@ export default function HomeScreen() {
         default:
           return false;
       }
+    });
+  };
+
+  // Check if user already has an active meetup
+  const checkExistingMeetup = async (): Promise<boolean> => {
+    if (!currentUser) return false;
+
+    try {
+      const meetups = await SupabaseDataService.getMeetups(100);
+      const userMeetups = meetups.filter(
+        (meetup) => meetup.creatorId === currentUser.uid
+      );
+      return userMeetups.length >= 1;
+    } catch (error) {
+      console.error("Error checking existing meetups:", error);
+      return false;
+    }
+  };
+
+  // Handle create meetup navigation with limit check
+  const handleCreateMeetup = async () => {
+    const hasExistingMeetup = await checkExistingMeetup();
+
+    if (hasExistingMeetup) {
+      Alert.alert(
+        "Meetup Limit Reached",
+        "You can only have one active meetup at a time. Please delete your existing meetup first.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+
+    navigation.navigate("CreateMeetupStep1", {
+      formData: {},
+      onUpdate: () => {},
     });
   };
 
@@ -592,8 +661,31 @@ export default function HomeScreen() {
         // Apply post type filter
         if (!meetsPostTypeFilter(post)) return;
 
+        // Apply date filter to posts
         const hoursSincePost =
           (now.getTime() - post.createdAt.getTime()) / (1000 * 60 * 60);
+
+        let includeInFeed = false;
+        switch (selectedDateFilter) {
+          case "today":
+            includeInFeed = hoursSincePost < 24;
+            break;
+          case "this_week":
+            includeInFeed = hoursSincePost < 168;
+            break;
+          case "this_weekend":
+            const postDay = post.createdAt.getDay();
+            includeInFeed =
+              hoursSincePost < 168 && (postDay === 0 || postDay === 6);
+            break;
+          case "all":
+          default:
+            includeInFeed = true;
+            break;
+        }
+
+        if (!includeInFeed) return;
+
         let priority = 100;
 
         // Announcements always high priority
@@ -1857,11 +1949,7 @@ export default function HomeScreen() {
             {
               icon: "people",
               label: "Create Meetup",
-              onPress: () =>
-                navigation.navigate("CreateMeetupStep1", {
-                  formData: {},
-                  onUpdate: () => {},
-                }),
+              onPress: handleCreateMeetup,
               color: colors.accentTertiary, // Green for meetups
             },
           ]}

@@ -22,6 +22,9 @@ import CreateMeetupStep2Screen from "../screens/main/CreateMeetupStep2Screen";
 import CreateMeetupStep4Screen from "../screens/main/CreateMeetupStep4Screen";
 import CreateMeetupConfirmationScreen from "../screens/main/CreateMeetupConfirmationScreen";
 import EditMeetupScreen from "../screens/main/EditMeetupScreen";
+import EditMeetupStep1Screen from "../screens/main/EditMeetupStep1Screen";
+import EditMeetupStep2Screen from "../screens/main/EditMeetupStep2Screen";
+import EditMeetupStep4Screen from "../screens/main/EditMeetupStep4Screen";
 import GroupDetailsScreen from "../screens/main/GroupDetailsScreen";
 import UserProfileScreen from "../screens/main/UserProfileScreen";
 import EventDetailsScreen from "../screens/main/EventDetailsScreen";
@@ -29,6 +32,7 @@ import HappyHourDetailsScreen from "../screens/main/HappyHourDetailsScreen";
 import PlaceDetailsScreen from "../screens/main/PlaceDetailsScreen";
 import PostDetailsScreen from "../screens/main/PostDetailsScreen";
 import CreatePostScreen from "../screens/main/CreatePostScreen";
+import EditPostScreen from "../screens/main/EditPostScreen";
 import NotificationSettingsScreen from "../screens/main/NotificationSettingsScreen";
 import NotificationsScreen from "../screens/main/NotificationsScreen";
 import AllHappyHourEventsScreen from "../screens/main/AllHappyHourEventsScreen";
@@ -82,6 +86,7 @@ export type MainStackParamList = {
   Map: undefined;
   MeetupDetails: { meetupId: string };
   EditMeetup: { meetupId: string };
+  EditPost: { postId: string };
   EventDetails: { eventId: string; event?: any };
   HappyHourDetails: { eventId: string; event?: any };
   PlaceDetails: { placeId: string; place?: any };
@@ -267,6 +272,19 @@ export default function MainTabs() {
       <MainStack.Screen name="Map" component={MapScreen} />
       <MainStack.Screen name="MeetupDetails" component={MeetupDetailsScreen} />
       <MainStack.Screen name="EditMeetup" component={EditMeetupScreen} />
+      <MainStack.Screen
+        name="EditMeetupStep1"
+        component={EditMeetupStep1Screen}
+      />
+      <MainStack.Screen
+        name="EditMeetupStep2"
+        component={EditMeetupStep2Screen}
+      />
+      <MainStack.Screen
+        name="EditMeetupStep4"
+        component={EditMeetupStep4Screen}
+      />
+      <MainStack.Screen name="EditPost" component={EditPostScreen} />
       <MainStack.Screen name="EventDetails" component={EventDetailsScreen} />
       <MainStack.Screen
         name="HappyHourDetails"

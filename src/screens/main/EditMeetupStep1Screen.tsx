@@ -10,14 +10,16 @@ import {
   Modal,
   FlatList,
   Animated,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { useMeetupStore } from "../../hooks/useMeetupStore";
 import * as ImagePicker from "expo-image-picker";
-import { ImagePresetService } from "../../services/ImagePresetService";
+import { UnsplashService } from "../../services/UnsplashService";
 
-// Predefined activity options
+// Predefined activity options (same as create meetup)
 const ACTIVITY_PRESETS = [
   "Coffee & Networking",
   "Business Lunch",
@@ -72,22 +74,24 @@ const ACTIVITY_PRESETS = [
   "Other",
 ];
 
-interface CreateMeetupStep1ScreenProps {
+interface EditMeetupStep1ScreenProps {
   navigation: any;
   route: {
     params: {
+      meetupId: string;
       formData?: any;
       onUpdate: (data: any) => void;
     };
   };
 }
 
-export default function CreateMeetupStep1Screen({
+export default function EditMeetupStep1Screen({
   navigation,
   route,
-}: CreateMeetupStep1ScreenProps) {
+}: EditMeetupStep1ScreenProps) {
   const { colors } = useThemeStore();
-  const { onUpdate } = route.params;
+  const { deleteMeetup } = useMeetupStore();
+  const { meetupId, onUpdate } = route.params;
 
   const [formData, setFormData] = useState({
     title: route.params?.formData?.title || "",
@@ -100,20 +104,18 @@ export default function CreateMeetupStep1Screen({
   const [showImageModal, setShowImageModal] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [suggestedImages, setSuggestedImages] = useState<any[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(300)).current;
 
-  // Fetch suggested images when activity type is selected
+  // Fetch suggested images when modal opens
   useEffect(() => {
-    if (formData.activity.trim()) {
-      console.log("✅ Activity selected, fetching images...");
+    if (showImageModal && formData.title.trim()) {
       fetchSuggestedImages();
-    } else {
-      console.log("⏳ Waiting for activity to be selected");
     }
-  }, [formData.activity]);
+  }, [showImageModal, formData.title]);
 
   const updateFormData = (field: string, value: string) => {
     const newData = { ...formData, [field]: value };
@@ -185,31 +187,65 @@ export default function CreateMeetupStep1Screen({
     }
   };
 
-  const fetchSuggestedImages = () => {
-    console.log("🔍 fetchSuggestedImages called with:", {
-      activity: formData.activity,
-    });
-
-    if (!formData.activity.trim()) {
-      console.log("❌ Not fetching images - missing activity");
+  const fetchSuggestedImages = async () => {
+    if (!formData.title.trim() || !UnsplashService.isConfigured()) {
       return;
     }
 
-    // Get preset images instantly - no loading needed
-    const images = ImagePresetService.getImagesForActivity(formData.activity);
-    console.log("✅ Got preset images:", images.length);
-    setSuggestedImages(images);
+    setLoadingSuggestions(true);
+    try {
+      const images = await UnsplashService.searchImages(formData.title, 5);
+      setSuggestedImages(images);
+    } catch (error) {
+      console.error("Error fetching suggested images:", error);
+      setSuggestedImages([]);
+    } finally {
+      setLoadingSuggestions(false);
+    }
   };
 
   const selectSuggestedImage = (image: any) => {
-    updateFormData("coverImage", image.url);
+    updateFormData("coverImage", image.urls.regular);
+    setShowImageModal(false);
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Meetup",
+      "Are you sure you want to delete this meetup? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteMeetup(meetupId);
+              Alert.alert("Success", "Meetup deleted successfully!", [
+                {
+                  text: "OK",
+                  onPress: () => navigation.navigate("Home", { refresh: true }),
+                },
+              ]);
+            } catch (error) {
+              console.error("Error deleting meetup:", error);
+              Alert.alert(
+                "Error",
+                "Failed to delete meetup. Please try again.",
+                [{ text: "OK" }]
+              );
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleNext = () => {
     if (!formData.title.trim() || !formData.description.trim()) {
       return;
     }
-    navigation.navigate("CreateMeetupStep2", { formData, onUpdate });
+    navigation.navigate("EditMeetupStep2", { meetupId, formData, onUpdate });
   };
 
   const renderInput = (
@@ -299,13 +335,7 @@ export default function CreateMeetupStep1Screen({
   );
 
   const renderSuggestedImages = () => {
-    // Only show when activity is selected
-    if (!formData.activity.trim()) {
-      return null;
-    }
-
-    // Check if we have preset images for this activity
-    if (!ImagePresetService.hasImagesForActivity(formData.activity)) {
+    if (!UnsplashService.isConfigured() || !formData.title.trim()) {
       return null;
     }
 
@@ -314,7 +344,13 @@ export default function CreateMeetupStep1Screen({
         <Text style={[styles.suggestedImagesTitle, { color: colors.text }]}>
           Suggested Images
         </Text>
-        {suggestedImages.length > 0 ? (
+        {loadingSuggestions ? (
+          <View style={styles.suggestedImagesLoading}>
+            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+              Finding images...
+            </Text>
+          </View>
+        ) : suggestedImages.length > 0 ? (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -327,7 +363,7 @@ export default function CreateMeetupStep1Screen({
                 onPress={() => selectSuggestedImage(image)}
               >
                 <Image
-                  source={{ uri: image.url }}
+                  source={{ uri: image.urls.thumb }}
                   style={styles.suggestedImage}
                 />
                 <Text
@@ -336,7 +372,7 @@ export default function CreateMeetupStep1Screen({
                     { color: colors.textSecondary },
                   ]}
                 >
-                  {image.alt}
+                  {UnsplashService.getAttribution(image)}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -367,6 +403,8 @@ export default function CreateMeetupStep1Screen({
           </View>
 
           <ScrollView style={styles.modalContent}>
+            {renderSuggestedImages()}
+
             <View style={styles.imageOptions}>
               <Text style={[styles.uploadSectionTitle, { color: colors.text }]}>
                 Or upload your own
@@ -418,14 +456,10 @@ export default function CreateMeetupStep1Screen({
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="close" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: colors.text }]}>
-          Create Meetup
-        </Text>
-        <View style={styles.stepIndicator}>
-          <Text style={[styles.stepText, { color: colors.textSecondary }]}>
-            Step 1 of 2
-          </Text>
-        </View>
+        <Text style={[styles.title, { color: colors.text }]}>Edit Meetup</Text>
+        <TouchableOpacity onPress={handleDelete}>
+          <Ionicons name="trash-outline" size={24} color="#FF6B35" />
+        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -509,9 +543,6 @@ export default function CreateMeetupStep1Screen({
               )}
             </TouchableOpacity>
           </View>
-
-          {/* Suggested Images */}
-          {renderSuggestedImages()}
         </View>
       </ScrollView>
 
@@ -556,13 +587,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "600",
-  },
-  stepIndicator: {
-    alignItems: "center",
-  },
-  stepText: {
-    fontSize: 12,
-    fontWeight: "500",
   },
   scrollView: {
     flex: 1,

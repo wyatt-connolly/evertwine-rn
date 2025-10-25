@@ -685,7 +685,11 @@ export default function MessageDetailsScreen({
                 { color: colors.text, backgroundColor: colors.background },
               ]}
               value={newMessage}
-              onChangeText={setNewMessage}
+              onChangeText={(text) => {
+                // Limit consecutive line breaks to maximum of 2 (one extra line)
+                const limitedText = text.replace(/\n{3,}/g, "\n\n");
+                setNewMessage(limitedText);
+              }}
               placeholder="Type a message..."
               placeholderTextColor={colors.textTertiary}
               multiline

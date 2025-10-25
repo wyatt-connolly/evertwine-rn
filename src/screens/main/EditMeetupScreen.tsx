@@ -1,289 +1,93 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  Alert,
-  Switch,
-} from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
-import { useMeetupStore } from "../../hooks/useMeetupStore";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
 
 export default function EditMeetupScreen({ navigation, route }: any) {
   const { meetupId } = route.params;
   const { colors } = useThemeStore();
-  const { getMeetup, updateMeetup, deleteMeetup } = useMeetupStore();
-
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    locationName: "",
-    address: "",
-    activity: "",
-    activityCategory: "",
-    tags: "",
-    maxParticipants: "",
-    time: "",
-    duration: "60",
-    isRecurring: false,
-    verificationRequired: false,
-  });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const meetup = getMeetup(meetupId);
-    if (meetup) {
-      setFormData({
-        title: meetup.title,
-        description: meetup.description,
-        locationName: meetup.locationName,
-        address: meetup.address,
-        activity: meetup.activity,
-        activityCategory: meetup.activityCategory,
-        tags: meetup.tags.join(", "),
-        maxParticipants: meetup.maxParticipants.toString(),
-        time: meetup.time.toISOString(),
-        duration: meetup.duration.toString(),
-        isRecurring: meetup.isRecurring,
-        verificationRequired: meetup.requirements.verificationRequired,
-      });
-    }
-  }, [meetupId, getMeetup]);
+    loadMeetupData();
+  }, [meetupId]);
 
-  const handleSave = () => {
-    if (!formData.title || !formData.description || !formData.locationName) {
-      Alert.alert("Error", "Please fill in all required fields");
-      return;
-    }
+  const loadMeetupData = async () => {
+    try {
+      setIsLoading(true);
+      const meetup = await SupabaseDataService.getMeetup(meetupId);
 
-    const updates = {
-      title: formData.title,
-      description: formData.description,
-      locationName: formData.locationName,
-      address: formData.address,
-      activity: formData.activity,
-      activityCategory: formData.activityCategory,
-      tags: formData.tags
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter((tag) => tag),
-      maxParticipants: parseInt(formData.maxParticipants) || 10,
-      duration: parseInt(formData.duration),
-      time: formData.time ? new Date(formData.time) : new Date(),
-      isRecurring: formData.isRecurring,
-      requirements: {
-        verificationRequired: formData.verificationRequired,
-      },
-    };
+      if (meetup) {
+        // Transform meetup data to match the form structure
+        const formData = {
+          title: meetup.title,
+          description: meetup.description,
+          locationName: meetup.locationName,
+          address: meetup.address,
+          activity: meetup.activity,
+          activityCategory: meetup.activityCategory,
+          tags: meetup.tags.join(", "),
+          maxParticipants: meetup.maxParticipants.toString(),
+          time: meetup.time.toISOString(),
+          duration: meetup.duration.toString(),
+          isRecurring: meetup.isRecurring,
+          verificationRequired: meetup.requirements.verificationRequired,
+          coverImage: meetup.coverImage,
+          images: meetup.images || [],
+        };
 
-    updateMeetup(meetupId, updates);
-    Alert.alert("Success", "Meetup updated successfully!", [
-      { text: "OK", onPress: () => navigation.goBack() },
-    ]);
-  };
-
-  const handleDelete = () => {
-    Alert.alert(
-      "Delete Meetup",
-      "Are you sure you want to delete this meetup? This action cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => {
-            deleteMeetup(meetupId);
-            navigation.goBack();
+        // Navigate to the new multi-step edit flow
+        navigation.replace("EditMeetupStep1", {
+          meetupId,
+          formData,
+          onUpdate: (_data: any) => {
+            // This will be handled by the individual step screens
           },
-        },
-      ]
-    );
+        });
+      } else {
+        Alert.alert("Error", "Meetup not found.");
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error("Error loading meetup:", error);
+      Alert.alert("Error", "Failed to load meetup data.");
+      navigation.goBack();
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const updateFormData = (field: string, value: string | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const renderInput = (
-    label: string,
-    field: keyof typeof formData,
-    placeholder: string,
-    multiline = false,
-    keyboardType: any = "default"
-  ) => (
-    <View style={styles.inputContainer}>
-      <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
-      <TextInput
-        style={[
-          styles.input,
-          {
-            backgroundColor: colors.surface,
-            color: colors.text,
-            borderColor: colors.border,
-          },
-          multiline && styles.multilineInput,
-        ]}
-        placeholder={placeholder}
-        placeholderTextColor={colors.textTertiary}
-        value={String(formData[field])}
-        onChangeText={(value) => updateFormData(field, value)}
-        multiline={multiline}
-        keyboardType={keyboardType}
-      />
-    </View>
-  );
-
-  const renderSwitch = (label: string, field: keyof typeof formData) => (
-    <View style={styles.switchContainer}>
-      <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
-      <Switch
-        value={formData[field] as boolean}
-        onValueChange={(value) => updateFormData(field, value)}
-        trackColor={{ false: colors.border, true: colors.primary + "50" }}
-        thumbColor={formData[field] ? colors.primary : colors.textTertiary}
-      />
-    </View>
-  );
-
-  return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="close" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={[styles.title, { color: colors.text }]}>Edit Meetup</Text>
-        <View style={styles.headerActions}>
-          <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
-            <Ionicons name="trash-outline" size={20} color="#FF6B35" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleSave}>
-            <Text style={[styles.saveButton, { color: colors.primary }]}>
-              Save
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
+  if (isLoading) {
+    return (
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
       >
-        <View style={styles.content}>
-          {renderInput("Title *", "title", "Enter meetup title")}
-          {renderInput(
-            "Description *",
-            "description",
-            "Describe your meetup",
-            true
-          )}
-          {renderInput(
-            "Location *",
-            "locationName",
-            "Where will it take place?"
-          )}
-          {renderInput("Address", "address", "Full address")}
-          {renderInput("Activity", "activity", "What activity?")}
-          {renderInput(
-            "Category",
-            "activityCategory",
-            "e.g., Fitness, Social, Professional"
-          )}
-          {renderInput("Tags", "tags", "Comma-separated tags")}
-          {renderInput(
-            "Max Participants",
-            "maxParticipants",
-            "10",
-            false,
-            "numeric"
-          )}
-          {renderInput("Date & Time", "time", "2024-09-20T18:00")}
-          {renderInput(
-            "Duration (minutes)",
-            "duration",
-            "60",
-            false,
-            "numeric"
-          )}
-
-          <View style={styles.divider} />
-
-          {renderSwitch("Recurring Event", "isRecurring")}
-          {renderSwitch("Verification Required", "verificationRequired")}
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+            Loading meetup...
+          </Text>
         </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
+      </SafeAreaView>
+    );
+  }
+
+  // This should not be reached as the component redirects to EditMeetupStep1
+  return null;
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  headerActions: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  deleteButton: {
-    marginRight: 16,
-    padding: 4,
-  },
-  saveButton: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  scrollView: {
+  loadingContainer: {
     flex: 1,
-  },
-  content: {
-    padding: 20,
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    minHeight: 48,
-  },
-  multilineInput: {
-    minHeight: 100,
-    textAlignVertical: "top",
-  },
-  switchContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
   },
-  divider: {
-    height: 1,
-    backgroundColor: "#E0E0E0",
-    marginVertical: 20,
+  loadingText: {
+    fontSize: 16,
+    marginTop: 16,
   },
 });

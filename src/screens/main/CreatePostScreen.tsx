@@ -18,6 +18,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { DataService } from "../../services/DataService";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
 import { User } from "../../types";
 
 export default function CreatePostScreen({ navigation }: any) {
@@ -71,6 +72,26 @@ export default function CreatePostScreen({ navigation }: any) {
     if (!currentUser) {
       Alert.alert("Error", "You must be logged in to create a post.");
       return;
+    }
+
+    // Check post limit (3 posts maximum)
+    try {
+      const allPosts = await SupabaseDataService.getPosts();
+      const userPosts = allPosts.filter(
+        (post) => post.userId === currentUser.uid
+      );
+
+      if (userPosts.length >= 3) {
+        Alert.alert(
+          "Post Limit Reached",
+          "You can only have 3 active posts. Please delete an old post before creating a new one.",
+          [{ text: "OK" }]
+        );
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking post limit:", error);
+      // Continue with post creation if check fails
     }
 
     setIsLoading(true);
@@ -300,7 +321,11 @@ export default function CreatePostScreen({ navigation }: any) {
               placeholder="Share your thoughts, experiences, or ask a question..."
               placeholderTextColor={colors.textTertiary}
               value={message}
-              onChangeText={setMessage}
+              onChangeText={(text) => {
+                // Limit consecutive line breaks to maximum of 2 (one extra line)
+                const limitedText = text.replace(/\n{3,}/g, "\n\n");
+                setMessage(limitedText);
+              }}
               multiline
               textAlignVertical="top"
               maxLength={1000}

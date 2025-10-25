@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -15,7 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useMeetupFilterStore } from "../../hooks/useMeetupFilterStore";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 // import { useMeetupStore } from "../../hooks/useMeetupStore"; // No longer needed
 import { Meetup } from "../../types";
 import MeetupCard from "../../components/MeetupCard";
@@ -74,6 +74,23 @@ export default function AllMeetupsScreen() {
   useEffect(() => {
     loadMeetups();
   }, []);
+
+  // Refresh data when screen comes into focus (only when needed)
+  useFocusEffect(
+    React.useCallback(() => {
+      // Check if we need to refresh based on route params
+      const currentRoute = navigation
+        .getState()
+        ?.routes?.find((route: any) => route.name === "AllMeetups");
+      const shouldRefresh = (currentRoute?.params as any)?.refresh;
+
+      if (shouldRefresh) {
+        loadMeetups();
+        // Clear the refresh flag
+        navigation.setParams({ refresh: false } as any);
+      }
+    }, [navigation])
+  );
 
   useEffect(() => {
     if (showAdvancedFilters) {

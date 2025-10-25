@@ -159,7 +159,11 @@ export default function ComposeMessageScreen({ navigation }: any) {
           placeholder="Type your message..."
           placeholderTextColor={colors.textTertiary}
           value={messageText}
-          onChangeText={setMessageText}
+          onChangeText={(text) => {
+            // Limit consecutive line breaks to maximum of 2 (one extra line)
+            const limitedText = text.replace(/\n{3,}/g, "\n\n");
+            setMessageText(limitedText);
+          }}
           multiline
           maxLength={500}
         />
