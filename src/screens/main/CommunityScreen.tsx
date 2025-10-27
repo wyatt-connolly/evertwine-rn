@@ -122,8 +122,11 @@ export default function CommunityScreen({ navigation }: any) {
   };
 
   const handleMessage = (user: User) => {
-    // Navigate to chat or show message modal
-    console.log("Message user:", user.displayName);
+    // Navigate to UserProfile screen which has the message button
+    navigation.navigate("UserProfile", {
+      userId: user.uid,
+      userData: user,
+    });
   };
 
   const renderUser = ({ item, index }: { item: User; index: number }) => {
