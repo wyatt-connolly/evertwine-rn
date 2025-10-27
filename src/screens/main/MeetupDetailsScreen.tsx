@@ -56,14 +56,54 @@ export default function MeetupDetailsScreen({
       try {
         setLoading(true);
 
-        // If we have meetup data passed in, use it
+        // If we have meetup data passed in, fetch creator and participants from Supabase
         if (meetupData) {
           setMeetup(meetupData);
-          if (meetupData.organizer) {
-            setCreator(meetupData.organizer);
+          
+          // Fetch creator from Supabase
+          if (meetupData.creatorId) {
+            try {
+              const creatorData = await SupabaseDataService.getUser(
+                meetupData.creatorId
+              );
+              if (creatorData) {
+                setCreator(creatorData);
+              }
+            } catch (error) {
+              console.error("Error fetching creator:", error);
+              if (meetupData.organizer) {
+                setCreator(meetupData.organizer);
+              }
+            }
           }
-          if (meetupData.participants) {
-            setParticipants(meetupData.participants);
+          
+          // Fetch participants from Supabase
+          if (meetupData.participants && meetupData.participants.length > 0) {
+            try {
+              const participantsData = await Promise.all(
+                meetupData.participants.map(async (participantId) => {
+                  try {
+                    return await SupabaseDataService.getUser(participantId);
+                  } catch (error) {
+                    console.error(
+                      `Error fetching participant ${participantId}:`,
+                      error
+                    );
+                    return null;
+                  }
+                })
+              );
+              // Filter out the creator from participants list
+              const otherParticipants = participantsData
+                .filter(Boolean)
+                .filter((p: any) => p.uid !== meetupData.creatorId) as User[];
+              setParticipants(otherParticipants);
+            } catch (error) {
+              console.error("Error fetching participants:", error);
+              setParticipants([]);
+            }
+          } else {
+            setParticipants([]);
           }
           return;
         }
@@ -120,7 +160,8 @@ export default function MeetupDetailsScreen({
           }
         }
 
-        // Fetch participants
+        // Fetch participants from Supabase
+        // Note: participants array from meetup includes the creatorId
         if (
           fetchedMeetup.participants &&
           fetchedMeetup.participants.length > 0
@@ -140,7 +181,11 @@ export default function MeetupDetailsScreen({
                 }
               })
             );
-            setParticipants(participantsData.filter(Boolean) as User[]);
+            // Filter out the creator from participants list since they're displayed separately
+            const otherParticipants = participantsData
+              .filter(Boolean)
+              .filter((p) => p.uid !== fetchedMeetup.creatorId) as User[];
+            setParticipants(otherParticipants);
           } catch (error) {
             console.error("Error fetching participants:", error);
             // Fallback to mock data
@@ -149,6 +194,9 @@ export default function MeetupDetailsScreen({
             );
             setParticipants(mockParticipants);
           }
+        } else {
+          // No participants in the array, set empty array
+          setParticipants([]);
         }
       } catch (error) {
         console.error("Error fetching meetup data:", error);
