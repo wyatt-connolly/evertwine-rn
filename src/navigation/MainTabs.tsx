@@ -117,6 +117,7 @@ export type MainStackParamList = {
   };
   CreatePost: undefined;
   NotificationsList: undefined;
+  MessageDetailsFullScreen: { roomId: string };
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -341,6 +342,14 @@ export default function MainTabs() {
       <MainStack.Screen
         name="NotificationsList"
         component={NotificationsScreen}
+      />
+      <MainStack.Screen
+        name="MessageDetailsFullScreen"
+        component={MessageDetailsScreen}
+        options={{
+          headerShown: false,
+          gestureEnabled: true,
+        }}
       />
     </MainStack.Navigator>
   );

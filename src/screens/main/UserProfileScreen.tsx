@@ -114,8 +114,8 @@ export default function UserProfileScreen({
         return;
       }
 
-      // Navigate to MessageDetails at root level
-      navigation.navigate("MessageDetails", { roomId: room.id });
+      // Navigate to full-screen message view
+      navigation.navigate("MessageDetailsFullScreen", { roomId: room.id });
     } catch (error) {
       Alert.alert("Error", "Could not start conversation. Please try again.");
     }
@@ -1209,7 +1209,8 @@ const styles = StyleSheet.create({
   },
   // New styles to match EditProfileScreen
   heroSection: {
-    margin: 8,
+    marginHorizontal: 8,
+    marginBottom: 8,
     borderRadius: 24,
     padding: 20,
     shadowColor: "#000",

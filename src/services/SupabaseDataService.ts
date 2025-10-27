@@ -320,7 +320,62 @@ export class SupabaseDataService {
       .contains("participants", [userId])
       .order("updated_time", { ascending: false });
     if (error) throw error;
-    return data.map(this.mapMessageRoomFromDB);
+
+    console.log(
+      "getMessageRooms: Raw data from database:",
+      JSON.stringify(data, null, 2)
+    );
+
+    // Fetch last message for each room
+    const roomsWithLastMessage = await Promise.all(
+      data.map(async (room) => {
+        try {
+          const { data: lastMessageData, error: messageError } = await supabase
+            .from("messages")
+            .select("*")
+            .eq("message_room_ref", room.id)
+            .order("created_time", { ascending: false })
+            .limit(1)
+            .single();
+
+          if (messageError && messageError.code !== "PGRST116") {
+            console.error(
+              "Error fetching last message for room",
+              room.id,
+              ":",
+              messageError
+            );
+          }
+
+          // Add last message to room data
+          if (lastMessageData) {
+            room.last_message = {
+              text: lastMessageData.text,
+              senderRef: lastMessageData.sender_ref,
+              timestamp: new Date(lastMessageData.created_time),
+              messageType: lastMessageData.message_type,
+              isRead: lastMessageData.is_read,
+            };
+          }
+        } catch (err) {
+          console.error(
+            "Error processing last message for room",
+            room.id,
+            ":",
+            err
+          );
+        }
+
+        return room;
+      })
+    );
+
+    const mapped = roomsWithLastMessage.map(this.mapMessageRoomFromDB);
+    console.log(
+      "getMessageRooms: Mapped data with last messages:",
+      JSON.stringify(mapped, null, 2)
+    );
+    return mapped;
   }
 
   // Find existing direct message room between two users
@@ -353,6 +408,7 @@ export class SupabaseDataService {
       admins: [],
       name: otherUserData.displayName,
       avatar: otherUserData.profilePictures?.[0] || null,
+      // last_message: null, // Will be set when first message is sent - temporarily removed to test
       settings: {
         allow_invites: false,
         allow_media: true,
@@ -416,7 +472,48 @@ export class SupabaseDataService {
       .single();
 
     if (error) throw error;
+
+    // Update the last message in the message room
+    if (data.message_room_ref) {
+      console.log("Message sent for room:", data.message_room_ref);
+      // Last message will be fetched dynamically from messages table
+    } else {
+      console.log("No message_room_ref found in sent message data:", data);
+    }
+
     return this.mapMessageFromDB(data);
+  }
+
+  static async updateMessageRoomLastMessage(roomId: string, lastMessage: any) {
+    console.log(
+      "Updating last message for room:",
+      roomId,
+      "with message:",
+      lastMessage
+    );
+
+    try {
+      const { data, error } = await supabase
+        .from("message_rooms")
+        .update({
+          last_message: lastMessage,
+          updated_time: new Date().toISOString(),
+        })
+        .eq("id", roomId)
+        .select();
+
+      if (error) {
+        console.error("Error updating last message:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
+        throw error;
+      }
+
+      console.log("Successfully updated last message for room:", roomId);
+      console.log("Updated room data:", JSON.stringify(data, null, 2));
+    } catch (err) {
+      console.error("Exception in updateMessageRoomLastMessage:", err);
+      throw err;
+    }
   }
 
   static async getMessageRoom(roomId: string): Promise<MessageRoom | null> {
@@ -1623,5 +1720,143 @@ export class SupabaseDataService {
     } catch (error) {
       throw error;
     }
+  }
+
+  // ==================== MEETUP GROUP CHAT METHODS ====================
+  static async createMeetupGroupChat(
+    meetupId: string,
+    meetupTitle: string,
+    meetupImage: string,
+    participants: string[]
+  ): Promise<MessageRoom | null> {
+    const roomData = {
+      type: "meetup",
+      participants: participants,
+      admins: [participants[0]], // First participant is admin
+      name: meetupTitle,
+      avatar: meetupImage,
+      meetup_id: meetupId,
+      // last_message: null, // Will be set when first message is sent - temporarily removed to test
+      settings: {
+        allow_invites: true,
+        allow_media: true,
+        allow_reactions: true,
+      },
+      created_time: new Date().toISOString(),
+      updated_time: new Date().toISOString(),
+    };
+
+    const { data, error } = await supabase
+      .from("message_rooms")
+      .insert(roomData)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return this.mapMessageRoomFromDB(data);
+  }
+
+  static async findMeetupGroupChat(
+    meetupId: string
+  ): Promise<MessageRoom | null> {
+    const { data, error } = await supabase
+      .from("message_rooms")
+      .select("*")
+      .eq("type", "meetup")
+      .eq("meetup_id", meetupId)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        return null; // No rows found
+      }
+      throw error;
+    }
+    return this.mapMessageRoomFromDB(data);
+  }
+
+  static async addUserToMeetupGroupChat(
+    meetupId: string,
+    userId: string
+  ): Promise<MessageRoom | null> {
+    // First find the group chat
+    const groupChat = await this.findMeetupGroupChat(meetupId);
+    if (!groupChat) {
+      throw new Error("Meetup group chat not found");
+    }
+
+    // Add user to participants if not already present
+    if (!groupChat.participants.includes(userId)) {
+      const updatedParticipants = [...groupChat.participants, userId];
+
+      const { data, error } = await supabase
+        .from("message_rooms")
+        .update({
+          participants: updatedParticipants,
+          updated_time: new Date().toISOString(),
+        })
+        .eq("id", groupChat.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return this.mapMessageRoomFromDB(data);
+    }
+
+    return groupChat;
+  }
+
+  // ==================== DATABASE SCHEMA TEST ====================
+  static async testDatabaseSchema() {
+    console.log("Testing database schema...");
+
+    // Try to get the table schema
+    const { data, error } = await supabase
+      .from("message_rooms")
+      .select("*")
+      .limit(1);
+
+    if (error) {
+      console.error("Error querying message_rooms table:", error);
+      return;
+    }
+
+    console.log(
+      "message_rooms table schema sample:",
+      JSON.stringify(data, null, 2)
+    );
+  }
+
+  // ==================== REAL-TIME LISTENERS ====================
+  static setupMessageRoomsListener(
+    userId: string,
+    callback: (rooms: MessageRoom[]) => void
+  ): () => void {
+    const subscription = supabase
+      .channel("message_rooms_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "message_rooms",
+          filter: `participants.cs.{${userId}}`,
+        },
+        async () => {
+          try {
+            // Fetch updated message rooms
+            const rooms = await this.getMessageRooms(userId);
+            callback(rooms);
+          } catch (error) {
+            console.error("Error fetching updated message rooms:", error);
+          }
+        }
+      )
+      .subscribe();
+
+    // Return unsubscribe function
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }
 }

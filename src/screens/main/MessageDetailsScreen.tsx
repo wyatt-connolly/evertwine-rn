@@ -27,6 +27,7 @@ interface MessageDetailsScreenProps {
   route: {
     params: {
       roomId: string;
+      hideBottomNav?: boolean;
     };
   };
   navigation: any;
@@ -38,7 +39,14 @@ export default function MessageDetailsScreen({
 }: MessageDetailsScreenProps) {
   const { colors } = useThemeStore();
   const { user: currentUser } = useAuthStore();
-  const { roomId } = route.params;
+  const { roomId, hideBottomNav = false } = route.params;
+
+  // Check if this is being used as MessageDetailsFullScreen
+  const isFullScreen =
+    navigation
+      .getState()
+      ?.routes?.find((r: any) => r.name === "MessageDetailsFullScreen") !==
+    undefined;
 
   // State management
   const [room, setRoom] = useState<MessageRoom | null>(null);
@@ -600,13 +608,11 @@ export default function MessageDetailsScreen({
 
   if (isLoading) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        {/* Swipe indicator at the very top */}
-        <View
-          style={[styles.swipeIndicator, { backgroundColor: colors.border }]}
-        />
-
-        {/* Header content container */}
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+        edges={["top", "bottom"]}
+      >
+        {/* Header with back button */}
         <View
           style={[
             styles.header,
@@ -616,6 +622,12 @@ export default function MessageDetailsScreen({
             },
           ]}
         >
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          </TouchableOpacity>
           {renderHeader()}
         </View>
 
@@ -625,24 +637,28 @@ export default function MessageDetailsScreen({
             Loading messages...
           </Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Swipe indicator at the very top */}
-      <View
-        style={[styles.swipeIndicator, { backgroundColor: colors.border }]}
-      />
-
-      {/* Header content container */}
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["top", "bottom"]}
+    >
+      {/* Header with back button */}
       <View
         style={[
           styles.header,
           { backgroundColor: colors.surface, borderBottomColor: colors.border },
         ]}
       >
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
         {renderHeader()}
       </View>
 
@@ -666,59 +682,55 @@ export default function MessageDetailsScreen({
           />
         )}
 
-        <SafeAreaView
-          edges={["bottom"]}
-          style={{ backgroundColor: colors.surface }}
+        <View
+          style={[
+            styles.inputContainer,
+            {
+              backgroundColor: colors.surface,
+              borderTopColor: colors.border,
+              paddingBottom: hideBottomNav || isFullScreen ? 20 : 20,
+            },
+          ]}
         >
-          <View
+          <TextInput
             style={[
-              styles.inputContainer,
+              styles.textInput,
+              { color: colors.text, backgroundColor: colors.background },
+            ]}
+            value={newMessage}
+            onChangeText={(text) => {
+              // Limit consecutive line breaks to maximum of 2 (one extra line)
+              const limitedText = text.replace(/\n{3,}/g, "\n\n");
+              setNewMessage(limitedText);
+            }}
+            placeholder="Type a message..."
+            placeholderTextColor={colors.textTertiary}
+            multiline
+            maxLength={1000}
+          />
+          <TouchableOpacity
+            style={[
+              styles.sendButton,
               {
-                backgroundColor: colors.surface,
-                borderTopColor: colors.border,
+                backgroundColor: newMessage.trim()
+                  ? colors.primary
+                  : colors.border,
               },
             ]}
+            onPress={handleSendMessage}
+            disabled={!newMessage.trim() || isSending}
           >
-            <TextInput
-              style={[
-                styles.textInput,
-                { color: colors.text, backgroundColor: colors.background },
-              ]}
-              value={newMessage}
-              onChangeText={(text) => {
-                // Limit consecutive line breaks to maximum of 2 (one extra line)
-                const limitedText = text.replace(/\n{3,}/g, "\n\n");
-                setNewMessage(limitedText);
-              }}
-              placeholder="Type a message..."
-              placeholderTextColor={colors.textTertiary}
-              multiline
-              maxLength={1000}
-            />
-            <TouchableOpacity
-              style={[
-                styles.sendButton,
-                {
-                  backgroundColor: newMessage.trim()
-                    ? colors.primary
-                    : colors.border,
-                },
-              ]}
-              onPress={handleSendMessage}
-              disabled={!newMessage.trim() || isSending}
-            >
-              {isSending ? (
-                <ActivityIndicator size="small" color={colors.onPrimary} />
-              ) : (
-                <Ionicons name="send" size={20} color={colors.onPrimary} />
-              )}
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
+            {isSending ? (
+              <ActivityIndicator size="small" color={colors.onPrimary} />
+            ) : (
+              <Ionicons name="send" size={20} color={colors.onPrimary} />
+            )}
+          </TouchableOpacity>
+        </View>
       </KeyboardAvoidingView>
 
       {renderMenuModal()}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -728,6 +740,14 @@ const styles = StyleSheet.create({
   },
   header: {
     borderBottomWidth: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  backButton: {
+    marginRight: 12,
+    padding: 4,
   },
   swipeIndicator: {
     width: 40,
@@ -738,10 +758,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   headerContent: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
     justifyContent: "space-between",
   },
   headerInfo: {

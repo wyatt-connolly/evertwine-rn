@@ -467,4 +467,54 @@ export class DataService {
       throw error;
     }
   }
+
+  // Meetup Group Chat Methods
+  static async createMeetupGroupChat(
+    meetupId: string,
+    meetupTitle: string,
+    meetupImage: string,
+    participants: string[]
+  ): Promise<MessageRoom | null> {
+    try {
+      return await SupabaseDataService.createMeetupGroupChat(
+        meetupId,
+        meetupTitle,
+        meetupImage,
+        participants
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async findMeetupGroupChat(
+    meetupId: string
+  ): Promise<MessageRoom | null> {
+    try {
+      return await SupabaseDataService.findMeetupGroupChat(meetupId);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async addUserToMeetupGroupChat(
+    meetupId: string,
+    userId: string
+  ): Promise<MessageRoom | null> {
+    try {
+      return await SupabaseDataService.addUserToMeetupGroupChat(
+        meetupId,
+        userId
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static setupMessageRoomsListener(
+    userId: string,
+    callback: (rooms: MessageRoom[]) => void
+  ): () => void {
+    return SupabaseDataService.setupMessageRoomsListener(userId, callback);
+  }
 }

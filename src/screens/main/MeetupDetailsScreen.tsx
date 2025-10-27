@@ -8,7 +8,6 @@ import {
   Image,
   Alert,
   ActivityIndicator,
-  Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,11 +16,9 @@ import { useFavoritesStore } from "../../hooks/useFavoritesStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { getMockMeetups, getMockUsers } from "../../data/mockData";
 import Snackbar from "../../components/Snackbar";
-import { NotificationService } from "../../services/NotificationService";
 import { SupabaseDataService } from "../../services/SupabaseDataService";
+import { DataService } from "../../services/DataService";
 import { Meetup, User } from "../../types";
-
-const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 interface MeetupDetailsScreenProps {
   route: {
@@ -71,8 +68,9 @@ export default function MeetupDetailsScreen({
               }
             } catch (error) {
               console.error("Error fetching creator:", error);
-              if (meetupData.organizer) {
-                setCreator(meetupData.organizer);
+              // Use creator data if available
+              if (meetupData.creatorId) {
+                // Creator data will be fetched separately
               }
             }
           }
@@ -182,9 +180,12 @@ export default function MeetupDetailsScreen({
               })
             );
             // Filter out the creator from participants list since they're displayed separately
-            const otherParticipants = participantsData
-              .filter(Boolean)
-              .filter((p) => p.uid !== fetchedMeetup.creatorId) as User[];
+            const otherParticipants = participantsData.filter(
+              (p): p is User =>
+                p !== null &&
+                p !== undefined &&
+                p.uid !== fetchedMeetup.creatorId
+            );
             setParticipants(otherParticipants);
           } catch (error) {
             console.error("Error fetching participants:", error);
@@ -244,17 +245,40 @@ export default function MeetupDetailsScreen({
       }
       setIsJoined(true);
 
-      // Send notification to meetup creator
-      if (currentUser && meetup.creatorId !== currentUser.uid) {
+      // Create or join group chat for the meetup
+      if (currentUser) {
         try {
-          await NotificationService.sendMeetupJoinNotification(
-            meetup.creatorId,
-            currentUser.uid,
-            meetup.id
-          );
+          // Check if group chat already exists
+          let groupChat = await DataService.findMeetupGroupChat(meetup.id);
+
+          if (!groupChat) {
+            // Create new group chat with all current participants
+            const participants = [meetup.creatorId, currentUser.uid];
+            groupChat = await DataService.createMeetupGroupChat(
+              meetup.id,
+              meetup.title,
+              meetup.images?.[0] || "",
+              participants
+            );
+          } else {
+            // Add user to existing group chat
+            groupChat = await DataService.addUserToMeetupGroupChat(
+              meetup.id,
+              currentUser.uid
+            );
+          }
+
+          if (groupChat) {
+            console.log("Successfully joined meetup group chat:", groupChat.id);
+          }
         } catch (error) {
-          console.error("Error sending notification:", error);
+          console.error("Error creating/joining group chat:", error);
         }
+      }
+
+      // TODO: Send notification to meetup creator
+      if (currentUser && meetup.creatorId !== currentUser.uid) {
+        console.log("TODO: Send notification to meetup creator");
       }
 
       setSnackbarMessage("Joined meetup");
@@ -600,10 +624,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-  },
-  backButton: {
-    padding: 8,
-    marginRight: 8,
   },
   headerTitle: {
     flex: 1,

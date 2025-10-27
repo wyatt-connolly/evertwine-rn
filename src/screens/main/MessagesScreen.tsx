@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,115 +6,86 @@ import {
   TouchableOpacity,
   Image,
   FlatList,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { useAuthStore } from "../../hooks/useAuthStore";
 import { MessageRoom } from "../../types";
 import { DataService } from "../../services/DataService";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
 import { EmptyMessagesState, LoadingState } from "../../components/EmptyStates";
 import LoadingIndicator from "../../components/LoadingIndicator";
 
-// Mock message rooms data
-const mockMessageRooms: MessageRoom[] = [
-  {
-    id: "room1",
-    type: "direct",
-    participants: ["user1", "user2"],
-    admins: [],
-    name: "Maya Rodriguez",
-    avatar:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
-    lastMessage: {
-      text: "Thanks for the great yoga session today!",
-      senderRef: "users/user2",
-      timestamp: new Date("2024-09-13T15:30:00"),
-      messageType: "text",
-      isRead: false,
-    },
-    settings: {
-      allowInvites: true,
-      allowMedia: true,
-      allowReactions: true,
-    },
-    createdTime: new Date("2024-09-10"),
-    updatedTime: new Date("2024-09-13T15:30:00"),
-  },
-  {
-    id: "room2",
-    type: "meetup",
-    participants: ["user1", "user3", "user4", "user5"],
-    admins: ["user3"],
-    name: "Tech Networking Happy Hour",
-    avatar:
-      "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400",
-    meetupRef: "meetups/meetup2",
-    lastMessage: {
-      text: "Looking forward to meeting everyone tomorrow!",
-      senderRef: "users/user4",
-      timestamp: new Date("2024-09-13T14:15:00"),
-      messageType: "text",
-      isRead: true,
-    },
-    settings: {
-      allowInvites: true,
-      allowMedia: true,
-      allowReactions: true,
-    },
-    createdTime: new Date("2024-09-12"),
-    updatedTime: new Date("2024-09-13T14:15:00"),
-  },
-  {
-    id: "room3",
-    type: "group",
-    participants: ["user1", "user6", "user7", "user8"],
-    admins: ["user1"],
-    name: "Photography Enthusiasts",
-    avatar:
-      "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400",
-    description: "Share your best shots and photography tips",
-    lastMessage: {
-      text: "Check out this amazing sunset shot from yesterday!",
-      senderRef: "users/user6",
-      timestamp: new Date("2024-09-13T12:45:00"),
-      messageType: "image",
-      isRead: false,
-    },
-    settings: {
-      allowInvites: true,
-      allowMedia: true,
-      allowReactions: true,
-    },
-    createdTime: new Date("2024-09-01"),
-    updatedTime: new Date("2024-09-13T12:45:00"),
-  },
-];
-
 export default function MessagesScreen({ navigation }: any) {
   const { colors } = useThemeStore();
+  const { user: currentUser } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "groups">("all");
   const [messageRooms, setMessageRooms] = useState<MessageRoom[]>([]);
 
-  // Load message rooms using DataService
-  useEffect(() => {
-    const loadMessageRooms = async () => {
-      try {
-        const result = await DataService.getMessageRooms("user1");
-        if (result.rooms) {
-          setMessageRooms(result.rooms);
-        }
-      } catch (error) {
-        // Fallback to mock data if DataService fails
-        setMessageRooms(mockMessageRooms);
-        // In production mode, keep empty to show empty state
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Load message rooms from Supabase
+  const loadMessageRooms = async () => {
+    if (!currentUser?.uid) {
+      setIsLoading(false);
+      return;
+    }
 
+    try {
+      setIsLoading(true);
+
+      // Test database schema first
+      await SupabaseDataService.testDatabaseSchema();
+
+      const rooms = await SupabaseDataService.getMessageRooms(currentUser.uid);
+      console.log("MessagesScreen: Loaded message rooms:", rooms);
+      setMessageRooms(rooms);
+    } catch (error) {
+      console.error("Error loading message rooms:", error);
+      setMessageRooms([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadMessageRooms();
-  }, []);
+  }, [currentUser?.uid]);
+
+  // Refresh message rooms when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log("MessagesScreen: Screen focused, refreshing message rooms");
+      loadMessageRooms();
+    }, [currentUser?.uid])
+  );
+
+  // Manual refresh function
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadMessageRooms();
+    setRefreshing(false);
+  };
+
+  // Set up real-time listener for message rooms
+  useEffect(() => {
+    if (!currentUser?.uid) return;
+
+    const unsubscribe = DataService.setupMessageRoomsListener(
+      currentUser.uid,
+      (rooms) => {
+        console.log("MessagesScreen: Received updated message rooms:", rooms);
+        setMessageRooms(rooms);
+      }
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, [currentUser?.uid]);
 
   const filteredRooms = messageRooms.filter((room) => {
     if (activeTab === "groups") {
@@ -141,9 +112,8 @@ export default function MessagesScreen({ navigation }: any) {
 
   const handleOpenMessage = async (roomId: string) => {
     setIsLoading(true);
-    // Simulate loading message data
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    navigation.navigate("MessageDetails", { roomId });
+    // Navigate to full-screen message view
+    navigation.navigate("MessageDetailsFullScreen", { roomId });
     setIsLoading(false);
   };
 
@@ -203,7 +173,12 @@ export default function MessagesScreen({ navigation }: any) {
             ]}
             numberOfLines={1}
           >
-            {room.lastMessage?.text || "No messages yet"}
+            {room.lastMessage?.text ||
+              (room.type === "meetup"
+                ? "Group chat started"
+                : room.type === "group"
+                ? "Group chat started"
+                : "Start a conversation")}
           </Text>
         </View>
 
@@ -278,6 +253,13 @@ export default function MessagesScreen({ navigation }: any) {
           keyExtractor={(item) => item.id}
           style={styles.messageList}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.primary}
+            />
+          }
           ListEmptyComponent={
             <EmptyMessagesState
               onActionPress={() => navigation.navigate("Home")}
