@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  ActivityIndicator,
+  Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,12 +18,16 @@ import { useAuthStore } from "../../hooks/useAuthStore";
 import { getMockMeetups, getMockUsers } from "../../data/mockData";
 import Snackbar from "../../components/Snackbar";
 import { NotificationService } from "../../services/NotificationService";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
+import { Meetup, User } from "../../types";
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 interface MeetupDetailsScreenProps {
   route: {
     params: {
       meetupId: string;
-      meetupData?: any;
+      meetupData?: Meetup;
     };
   };
   navigation: any;
@@ -40,66 +46,148 @@ export default function MeetupDetailsScreen({
   const [isJoined, setIsJoined] = useState(false);
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [meetup, setMeetup] = useState<Meetup | null>(null);
+  const [creator, setCreator] = useState<User | null>(null);
+  const [participants, setParticipants] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Use meetupData from navigation params if available, otherwise find from mock data
-  // Clean the meetupId to remove "meetups/" prefix if present
-  const cleanMeetupId = meetupId?.replace("meetups/", "") || meetupId;
-  const meetup =
-    meetupData || getMockMeetups().find((m) => m.id === cleanMeetupId);
-  const creator =
-    meetupData?.organizer ||
-    getMockUsers().find((u) => u.uid === meetup?.creatorId) ||
-    getMockUsers().find(
-      (u) => u.uid === meetup?.creatorRef?.replace("users/", "")
-    );
+  useEffect(() => {
+    const fetchMeetupData = async () => {
+      try {
+        setLoading(true);
 
-  const participants =
-    meetupData?.participants ||
-    getMockUsers().filter((u) => meetup?.participants?.includes(u.uid));
+        // If we have meetup data passed in, use it
+        if (meetupData) {
+          setMeetup(meetupData);
+          if (meetupData.organizer) {
+            setCreator(meetupData.organizer);
+          }
+          if (meetupData.participants) {
+            setParticipants(meetupData.participants);
+          }
+          return;
+        }
 
-  if (!meetup) {
-    return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
-        <View style={styles.errorContainer}>
-          <Text style={[styles.errorText, { color: colors.text }]}>
-            Meetup not found
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+        // Clean the meetup ID (remove any prefixes)
+        const cleanMeetupId = meetupId.replace(/^meetup-/, "");
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  };
+        // Try to fetch from Supabase first
+        const fetchedMeetup = await SupabaseDataService.getMeetup(
+          cleanMeetupId
+        );
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString([], {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+        if (!fetchedMeetup) {
+          // Fallback to mock data
+          const mockMeetup = getMockMeetups().find(
+            (m) => m.id === cleanMeetupId
+          );
+          if (mockMeetup) {
+            setMeetup(mockMeetup);
+            const mockCreator = getMockUsers().find(
+              (u) => u.uid === mockMeetup.creatorId
+            );
+            if (mockCreator) {
+              setCreator(mockCreator);
+            }
+            const mockParticipants = getMockUsers().filter((u) =>
+              mockMeetup.participants?.includes(u.uid)
+            );
+            setParticipants(mockParticipants);
+          }
+          return;
+        }
+
+        setMeetup(fetchedMeetup);
+
+        // Fetch creator information
+        if (fetchedMeetup.creatorId) {
+          try {
+            const creatorData = await SupabaseDataService.getUser(
+              fetchedMeetup.creatorId
+            );
+            if (creatorData) {
+              setCreator(creatorData);
+            }
+          } catch (error) {
+            console.error("Error fetching creator:", error);
+            // Fallback to mock data
+            const mockCreator = getMockUsers().find(
+              (u) => u.uid === fetchedMeetup.creatorId
+            );
+            if (mockCreator) {
+              setCreator(mockCreator);
+            }
+          }
+        }
+
+        // Fetch participants
+        if (
+          fetchedMeetup.participants &&
+          fetchedMeetup.participants.length > 0
+        ) {
+          try {
+            const participantsData = await Promise.all(
+              fetchedMeetup.participants.map(async (participantId) => {
+                try {
+                  return await SupabaseDataService.getUser(participantId);
+                } catch (error) {
+                  console.error(
+                    `Error fetching participant ${participantId}:`,
+                    error
+                  );
+                  // Fallback to mock data for this participant
+                  return getMockUsers().find((u) => u.uid === participantId);
+                }
+              })
+            );
+            setParticipants(participantsData.filter(Boolean) as User[]);
+          } catch (error) {
+            console.error("Error fetching participants:", error);
+            // Fallback to mock data
+            const mockParticipants = getMockUsers().filter((u) =>
+              fetchedMeetup.participants?.includes(u.uid)
+            );
+            setParticipants(mockParticipants);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching meetup data:", error);
+        // Fallback to mock data
+        const mockMeetup = getMockMeetups().find(
+          (m) => m.id === meetupId.replace(/^meetup-/, "")
+        );
+        if (mockMeetup) {
+          setMeetup(mockMeetup);
+          const mockCreator = getMockUsers().find(
+            (u) => u.uid === mockMeetup.creatorId
+          );
+          if (mockCreator) {
+            setCreator(mockCreator);
+          }
+          const mockParticipants = getMockUsers().filter((u) =>
+            mockMeetup.participants?.includes(u.uid)
+          );
+          setParticipants(mockParticipants);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMeetupData();
+  }, [meetupId, meetupData]);
 
   const handleJoin = async () => {
+    if (!meetup) return;
+
     if (isJoined) {
-      Alert.alert(
-        "Leave Meetup",
-        "Are you sure you want to leave this meetup?",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Leave",
-            style: "destructive",
-            onPress: () => setIsJoined(false),
-          },
-        ]
-      );
+      setIsJoined(false);
+      setSnackbarMessage("Left meetup");
     } else {
-      if (meetup.currentParticipants >= meetup.maxParticipants) {
+      if (
+        meetup.maxParticipants &&
+        meetup.currentParticipants >= meetup.maxParticipants
+      ) {
         Alert.alert(
           "Meetup Full",
           "This meetup is currently full. You can join the waitlist."
@@ -111,27 +199,20 @@ export default function MeetupDetailsScreen({
       // Send notification to meetup creator
       if (currentUser && meetup.creatorId !== currentUser.uid) {
         try {
-          await NotificationService.createMeetupInviteNotification(
-            currentUser.uid,
+          await NotificationService.sendMeetupJoinNotification(
             meetup.creatorId,
-            meetup.id,
-            currentUser.displayName || "Someone",
-            meetup.title
+            currentUser.uid,
+            meetup.id
           );
         } catch (error) {
-          console.error("Error creating meetup notification:", error);
+          console.error("Error sending notification:", error);
         }
       }
 
-      Alert.alert("Success", "You've joined the meetup!");
+      setSnackbarMessage("Joined meetup");
     }
-  };
 
-  const handleShare = () => {
-    Alert.alert(
-      "Share Meetup",
-      "Share functionality will be implemented soon!"
-    );
+    setShowSnackbar(true);
   };
 
   const handleLike = () => {
@@ -150,15 +231,75 @@ export default function MeetupDetailsScreen({
     setShowSnackbar(true);
   };
 
+  const handleShare = () => {
+    // Implement share functionality
+    Alert.alert("Share", "Share functionality would be implemented here");
+  };
+
   const handleSnackbarAction = () => {
     setShowSnackbar(false);
     navigation.navigate("Favorites");
   };
 
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString([], {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.text }]}>
+            Loading meetup details...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!meetup) {
+    return (
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle" size={48} color={colors.error} />
+          <Text style={[styles.errorTitle, { color: colors.text }]}>
+            Meetup Not Found
+          </Text>
+          <Text style={[styles.errorMessage, { color: colors.textSecondary }]}>
+            This meetup could not be found or may have been removed.
+          </Text>
+          <TouchableOpacity
+            style={[styles.backButton, { backgroundColor: colors.primary }]}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={[styles.backButtonText, { color: colors.onPrimary }]}>
+              Go Back
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
+      {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -239,12 +380,6 @@ export default function MeetupDetailsScreen({
               <Ionicons name="people" size={16} color={colors.primary} />
               <Text style={[styles.statText, { color: colors.text }]}>
                 {meetup.currentParticipants || 0}/{meetup.maxParticipants || 0}
-              </Text>
-            </View>
-            <View style={styles.statItem}>
-              <Ionicons name="star" size={16} color={colors.primary} />
-              <Text style={[styles.statText, { color: colors.text }]}>
-                {meetup.engagementScore || 0}% engagement
               </Text>
             </View>
           </View>
@@ -329,20 +464,47 @@ export default function MeetupDetailsScreen({
         )}
 
         {/* Participants */}
-        {participants && participants.length > 0 && (
-          <View style={[styles.infoCard, { backgroundColor: colors.surface }]}>
-            <View style={styles.infoHeader}>
-              <Ionicons
-                name="people-outline"
-                size={20}
-                color={colors.primary}
-              />
-              <Text style={[styles.infoTitle, { color: colors.text }]}>
-                Participants ({participants.length})
-              </Text>
-            </View>
-            <View style={styles.participantsList}>
-              {participants.map((participant: any) => (
+        <View style={[styles.infoCard, { backgroundColor: colors.surface }]}>
+          <View style={styles.infoHeader}>
+            <Ionicons name="people-outline" size={20} color={colors.primary} />
+            <Text style={[styles.infoTitle, { color: colors.text }]}>
+              Participants ({(creator ? 1 : 0) + (participants?.length || 0)})
+            </Text>
+          </View>
+          <View style={styles.participantsList}>
+            {/* Creator with crown icon */}
+            {creator && (
+              <View style={styles.participantItem}>
+                <View style={styles.participantAvatarContainer}>
+                  <Image
+                    source={{
+                      uri:
+                        creator?.profilePictures?.[
+                          creator.standoutPhotoIndex !== undefined
+                            ? creator.standoutPhotoIndex
+                            : 0
+                        ] ||
+                        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+                    }}
+                    style={styles.participantAvatar}
+                  />
+                  <View
+                    style={[
+                      styles.crownContainer,
+                      { backgroundColor: colors.primary },
+                    ]}
+                  >
+                    <Ionicons name="star" size={12} color={colors.onPrimary} />
+                  </View>
+                </View>
+                <Text style={[styles.participantName, { color: colors.text }]}>
+                  {creator?.displayName || "Creator"}
+                </Text>
+              </View>
+            )}
+            {/* Other participants */}
+            {participants &&
+              participants.map((participant: any) => (
                 <View key={participant.uid} style={styles.participantItem}>
                   <Image
                     source={{
@@ -363,77 +525,6 @@ export default function MeetupDetailsScreen({
                   </Text>
                 </View>
               ))}
-            </View>
-          </View>
-        )}
-
-        {/* Tags */}
-        <View style={[styles.infoCard, { backgroundColor: colors.surface }]}>
-          <View style={styles.infoHeader}>
-            <Ionicons
-              name="pricetag-outline"
-              size={20}
-              color={colors.primary}
-            />
-            <Text style={[styles.infoTitle, { color: colors.text }]}>Tags</Text>
-          </View>
-          <View style={styles.tagsContainer}>
-            {meetup.tags?.map((tag: string, index: number) => (
-              <View
-                key={index}
-                style={[styles.tag, { backgroundColor: colors.primary + "20" }]}
-              >
-                <Text style={[styles.tagText, { color: colors.primary }]}>
-                  {tag}
-                </Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Requirements */}
-        <View style={[styles.infoCard, { backgroundColor: colors.surface }]}>
-          <View style={styles.infoHeader}>
-            <Ionicons
-              name="checkmark-circle-outline"
-              size={20}
-              color={colors.primary}
-            />
-            <Text style={[styles.infoTitle, { color: colors.text }]}>
-              Requirements
-            </Text>
-          </View>
-          <View style={styles.requirementsList}>
-            {meetup.requirements?.minAge && (
-              <Text
-                style={[
-                  styles.requirementText,
-                  { color: colors.textSecondary },
-                ]}
-              >
-                • Minimum age: {meetup.requirements?.minAge}
-              </Text>
-            )}
-            {meetup.requirements?.maxAge && (
-              <Text
-                style={[
-                  styles.requirementText,
-                  { color: colors.textSecondary },
-                ]}
-              >
-                • Maximum age: {meetup.requirements?.maxAge}
-              </Text>
-            )}
-            {meetup.requirements?.verificationRequired && (
-              <Text
-                style={[
-                  styles.requirementText,
-                  { color: colors.textSecondary },
-                ]}
-              >
-                • ID verification required
-              </Text>
-            )}
           </View>
         </View>
       </ScrollView>
@@ -509,20 +600,49 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  errorContainer: {
+  loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  errorText: {
+  loadingText: {
+    marginTop: 16,
     fontSize: 16,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  errorTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  errorMessage: {
+    fontSize: 16,
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  backButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  backButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  coverImage: {
+    width: "100%",
+    height: 200,
+    resizeMode: "cover",
   },
   meetupHeader: {
     padding: 20,
     marginBottom: 16,
-    borderRadius: 20,
-    marginHorizontal: 16,
-    marginTop: 16,
   },
   meetupTitleContainer: {
     flexDirection: "row",
@@ -543,7 +663,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   recurringText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "600",
     marginLeft: 4,
   },
@@ -554,24 +674,26 @@ const styles = StyleSheet.create({
   },
   meetupStats: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    alignItems: "center",
   },
   statItem: {
     flexDirection: "row",
     alignItems: "center",
+    marginRight: 20,
   },
   statText: {
     fontSize: 14,
     marginLeft: 4,
+    fontWeight: "500",
   },
   infoCard: {
-    padding: 20,
-    marginBottom: 16,
-    borderRadius: 20,
     marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 20,
+    borderRadius: 12,
   },
   infoSection: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   infoHeader: {
     flexDirection: "row",
@@ -579,7 +701,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   infoTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "600",
     marginLeft: 8,
   },
@@ -618,13 +740,27 @@ const styles = StyleSheet.create({
   participantItem: {
     alignItems: "center",
     marginRight: 16,
-    marginBottom: 12,
+    marginBottom: 16,
+  },
+  participantAvatarContainer: {
+    position: "relative",
+    marginBottom: 4,
   },
   participantAvatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginBottom: 4,
+  },
+  crownContainer: {
+    position: "absolute",
+    top: -4,
+    right: -4,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
   },
   participantName: {
     fontSize: 12,
@@ -669,14 +805,5 @@ const styles = StyleSheet.create({
   joinButtonText: {
     fontSize: 16,
     fontWeight: "600",
-  },
-  coverImage: {
-    width: "100%",
-    height: 200,
-    resizeMode: "cover",
-    borderRadius: 20,
-    marginHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 16,
   },
 });

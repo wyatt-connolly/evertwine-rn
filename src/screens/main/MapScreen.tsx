@@ -388,6 +388,8 @@ export default function MapScreen({ navigation }: any) {
   const [isLoading, setIsLoading] = useState(true);
   const [meetups, setMeetups] = useState<Meetup[]>([]);
   const [happyHours, setHappyHours] = useState<Event[]>([]);
+  const [creatorCache, setCreatorCache] = useState<Map<string, any>>(new Map());
+  const [selectedCreator, setSelectedCreator] = useState<any>(null);
 
   // Load data from Supabase or fallback to mock data
   useEffect(() => {
@@ -396,6 +398,9 @@ export default function MapScreen({ navigation }: any) {
 
   const loadMapData = async () => {
     try {
+      // Filter for only active (future) events
+      const now = new Date();
+
       if (currentLocation) {
         // Use Supabase location-based queries
         const [nearbyMeetups, nearbyEvents] = await Promise.all([
@@ -413,8 +418,18 @@ export default function MapScreen({ navigation }: any) {
           ),
         ]);
 
-        setMeetups(nearbyMeetups);
-        setHappyHours(nearbyEvents);
+        // Filter out past meetups
+        const activeMeetups = nearbyMeetups.filter((meetup) => {
+          return meetup.time > now;
+        });
+
+        // Filter out past happy hours
+        const activeHappyHours = nearbyEvents.filter((event) => {
+          return event.startTime > now;
+        });
+
+        setMeetups(activeMeetups);
+        setHappyHours(activeHappyHours);
       } else {
         // Fallback to all data if no location
         const [allMeetups, allEvents] = await Promise.all([
@@ -422,8 +437,17 @@ export default function MapScreen({ navigation }: any) {
           SupabaseDataService.getHappyHours(50),
         ]);
 
-        setMeetups(allMeetups);
-        setHappyHours(allEvents);
+        // Filter out past events
+        const activeMeetups = allMeetups.filter((meetup) => {
+          return meetup.time > now;
+        });
+
+        const activeHappyHours = allEvents.filter((event) => {
+          return event.startTime > now;
+        });
+
+        setMeetups(activeMeetups);
+        setHappyHours(activeHappyHours);
       }
     } catch (error) {
       console.error("Error loading map data:", error);
@@ -433,18 +457,48 @@ export default function MapScreen({ navigation }: any) {
     }
   };
 
-  const getCreatorInfo = (creatorId: string) => {
-    return mockUsers.find((user) => user.uid === creatorId);
+  const getCreatorInfo = async (creatorId: string) => {
+    // Check cache first
+    if (creatorCache.has(creatorId)) {
+      return creatorCache.get(creatorId);
+    }
+
+    try {
+      // Fetch from Supabase
+      const creator = await SupabaseDataService.getUser(creatorId);
+      if (creator) {
+        // Cache the result
+        setCreatorCache((prev) => new Map(prev).set(creatorId, creator));
+        return creator;
+      }
+    } catch (error) {
+      console.error("Error fetching creator info:", error);
+      // Fallback to mock data
+      const mockCreator = mockUsers.find((user) => user.uid === creatorId);
+      if (mockCreator) {
+        setCreatorCache((prev) => new Map(prev).set(creatorId, mockCreator));
+        return mockCreator;
+      }
+    }
+
+    return null;
   };
 
-  const handleMarkerPress = (marker: any) => {
+  const handleMarkerPress = async (marker: any) => {
     setSelectedMarker(marker);
     setDialogVisible(true);
+
+    // Load creator info from Supabase if it's a meetup
+    if (marker && marker.creatorId) {
+      const creator = await getCreatorInfo(marker.creatorId);
+      setSelectedCreator(creator);
+    }
   };
 
   const closeDialog = () => {
     setDialogVisible(false);
     setSelectedMarker(null);
+    setSelectedCreator(null);
   };
 
   // Get current location
@@ -750,49 +804,33 @@ export default function MapScreen({ navigation }: any) {
             </View>
 
             {/* Creator Section (only for meetups) */}
-            {isMeetup(selectedMarker) &&
-              (() => {
-                const creator = getCreatorInfo(selectedMarker.creatorId);
-                return (
-                  <View style={styles.creatorSection}>
-                    <View style={styles.creatorInfo}>
-                      <Image
-                        source={{
-                          uri:
-                            creator?.profilePictures?.[0] ||
-                            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-                        }}
-                        style={styles.creatorAvatar}
-                      />
-                      <View style={styles.creatorDetails}>
-                        <Text
-                          style={[styles.creatorName, { color: colors.text }]}
-                        >
-                          {creator?.displayName || "Unknown Creator"}
-                        </Text>
-                        <Text
-                          style={[
-                            styles.creatorRole,
-                            { color: colors.textSecondary },
-                          ]}
-                        >
-                          Event Organizer
-                        </Text>
-                      </View>
-                    </View>
-                    <TouchableOpacity style={styles.followButton}>
-                      <Text
-                        style={[
-                          styles.followButtonText,
-                          { color: colors.primary },
-                        ]}
-                      >
-                        Follow
-                      </Text>
-                    </TouchableOpacity>
+            {isMeetup(selectedMarker) && selectedCreator && (
+              <View style={styles.creatorSection}>
+                <View style={styles.creatorInfo}>
+                  <Image
+                    source={{
+                      uri:
+                        selectedCreator?.profilePictures?.[0] ||
+                        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
+                    }}
+                    style={styles.creatorAvatar}
+                  />
+                  <View style={styles.creatorDetails}>
+                    <Text style={[styles.creatorName, { color: colors.text }]}>
+                      {selectedCreator?.displayName || "Unknown Creator"}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.creatorRole,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      Event Organizer
+                    </Text>
                   </View>
-                );
-              })()}
+                </View>
+              </View>
+            )}
 
             <Text
               style={[
@@ -1010,6 +1048,7 @@ export default function MapScreen({ navigation }: any) {
                 if (isMeetup(selectedMarker)) {
                   navigation.navigate("MeetupDetails", {
                     meetupId: selectedMarker.id,
+                    meetupData: selectedMarker,
                   });
                 } else if (isHappyHour(selectedMarker)) {
                   const serializedEvent = {

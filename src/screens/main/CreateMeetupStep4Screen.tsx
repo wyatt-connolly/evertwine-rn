@@ -7,9 +7,11 @@ import {
   ScrollView,
   Image,
   Alert,
+  Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import MapView, { Marker } from "react-native-maps";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useMeetupStore } from "../../hooks/useMeetupStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
@@ -85,7 +87,10 @@ export default function CreateMeetupStep4Screen({
         description: formData.description,
         creatorId: user.uid,
         creatorRef: user.uid,
-        location: formData.location || { latitude: 0, longitude: 0 }, // TODO: get from formData
+        location:
+          formData.latitude && formData.longitude
+            ? { latitude: formData.latitude, longitude: formData.longitude }
+            : { latitude: 0, longitude: 0 },
         locationName: formData.locationName,
         address: formData.address,
         time: new Date(formData.time),
@@ -269,6 +274,37 @@ export default function CreateMeetupStep4Screen({
               )}
               {formData.address &&
                 renderDetail("Address", formData.address, "map-outline")}
+              {formData.latitude && formData.longitude && (
+                <View style={styles.mapPreviewContainer}>
+                  <Text
+                    style={[styles.mapPreviewLabel, { color: colors.text }]}
+                  >
+                    📍 Location Preview
+                  </Text>
+                  <MapView
+                    style={styles.mapPreview}
+                    region={{
+                      latitude: formData.latitude,
+                      longitude: formData.longitude,
+                      latitudeDelta: 0.01,
+                      longitudeDelta: 0.01,
+                    }}
+                    scrollEnabled={false}
+                    zoomEnabled={false}
+                    pitchEnabled={false}
+                    rotateEnabled={false}
+                  >
+                    <Marker
+                      coordinate={{
+                        latitude: formData.latitude,
+                        longitude: formData.longitude,
+                      }}
+                      title={formData.locationName}
+                      description={formData.address}
+                    />
+                  </MapView>
+                </View>
+              )}
             </View>
           )}
 
@@ -457,5 +493,19 @@ const styles = StyleSheet.create({
   publishButtonText: {
     fontSize: 16,
     fontWeight: "600",
+  },
+  mapPreviewContainer: {
+    marginTop: 12,
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  mapPreviewLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  mapPreview: {
+    height: 150,
+    width: "100%",
   },
 });

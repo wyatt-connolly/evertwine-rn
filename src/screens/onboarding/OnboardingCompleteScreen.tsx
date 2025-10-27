@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { OnboardingStackParamList } from "../../navigation/OnboardingStack";
@@ -12,6 +12,7 @@ import { DEFAULT_PREFERENCES } from "../../constants/preferences";
 import GradientBackground from "../../components/GradientBackground";
 import AnimatedButton from "../../components/AnimatedButton";
 import AnimatedCard from "../../components/AnimatedCard";
+import NotificationPermissionModal from "../../components/NotificationPermissionModal";
 import { Ionicons } from "@expo/vector-icons";
 
 type OnboardingCompleteScreenNavigationProp = StackNavigationProp<
@@ -25,6 +26,7 @@ interface Props {
 
 export default function OnboardingCompleteScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
 
   const { user, setOnboardingComplete, updateUserProfile } = useAuthStore();
   const { colors } = useThemeStore();
@@ -35,11 +37,9 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
 
     try {
       // Load preferences
-
       await loadPreferences();
 
       // Update local state
-
       setOnboardingComplete(true);
       updateUserProfile({ onboardingComplete: true });
 
@@ -52,14 +52,44 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
         });
 
         if (result.error) {
+          console.error("Error updating user preferences:", result.error);
         } else {
+          console.log("User preferences updated successfully");
         }
       } else {
+        console.warn("No user UID available for updating preferences");
       }
+
+      // Show notification permission modal after onboarding is complete
+      setShowNotificationModal(true);
     } catch (error) {
+      console.error("Error completing onboarding:", error);
+      Alert.alert(
+        "Error",
+        "There was an issue completing your setup. Please try again.",
+        [{ text: "OK" }]
+      );
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleNotificationPermissionGranted = () => {
+    setShowNotificationModal(false);
+    // The AppNavigator will handle navigation to MainTabs
+    // since onboardingComplete is now true
+  };
+
+  const handleNotificationPermissionDenied = () => {
+    setShowNotificationModal(false);
+    // The AppNavigator will handle navigation to MainTabs
+    // since onboardingComplete is now true
+  };
+
+  const handleNotificationSkip = () => {
+    setShowNotificationModal(false);
+    // The AppNavigator will handle navigation to MainTabs
+    // since onboardingComplete is now true
   };
 
   return (
@@ -121,6 +151,14 @@ export default function OnboardingCompleteScreen({ navigation }: Props) {
           </View>
         </View>
       </SafeAreaView>
+
+      {/* Notification Permission Modal */}
+      <NotificationPermissionModal
+        visible={showNotificationModal}
+        onPermissionGranted={handleNotificationPermissionGranted}
+        onPermissionDenied={handleNotificationPermissionDenied}
+        onSkip={handleNotificationSkip}
+      />
     </GradientBackground>
   );
 }

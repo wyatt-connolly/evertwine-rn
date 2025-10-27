@@ -65,7 +65,11 @@ export default function AllHappyHourEventsScreen() {
           return eventDate >= today && eventDate < weekFromNow;
         });
       default:
-        return happyHourEvents;
+        // Filter out past events for "all" view
+        return happyHourEvents.filter((event) => {
+          const eventDate = new Date(event.startTime);
+          return eventDate >= today;
+        });
     }
   };
 

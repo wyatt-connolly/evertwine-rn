@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -28,16 +28,16 @@ const FadingText: React.FC<FadingTextProps> = ({
   opacity,
 }) => {
   const words = text.split(" ");
-  const letterOpacities = text.split("").map(() => new Animated.Value(0));
+  const wordOpacities = words.map(() => new Animated.Value(0));
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      // Animate each letter fading in sequentially
-      const animations = letterOpacities.map((letterOpacity, index) => {
-        return Animated.timing(letterOpacity, {
+      // Animate each word fading in sequentially
+      const animations = wordOpacities.map((wordOpacity, index) => {
+        return Animated.timing(wordOpacity, {
           toValue: 1,
-          duration: 100,
-          delay: index * 60, // Stagger each letter by 60ms
+          duration: 600,
+          delay: index * 200, // Stagger each word by 200ms
           useNativeDriver: true,
         });
       });
@@ -45,7 +45,7 @@ const FadingText: React.FC<FadingTextProps> = ({
       Animated.parallel(animations).start(() => {
         // Wait before calling onComplete
         if (onComplete) {
-          setTimeout(onComplete, 1200);
+          setTimeout(onComplete, 2000);
         }
       });
     }, delay);
@@ -53,40 +53,23 @@ const FadingText: React.FC<FadingTextProps> = ({
     return () => clearTimeout(timer);
   }, [delay, onComplete, text]);
 
-  let letterIndex = 0;
-
   return (
     <Animated.View style={{ opacity }}>
       <View style={styles.textContainer}>
         {words.map((word, wordIndex) => (
           <View key={wordIndex} style={styles.wordContainer}>
-            {word.split("").map((letter, indexInWord) => {
-              const currentLetterIndex = letterIndex++;
-              return (
-                <Animated.Text
-                  key={indexInWord}
-                  style={[
-                    styles.fadingText,
-                    {
-                      opacity: letterOpacities[currentLetterIndex],
-                    },
-                  ]}
-                >
-                  {letter}
-                </Animated.Text>
-              );
-            })}
+            <Animated.Text
+              style={[
+                styles.fadingText,
+                {
+                  opacity: wordOpacities[wordIndex],
+                },
+              ]}
+            >
+              {word}
+            </Animated.Text>
             {wordIndex < words.length - 1 && (
-              <Animated.Text
-                style={[
-                  styles.fadingText,
-                  {
-                    opacity: letterOpacities[letterIndex++],
-                  },
-                ]}
-              >
-                {" "}
-              </Animated.Text>
+              <Animated.Text style={styles.fadingText}> </Animated.Text>
             )}
           </View>
         ))}
@@ -106,8 +89,8 @@ const CinematicIntroScreen: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [hasCompleted, setHasCompleted] = useState(false);
-  const fadeAnim = new Animated.Value(0);
-  const textFadeAnim = new Animated.Value(0);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const textFadeAnim = useRef(new Animated.Value(0)).current;
   const audioPlayer = useAudioPlayer(
     "https://www.bensound.com/bensound-music/bensound-cosmos.mp3"
   );
@@ -143,31 +126,31 @@ const CinematicIntroScreen: React.FC = () => {
   const introSteps = [
     {
       text: "Making new friends can be hard",
-      delay: 300,
+      delay: 600,
     },
     {
       text: "Real connections happen face-to-face",
-      delay: 400,
+      delay: 800,
     },
     {
       text: "Discover people who share your passions",
-      delay: 400,
+      delay: 800,
     },
     {
       text: "From coffee chats to hiking groups",
-      delay: 400,
+      delay: 800,
     },
     {
       text: "Stop scrolling. Start living.",
-      delay: 400,
+      delay: 800,
     },
     {
       text: "Your community is waiting",
-      delay: 400,
+      delay: 800,
     },
     {
       text: "Welcome to Evertwine",
-      delay: 400,
+      delay: 800,
     },
   ];
 

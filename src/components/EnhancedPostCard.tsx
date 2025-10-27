@@ -3,7 +3,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
+  FlatList,
   Dimensions,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -83,19 +83,16 @@ export default function EnhancedPostCard({ post }: EnhancedPostCardProps) {
 
         {/* Images */}
         {post.images && post.images.length > 0 && (
-          <ScrollView
+          <FlatList
+            data={post.images}
             horizontal
             showsHorizontalScrollIndicator={false}
             style={styles.imagesContainer}
-          >
-            {post.images.map((image, index) => (
-              <Image
-                key={index}
-                source={{ uri: image }}
-                style={styles.postImage}
-              />
-            ))}
-          </ScrollView>
+            keyExtractor={(item, index) => `image-${index}`}
+            renderItem={({ item: image }) => (
+              <Image source={{ uri: image }} style={styles.postImage} />
+            )}
+          />
         )}
 
         {/* Actions */}

@@ -9,11 +9,13 @@ import {
   Platform,
   Modal,
   Animated,
+  Alert,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import LocationSearchInput from "../../components/LocationSearchInput";
 
 const DURATION_OPTIONS = [
   { label: "30 minutes", value: "30" },
@@ -56,6 +58,8 @@ export default function CreateMeetupStep2Screen({
     ...initialData,
     locationName: initialData?.locationName || "",
     address: initialData?.address || "",
+    latitude: initialData?.latitude || null,
+    longitude: initialData?.longitude || null,
     time: initialData?.time || "",
     duration: initialData?.duration || "",
     maxParticipants: initialData?.maxParticipants || "",
@@ -74,7 +78,7 @@ export default function CreateMeetupStep2Screen({
   const datePickerFadeAnim = useRef(new Animated.Value(0)).current;
   const datePickerSlideAnim = useRef(new Animated.Value(300)).current;
 
-  const updateFormData = (field: string, value: string) => {
+  const updateFormData = (field: string, value: any) => {
     const newData = { ...formData, [field]: value };
     setFormData(newData);
     onUpdate(newData);
@@ -156,7 +160,7 @@ export default function CreateMeetupStep2Screen({
   };
 
   const handleNext = () => {
-    if (!formData.locationName.trim() || !formData.time || !formData.duration) {
+    if (!formData.address.trim() || !formData.time || !formData.duration) {
       return;
     }
     navigation.navigate("CreateMeetupStep4", { formData });
@@ -165,34 +169,6 @@ export default function CreateMeetupStep2Screen({
   const handleBack = () => {
     navigation.goBack();
   };
-
-  const renderInput = (
-    label: string,
-    field: keyof typeof formData,
-    placeholder: string,
-    multiline = false
-  ) => (
-    <View style={styles.inputContainer}>
-      <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
-      <TextInput
-        style={[
-          styles.input,
-          {
-            backgroundColor: colors.surface,
-            borderColor: colors.border,
-            color: colors.text,
-          },
-          multiline && styles.multilineInput,
-        ]}
-        placeholder={placeholder}
-        placeholderTextColor={colors.textSecondary}
-        value={formData[field] ? String(formData[field]) : ""}
-        onChangeText={(text) => updateFormData(field, text)}
-        multiline={multiline}
-        numberOfLines={multiline ? 3 : 1}
-      />
-    </View>
-  );
 
   const renderDurationModal = () => (
     <View style={styles.modalOverlay}>
@@ -260,12 +236,74 @@ export default function CreateMeetupStep2Screen({
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.content}>
-          {renderInput(
-            "Location Name *",
-            "locationName",
-            "e.g., Central Park, Starbucks, etc."
-          )}
-          {renderInput("Address", "address", "Full address (optional)", true)}
+          {/* Location Search Input */}
+          <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: colors.text }]}>
+              Location *
+            </Text>
+            <LocationSearchInput
+              value={formData.address}
+              onChangeText={(text) => updateFormData("address", text)}
+              onPlaceSelect={(place) => {
+                // Extract location name from place description (the main_text from structured_formatting)
+                const locationName = place.description.split(",")[0]; // Get first part before comma
+                const newData = {
+                  ...formData,
+                  locationName: locationName,
+                  address: place.address,
+                  latitude: place.latitude,
+                  longitude: place.longitude,
+                };
+                setFormData(newData);
+                onUpdate(newData);
+              }}
+              placeholder="Search for a location..."
+              style={styles.locationSearchInput}
+            />
+            {formData.latitude && formData.longitude && (
+              <>
+                <Text
+                  style={[
+                    styles.coordinatesText,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  📍 {formData.latitude.toFixed(6)},{" "}
+                  {formData.longitude.toFixed(6)}
+                </Text>
+                <TouchableOpacity
+                  style={[
+                    styles.viewMapButton,
+                    { backgroundColor: colors.primary },
+                  ]}
+                  onPress={() => {
+                    navigation.navigate("Map", {
+                      selectedLocation: {
+                        latitude: formData.latitude,
+                        longitude: formData.longitude,
+                        name: formData.locationName,
+                        address: formData.address,
+                      },
+                    });
+                  }}
+                >
+                  <Ionicons
+                    name="map-outline"
+                    size={20}
+                    color={colors.onPrimary}
+                  />
+                  <Text
+                    style={[
+                      styles.viewMapButtonText,
+                      { color: colors.onPrimary },
+                    ]}
+                  >
+                    View on Map
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
 
           {/* Date & Time Selection */}
           <View style={styles.inputContainer}>
@@ -330,7 +368,28 @@ export default function CreateMeetupStep2Screen({
           </View>
 
           {/* Max Participants */}
-          {renderInput("Max Participants", "maxParticipants", "e.g., 10")}
+          <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: colors.text }]}>
+              Max Participants
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.text,
+                },
+              ]}
+              placeholder="e.g., 10"
+              placeholderTextColor={colors.textSecondary}
+              value={
+                formData.maxParticipants ? String(formData.maxParticipants) : ""
+              }
+              onChangeText={(text) => updateFormData("maxParticipants", text)}
+              keyboardType="numeric"
+            />
+          </View>
         </View>
       </ScrollView>
 
@@ -340,18 +399,14 @@ export default function CreateMeetupStep2Screen({
             styles.nextButton,
             {
               backgroundColor:
-                formData.locationName.trim() &&
-                formData.time &&
-                formData.duration
+                formData.address.trim() && formData.time && formData.duration
                   ? colors.primary
                   : colors.textSecondary,
             },
           ]}
           onPress={handleNext}
           disabled={
-            !formData.locationName.trim() ||
-            !formData.time ||
-            !formData.duration
+            !formData.address.trim() || !formData.time || !formData.duration
           }
         >
           <Text style={[styles.nextButtonText, { color: colors.onPrimary }]}>
@@ -535,6 +590,14 @@ const styles = StyleSheet.create({
   durationList: {
     maxHeight: 300,
   },
+  locationSearchInput: {
+    marginTop: 8,
+  },
+  coordinatesText: {
+    fontSize: 12,
+    marginTop: 4,
+    fontStyle: "italic",
+  },
   durationItem: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -584,6 +647,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   datePickerButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  viewMapButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 8,
+    gap: 8,
+  },
+  viewMapButtonText: {
     fontSize: 16,
     fontWeight: "600",
   },

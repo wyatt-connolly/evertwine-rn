@@ -3,6 +3,7 @@ import { AuthUser } from "../types";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import * as AuthSession from "expo-auth-session";
+import * as AppleAuthentication from "expo-apple-authentication";
 import { SupabaseDataService } from "./SupabaseDataService";
 
 export class SupabaseAuthService {
@@ -99,6 +100,8 @@ export class SupabaseAuthService {
   // OAuth Authentication
   static async signInWithGoogle() {
     try {
+      console.log("🔵 [Google Sign In] Starting Google OAuth flow...");
+
       // Use the standard OAuth flow without skipBrowserRedirect
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -110,15 +113,21 @@ export class SupabaseAuthService {
         },
       });
 
+      console.log("🔵 [Google Sign In] OAuth request result:", { data, error });
+
       if (error) {
+        console.error("🔴 [Google Sign In] OAuth error:", error);
         throw new Error(`Google OAuth not configured: ${error.message}`);
       }
 
       if (!data?.url) {
+        console.error("🔴 [Google Sign In] No OAuth URL received");
         throw new Error(
           "Google OAuth provider not configured in Supabase dashboard"
         );
       }
+
+      console.log("🔵 [Google Sign In] Opening browser with URL:", data.url);
 
       // Open the URL in the browser - Supabase will handle the redirect automatically
       const result = await WebBrowser.openAuthSessionAsync(
@@ -126,17 +135,33 @@ export class SupabaseAuthService {
         "evertwine://auth/callback"
       );
 
+      console.log("🔵 [Google Sign In] Browser session result:", result);
+
       // Process the OAuth callback URL to set the session
       if (result.type === "success" && result.url) {
+        console.log(
+          "🔵 [Google Sign In] Processing successful callback URL:",
+          result.url
+        );
+
         // Extract the URL fragment (everything after #)
         const urlFragment = result.url.split("#")[1];
+        console.log("🔵 [Google Sign In] URL fragment:", urlFragment);
+
         if (urlFragment) {
           // Parse the URL fragment to extract tokens
           const params = new URLSearchParams(urlFragment);
           const accessToken = params.get("access_token");
           const refreshToken = params.get("refresh_token");
 
+          console.log("🔵 [Google Sign In] Extracted tokens:", {
+            hasAccessToken: !!accessToken,
+            hasRefreshToken: !!refreshToken,
+          });
+
           if (accessToken && refreshToken) {
+            console.log("🔵 [Google Sign In] Setting session with tokens...");
+
             // Set the session manually
             const { data: sessionData, error: sessionError } =
               await supabase.auth.setSession({
@@ -144,21 +169,44 @@ export class SupabaseAuthService {
                 refresh_token: refreshToken,
               });
 
+            console.log("🔵 [Google Sign In] Session set result:", {
+              sessionData,
+              sessionError,
+            });
+
             if (sessionError) {
+              console.error("🔴 [Google Sign In] Session error:", sessionError);
               throw new Error(`Failed to set session: ${sessionError.message}`);
             }
+
+            console.log(
+              "✅ [Google Sign In] Successfully authenticated with Google"
+            );
           } else {
+            console.error("🔴 [Google Sign In] Missing tokens in callback");
             throw new Error(
               "Missing access or refresh token in OAuth callback"
             );
           }
         } else {
+          console.error("🔴 [Google Sign In] No URL fragment in callback");
           throw new Error("No URL fragment in OAuth callback");
+        }
+      } else {
+        console.log(
+          "🔵 [Google Sign In] Browser session result type:",
+          result.type
+        );
+        if (result.type === "cancel") {
+          console.log("🟡 [Google Sign In] User cancelled authentication");
+        } else {
+          console.log("🔵 [Google Sign In] Other result type:", result);
         }
       }
 
       return result;
     } catch (error) {
+      console.error("🔴 [Google Sign In] Error in signInWithGoogle:", error);
       throw error;
     }
   }
@@ -252,68 +300,131 @@ export class SupabaseAuthService {
   }
 
   static async signInWithApple() {
-    const redirectUrl =
-      "https://lqrumkrfmhrstcjfloty.supabase.co/auth/v1/callback";
+    try {
+      console.log("🍎 [Apple Sign In] Starting Apple authentication...");
 
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "apple",
-      options: {
-        redirectTo: redirectUrl,
-        skipBrowserRedirect: false,
-      },
-    });
-
-    if (error) {
-      throw new Error(`Apple OAuth not configured: ${error.message}`);
-    }
-
-    // Check if we got a valid URL
-    if (!data?.url) {
-      throw new Error(
-        "Apple OAuth provider not configured in Supabase dashboard"
+      // Check if Apple Authentication is available on this device
+      const isAvailable = await AppleAuthentication.isAvailableAsync();
+      console.log(
+        "🍎 [Apple Sign In] Apple Authentication available:",
+        isAvailable
       );
-    }
 
-    // Validate URL is not localhost (indicates misconfiguration)
-    if (data.url.includes("localhost") || data.url.includes("127.0.0.1")) {
-      throw new Error(
-        "OAuth provider not properly configured. Please set up Apple OAuth in Supabase dashboard."
-      );
-    }
+      if (!isAvailable) {
+        throw new Error("Apple Sign In is not available on this device");
+      }
 
-    // Open the OAuth URL in a browser
+      // Request Apple Sign In credentials
+      console.log("🍎 [Apple Sign In] Requesting Apple credentials...");
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
 
-    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+      console.log("🍎 [Apple Sign In] Apple credential received:", {
+        state: credential.state,
+        hasIdentityToken: !!credential.identityToken,
+        hasEmail: !!credential.email,
+        hasFullName: !!credential.fullName,
+        nonce: credential.nonce,
+      });
 
-    // Handle session if successful
-    if (result.type === "success" && result.url) {
-      // Extract the URL fragment (everything after #)
-      const urlFragment = result.url.split("#")[1];
-      if (urlFragment) {
-        // Parse the URL parameters
-        const params = new URLSearchParams(urlFragment);
-        const accessToken = params.get("access_token");
-        const refreshToken = params.get("refresh_token");
+      // Check if the user cancelled the sign-in
+      if (
+        credential.state ===
+        AppleAuthentication.AppleAuthenticationCredentialState.CANCELED
+      ) {
+        console.log("🟡 [Apple Sign In] User cancelled authentication");
+        return { type: "cancel" };
+      }
 
-        if (accessToken) {
-          // Set the session manually
-          const { data: sessionData, error: sessionError } =
-            await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken || "",
-            });
+      // Verify the credential state
+      if (
+        credential.state !==
+        AppleAuthentication.AppleAuthenticationCredentialState.AUTHORIZED
+      ) {
+        console.error(
+          "🔴 [Apple Sign In] Credential not authorized, state:",
+          credential.state
+        );
+        throw new Error("Apple Sign In was not authorized");
+      }
 
-          if (sessionError) {
-            throw sessionError;
-          }
+      console.log("🍎 [Apple Sign In] Exchanging Apple token with Supabase...");
 
-          // Check if user exists in database and create if needed
-          await this.ensureUserExists(sessionData.session?.user);
+      // Sign in to Supabase using the Apple ID token
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: "apple",
+        token: credential.identityToken!,
+        nonce: credential.nonce,
+      });
+
+      console.log("🍎 [Apple Sign In] Supabase response:", { data, error });
+
+      if (error) {
+        console.error("🔴 [Apple Sign In] Supabase error:", error);
+        throw new Error(`Apple Sign In failed: ${error.message}`);
+      }
+
+      if (!data.user) {
+        console.error("🔴 [Apple Sign In] No user data from Supabase");
+        throw new Error("No user data received from Apple Sign In");
+      }
+
+      console.log("🍎 [Apple Sign In] User data received:", {
+        uid: data.user.uid,
+        email: data.user.email,
+        hasMetadata: !!data.user.user_metadata,
+      });
+
+      // Update user metadata with Apple-specific data
+      const updates: any = {};
+
+      // Apple only provides email on first sign-in, so we preserve it
+      if (credential.email) {
+        updates.email = credential.email;
+        console.log("🍎 [Apple Sign In] Email provided:", credential.email);
+      }
+
+      // Apple only provides full name on first sign-in
+      if (credential.fullName) {
+        const { givenName, familyName } = credential.fullName;
+        if (givenName || familyName) {
+          updates.displayName = `${givenName || ""} ${familyName || ""}`.trim();
+          console.log(
+            "🍎 [Apple Sign In] Full name provided:",
+            updates.displayName
+          );
         }
       }
-    }
 
-    return result;
+      console.log("🍎 [Apple Sign In] Metadata updates:", updates);
+
+      // Update user metadata if we have new information
+      if (Object.keys(updates).length > 0) {
+        console.log("🍎 [Apple Sign In] Updating user metadata...");
+        await this.updateUserMetadata(updates);
+      }
+
+      // Ensure user exists in database and create if needed
+      console.log("🍎 [Apple Sign In] Ensuring user exists in database...");
+      await this.ensureUserExists(data.user);
+
+      console.log("✅ [Apple Sign In] Successfully authenticated with Apple");
+      return { type: "success", user: data.user };
+    } catch (error: any) {
+      console.error("🔴 [Apple Sign In] Error in signInWithApple:", error);
+
+      // Handle Apple Authentication specific errors
+      if (error.code === "ERR_CANCELED") {
+        console.log("🟡 [Apple Sign In] User cancelled (ERR_CANCELED)");
+        return { type: "cancel" };
+      }
+
+      throw error;
+    }
   }
 
   // Listen to auth state changes

@@ -5,7 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  ScrollView,
+  FlatList,
   Dimensions,
 } from "react-native";
 import { Image } from "expo-image";
@@ -66,7 +66,9 @@ export default function PostCard({ post, onLike, onComment }: PostCardProps) {
           ]}
         >
           <Ionicons name="megaphone" size={12} color={colors.onAnnouncement} />
-          <Text style={[styles.announcementText, { color: colors.onAnnouncement }]}>
+          <Text
+            style={[styles.announcementText, { color: colors.onAnnouncement }]}
+          >
             Announcement
           </Text>
         </View>
@@ -95,19 +97,16 @@ export default function PostCard({ post, onLike, onComment }: PostCardProps) {
 
       {/* Images */}
       {post.images && post.images.length > 0 && (
-        <ScrollView
+        <FlatList
+          data={post.images}
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.imagesContainer}
-        >
-          {post.images.map((image, index) => (
-            <Image
-              key={index}
-              source={{ uri: image }}
-              style={styles.postImage}
-            />
-          ))}
-        </ScrollView>
+          keyExtractor={(item, index) => `image-${index}`}
+          renderItem={({ item: image }) => (
+            <Image source={{ uri: image }} style={styles.postImage} />
+          )}
+        />
       )}
 
       {/* Actions */}

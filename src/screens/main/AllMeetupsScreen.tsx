@@ -113,6 +113,13 @@ export default function AllMeetupsScreen() {
   const getFilteredMeetups = () => {
     let filtered = [...allMeetups];
 
+    // Filter out past meetups
+    const now = new Date();
+    filtered = filtered.filter((meetup) => {
+      const meetupTime = new Date(meetup.time);
+      return meetupTime.getTime() > now.getTime();
+    });
+
     // Apply primary filter
     if (activeFilter === "following") {
       filtered = filtered.filter((meetup) => meetup.creatorId === "user1");
@@ -184,7 +191,10 @@ export default function AllMeetupsScreen() {
       key={item.id}
       meetup={item}
       onPress={() =>
-        navigation.navigate("MeetupDetails", { meetupId: item.id })
+        navigation.navigate("MeetupDetails", {
+          meetupId: item.id,
+          meetupData: item,
+        })
       }
       style={[styles.meetupCard, { backgroundColor: colors.surface }]}
     />

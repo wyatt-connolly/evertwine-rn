@@ -9,28 +9,205 @@ import {
   Animated,
   ScrollView,
 } from "react-native";
-import { PanGestureHandler } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import { useAuthStore } from "../../hooks/useAuthStore";
 import { getMockStandouts } from "../../data/mockData";
 import { DataService } from "../../services/DataService";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
 import {
   EmptyStandoutsState,
   LoadingState,
 } from "../../components/EmptyStates";
-import { StandoutItem } from "../../types";
+import { StandoutItem, User } from "../../types";
 import UserMeetupNavigation from "../../components/UserMeetupNavigation";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.7;
 const CARD_MARGIN = 12;
 
+// Messaging Modal Component
+interface MessagingModalProps {
+  visible: boolean;
+  onClose: () => void;
+  standouts: StandoutItem[];
+  currentUser: User | null;
+  navigation: any;
+}
+
+const MessagingModal: React.FC<MessagingModalProps> = ({
+  visible,
+  onClose,
+  standouts,
+  currentUser,
+  navigation,
+}) => {
+  const { colors } = useThemeStore();
+  const [selectedUserIndex, setSelectedUserIndex] = useState(0);
+
+  const selectedUser = standouts[selectedUserIndex];
+
+  const handleSendMessage = () => {
+    if (selectedUser) {
+      // Navigate to messages or create a new conversation
+      navigation.navigate("Messages", {
+        screen: "Chat",
+        params: {
+          userId: selectedUser.id,
+          userData: selectedUser.userData,
+        },
+      });
+      onClose();
+    }
+  };
+
+  if (!visible) return null;
+
+  return (
+    <View style={styles.modalOverlay}>
+      <View
+        style={[styles.modalContainer, { backgroundColor: colors.surface }]}
+      >
+        {/* Header */}
+        <View
+          style={[styles.modalHeader, { borderBottomColor: colors.border }]}
+        >
+          <Text style={[styles.modalTitle, { color: colors.text }]}>
+            Message Someone
+          </Text>
+          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <Ionicons name="close" size={24} color={colors.text} />
+          </TouchableOpacity>
+        </View>
+
+        {/* User Selection */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.userSelection}
+          contentContainerStyle={styles.userSelectionContent}
+        >
+          {standouts.map((user, index) => (
+            <TouchableOpacity
+              key={user.id}
+              style={[
+                styles.userSelectionItem,
+                {
+                  backgroundColor:
+                    index === selectedUserIndex
+                      ? colors.primary
+                      : colors.background,
+                  borderColor: colors.border,
+                },
+              ]}
+              onPress={() => setSelectedUserIndex(index)}
+            >
+              {user.image ? (
+                <Image
+                  source={{ uri: user.image }}
+                  style={styles.userSelectionAvatar}
+                />
+              ) : (
+                <View
+                  style={[
+                    styles.userSelectionAvatar,
+                    styles.placeholderAvatar,
+                    { backgroundColor: colors.surface },
+                  ]}
+                >
+                  <Ionicons
+                    name="person"
+                    size={20}
+                    color={colors.textSecondary}
+                  />
+                </View>
+              )}
+              <Text
+                style={[
+                  styles.userSelectionName,
+                  {
+                    color:
+                      index === selectedUserIndex
+                        ? colors.onPrimary
+                        : colors.text,
+                  },
+                ]}
+                numberOfLines={1}
+              >
+                {user.title}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Selected User Profile */}
+        {selectedUser && (
+          <View style={styles.selectedUserProfile}>
+            <View style={styles.profileHeader}>
+              {selectedUser.image ? (
+                <Image
+                  source={{ uri: selectedUser.image }}
+                  style={styles.profileAvatar}
+                />
+              ) : (
+                <View
+                  style={[
+                    styles.profileAvatar,
+                    styles.placeholderAvatar,
+                    { backgroundColor: colors.surface },
+                  ]}
+                >
+                  <Ionicons
+                    name="person"
+                    size={40}
+                    color={colors.textSecondary}
+                  />
+                </View>
+              )}
+              <View style={styles.profileInfo}>
+                <Text style={[styles.profileName, { color: colors.text }]}>
+                  {selectedUser.title}
+                </Text>
+                <Text
+                  style={[
+                    styles.profileDescription,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  {selectedUser.description}
+                </Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.sendMessageButton,
+                { backgroundColor: colors.primary },
+              ]}
+              onPress={handleSendMessage}
+            >
+              <Ionicons name="send" size={20} color={colors.onPrimary} />
+              <Text
+                style={[styles.sendMessageText, { color: colors.onPrimary }]}
+              >
+                Send Message
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+};
+
 export default function StandoutsScreen({ navigation }: any) {
   const { colors } = useThemeStore();
+  const { user: currentUser } = useAuthStore();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [standouts, setStandouts] = useState<StandoutItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showMessagingModal, setShowMessagingModal] = useState(false);
 
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -39,12 +216,60 @@ export default function StandoutsScreen({ navigation }: any) {
   useEffect(() => {
     const loadStandouts = async () => {
       try {
-        // Use mock data
-        const mockStandouts = getMockStandouts().filter(
-          (item) => item.type === "user"
-        );
-        setStandouts(mockStandouts);
+        if (DataService.isInDeveloperMode()) {
+          // Use mock data in developer mode
+          const mockStandouts = getMockStandouts().filter(
+            (item) => item.type === "user"
+          );
+          setStandouts(mockStandouts);
+        } else {
+          // Use Supabase data in production mode
+          console.log("Loading standouts from Supabase...");
+          const users =
+            await SupabaseDataService.getAllActiveUsersExcludingAdmin(10); // Get more to filter
+          console.log("Loaded users from Supabase:", users.length, users);
+
+          // Filter out current user
+          const filteredUsers = users.filter(
+            (user) => user.uid !== currentUser?.uid
+          );
+          console.log(
+            "Filtered users (excluding current):",
+            filteredUsers.length
+          );
+
+          // Take first 3 users
+          const selectedUsers = filteredUsers.slice(0, 3);
+
+          const standoutItems = selectedUsers.map((user, index) => ({
+            id: user.uid,
+            type: "user" as const,
+            title: user.displayName || "Anonymous User",
+            description:
+              user.bio ||
+              `${user.age ? `${user.age} years old` : ""} • ${
+                user.locationName || "Location not set"
+              }`,
+            image: user.profilePictures?.[0] || "",
+            badge:
+              index === 0
+                ? "New Member"
+                : index === 1
+                ? "Active User"
+                : "Community Member",
+            stats: {
+              followers: Math.floor(Math.random() * 1000) + 100, // Mock follower count
+              rating: 4.5 + Math.random() * 0.5, // Mock rating between 4.5-5.0
+            },
+            userData: user,
+            location: user.locationName || "Unknown Location",
+          }));
+
+          console.log("Converted to standout items:", standoutItems);
+          setStandouts(standoutItems);
+        }
       } catch (error) {
+        console.error("Error loading standouts:", error);
         setStandouts([]);
       } finally {
         setIsLoading(false);
@@ -111,16 +336,30 @@ export default function StandoutsScreen({ navigation }: any) {
           }}
         >
           <View style={styles.avatarContainer}>
-            <Image
-              source={{
-                uri: item.userData?.profilePictures?.[
-                  item.userData?.standoutPhotoIndex !== undefined
-                    ? item.userData.standoutPhotoIndex
-                    : 0
-                ],
-              }}
-              style={styles.userAvatar}
-            />
+            {item.image ? (
+              <Image
+                source={{ uri: item.image }}
+                style={styles.userAvatar}
+                onError={() => {
+                  // Handle image load error
+                  console.log("Image failed to load for user:", item.id);
+                }}
+              />
+            ) : (
+              <View
+                style={[
+                  styles.userAvatar,
+                  styles.placeholderAvatar,
+                  { backgroundColor: colors.surface },
+                ]}
+              >
+                <Ionicons
+                  name="person"
+                  size={40}
+                  color={colors.textSecondary}
+                />
+              </View>
+            )}
             {item.userData?.standoutPhotoIndex !== undefined && (
               <View
                 style={[
@@ -180,6 +419,18 @@ export default function StandoutsScreen({ navigation }: any) {
                 style={[styles.actionButtonText, { color: colors.onPrimary }]}
               >
                 View Profile
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.messageButton, { borderColor: colors.primary }]}
+              onPress={() => setShowMessagingModal(true)}
+            >
+              <Ionicons name="chatbubble" size={16} color={colors.primary} />
+              <Text
+                style={[styles.messageButtonText, { color: colors.primary }]}
+              >
+                Message
               </Text>
             </TouchableOpacity>
           </View>
@@ -259,6 +510,15 @@ export default function StandoutsScreen({ navigation }: any) {
           {standouts.map((item, index) => renderCard(item, index))}
         </ScrollView>
       </View>
+
+      {/* Messaging Modal */}
+      <MessagingModal
+        visible={showMessagingModal}
+        onClose={() => setShowMessagingModal(false)}
+        standouts={standouts}
+        currentUser={currentUser}
+        navigation={navigation}
+      />
     </SafeAreaView>
   );
 }
@@ -321,6 +581,12 @@ const styles = StyleSheet.create({
     height: 133, // 3:4 aspect ratio
     borderRadius: 16,
   },
+  placeholderAvatar: {
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "rgba(255, 255, 255, 0.1)",
+  },
   standoutIndicator: {
     position: "absolute",
     top: -4,
@@ -374,6 +640,7 @@ const styles = StyleSheet.create({
   cardActions: {
     marginTop: 16,
     width: "100%",
+    gap: 12,
   },
   actionButton: {
     flexDirection: "row",
@@ -388,6 +655,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
+  messageButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    borderWidth: 1,
+    gap: 8,
+  },
+  messageButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
   emptyContainer: {
     flex: 1,
     alignItems: "center",
@@ -398,5 +679,103 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "600",
     marginTop: 16,
+  },
+  // Modal styles
+  modalOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContainer: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: "80%",
+    minHeight: "50%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  closeButton: {
+    padding: 4,
+  },
+  userSelection: {
+    maxHeight: 100,
+    paddingVertical: 16,
+  },
+  userSelectionContent: {
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  userSelectionItem: {
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    minWidth: 80,
+  },
+  userSelectionAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginBottom: 8,
+  },
+  userSelectionName: {
+    fontSize: 12,
+    fontWeight: "500",
+    textAlign: "center",
+  },
+  selectedUserProfile: {
+    padding: 20,
+    flex: 1,
+  },
+  profileHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  profileAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 16,
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  profileName: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  profileDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  sendMessageButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+    gap: 8,
+  },
+  sendMessageText: {
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

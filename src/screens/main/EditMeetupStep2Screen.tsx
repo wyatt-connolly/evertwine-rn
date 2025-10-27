@@ -9,11 +9,13 @@ import {
   Platform,
   Modal,
   Animated,
+  Alert,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
+import LocationSearchInput from "../../components/LocationSearchInput";
 
 const DURATION_OPTIONS = [
   { label: "30 minutes", value: "30" },
@@ -57,6 +59,8 @@ export default function EditMeetupStep2Screen({
     ...initialData,
     locationName: initialData?.locationName || "",
     address: initialData?.address || "",
+    latitude: initialData?.latitude || null,
+    longitude: initialData?.longitude || null,
     time: initialData?.time || "",
     duration: initialData?.duration || "",
     maxParticipants: initialData?.maxParticipants || "",
@@ -75,7 +79,7 @@ export default function EditMeetupStep2Screen({
   const datePickerFadeAnim = useRef(new Animated.Value(0)).current;
   const datePickerSlideAnim = useRef(new Animated.Value(300)).current;
 
-  const updateFormData = (field: string, value: string) => {
+  const updateFormData = (field: string, value: any) => {
     const newData = { ...formData, [field]: value };
     setFormData(newData);
     onUpdate(newData);
@@ -393,7 +397,64 @@ export default function EditMeetupStep2Screen({
             "locationName",
             "Where will it take place?"
           )}
-          {renderInput("Address", "address", "Full address")}
+          {/* Location Search Input */}
+          <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: colors.text }]}>Location</Text>
+            <LocationSearchInput
+              value={formData.address}
+              onChangeText={(text) => updateFormData("address", text)}
+              onPlaceSelect={(place) => {
+                updateFormData("address", place.address);
+                updateFormData("latitude", place.latitude);
+                updateFormData("longitude", place.longitude);
+              }}
+              placeholder="Search for a location..."
+              style={styles.locationSearchInput}
+            />
+            {formData.latitude && formData.longitude && (
+              <>
+                <Text
+                  style={[
+                    styles.coordinatesText,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  📍 {formData.latitude.toFixed(6)},{" "}
+                  {formData.longitude.toFixed(6)}
+                </Text>
+                <TouchableOpacity
+                  style={[
+                    styles.viewMapButton,
+                    { backgroundColor: colors.primary },
+                  ]}
+                  onPress={() => {
+                    navigation.navigate("Map", {
+                      selectedLocation: {
+                        latitude: formData.latitude,
+                        longitude: formData.longitude,
+                        name: formData.locationName,
+                        address: formData.address,
+                      },
+                    });
+                  }}
+                >
+                  <Ionicons
+                    name="map-outline"
+                    size={20}
+                    color={colors.onPrimary}
+                  />
+                  <Text
+                    style={[
+                      styles.viewMapButtonText,
+                      { color: colors.onPrimary },
+                    ]}
+                  >
+                    View on Map
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
 
           {renderSelector(
             "Date & Time *",
@@ -570,5 +631,27 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
+  },
+  locationSearchInput: {
+    marginTop: 8,
+  },
+  coordinatesText: {
+    fontSize: 12,
+    marginTop: 4,
+    fontStyle: "italic",
+  },
+  viewMapButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 8,
+    gap: 8,
+  },
+  viewMapButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

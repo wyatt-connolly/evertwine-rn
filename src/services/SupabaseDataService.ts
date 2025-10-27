@@ -118,6 +118,16 @@ export class SupabaseDataService {
     return data.map(this.mapUserFromDB);
   }
 
+  static async getAllActiveUsersExcludingAdmin(limit = 50): Promise<User[]> {
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .order("created_time", { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return data.map(this.mapUserFromDB);
+  }
+
   // ==================== POSTS ====================
   static async getPosts(limit = 50): Promise<Post[]> {
     const { data, error } = await supabase

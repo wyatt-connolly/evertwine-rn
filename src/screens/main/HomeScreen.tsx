@@ -778,9 +778,9 @@ export default function HomeScreen() {
         else if (hoursUntilMeetup > 0) {
           priority = 40 + Math.floor(hoursUntilMeetup / 24);
         }
-        // Past meetups (lower priority)
+        // Past meetups - don't show them
         else {
-          priority = 200;
+          return; // Skip past meetups entirely
         }
 
         // Apply preference priority boost (lower number = higher priority)
@@ -826,9 +826,9 @@ export default function HomeScreen() {
         else if (hoursUntilEvent > 0) {
           priority = 40 + Math.floor(hoursUntilEvent / 24);
         }
-        // Past events (lower priority)
+        // Past events - don't show them
         else {
-          priority = 200;
+          return; // Skip past events entirely
         }
 
         // Apply preference priority boost for events
@@ -1190,7 +1190,10 @@ export default function HomeScreen() {
           <EnhancedMeetupCard
             meetup={meetup}
             onPress={() =>
-              navigation.navigate("MeetupDetails", { meetupId: meetup.id })
+              navigation.navigate("MeetupDetails", {
+                meetupId: meetup.id,
+                meetupData: meetup,
+              })
             }
             onInterested={handleMeetupInterested}
             isInterested={interestedMeetups.has(meetup.id)}

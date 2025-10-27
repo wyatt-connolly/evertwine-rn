@@ -20,7 +20,10 @@
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to let you select profile pictures.",
         "NSLocationWhenInUseUsageDescription": "This app needs access to your location to show nearby meetups and places."
       },
-      "bundleIdentifier": "com.anonymous.evertwine-rn"
+      "bundleIdentifier": "com.mycompany.evertwinedraft",
+      "entitlements": {
+        "com.apple.developer.applesignin": ["Default"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -46,6 +49,7 @@
       ],
       "expo-web-browser",
       "expo-audio",
+      "expo-apple-authentication",
       [
         "expo-notifications",
         {

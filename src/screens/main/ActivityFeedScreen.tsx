@@ -162,6 +162,7 @@ export default function ActivityFeedScreen({ navigation }: any) {
         if (activity.meetup) {
           navigation.navigate("MeetupDetails", {
             meetupId: activity.meetup.id,
+            meetupData: activity.meetup,
           });
         }
         break;
