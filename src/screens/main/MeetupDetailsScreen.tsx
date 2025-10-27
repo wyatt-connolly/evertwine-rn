@@ -485,9 +485,9 @@ export default function MeetupDetailsScreen({
               <TouchableOpacity
                 style={styles.participantItem}
                 onPress={() => {
-                  navigation.navigate("UserProfileDetails", {
+                  navigation.navigate("UserProfile", {
                     userId: creator.uid,
-                    user: creator,
+                    userData: creator,
                   });
                 }}
               >
@@ -525,9 +525,9 @@ export default function MeetupDetailsScreen({
                   key={participant.uid}
                   style={styles.participantItem}
                   onPress={() => {
-                    navigation.navigate("UserProfileDetails", {
+                    navigation.navigate("UserProfile", {
                       userId: participant.uid,
-                      user: participant,
+                      userData: participant,
                     });
                   }}
                 >
