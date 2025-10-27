@@ -59,7 +59,7 @@ export default function MeetupDetailsScreen({
         // If we have meetup data passed in, fetch creator and participants from Supabase
         if (meetupData) {
           setMeetup(meetupData);
-          
+
           // Fetch creator from Supabase
           if (meetupData.creatorId) {
             try {
@@ -76,7 +76,7 @@ export default function MeetupDetailsScreen({
               }
             }
           }
-          
+
           // Fetch participants from Supabase
           if (meetupData.participants && meetupData.participants.length > 0) {
             try {
@@ -471,46 +471,6 @@ export default function MeetupDetailsScreen({
           </View>
         </View>
 
-        {/* Organizer */}
-        {creator && (
-          <View style={[styles.infoCard, { backgroundColor: colors.surface }]}>
-            <View style={styles.infoHeader}>
-              <Ionicons
-                name="person-outline"
-                size={20}
-                color={colors.primary}
-              />
-              <Text style={[styles.infoTitle, { color: colors.text }]}>
-                Organizer
-              </Text>
-            </View>
-            <View style={styles.organizerInfo}>
-              <Image
-                source={{
-                  uri:
-                    creator?.profilePictures?.[
-                      creator.standoutPhotoIndex !== undefined
-                        ? creator.standoutPhotoIndex
-                        : 0
-                    ] ||
-                    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-                }}
-                style={styles.organizerAvatar}
-              />
-              <View style={styles.organizerDetails}>
-                <Text style={[styles.organizerName, { color: colors.text }]}>
-                  {creator?.displayName || "Organizer"}
-                </Text>
-                <Text
-                  style={[styles.organizerBio, { color: colors.textSecondary }]}
-                >
-                  {creator?.bio || "No bio available"}
-                </Text>
-              </View>
-            </View>
-          </View>
-        )}
-
         {/* Participants */}
         <View style={[styles.infoCard, { backgroundColor: colors.surface }]}>
           <View style={styles.infoHeader}>
@@ -522,7 +482,15 @@ export default function MeetupDetailsScreen({
           <View style={styles.participantsList}>
             {/* Creator with crown icon */}
             {creator && (
-              <View style={styles.participantItem}>
+              <TouchableOpacity
+                style={styles.participantItem}
+                onPress={() => {
+                  navigation.navigate("UserProfileDetails", {
+                    userId: creator.uid,
+                    user: creator,
+                  });
+                }}
+              >
                 <View style={styles.participantAvatarContainer}>
                   <Image
                     source={{
@@ -548,12 +516,21 @@ export default function MeetupDetailsScreen({
                 <Text style={[styles.participantName, { color: colors.text }]}>
                   {creator?.displayName || "Creator"}
                 </Text>
-              </View>
+              </TouchableOpacity>
             )}
             {/* Other participants */}
             {participants &&
               participants.map((participant: any) => (
-                <View key={participant.uid} style={styles.participantItem}>
+                <TouchableOpacity
+                  key={participant.uid}
+                  style={styles.participantItem}
+                  onPress={() => {
+                    navigation.navigate("UserProfileDetails", {
+                      userId: participant.uid,
+                      user: participant,
+                    });
+                  }}
+                >
                   <Image
                     source={{
                       uri:
@@ -571,7 +548,7 @@ export default function MeetupDetailsScreen({
                   >
                     {participant?.displayName || "Participant"}
                   </Text>
-                </View>
+                </TouchableOpacity>
               ))}
           </View>
         </View>
