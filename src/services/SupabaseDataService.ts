@@ -1735,7 +1735,7 @@ export class SupabaseDataService {
       admins: [participants[0]], // First participant is admin
       name: meetupTitle,
       avatar: meetupImage,
-      meetup_id: meetupId,
+      meetup_ref: `meetups/${meetupId}`,
       // last_message: null, // Will be set when first message is sent - temporarily removed to test
       settings: {
         allow_invites: true,
@@ -1763,7 +1763,7 @@ export class SupabaseDataService {
       .from("message_rooms")
       .select("*")
       .eq("type", "meetup")
-      .eq("meetup_id", meetupId)
+      .eq("meetup_ref", `meetups/${meetupId}`)
       .single();
 
     if (error) {

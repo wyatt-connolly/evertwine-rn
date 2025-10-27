@@ -83,7 +83,7 @@ export type MessagesStackParamList = {
 export type MainStackParamList = {
   MainTabs: undefined;
   Map: undefined;
-  MeetupDetails: { meetupId: string };
+  MeetupDetails: { meetupId: string; meetupData?: any };
   EditMeetup: { meetupId: string };
   EditPost: { postId: string };
   EventDetails: { eventId: string; event?: any };
