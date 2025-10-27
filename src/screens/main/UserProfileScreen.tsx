@@ -8,7 +8,6 @@ import {
   ScrollView,
   Image,
   Dimensions,
-  FlatList,
   Alert,
   Modal,
   Animated,
@@ -31,6 +30,7 @@ interface UserProfileScreenProps {
       userId: string;
       userData?: any;
       fromMessage?: boolean;
+      hideHeader?: boolean;
     };
   };
   navigation: any;
@@ -42,8 +42,7 @@ export default function UserProfileScreen({
 }: UserProfileScreenProps) {
   const { colors } = useThemeStore();
   const { user: currentUser } = useAuthStore();
-  const { userData } = route.params;
-  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const { userData, hideHeader = false } = route.params;
 
   // Menu state
   const [showMenu, setShowMenu] = useState(false);
@@ -64,7 +63,7 @@ export default function UserProfileScreen({
         currentUser.uid,
         userData.uid,
         currentUser.displayName || "Someone"
-      ).catch((error) => {});
+      ).catch(() => {});
     }
   }, [currentUser, userData]);
 
@@ -88,17 +87,11 @@ export default function UserProfileScreen({
       const blockedUsers = await DataService.getBlockedUsers(currentUser.uid);
       const isUserBlocked = blockedUsers.includes(userData.uid);
       setIsBlocked(isUserBlocked);
-    } catch (error) {}
+    } catch {}
   };
 
   const refreshBlockedState = async () => {
     await checkIfBlocked();
-  };
-
-  const handlePhotoScroll = (event: any) => {
-    const contentOffsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(contentOffsetX / width);
-    setCurrentPhotoIndex(index);
   };
 
   const handleMessagePress = async () => {
@@ -158,22 +151,6 @@ export default function UserProfileScreen({
       ]
     );
   };
-
-  const renderPhoto = ({ item, index }: { item: string; index: number }) => (
-    <View style={styles.photoContainer}>
-      <Image source={{ uri: item }} style={styles.photo} />
-      {index === userData?.standoutPhotoIndex && (
-        <View
-          style={[styles.standoutBadge, { backgroundColor: colors.primary }]}
-        >
-          <Ionicons name="star" size={16} color={colors.onPrimary} />
-          <Text style={[styles.standoutText, { color: colors.onPrimary }]}>
-            Standout
-          </Text>
-        </View>
-      )}
-    </View>
-  );
 
   // Menu handlers
   const handleMenuPress = () => {
@@ -293,7 +270,7 @@ export default function UserProfileScreen({
     ]);
   };
 
-  const submitReport = async (reason: string) => {
+  const submitReport = async (_reason: string) => {
     setIsReporting(true);
     try {
       const currentUser = useAuthStore.getState().user;
@@ -342,17 +319,19 @@ export default function UserProfileScreen({
       edges={["top", "left", "right"]}
     >
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>
-          {userData?.displayName || "User Profile"}
-        </Text>
-        <TouchableOpacity onPress={handleMenuPress} ref={menuButtonRef}>
-          <Ionicons name="ellipsis-vertical" size={24} color={colors.text} />
-        </TouchableOpacity>
-      </View>
+      {!hideHeader && (
+        <View style={[styles.header, { borderBottomColor: colors.border }]}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>
+            {userData?.displayName || "User Profile"}
+          </Text>
+          <TouchableOpacity onPress={handleMenuPress} ref={menuButtonRef}>
+            <Ionicons name="ellipsis-vertical" size={24} color={colors.text} />
+          </TouchableOpacity>
+        </View>
+      )}
 
       <ScrollView
         style={[styles.content, { backgroundColor: colors.background }]}
@@ -360,59 +339,33 @@ export default function UserProfileScreen({
       >
         {/* Hero Section */}
         <View style={[styles.heroSection, { backgroundColor: colors.surface }]}>
-          {/* Photo Gallery */}
+          {/* Photo Gallery - Show only first image */}
           {userData?.profilePictures && userData.profilePictures.length > 0 ? (
             <View style={styles.photoGalleryContainer}>
-              <FlatList
-                data={userData.profilePictures.filter((photo: string) => photo)}
-                renderItem={renderPhoto}
-                keyExtractor={(item, index) => index.toString()}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                onScroll={handlePhotoScroll}
-                scrollEventThrottle={16}
-                style={styles.photoGallery}
-              />
-
-              {/* Photo Indicators */}
-              <View style={styles.photoIndicators}>
-                {userData.profilePictures
-                  .filter((photo: string) => photo)
-                  .map((_: string, index: number) => (
-                    <View
-                      key={index}
-                      style={[
-                        styles.indicator,
-                        {
-                          backgroundColor:
-                            index === currentPhotoIndex
-                              ? colors.primary
-                              : colors.textSecondary + "40",
-                        },
-                      ]}
-                    />
-                  ))}
-              </View>
-
-              {/* Photo Counter */}
-              <View
-                style={[
-                  styles.photoCounter,
-                  { backgroundColor: colors.surface + "90" },
-                ]}
-              >
-                <Text style={[styles.photoCounterText, { color: colors.text }]}>
-                  {currentPhotoIndex + 1} /{" "}
-                  {
-                    userData.profilePictures.filter((photo: string) => photo)
-                      .length
-                  }
-                </Text>
+              <View style={styles.photoContainer}>
+                <Image
+                  source={{ uri: userData.profilePictures[0] }}
+                  style={styles.photo}
+                />
+                {0 === userData?.standoutPhotoIndex && (
+                  <View
+                    style={[
+                      styles.standoutBadge,
+                      { backgroundColor: colors.primary },
+                    ]}
+                  >
+                    <Ionicons name="star" size={16} color={colors.onPrimary} />
+                    <Text
+                      style={[styles.standoutText, { color: colors.onPrimary }]}
+                    >
+                      Standout
+                    </Text>
+                  </View>
+                )}
               </View>
             </View>
           ) : (
-            <View style={styles.emptyPhotosContainer}>
+            <View style={styles.photoGalleryContainer}>
               <View
                 style={[
                   styles.profilePhotoPlaceholder,
@@ -1014,7 +967,9 @@ const styles = StyleSheet.create({
   photoGalleryContainer: {
     height: PHOTO_HEIGHT,
     position: "relative",
-    marginBottom: 24,
+    marginBottom: 16,
+    alignItems: "center",
+    justifyContent: "center",
   },
   photoGallery: {
     flex: 1,
@@ -1212,20 +1167,18 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 20,
   },
-  emptyPhotosContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 40,
-    paddingHorizontal: 20,
-    width: "100%",
-  },
   profilePhotoPlaceholder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: width - 80, // Same as photoContainer width
+    height: PHOTO_HEIGHT, // Same as photo height
+    borderRadius: 20, // Same as photoContainer borderRadius
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 16,
   },
   emptyBioContainer: {
     alignItems: "center",
@@ -1256,9 +1209,9 @@ const styles = StyleSheet.create({
   },
   // New styles to match EditProfileScreen
   heroSection: {
-    margin: 16,
+    margin: 8,
     borderRadius: 24,
-    padding: 24,
+    padding: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
@@ -1266,8 +1219,8 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   section: {
-    marginHorizontal: 16,
-    marginBottom: 16,
+    marginHorizontal: 12,
+    marginBottom: 12,
     borderRadius: 20,
     padding: 20,
     shadowColor: "#000",

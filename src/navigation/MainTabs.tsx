@@ -7,9 +7,8 @@ import CustomTabBar from "../components/CustomTabBar";
 import HomeScreen from "../screens/main/HomeScreen";
 // import AnimatedAvatarScreen from "../screens/main/AnimatedAvatarScreen";
 import MessagesScreen from "../screens/main/MessagesScreen";
-import ProfileScreen from "../screens/main/ProfileScreen";
 import EditProfileScreen from "../screens/main/EditProfileScreen";
-import SettingsScreen from "../screens/main/SettingsScreen";
+import ProfileScreen from "../screens/main/ProfileScreen";
 import PreferenceSetupScreen from "../screens/preferences/PreferenceSetupScreen";
 import MeetupDetailsScreen from "../screens/main/MeetupDetailsScreen";
 import ActivityFeedScreen from "../screens/main/ActivityFeedScreen";
@@ -101,6 +100,21 @@ export type MainStackParamList = {
   CreateMeetupStep2: { formData: any; onUpdate: (data: any) => void };
   CreateMeetupStep4: { formData: any; onUpdate: (data: any) => void };
   CreateMeetupConfirmation: { formData: any; onUpdate: (data: any) => void };
+  EditMeetupStep1: {
+    meetupId: string;
+    formData?: any;
+    onUpdate: (data: any) => void;
+  };
+  EditMeetupStep2: {
+    meetupId: string;
+    formData: any;
+    onUpdate: (data: any) => void;
+  };
+  EditMeetupStep4: {
+    meetupId: string;
+    formData: any;
+    onUpdate: (data: any) => void;
+  };
   CreatePost: undefined;
   NotificationsList: undefined;
 };
@@ -128,7 +142,6 @@ function ProfileStackNavigator() {
           gestureEnabled: true,
         }}
       />
-      <ProfileStack.Screen name="SettingsPage" component={SettingsScreen} />
       <ProfileStack.Screen
         name="PreferenceSetup"
         component={PreferenceSetupScreen}
