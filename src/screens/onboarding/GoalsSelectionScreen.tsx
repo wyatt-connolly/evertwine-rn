@@ -31,7 +31,6 @@ const goalOptions = [
   { icon: "🌟", text: "Make new friends", value: "make-friends" },
   { icon: "💼", text: "Expand my network", value: "expand-network" },
   { icon: "🎯", text: "Find activity partners", value: "activity-partners" },
-  { icon: "❤️", text: "Improve my dating life", value: "dating" },
   { icon: "🎉", text: "Discover local events", value: "local-events" },
   { icon: "🎨", text: "Learn new hobbies", value: "hobbies" },
   { icon: "📍", text: "Other", value: "other" },
