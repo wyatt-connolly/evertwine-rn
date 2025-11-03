@@ -52,13 +52,17 @@ export class SupabaseAuthService {
     } = await supabase.auth.getUser();
     if (!user) return null;
 
+    const onboardingComplete = user.user_metadata?.onboardingComplete;
+
     return {
       uid: user.id,
       email: user.email,
       phoneNumber: user.phone,
       displayName: user.user_metadata?.displayName,
       photoURL: user.user_metadata?.photoURL,
-      onboardingComplete: user.user_metadata?.onboardingComplete,
+      onboardingComplete: typeof onboardingComplete === 'string'
+        ? onboardingComplete === 'true' || onboardingComplete === 't' || onboardingComplete === '1'
+        : Boolean(onboardingComplete),
       interests: user.user_metadata?.interests,
       location: user.user_metadata?.location,
       bio: user.user_metadata?.bio,
@@ -224,7 +228,8 @@ export class SupabaseAuthService {
         .single();
 
       if (existingUser) {
-        return existingUser;
+        // MUST map the user data to convert string booleans
+        return SupabaseDataService.getUser(authUser.uid);
       }
 
       // Create new user record with OAuth data
@@ -431,13 +436,16 @@ export class SupabaseAuthService {
   static onAuthStateChange(callback: (user: AuthUser | null) => void) {
     return supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
+        const onboardingComplete = session.user.user_metadata?.onboardingComplete;
         callback({
           uid: session.user.id,
           email: session.user.email,
           phoneNumber: session.user.phone,
           displayName: session.user.user_metadata?.displayName,
           photoURL: session.user.user_metadata?.photoURL,
-          onboardingComplete: session.user.user_metadata?.onboardingComplete,
+          onboardingComplete: typeof onboardingComplete === 'string'
+            ? onboardingComplete === 'true' || onboardingComplete === 't' || onboardingComplete === '1'
+            : Boolean(onboardingComplete),
           interests: session.user.user_metadata?.interests,
           location: session.user.user_metadata?.location,
           bio: session.user.user_metadata?.bio,

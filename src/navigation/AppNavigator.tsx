@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Linking, View, StyleSheet } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useAuthStore } from "../hooks/useAuthStore";
@@ -9,8 +9,22 @@ import { SupabaseAuthService } from "../services/supabase";
 import { SupabaseDataService } from "../services/SupabaseDataService";
 import LoadingIndicator from "../components/LoadingIndicator";
 import { useThemeStore } from "../hooks/useThemeStore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const Stack = createStackNavigator();
+export type RootStackParamList = {
+  MainApp: undefined;
+  MessageDetails: { roomId: string };
+};
+
+const Stack = createStackNavigator<RootStackParamList>();
+
+// Helper to safely convert Supabase booleans (which can be strings)
+const toBoolean = (value: any): boolean => {
+  if (typeof value === "string") {
+    return value === "true" || value === "t" || value === "1";
+  }
+  return Boolean(value);
+};
 
 export default function AppNavigator() {
   const { colors } = useThemeStore();
@@ -34,6 +48,21 @@ export default function AppNavigator() {
   useEffect(() => {
     // Check for existing session on mount
     const checkSession = async () => {
+      // ONE-TIME CACHE CLEAR: Force clear corrupted AsyncStorage on first load
+      try {
+        const cacheVersion = await AsyncStorage.getItem("cache-version-v2");
+        console.log("📦 [AppNavigator] Cache version check:", cacheVersion);
+        if (!cacheVersion) {
+          console.log("🗑️ [AppNavigator] CLEARING ALL CORRUPTED CACHE NOW!");
+          await AsyncStorage.removeItem("auth-storage");
+          await AsyncStorage.removeItem("featured_members");
+          await AsyncStorage.setItem("cache-version-v2", "cleared");
+          console.log("✅ [AppNavigator] Cache cleared!");
+        }
+      } catch (e) {
+        console.error("❌ [AppNavigator] Cache clear error:", e);
+      }
+
       setLoading(true);
       try {
         const currentUser = await SupabaseAuthService.getCurrentUser();
@@ -58,6 +87,7 @@ export default function AppNavigator() {
           setOnboardingComplete(false);
         }
       } catch (error) {
+        console.error("❌ [AppNavigator] Error in checkSession:", error);
         setAuthenticated(false);
         setUser(null);
         setOnboardingComplete(false);
@@ -140,9 +170,7 @@ export default function AppNavigator() {
 
   // Handle OAuth deep links
   useEffect(() => {
-    const handleDeepLink = async (event: { url: string }) => {
-      const url = event.url;
-
+    const handleDeepLink = async (_event: { url: string }) => {
       // Supabase handles OAuth callbacks automatically
       // The auth state change listener above will handle the result
     };
@@ -175,11 +203,32 @@ export default function AppNavigator() {
     }
   }, [isAuthenticated, user, onboardingComplete, setOnboardingComplete]);
 
-  // Prioritize user profile data over store state
-  const userOnboardingComplete =
+  // Prioritize user profile data over store state - SAFELY convert to boolean
+  const userOnboardingComplete = toBoolean(
     user?.onboardingComplete !== undefined
       ? user.onboardingComplete
-      : onboardingComplete;
+      : onboardingComplete
+  );
+
+  // Debug logging
+  console.log(
+    "🔍 [AppNavigator] user?.onboardingComplete:",
+    user?.onboardingComplete,
+    "type:",
+    typeof user?.onboardingComplete
+  );
+  console.log(
+    "🔍 [AppNavigator] onboardingComplete:",
+    onboardingComplete,
+    "type:",
+    typeof onboardingComplete
+  );
+  console.log(
+    "✅ [AppNavigator] userOnboardingComplete:",
+    userOnboardingComplete,
+    "type:",
+    typeof userOnboardingComplete
+  );
 
   // Show loading screen while auth store is hydrating to prevent flash
   if (!authHydrated) {
@@ -197,7 +246,14 @@ export default function AppNavigator() {
 
   // Show onboarding only if onboarding is not complete
   if (!userOnboardingComplete) {
-    return <OnboardingStack key="onboarding" hasSeenIntro={hasSeenIntro} />;
+    console.log(
+      "🎯 [AppNavigator] Rendering OnboardingStack, hasSeenIntro:",
+      hasSeenIntro,
+      "type:",
+      typeof hasSeenIntro
+    );
+    const safeHasSeenIntro = toBoolean(hasSeenIntro);
+    return <OnboardingStack key="onboarding" hasSeenIntro={safeHasSeenIntro} />;
   }
 
   return (

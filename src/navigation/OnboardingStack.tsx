@@ -58,11 +58,26 @@ export default function OnboardingStack({
   };
 
   useEffect(() => {
+    console.log(
+      "🎯 [OnboardingStack] hasSeenIntro:",
+      hasSeenIntro,
+      "type:",
+      typeof hasSeenIntro
+    );
+    console.log(
+      "🎯 [OnboardingStack] isAuthenticated:",
+      isAuthenticated,
+      "type:",
+      typeof isAuthenticated
+    );
   }, [hasSeenIntro, isAuthenticated]);
+
+  const initialRoute = getInitialRoute();
+  console.log("🎯 [OnboardingStack] Initial route:", initialRoute);
 
   return (
     <Stack.Navigator
-      initialRouteName={getInitialRoute()}
+      initialRouteName={initialRoute}
       screenOptions={{
         headerShown: false,
         gestureEnabled: false, // Disable swipe back gestures

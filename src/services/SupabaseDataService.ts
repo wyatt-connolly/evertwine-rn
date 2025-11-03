@@ -705,8 +705,19 @@ export class SupabaseDataService {
   // ==================== MAPPING FUNCTIONS ====================
   // Convert DB snake_case to app camelCase
 
+  // Helper to safely convert Supabase booleans (which can be strings)
+  private static toBoolean(value: any): boolean {
+    if (typeof value === 'string') {
+      return value === 'true' || value === 't' || value === '1';
+    }
+    return Boolean(value);
+  }
+
   private static mapUserFromDB(data: any): User {
-    return {
+    console.log('🔍 [mapUserFromDB] Raw onboarding_complete:', data.onboarding_complete, 'type:', typeof data.onboarding_complete);
+    console.log('🔍 [mapUserFromDB] Raw is_paused:', data.is_paused, 'type:', typeof data.is_paused);
+    
+    const user = {
       uid: data.uid,
       email: data.email,
       displayName: data.display_name,
@@ -729,9 +740,9 @@ export class SupabaseDataService {
       hobbies: data.hobbies,
       interests: data.interests,
       lookingFor: data.looking_for,
-      onboardingComplete: data.onboarding_complete,
+      onboardingComplete: this.toBoolean(data.onboarding_complete),
       isVerified: data.is_verified,
-      isPaused: data.is_paused,
+      isPaused: this.toBoolean(data.is_paused),
       lastActive: new Date(data.last_active),
       verifiedAt: data.verified_at ? new Date(data.verified_at) : undefined,
       profileViews: data.profile_views,
@@ -739,10 +750,24 @@ export class SupabaseDataService {
       viewsThisWeek: data.views_this_week,
       averageViewDuration: data.average_view_duration,
       preferences: data.preferences,
-      notificationPreferences: data.notification_preferences,
+      notificationPreferences: this.mapNotificationPreferences(data.notification_preferences),
       createdTime: new Date(data.created_time),
       updatedTime: new Date(data.updated_time),
     };
+    
+    console.log('✅ [mapUserFromDB] Mapped onboardingComplete:', user.onboardingComplete, 'type:', typeof user.onboardingComplete);
+    console.log('✅ [mapUserFromDB] Mapped isPaused:', user.isPaused, 'type:', typeof user.isPaused);
+    
+    return user;
+  }
+
+  private static mapNotificationPreferences(prefs: any): any {
+    if (!prefs || typeof prefs !== 'object') return prefs;
+    const result: any = {};
+    for (const key in prefs) {
+      result[key] = this.toBoolean(prefs[key]);
+    }
+    return result;
   }
 
   private static mapUserToDB(user: Partial<User>): any {
@@ -811,7 +836,7 @@ export class SupabaseDataService {
       likes: data.likes,
       comments: [], // Comments loaded separately
       createdAt: new Date(data.created_at),
-      isAnnouncement: data.is_announcement,
+      isAnnouncement: this.toBoolean(data.is_announcement),
     };
   }
 
@@ -869,9 +894,9 @@ export class SupabaseDataService {
       waitlist: data.waitlist,
       declinedUsers: data.declined_users,
       status: data.status,
-      isRecurring: data.is_recurring,
+      isRecurring: this.toBoolean(data.is_recurring),
       recurringPattern: data.recurring_pattern,
-      requirements: data.requirements,
+      requirements: this.mapRequirements(data.requirements),
       coverImage: data.cover_image,
       images: data.images,
       views: data.views,
@@ -882,6 +907,15 @@ export class SupabaseDataService {
       updatedAt: new Date(data.updated_at),
       completedAt: data.completed_at ? new Date(data.completed_at) : undefined,
     };
+  }
+
+  private static mapRequirements(reqs: any): any {
+    if (!reqs || typeof reqs !== 'object') return reqs;
+    const result: any = { ...reqs };
+    if ('verificationRequired' in reqs) {
+      result.verificationRequired = this.toBoolean(reqs.verificationRequired);
+    }
+    return result;
   }
 
   private static mapMeetupToDB(meetup: Partial<Meetup>): any {
@@ -982,9 +1016,9 @@ export class SupabaseDataService {
       images: data.images,
       videoUrl: data.video_url,
       status: data.status,
-      isRecurring: data.is_recurring,
+      isRecurring: this.toBoolean(data.is_recurring),
       recurringPattern: data.recurring_pattern,
-      features: data.features,
+      features: this.mapEventFeatures(data.features),
       views: data.views,
       shares: data.shares,
       likes: data.likes,
@@ -992,7 +1026,7 @@ export class SupabaseDataService {
       waitlist: data.waitlist,
       interestedUsers: data.interested_users,
       checkIns: data.check_ins,
-      whosGoing: data.whos_going,
+      whosGoing: this.mapWhosGoing(data.whos_going),
       isHappyHour: true,
       happyHourDetails: {
         discount: data.discount,
@@ -1004,6 +1038,27 @@ export class SupabaseDataService {
       createdAt: new Date(data.created_at),
       updatedAt: new Date(data.updated_at),
     };
+  }
+
+  private static mapEventFeatures(features: any): any {
+    if (!features || typeof features !== 'object') return features;
+    return {
+      hasQRCode: this.toBoolean(features.has_qr_code ?? features.hasQRCode),
+      hasTickets: this.toBoolean(features.has_tickets ?? features.hasTickets),
+      hasCoupons: this.toBoolean(features.has_coupons ?? features.hasCoupons),
+      allowsSharing: this.toBoolean(features.allows_sharing ?? features.allowsSharing),
+      requiresVerification: this.toBoolean(features.requires_verification ?? features.requiresVerification),
+    };
+  }
+
+  private static mapWhosGoing(whosGoing: any[]): any[] {
+    if (!Array.isArray(whosGoing)) return [];
+    return whosGoing.map(person => ({
+      id: person.id,
+      name: person.name,
+      avatar: person.avatar,
+      isCheckedIn: this.toBoolean(person.is_checked_in ?? person.isCheckedIn),
+    }));
   }
 
   private static mapHappyHourToDB(event: Partial<Event>): any {

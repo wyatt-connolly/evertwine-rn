@@ -1,3 +1,4 @@
+import './setup'; // MUST be first - clears corrupted cache before anything else
 import { registerRootComponent } from 'expo';
 
 import App from './App';
