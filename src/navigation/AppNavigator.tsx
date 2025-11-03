@@ -51,13 +51,10 @@ export default function AppNavigator() {
       // ONE-TIME CACHE CLEAR: Force clear corrupted AsyncStorage on first load
       try {
         const cacheVersion = await AsyncStorage.getItem("cache-version-v2");
-        console.log("📦 [AppNavigator] Cache version check:", cacheVersion);
         if (!cacheVersion) {
-          console.log("🗑️ [AppNavigator] CLEARING ALL CORRUPTED CACHE NOW!");
           await AsyncStorage.removeItem("auth-storage");
           await AsyncStorage.removeItem("featured_members");
           await AsyncStorage.setItem("cache-version-v2", "cleared");
-          console.log("✅ [AppNavigator] Cache cleared!");
         }
       } catch (e) {
         console.error("❌ [AppNavigator] Cache clear error:", e);
@@ -210,26 +207,6 @@ export default function AppNavigator() {
       : onboardingComplete
   );
 
-  // Debug logging
-  console.log(
-    "🔍 [AppNavigator] user?.onboardingComplete:",
-    user?.onboardingComplete,
-    "type:",
-    typeof user?.onboardingComplete
-  );
-  console.log(
-    "🔍 [AppNavigator] onboardingComplete:",
-    onboardingComplete,
-    "type:",
-    typeof onboardingComplete
-  );
-  console.log(
-    "✅ [AppNavigator] userOnboardingComplete:",
-    userOnboardingComplete,
-    "type:",
-    typeof userOnboardingComplete
-  );
-
   // Show loading screen while auth store is hydrating to prevent flash
   if (!authHydrated) {
     return (
@@ -246,12 +223,6 @@ export default function AppNavigator() {
 
   // Show onboarding only if onboarding is not complete
   if (!userOnboardingComplete) {
-    console.log(
-      "🎯 [AppNavigator] Rendering OnboardingStack, hasSeenIntro:",
-      hasSeenIntro,
-      "type:",
-      typeof hasSeenIntro
-    );
     const safeHasSeenIntro = toBoolean(hasSeenIntro);
     return <OnboardingStack key="onboarding" hasSeenIntro={safeHasSeenIntro} />;
   }

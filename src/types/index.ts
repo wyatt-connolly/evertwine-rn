@@ -495,6 +495,7 @@ export interface Post {
 
 export interface PostComment {
   id: string;
+  postId?: string; // Optional for backwards compatibility
   userId: string;
   userName: string;
   userAvatar: string;

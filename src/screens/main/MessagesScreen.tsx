@@ -128,7 +128,13 @@ export default function MessagesScreen({ navigation }: any) {
       )}
 
       <View style={styles.avatarContainer}>
-        <Image source={{ uri: room.avatar }} style={styles.avatar} />
+        {room.avatar ? (
+          <Image source={{ uri: room.avatar }} style={styles.avatar} />
+        ) : (
+          <View style={[styles.avatar, styles.avatarPlaceholder, { backgroundColor: colors.border }]}>
+            <Ionicons name="person" size={24} color={colors.textTertiary} />
+          </View>
+        )}
         {room.type === "group" && (
           <View
             style={[styles.groupIndicator, { backgroundColor: colors.primary }]}
@@ -340,6 +346,10 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
+  },
+  avatarPlaceholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   groupIndicator: {
     position: "absolute",

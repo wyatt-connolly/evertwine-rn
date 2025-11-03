@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
+import { normalizePostMessage } from "../../utils/postTextNormalizer";
+import { PostComment } from "../../types";
 
 const { width } = Dimensions.get("window");
 
@@ -28,7 +31,29 @@ export default function PostDetailsScreen({
   const { colors } = useThemeStore();
   const { user: currentUser } = useAuthStore();
   const [commentText, setCommentText] = useState("");
+  const [comments, setComments] = useState<PostComment[]>([]);
   const { post } = route.params;
+
+  const isPostCreator = post.userId === currentUser?.uid;
+
+  console.log('📱 [PostDetails] Rendering with post:', post.id);
+  console.log('📱 [PostDetails] Current user:', currentUser?.uid);
+  console.log('📱 [PostDetails] Post comments count:', comments.length);
+  console.log('📱 [PostDetails] Is post creator:', isPostCreator);
+
+  // Load comments when screen mounts
+  useEffect(() => {
+    const loadComments = async () => {
+      try {
+        const loadedComments = await SupabaseDataService.getPostComments(post.id);
+        setComments(loadedComments);
+        console.log('✅ [PostDetails] Loaded', loadedComments.length, 'comments');
+      } catch (error) {
+        console.error('❌ [PostDetails] Error loading comments:', error);
+      }
+    };
+    loadComments();
+  }, [post.id]);
 
   const formatTime = (date: Date) => {
     const now = new Date();
@@ -43,10 +68,28 @@ export default function PostDetailsScreen({
     return "Just now";
   };
 
-  const handleComment = () => {
+  const handleComment = async () => {
+    console.log('💬 [PostDetails] handleComment called');
+    console.log('💬 [PostDetails] commentText:', commentText);
+    console.log('💬 [PostDetails] currentUser:', currentUser?.uid);
+    
     if (commentText.trim() && currentUser) {
-      // Here you would add the comment to the post
-      setCommentText("");
+      try {
+        console.log('✅ [PostDetails] Creating comment...');
+        const comment = await SupabaseDataService.createComment({
+          userId: currentUser.uid,
+          message: commentText.trim(),
+          postId: post.id,
+        });
+        console.log('✅ [PostDetails] Comment created successfully:', comment.id);
+        setCommentText("");
+        // Add the new comment to the list
+        setComments((prev) => [...prev, comment]);
+      } catch (error) {
+        console.error('❌ [PostDetails] Error creating comment:', error);
+      }
+    } else {
+      console.log('⚠️ [PostDetails] Cannot create comment: missing text or user');
     }
   };
 
@@ -107,7 +150,13 @@ export default function PostDetailsScreen({
 
           {/* Post Header */}
           <View style={styles.postHeader}>
-            <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
+            {post.userAvatar ? (
+              <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
+            ) : (
+              <View style={[styles.avatar, styles.placeholderAvatar, { backgroundColor: colors.border }]}>
+                <Ionicons name="person" size={20} color={colors.textTertiary} />
+              </View>
+            )}
             <View style={styles.headerInfo}>
               <Text style={[styles.userName, { color: colors.text }]}>
                 {post.userName}
@@ -124,7 +173,7 @@ export default function PostDetailsScreen({
               {post.title}
             </Text>
             <Text style={[styles.message, { color: colors.textSecondary }]}>
-              {post.message}
+              {normalizePostMessage(post.message)}
             </Text>
           </View>
 
@@ -154,44 +203,71 @@ export default function PostDetailsScreen({
           ]}
         >
           <Text style={[styles.commentsTitle, { color: colors.text }]}>
-            {post.comments.length} Comments
+            {comments.length} Comments
           </Text>
 
-          {post.comments.map((comment: any) => (
-            <View key={comment.id} style={styles.comment}>
-              <Image
-                source={{ uri: comment.userAvatar }}
-                style={styles.commentAvatar}
-              />
-              <View style={styles.commentContent}>
-                <View
-                  style={[
-                    styles.commentBubble,
-                    { backgroundColor: colors.surface },
-                  ]}
-                >
-                  <Text
-                    style={[styles.commentUserName, { color: colors.text }]}
-                  >
-                    {comment.userName}
-                  </Text>
-                  <Text
+          {comments.map((comment: any) => {
+            const isCommentCreator = comment.userId === post.userId;
+            const isCurrentUser = comment.userId === currentUser?.uid;
+            
+            return (
+              <View key={comment.id} style={styles.comment}>
+                {comment.userAvatar ? (
+                  <Image
+                    source={{ uri: comment.userAvatar }}
+                    style={styles.commentAvatar}
+                  />
+                ) : (
+                  <View style={[styles.commentAvatar, styles.placeholderAvatar, { backgroundColor: colors.border }]}>
+                    <Ionicons name="person" size={16} color={colors.textTertiary} />
+                  </View>
+                )}
+                <View style={styles.commentContent}>
+                  <View
                     style={[
-                      styles.commentMessage,
-                      { color: colors.textSecondary },
+                      styles.commentBubble,
+                      { backgroundColor: colors.surface },
                     ]}
                   >
-                    {comment.message}
+                    <View style={styles.commentHeaderRow}>
+                      <Text
+                        style={[styles.commentUserName, { color: colors.text }]}
+                      >
+                        {comment.userName}
+                      </Text>
+                      {isCommentCreator && (
+                        <View style={[styles.creatorBadge, { backgroundColor: colors.primary }]}>
+                          <Text style={[styles.creatorBadgeText, { color: colors.onPrimary }]}>
+                            OP
+                          </Text>
+                        </View>
+                      )}
+                      {isCurrentUser && !isCommentCreator && (
+                        <View style={[styles.youBadge, { backgroundColor: colors.border }]}>
+                          <Text style={[styles.youBadgeText, { color: colors.textSecondary }]}>
+                            You
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text
+                      style={[
+                        styles.commentMessage,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      {comment.message}
+                    </Text>
+                  </View>
+                  <Text
+                    style={[styles.commentTime, { color: colors.textTertiary }]}
+                  >
+                    {formatTime(comment.createdAt)}
                   </Text>
                 </View>
-                <Text
-                  style={[styles.commentTime, { color: colors.textTertiary }]}
-                >
-                  {formatTime(comment.createdAt)}
-                </Text>
               </View>
-            </View>
-          ))}
+            );
+          })}
         </View>
       </ScrollView>
 
@@ -203,10 +279,16 @@ export default function PostDetailsScreen({
             { backgroundColor: colors.surface, borderTopColor: colors.border },
           ]}
         >
-          <Image
-            source={{ uri: currentUser.photoURL || "" }}
-            style={styles.commentInputAvatar}
-          />
+          {currentUser.profilePictures?.[0] ? (
+            <Image
+              source={{ uri: currentUser.profilePictures[0] }}
+              style={styles.commentInputAvatar}
+            />
+          ) : (
+            <View style={[styles.commentInputAvatar, styles.placeholderAvatar, { backgroundColor: colors.border }]}>
+              <Ionicons name="person" size={16} color={colors.textTertiary} />
+            </View>
+          )}
           <TextInput
             style={[
               styles.commentInput,
@@ -305,6 +387,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 12,
   },
+  placeholderAvatar: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   headerInfo: {
     flex: 1,
   },
@@ -365,10 +451,33 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
   },
+  commentHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
   commentUserName: {
     fontSize: 14,
     fontWeight: "600",
-    marginBottom: 4,
+  },
+  creatorBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  creatorBadgeText: {
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  youBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  youBadgeText: {
+    fontSize: 11,
+    fontWeight: "600",
   },
   commentMessage: {
     fontSize: 14,

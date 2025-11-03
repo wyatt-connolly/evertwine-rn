@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import CinematicIntroScreen from "../screens/CinematicIntroScreen";
 import WelcomeScreen from "../screens/WelcomeScreen";
@@ -57,23 +56,7 @@ export default function OnboardingStack({
     return currentStep as keyof OnboardingStackParamList;
   };
 
-  useEffect(() => {
-    console.log(
-      "🎯 [OnboardingStack] hasSeenIntro:",
-      hasSeenIntro,
-      "type:",
-      typeof hasSeenIntro
-    );
-    console.log(
-      "🎯 [OnboardingStack] isAuthenticated:",
-      isAuthenticated,
-      "type:",
-      typeof isAuthenticated
-    );
-  }, [hasSeenIntro, isAuthenticated]);
-
   const initialRoute = getInitialRoute();
-  console.log("🎯 [OnboardingStack] Initial route:", initialRoute);
 
   return (
     <Stack.Navigator

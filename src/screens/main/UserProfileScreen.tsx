@@ -335,6 +335,7 @@ export default function UserProfileScreen({
 
       <ScrollView
         style={[styles.content, { backgroundColor: colors.background }]}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {/* Hero Section */}

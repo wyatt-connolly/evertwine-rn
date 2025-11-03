@@ -10,13 +10,8 @@ import { useAuthStore } from "./src/hooks/useAuthStore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function App() {
-  console.log('🚀 [App] Rendering App component...');
-  
   const { initializeTheme, isDarkMode } = useThemeStore();
-  console.log('✅ [App] useThemeStore loaded');
-  
   const { user } = useAuthStore();
-  console.log('✅ [App] useAuthStore loaded, user:', user?.uid);
   
   const [cacheCleared, setCacheCleared] = useState(false);
 
@@ -25,13 +20,10 @@ export default function App() {
     const clearCorruptedCache = async () => {
       try {
         const cacheVersion = await AsyncStorage.getItem('cache-version-v2');
-        console.log('📦 [App] Cache version check:', cacheVersion);
         if (!cacheVersion) {
-          console.log('🗑️ [App] CLEARING ALL CORRUPTED CACHE IMMEDIATELY!');
           await AsyncStorage.removeItem('auth-storage');
           await AsyncStorage.removeItem('featured_members');
           await AsyncStorage.setItem('cache-version-v2', 'cleared');
-          console.log('✅ [App] Cache cleared!');
         }
         setCacheCleared(true);
       } catch (e) {

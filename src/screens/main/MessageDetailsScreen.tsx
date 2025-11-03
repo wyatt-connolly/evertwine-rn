@@ -21,6 +21,7 @@ import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { Message, MessageRoom, User } from "../../types";
 import { DataService } from "../../services/DataService";
+import { SupabaseDataService } from "../../services/SupabaseDataService";
 import { NotificationService } from "../../services/NotificationService";
 
 interface MessageDetailsScreenProps {
@@ -116,10 +117,6 @@ export default function MessageDetailsScreen({
       roomId,
       (newMessages) => {
         setMessages(newMessages);
-        // Auto-scroll to bottom on new message
-        setTimeout(() => {
-          flatListRef.current?.scrollToEnd({ animated: true });
-        }, 100);
       }
     );
 
@@ -128,15 +125,6 @@ export default function MessageDetailsScreen({
     };
   }, [roomId]); // Only depend on roomId
 
-  // Separate effect to handle message updates after sending
-  useEffect(() => {
-    if (messages.length > 0) {
-      // Auto-scroll to bottom when messages change
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }, 100);
-    }
-  }, [messages.length]);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !currentUser || !room) return;
@@ -189,11 +177,6 @@ export default function MessageDetailsScreen({
         const updatedMessages = await DataService.getMessages(roomId);
         setMessages(updatedMessages);
       } catch (error) {}
-
-      // Force scroll to bottom after sending
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }, 200);
     } catch (error) {
       Alert.alert("Error", "Failed to send message");
       // Restore the message text if sending failed
@@ -212,6 +195,41 @@ export default function MessageDetailsScreen({
     if (senderId === currentUser?.uid)
       return (currentUser as any).profilePictures?.[0] || null;
     return users[senderId]?.profilePictures?.[0] || null;
+  };
+
+  const handleDeleteMessage = async (messageId: string, messageText: string) => {
+    const isCurrentUserMessage = messages.find(m => m.id === messageId)?.senderRef === currentUser?.uid;
+    
+    if (!isCurrentUserMessage) {
+      Alert.alert("Error", "You can only delete your own messages");
+      return;
+    }
+
+    Alert.alert(
+      "Delete Message",
+      `Are you sure you want to delete this message?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await SupabaseDataService.updateMessage(messageId, {
+                isDeleted: true,
+                text: "[Message deleted]",
+              } as Partial<Message>);
+              
+              // Refresh messages
+              const updatedMessages = await DataService.getMessages(roomId);
+              setMessages(updatedMessages);
+            } catch (error) {
+              Alert.alert("Error", "Failed to delete message");
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleBlockUser = async () => {
@@ -337,50 +355,61 @@ export default function MessageDetailsScreen({
     const senderAvatar = getSenderAvatar(item.senderRef);
 
     return (
-      <View
-        style={[
-          styles.messageContainer,
-          isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage,
-        ]}
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onLongPress={() => isCurrentUser && !item.isDeleted && handleDeleteMessage(item.id, item.text)}
       >
-        {!isCurrentUser && (
-          <View style={styles.messageHeader}>
-            <Image
-              source={{ uri: senderAvatar || "https://via.placeholder.com/40" }}
-              style={styles.avatar}
-            />
-            <Text style={[styles.senderName, { color: colors.textSecondary }]}>
-              {senderName}
-            </Text>
-          </View>
-        )}
-        {isCurrentUser ? (
-          <LinearGradient
-            colors={[colors.primary, colors.primaryVariant]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[styles.messageBubble, styles.gradientBubble]}
-          >
-            <Text style={[styles.messageText, { color: colors.onPrimary }]}>
-              {item.text}
-            </Text>
-          </LinearGradient>
-        ) : (
-          <View
-            style={[styles.messageBubble, { backgroundColor: colors.surface }]}
-          >
-            <Text style={[styles.messageText, { color: colors.text }]}>
-              {item.text}
-            </Text>
-          </View>
-        )}
-        <Text style={[styles.timestamp, { color: colors.textTertiary }]}>
-          {new Date(item.createdTime).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </Text>
-      </View>
+        <View
+          style={[
+            styles.messageContainer,
+            isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage,
+          ]}
+        >
+          {!isCurrentUser && (
+            <View style={styles.messageHeader}>
+              {senderAvatar ? (
+                <Image
+                  source={{ uri: senderAvatar }}
+                  style={styles.avatar}
+                />
+              ) : (
+                <View style={[styles.avatar, styles.avatarPlaceholder, { backgroundColor: colors.border }]}>
+                  <Ionicons name="person" size={16} color={colors.textTertiary} />
+                </View>
+              )}
+              <Text style={[styles.senderName, { color: colors.textSecondary }]}>
+                {senderName}
+              </Text>
+            </View>
+          )}
+          {isCurrentUser ? (
+            <LinearGradient
+              colors={[colors.primary, colors.primaryVariant]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[styles.messageBubble, styles.gradientBubble]}
+            >
+              <Text style={[styles.messageText, { color: colors.onPrimary }]}>
+                {item.isDeleted ? "[Message deleted]" : item.text}
+              </Text>
+            </LinearGradient>
+          ) : (
+            <View
+              style={[styles.messageBubble, { backgroundColor: colors.surface }]}
+            >
+              <Text style={[styles.messageText, { color: colors.text }]}>
+                {item.text}
+              </Text>
+            </View>
+          )}
+          <Text style={[styles.timestamp, { color: colors.textTertiary }]}>
+            {new Date(item.createdTime).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Text>
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -671,14 +700,12 @@ export default function MessageDetailsScreen({
         ) : (
           <FlatList
             ref={flatListRef}
-            data={messages}
+            data={[...messages].reverse()}
             keyExtractor={(item) => item.id}
             renderItem={renderMessage}
             style={styles.messagesList}
             contentContainerStyle={styles.messagesContent}
-            onContentSizeChange={() =>
-              flatListRef.current?.scrollToEnd({ animated: true })
-            }
+            inverted={true}
           />
         )}
 
@@ -832,6 +859,10 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     marginRight: 8,
+  },
+  avatarPlaceholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   senderName: {
     fontSize: 12,

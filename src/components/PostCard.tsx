@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Post } from "../types";
 import { useThemeStore } from "../hooks/useThemeStore";
 import { useAuthStore } from "../hooks/useAuthStore";
+import { normalizePostMessage } from "../utils/postTextNormalizer";
 
 const { width } = Dimensions.get("window");
 
@@ -76,7 +77,13 @@ export default function PostCard({ post, onLike, onComment }: PostCardProps) {
 
       {/* Header */}
       <View style={styles.header}>
-        <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
+        {post.userAvatar ? (
+          <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
+        ) : (
+          <View style={[styles.avatar, styles.placeholderAvatar, { backgroundColor: colors.border }]}>
+            <Ionicons name="person" size={20} color={colors.textTertiary} />
+          </View>
+        )}
         <View style={styles.headerInfo}>
           <Text style={[styles.userName, { color: colors.text }]}>
             {post.userName}
@@ -91,7 +98,7 @@ export default function PostCard({ post, onLike, onComment }: PostCardProps) {
       <View style={styles.content}>
         <Text style={[styles.title, { color: colors.text }]}>{post.title}</Text>
         <Text style={[styles.message, { color: colors.textSecondary }]}>
-          {post.message}
+          {normalizePostMessage(post.message)}
         </Text>
       </View>
 
@@ -282,6 +289,10 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: 12,
+  },
+  placeholderAvatar: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerInfo: {
     flex: 1,

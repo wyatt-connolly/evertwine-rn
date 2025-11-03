@@ -9,6 +9,7 @@ import {
   MessageRoom,
   Notification,
 } from "../types";
+import { normalizePostMessage } from "../utils/postTextNormalizer";
 
 export class SupabaseDataService {
   // ==================== USERS ====================
@@ -66,7 +67,7 @@ export class SupabaseDataService {
       .order("created_time", { ascending: false })
       .limit(limit);
     if (error) throw error;
-    return data.map(this.mapUserFromDB);
+    return data.map((item) => this.mapUserFromDB(item));
   }
 
   // ==================== COMMUNITY USERS ====================
@@ -89,7 +90,7 @@ export class SupabaseDataService {
     const shuffled = featuredCandidates
       .sort(() => Math.random() - 0.5)
       .slice(0, limit);
-    return shuffled.map(this.mapUserFromDB);
+    return shuffled.map((item) => this.mapUserFromDB(item));
   }
 
   static async getActiveUsers(limit = 8): Promise<User[]> {
@@ -101,7 +102,7 @@ export class SupabaseDataService {
       .order("created_time", { ascending: false })
       .limit(limit);
     if (error) throw error;
-    return data.map(this.mapUserFromDB);
+    return data.map((item) => this.mapUserFromDB(item));
   }
 
   static async getNewMembers(limit = 8): Promise<User[]> {
@@ -115,7 +116,7 @@ export class SupabaseDataService {
       .order("created_time", { ascending: false })
       .limit(limit);
     if (error) throw error;
-    return data.map(this.mapUserFromDB);
+    return data.map((item) => this.mapUserFromDB(item));
   }
 
   static async getAllActiveUsersExcludingAdmin(limit = 50): Promise<User[]> {
@@ -125,7 +126,12 @@ export class SupabaseDataService {
       .order("created_time", { ascending: false })
       .limit(limit);
     if (error) throw error;
-    return data.map(this.mapUserFromDB);
+    const mappedUsers = data.map((item) => this.mapUserFromDB(item));
+    // Deduplicate by uid in case there are duplicates in the database
+    const uniqueUsers = Array.from(
+      new Map(mappedUsers.map((user) => [user.uid, user])).values()
+    );
+    return uniqueUsers;
   }
 
   // ==================== POSTS ====================
@@ -141,7 +147,7 @@ export class SupabaseDataService {
       .order("created_at", { ascending: false })
       .limit(limit);
     if (error) throw error;
-    return data.map(this.mapPostFromDB);
+    return data.map((item) => this.mapPostFromDB(item));
   }
 
   static async getPost(id: string): Promise<Post | null> {
@@ -200,14 +206,19 @@ export class SupabaseDataService {
       .eq("post_id", postId)
       .order("created_at", { ascending: true });
     if (error) throw error;
-    return data.map(this.mapPostCommentFromDB);
+    return data.map((item) => this.mapPostCommentFromDB(item));
   }
 
   static async createComment(comment: Partial<PostComment>) {
     const { data, error } = await supabase
       .from("post_comments")
       .insert([this.mapPostCommentToDB(comment)])
-      .select()
+      .select(
+        `
+        *,
+        user:users!post_comments_user_id_fkey(uid, display_name, profile_pictures)
+      `
+      )
       .single();
     if (error) throw error;
     return this.mapPostCommentFromDB(data);
@@ -221,7 +232,7 @@ export class SupabaseDataService {
       .order("time", { ascending: true })
       .limit(limit);
     if (error) throw error;
-    return data.map(this.mapMeetupFromDB);
+    return data.map((item) => this.mapMeetupFromDB(item));
   }
 
   static async getMeetup(id: string): Promise<Meetup | null> {
@@ -273,7 +284,7 @@ export class SupabaseDataService {
       .order("start_time", { ascending: true })
       .limit(limit);
     if (error) throw error;
-    return data.map(this.mapHappyHourFromDB);
+    return data.map((item) => this.mapHappyHourFromDB(item));
   }
 
   static async getHappyHour(id: string): Promise<Event | null> {
@@ -370,7 +381,7 @@ export class SupabaseDataService {
       })
     );
 
-    const mapped = roomsWithLastMessage.map(this.mapMessageRoomFromDB);
+    const mapped = roomsWithLastMessage.map((item) => this.mapMessageRoomFromDB(item));
     console.log(
       "getMessageRooms: Mapped data with last messages:",
       JSON.stringify(mapped, null, 2)
@@ -461,7 +472,7 @@ export class SupabaseDataService {
       .order("created_time", { ascending: true })
       .limit(limit);
     if (error) throw error;
-    return data.map(this.mapMessageFromDB);
+    return data.map((item) => this.mapMessageFromDB(item));
   }
 
   static async sendMessage(message: Partial<Message>) {
@@ -536,7 +547,7 @@ export class SupabaseDataService {
       .in("uid", userIds);
 
     if (error) throw error;
-    return data.map(this.mapUserFromDB);
+    return data.map((item) => this.mapUserFromDB(item));
   }
 
   static setupMessageListener(
@@ -592,7 +603,7 @@ export class SupabaseDataService {
       .order("created_at", { ascending: false })
       .limit(limit);
     if (error) throw error;
-    return data.map(this.mapNotificationFromDB);
+    return data.map((item) => this.mapNotificationFromDB(item));
   }
 
   static async createNotification(notification: Partial<Notification>) {
@@ -624,7 +635,7 @@ export class SupabaseDataService {
       .eq("is_read", false)
       .select();
     if (error) throw error;
-    return data.map(this.mapNotificationFromDB);
+    return data.map((item) => this.mapNotificationFromDB(item));
   }
 
   static async deleteNotification(id: string) {
@@ -714,9 +725,6 @@ export class SupabaseDataService {
   }
 
   private static mapUserFromDB(data: any): User {
-    console.log('🔍 [mapUserFromDB] Raw onboarding_complete:', data.onboarding_complete, 'type:', typeof data.onboarding_complete);
-    console.log('🔍 [mapUserFromDB] Raw is_paused:', data.is_paused, 'type:', typeof data.is_paused);
-    
     const user = {
       uid: data.uid,
       email: data.email,
@@ -754,9 +762,6 @@ export class SupabaseDataService {
       createdTime: new Date(data.created_time),
       updatedTime: new Date(data.updated_time),
     };
-    
-    console.log('✅ [mapUserFromDB] Mapped onboardingComplete:', user.onboardingComplete, 'type:', typeof user.onboardingComplete);
-    console.log('✅ [mapUserFromDB] Mapped isPaused:', user.isPaused, 'type:', typeof user.isPaused);
     
     return user;
   }
@@ -831,7 +836,7 @@ export class SupabaseDataService {
       userName: data.user?.display_name || "",
       userAvatar: data.user?.profile_pictures?.[0] || "",
       title: data.title,
-      message: data.message,
+      message: normalizePostMessage(data.message),
       images: data.images,
       likes: data.likes,
       comments: [], // Comments loaded separately
@@ -856,10 +861,11 @@ export class SupabaseDataService {
   private static mapPostCommentFromDB(data: any): PostComment {
     return {
       id: data.id,
+      postId: data.post_id,
       userId: data.user_id,
       userName: data.user?.display_name || "",
       userAvatar: data.user?.profile_pictures?.[0] || "",
-      message: data.message,
+      message: normalizePostMessage(data.message),
       createdAt: new Date(data.created_at),
     };
   }
@@ -867,6 +873,7 @@ export class SupabaseDataService {
   private static mapPostCommentToDB(comment: Partial<PostComment>): any {
     const mapped: any = {};
     if (comment.id !== undefined) mapped.id = comment.id;
+    if (comment.postId !== undefined) mapped.post_id = comment.postId;
     if (comment.userId !== undefined) mapped.user_id = comment.userId;
     if (comment.message !== undefined) mapped.message = comment.message;
     return mapped;
@@ -1451,7 +1458,7 @@ export class SupabaseDataService {
         .order("time", { ascending: true });
 
       if (error) throw error;
-      return data.map(this.mapMeetupFromDB);
+      return data.map((item) => this.mapMeetupFromDB(item));
     } catch (error) {
       return [];
     }
@@ -1466,7 +1473,7 @@ export class SupabaseDataService {
         .order("start_time", { ascending: true });
 
       if (error) throw error;
-      return data.map(this.mapHappyHourFromDB);
+      return data.map((item) => this.mapHappyHourFromDB(item));
     } catch (error) {
       return [];
     }
@@ -1498,10 +1505,10 @@ export class SupabaseDataService {
           .limit(limit);
 
         if (fallbackError) throw fallbackError;
-        return fallbackData.map(this.mapMeetupFromDB);
+        return fallbackData.map((item) => this.mapMeetupFromDB(item));
       }
 
-      return data.map(this.mapMeetupFromDB);
+      return data.map((item) => this.mapMeetupFromDB(item));
     } catch (error) {
       return [];
     }
@@ -1532,10 +1539,10 @@ export class SupabaseDataService {
           .limit(limit);
 
         if (fallbackError) throw fallbackError;
-        return fallbackData.map(this.mapHappyHourFromDB);
+        return fallbackData.map((item) => this.mapHappyHourFromDB(item));
       }
 
-      return data.map(this.mapHappyHourFromDB);
+      return data.map((item) => this.mapHappyHourFromDB(item));
     } catch (error) {
       return [];
     }
