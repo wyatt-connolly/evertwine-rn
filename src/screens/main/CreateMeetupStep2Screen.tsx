@@ -131,14 +131,35 @@ export default function CreateMeetupStep2Screen({
   };
 
   const formatDateTime = (date: Date) => {
-    return (
-      date.toLocaleDateString() +
-      " " +
-      date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    );
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    const day = days[date.getDay()];
+    const month = months[date.getMonth()];
+    const dayNum = date.getDate();
+    const year = date.getFullYear();
+
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
+
+    return `${day}, ${month} ${dayNum}, ${year} at ${hours}:${minutesStr} ${ampm}`;
   };
 
   const formatDuration = (minutes: string) => {
@@ -343,6 +364,7 @@ export default function CreateMeetupStep2Screen({
                     }}
                     title={formData.locationName}
                     description={formData.address}
+                    pinColor="red"
                   />
                 </MapView>
               </TouchableOpacity>
@@ -502,6 +524,8 @@ export default function CreateMeetupStep2Screen({
               onChange={handleDateChange}
               minimumDate={new Date()}
               style={styles.datePicker}
+              textColor={Platform.OS === "ios" ? "#FFFFFF" : undefined}
+              themeVariant={Platform.OS === "ios" ? "dark" : undefined}
             />
             <View style={styles.datePickerFooter}>
               <TouchableOpacity

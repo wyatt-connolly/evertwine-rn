@@ -122,6 +122,38 @@ export default function EditMeetupStep2Screen({
       datePickerSlideAnim.setValue(300);
     });
 
+  const formatDateTime = (date: Date) => {
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    const day = days[date.getDay()];
+    const month = months[date.getMonth()];
+    const dayNum = date.getDate();
+    const year = date.getFullYear();
+
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
+
+    return `${day}, ${month} ${dayNum}, ${year} at ${hours}:${minutesStr} ${ampm}`;
+  };
+
   const handleDateChange = (_event: any, selectedDate?: Date) => {
     setShowDatePicker(Platform.OS === "ios");
     if (selectedDate) {
@@ -238,9 +270,11 @@ export default function EditMeetupStep2Screen({
             <DateTimePicker
               value={selectedDate}
               mode="datetime"
-              display="default"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
               onChange={handleDateChange}
               minimumDate={new Date()}
+              textColor={Platform.OS === "ios" ? "#FFFFFF" : undefined}
+              themeVariant={Platform.OS === "ios" ? "dark" : undefined}
             />
           </View>
         </Animated.View>
@@ -497,18 +531,41 @@ export default function EditMeetupStep2Screen({
                     }}
                     title={formData.locationName}
                     description={formData.address}
+                    pinColor="red"
                   />
                 </MapView>
               </TouchableOpacity>
             )}
           </View>
 
-          {renderSelector(
-            "Date & Time *",
-            "time",
-            "Select date and time",
-            openDatePicker
-          )}
+          <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: colors.text }]}>
+              Date & Time *
+            </Text>
+            <TouchableOpacity
+              style={[
+                styles.selector,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+              onPress={openDatePicker}
+            >
+              <Text
+                style={[
+                  styles.selectorText,
+                  { color: formData.time ? colors.text : colors.textSecondary },
+                ]}
+              >
+                {formData.time
+                  ? formatDateTime(selectedDate)
+                  : "Select date and time"}
+              </Text>
+              <Ionicons
+                name="calendar-outline"
+                size={20}
+                color={colors.textSecondary}
+              />
+            </TouchableOpacity>
+          </View>
 
           {renderSelector(
             "Duration *",
