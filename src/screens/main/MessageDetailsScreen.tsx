@@ -13,8 +13,6 @@ import {
   ActivityIndicator,
   Modal,
   Animated,
-  Pressable,
-  ScrollView,
 } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { LinearGradient } from "expo-linear-gradient";
@@ -62,9 +60,8 @@ export default function MessageDetailsScreen({
   const [showMenu, setShowMenu] = useState(false);
   const [isBlocking, setIsBlocking] = useState(false);
   const [isReporting, setIsReporting] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
-  const [showParticipantsModal, setShowParticipantsModal] = useState(false);
-  const [participantsList, setParticipantsList] = useState<User[]>([]);
   const [meetup, setMeetup] = useState<Meetup | null>(null);
 
   // Animation values
@@ -103,7 +100,6 @@ export default function MessageDetailsScreen({
         usersMap[user.uid] = user;
       });
       setUsers(usersMap);
-      setParticipantsList(participantUsers);
 
       // Load meetup data if this is a meetup chat
       if (roomData.type === "meetup" && roomData.meetupRef) {
@@ -509,22 +505,6 @@ export default function MessageDetailsScreen({
     );
   };
 
-  const handleOpenParticipants = async () => {
-    if (!room || !currentUser) return;
-
-    // Fetch fresh participant data
-    try {
-      const participantUsers = await DataService.getUsersByIds(
-        room.participants
-      );
-      setParticipantsList(participantUsers);
-      setShowParticipantsModal(true);
-    } catch (error) {
-      console.error("Error loading participants:", error);
-      Alert.alert("Error", "Failed to load participants");
-    }
-  };
-
   const renderHeader = () => {
     if (!room) return null;
 
@@ -534,16 +514,9 @@ export default function MessageDetailsScreen({
     const otherUser =
       otherParticipants.length > 0 ? users[otherParticipants[0]] : null;
 
-    const isGroupOrMeetup = room.type === "group" || room.type === "meetup";
-    const HeaderWrapper = isGroupOrMeetup ? TouchableOpacity : View;
-
     return (
       <View style={styles.headerContent}>
-        <HeaderWrapper
-          style={styles.headerInfo}
-          onPress={isGroupOrMeetup ? handleOpenParticipants : undefined}
-          activeOpacity={isGroupOrMeetup ? 0.7 : 1}
-        >
+        <View style={styles.headerInfo}>
           {otherUser && (
             <View style={styles.headerAvatarContainer}>
               {otherUser.profilePictures &&
@@ -583,7 +556,7 @@ export default function MessageDetailsScreen({
                 : `${room.participants.length} participants`}
             </Text>
           </View>
-        </HeaderWrapper>
+        </View>
 
         <TouchableOpacity
           ref={menuButtonRef}
@@ -640,24 +613,6 @@ export default function MessageDetailsScreen({
       </Text>
     </View>
   );
-
-  const handleCloseMenu = () => {
-    Animated.parallel([
-      Animated.spring(menuScale, {
-        toValue: 0,
-        useNativeDriver: true,
-        tension: 150,
-        friction: 10,
-      }),
-      Animated.timing(menuOpacity, {
-        toValue: 0,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setShowMenu(false);
-    });
-  };
 
   const renderMeetupInfoCard = () => {
     if (!meetup || !room || room.type !== "meetup") return null;
@@ -743,173 +698,22 @@ export default function MessageDetailsScreen({
     );
   };
 
-  const renderParticipantsModal = () => {
-    if (!room || !currentUser) return null;
-
-    const isMeetupChat = room.type === "meetup";
-    const creatorId =
-      isMeetupChat && room.admins && room.admins.length > 0
-        ? room.admins[0]
-        : null;
-
-    const renderParticipant = (user: User) => {
-      const isCurrentUser = user.uid === currentUser?.uid;
-      const isCreator = isMeetupChat && user.uid === creatorId;
-
-      return (
-        <TouchableOpacity
-          key={user.uid}
-          style={[
-            styles.participantItem,
-            { backgroundColor: colors.surface, borderColor: colors.border },
-            isCurrentUser && { opacity: 0.6 },
-          ]}
-          onPress={() => {
-            if (!isCurrentUser) {
-              navigation.navigate("UserProfileDetails", {
-                userId: user.uid,
-                userData: user,
-              });
-              setShowParticipantsModal(false);
-            }
-          }}
-          disabled={isCurrentUser}
-          activeOpacity={isCurrentUser ? 1 : 0.7}
-        >
-          <View style={styles.participantAvatarContainer}>
-            {user.profilePictures && user.profilePictures.length > 0 ? (
-              <Image
-                source={{ uri: user.profilePictures[0] }}
-                style={styles.participantAvatar}
-              />
-            ) : (
-              <View
-                style={[
-                  styles.participantAvatar,
-                  styles.participantAvatarPlaceholder,
-                  { backgroundColor: colors.border },
-                ]}
-              >
-                <Ionicons name="person" size={20} color={colors.textTertiary} />
-              </View>
-            )}
-          </View>
-          <View style={styles.participantInfo}>
-            <View style={styles.participantNameRow}>
-              <Text
-                style={[styles.participantName, { color: colors.text }]}
-                numberOfLines={1}
-              >
-                {user.displayName || "User"}
-              </Text>
-              {isCreator && (
-                <View
-                  style={[
-                    styles.participantBadge,
-                    { backgroundColor: colors.primary },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.participantBadgeText,
-                      { color: colors.onPrimary },
-                    ]}
-                  >
-                    Creator
-                  </Text>
-                </View>
-              )}
-              {isCurrentUser && (
-                <View
-                  style={[
-                    styles.participantBadge,
-                    { backgroundColor: colors.border },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.participantBadgeText,
-                      { color: colors.text },
-                    ]}
-                  >
-                    You
-                  </Text>
-                </View>
-              )}
-            </View>
-            {user.bio && (
-              <Text
-                style={[styles.participantBio, { color: colors.textSecondary }]}
-                numberOfLines={1}
-              >
-                {user.bio}
-              </Text>
-            )}
-          </View>
-        </TouchableOpacity>
-      );
-    };
-
-    return (
-      <Modal
-        visible={showParticipantsModal}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowParticipantsModal(false)}
-      >
-        <Pressable
-          style={styles.bottomSheetOverlay}
-          onPress={() => setShowParticipantsModal(false)}
-        >
-          <Pressable
-            style={[
-              styles.bottomSheetContainer,
-              { backgroundColor: colors.surface },
-            ]}
-            onPress={(e) => e.stopPropagation()}
-          >
-            {/* Handle bar */}
-            <View
-              style={[
-                styles.bottomSheetHandle,
-                { backgroundColor: colors.border },
-              ]}
-            />
-
-            {/* Header */}
-            <View
-              style={[
-                styles.participantsHeader,
-                { borderBottomColor: colors.border },
-              ]}
-            >
-              <Text style={[styles.participantsTitle, { color: colors.text }]}>
-                {room.type === "meetup"
-                  ? "Meetup Participants"
-                  : "Group Members"}
-              </Text>
-              <Text
-                style={[
-                  styles.participantsCount,
-                  { color: colors.textSecondary },
-                ]}
-              >
-                {participantsList.length}{" "}
-                {participantsList.length === 1 ? "person" : "people"}
-              </Text>
-            </View>
-
-            {/* Participants List */}
-            <ScrollView
-              style={styles.participantsList}
-              showsVerticalScrollIndicator={true}
-            >
-              {participantsList.map((user) => renderParticipant(user))}
-            </ScrollView>
-          </Pressable>
-        </Pressable>
-      </Modal>
-    );
+  const handleCloseMenu = () => {
+    Animated.parallel([
+      Animated.spring(menuScale, {
+        toValue: 0,
+        useNativeDriver: true,
+        tension: 150,
+        friction: 10,
+      }),
+      Animated.timing(menuOpacity, {
+        toValue: 0,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowMenu(false);
+    });
   };
 
   const renderMenuModal = () => (
@@ -1068,7 +872,14 @@ export default function MessageDetailsScreen({
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         {messages.length === 0 ? (
-          renderEmptyState()
+          <View style={styles.messagesList}>
+            <View style={styles.emptyMessagesContainer}>
+              {renderMeetupInfoCard()}
+              <View style={styles.emptyStateWrapper}>
+                {renderEmptyState()}
+              </View>
+            </View>
+          </View>
         ) : (
           <FlatList
             ref={flatListRef}
@@ -1130,7 +941,6 @@ export default function MessageDetailsScreen({
       </KeyboardAvoidingView>
 
       {renderMenuModal()}
-      {renderParticipantsModal()}
     </SafeAreaView>
   );
 }
@@ -1260,8 +1070,16 @@ const styles = StyleSheet.create({
     marginTop: 4,
     textAlign: "right",
   },
-  emptyContainer: {
+  emptyMessagesContainer: {
     flex: 1,
+    paddingTop: 16,
+  },
+  emptyStateWrapper: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyContainer: {
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 32,
@@ -1377,96 +1195,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     marginTop: 4,
-  },
-  // Bottom Sheet Styles
-  bottomSheetOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
-  },
-  bottomSheetContainer: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingBottom: 40,
-    maxHeight: "60%",
-    minHeight: 400,
-  },
-  bottomSheetHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    alignSelf: "center",
-    marginTop: 12,
-    marginBottom: 8,
-  },
-  // Participants Modal Styles
-  participantsHeader: {
-    paddingHorizontal: 24,
-    paddingTop: 8,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-  },
-  participantsTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginBottom: 4,
-  },
-  participantsCount: {
-    fontSize: 16,
-  },
-  participantsList: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
-  participantItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-  },
-  participantAvatarContainer: {
-    marginRight: 12,
-  },
-  participantAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-  },
-  participantAvatarPlaceholder: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  participantInfo: {
-    flex: 1,
-    minWidth: 0,
-  },
-  participantNameRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
-    marginBottom: 4,
-  },
-  participantName: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginRight: 8,
-  },
-  participantBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-    marginLeft: 4,
-  },
-  participantBadgeText: {
-    fontSize: 11,
-    fontWeight: "600",
-    textTransform: "uppercase",
-  },
-  participantBio: {
-    fontSize: 14,
   },
   // Meetup Info Card Styles
   meetupInfoCard: {

@@ -511,42 +511,6 @@ export class DataService {
     }
   }
 
-  static async removeUserFromMeetupGroupChat(
-    meetupId: string,
-    userId: string
-  ): Promise<MessageRoom | null> {
-    try {
-      return await SupabaseDataService.removeUserFromMeetupGroupChat(
-        meetupId,
-        userId
-      );
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  static async addUserToMeetup(
-    meetupId: string,
-    userId: string
-  ): Promise<Meetup | null> {
-    try {
-      return await SupabaseDataService.addUserToMeetup(meetupId, userId);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  static async removeUserFromMeetup(
-    meetupId: string,
-    userId: string
-  ): Promise<Meetup | null> {
-    try {
-      return await SupabaseDataService.removeUserFromMeetup(meetupId, userId);
-    } catch (error) {
-      throw error;
-    }
-  }
-
   static setupMessageRoomsListener(
     userId: string,
     callback: (rooms: MessageRoom[]) => void
