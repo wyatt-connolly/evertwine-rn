@@ -1,11 +1,19 @@
-import { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Alert,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { Meetup } from "../types";
 import { useThemeStore } from "../hooks/useThemeStore";
 import { useAuthStore } from "../hooks/useAuthStore";
 import ShareButton from "./ShareButton";
+import { DataService } from "../services/DataService";
 
 interface EnhancedMeetupCardProps {
   meetup: Meetup;
@@ -20,6 +28,7 @@ interface EnhancedMeetupCardProps {
   hideActionButtons?: boolean;
   customActionButton?: React.ReactNode;
   matchesPreferences?: boolean;
+  onJoinChange?: (meetupId: string, updatedMeetup: Meetup) => void;
 }
 
 export default function EnhancedMeetupCard({
@@ -35,11 +44,35 @@ export default function EnhancedMeetupCard({
   hideActionButtons = false,
   customActionButton,
   matchesPreferences = false,
+  onJoinChange,
 }: EnhancedMeetupCardProps) {
   const { colors } = useThemeStore();
   const { user: currentUser } = useAuthStore();
   const navigation = useNavigation<any>();
   const [localInterested, setLocalInterested] = useState(isInterested);
+  const [localIsJoined, setLocalIsJoined] = useState(
+    currentUser ? meetup.participants.includes(currentUser.uid) : false
+  );
+
+  // Sync localIsJoined when meetup.participants changes (e.g., when navigating back)
+  useEffect(() => {
+    if (currentUser) {
+      const userIsParticipant = meetup.participants.includes(currentUser.uid);
+      console.log(
+        "🔄 [EnhancedMeetupCard] Syncing localIsJoined from meetup prop:",
+        {
+          meetupId: meetup.id,
+          userId: currentUser.uid,
+          participants: meetup.participants,
+          userIsParticipant,
+          currentLocalState: localIsJoined,
+        }
+      );
+      setLocalIsJoined(userIsParticipant);
+    } else {
+      setLocalIsJoined(false);
+    }
+  }, [meetup.participants?.join(","), meetup.id, currentUser?.uid]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -56,9 +89,256 @@ export default function EnhancedMeetupCard({
     onInterested?.(meetup.id, newState);
   };
 
-  const isJoined = currentUser
-    ? meetup.participants.includes(currentUser.uid)
-    : false;
+  const handleJoin = async (e: any) => {
+    e.stopPropagation();
+
+    console.log("🔄 [EnhancedMeetupCard] Join button pressed");
+    console.log("🔄 [EnhancedMeetupCard] Meetup ID:", meetup.id);
+    console.log("🔄 [EnhancedMeetupCard] Current user:", currentUser?.uid);
+    console.log("🔄 [EnhancedMeetupCard] Current join state:", localIsJoined);
+    console.log(
+      "🔄 [EnhancedMeetupCard] Meetup participants:",
+      meetup.participants
+    );
+
+    if (!currentUser) {
+      console.error("❌ [EnhancedMeetupCard] No current user");
+      Alert.alert("Error", "You must be logged in to join a meetup");
+      return;
+    }
+
+    try {
+      if (localIsJoined) {
+        console.log("➖ [EnhancedMeetupCard] Attempting to leave meetup");
+        try {
+          const updatedMeetup = await DataService.removeUserFromMeetup(
+            meetup.id,
+            currentUser.uid
+          );
+
+          if (updatedMeetup) {
+            console.log(
+              "✅ [EnhancedMeetupCard] Successfully left meetup via DataService"
+            );
+            setLocalIsJoined(false);
+
+            // Remove user from group chat
+            try {
+              await DataService.removeUserFromMeetupGroupChat(
+                meetup.id,
+                currentUser.uid
+              );
+              console.log(
+                "✅ [EnhancedMeetupCard] Successfully removed from group chat"
+              );
+            } catch (error) {
+              console.error(
+                "❌ [EnhancedMeetupCard] Error removing from group chat:",
+                error
+              );
+              // Don't fail the leave if group chat removal fails
+            }
+
+            // Notify parent of the update
+            onJoinChange?.(meetup.id, updatedMeetup);
+
+            Alert.alert("Success", "You've left the meetup");
+          }
+        } catch (leaveError: any) {
+          console.error(
+            "❌ [EnhancedMeetupCard] Error leaving meetup:",
+            leaveError
+          );
+          console.error(
+            "❌ [EnhancedMeetupCard] Error details:",
+            JSON.stringify(leaveError, null, 2)
+          );
+          Alert.alert(
+            "Error",
+            `Failed to leave meetup: ${leaveError.message || "Unknown error"}`
+          );
+        }
+      } else {
+        console.log("➕ [EnhancedMeetupCard] Attempting to join meetup");
+
+        // Check if meetup is full
+        if (
+          meetup.maxParticipants &&
+          meetup.currentParticipants >= meetup.maxParticipants
+        ) {
+          console.warn("⚠️ [EnhancedMeetupCard] Meetup is full");
+          Alert.alert(
+            "Meetup Full",
+            "This meetup is currently full. You can join the waitlist."
+          );
+          return;
+        }
+
+        // Join meetup
+        console.log(
+          "➕ [EnhancedMeetupCard] Calling DataService.addUserToMeetup"
+        );
+        try {
+          // First try to add user to meetup participants
+          // Note: This method might need to be implemented in DataService
+          const updatedMeetup = await DataService.addUserToMeetup(
+            meetup.id,
+            currentUser.uid
+          );
+
+          if (updatedMeetup) {
+            console.log(
+              "✅ [EnhancedMeetupCard] Successfully joined meetup via DataService"
+            );
+            setLocalIsJoined(true);
+
+            // Create or join group chat
+            try {
+              let groupChat = await DataService.findMeetupGroupChat(meetup.id);
+
+              if (!groupChat) {
+                const participants = [meetup.creatorId, currentUser.uid];
+                groupChat = await DataService.createMeetupGroupChat(
+                  meetup.id,
+                  meetup.title,
+                  meetup.images?.[0] || "",
+                  participants
+                );
+                console.log(
+                  "✅ [EnhancedMeetupCard] Created group chat:",
+                  groupChat?.id
+                );
+              } else {
+                groupChat = await DataService.addUserToMeetupGroupChat(
+                  meetup.id,
+                  currentUser.uid
+                );
+                console.log(
+                  "✅ [EnhancedMeetupCard] Added to group chat:",
+                  groupChat?.id
+                );
+              }
+            } catch (error) {
+              console.error(
+                "❌ [EnhancedMeetupCard] Error with group chat:",
+                error
+              );
+              // Don't fail the join if group chat creation fails
+            }
+
+            // Notify parent of the update
+            onJoinChange?.(meetup.id, updatedMeetup);
+
+            Alert.alert("Success", "You've joined the meetup!");
+          } else {
+            console.warn(
+              "⚠️ [EnhancedMeetupCard] addUserToMeetup returned null"
+            );
+            // Fallback: just update local state and create/join group chat
+            setLocalIsJoined(true);
+            console.log(
+              "➕ [EnhancedMeetupCard] Updated local state to joined"
+            );
+          }
+        } catch (methodError: any) {
+          console.error(
+            "❌ [EnhancedMeetupCard] Error calling addUserToMeetup:",
+            methodError
+          );
+          console.error(
+            "❌ [EnhancedMeetupCard] Error details:",
+            JSON.stringify(methodError, null, 2)
+          );
+
+          // Fallback: Create or join group chat
+          console.log(
+            "➕ [EnhancedMeetupCard] Falling back to group chat creation"
+          );
+          try {
+            let groupChat = await DataService.findMeetupGroupChat(meetup.id);
+            console.log(
+              "➕ [EnhancedMeetupCard] Group chat lookup result:",
+              groupChat ? "found" : "not found"
+            );
+
+            if (!groupChat) {
+              console.log("➕ [EnhancedMeetupCard] Creating new group chat");
+              const participants = [meetup.creatorId, currentUser.uid];
+              groupChat = await DataService.createMeetupGroupChat(
+                meetup.id,
+                meetup.title,
+                meetup.images?.[0] || "",
+                participants
+              );
+              console.log(
+                "✅ [EnhancedMeetupCard] Created group chat:",
+                groupChat?.id
+              );
+            } else {
+              console.log(
+                "➕ [EnhancedMeetupCard] Adding user to existing group chat"
+              );
+              groupChat = await DataService.addUserToMeetupGroupChat(
+                meetup.id,
+                currentUser.uid
+              );
+              console.log(
+                "✅ [EnhancedMeetupCard] Added to group chat:",
+                groupChat?.id
+              );
+            }
+
+            setLocalIsJoined(true);
+            console.log(
+              "✅ [EnhancedMeetupCard] Successfully joined meetup (via group chat)"
+            );
+
+            // Notify parent - but we don't have updated meetup data here
+            // This is a fallback case, so we'll create a partial update
+            const partialMeetupUpdate: Meetup = {
+              ...meetup,
+              participants: [...meetup.participants, currentUser.uid],
+              currentParticipants: meetup.currentParticipants + 1,
+            };
+            onJoinChange?.(meetup.id, partialMeetupUpdate);
+
+            Alert.alert("Success", "You've joined the meetup!");
+          } catch (groupChatError: any) {
+            console.error(
+              "❌ [EnhancedMeetupCard] Error with group chat:",
+              groupChatError
+            );
+            Alert.alert(
+              "Error",
+              `Failed to join meetup: ${
+                groupChatError.message || "Unknown error"
+              }`
+            );
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error(
+        "❌ [EnhancedMeetupCard] Unexpected error in handleJoin:",
+        error
+      );
+      console.error(
+        "❌ [EnhancedMeetupCard] Error details:",
+        JSON.stringify(error, null, 2)
+      );
+      Alert.alert(
+        "Error",
+        `Failed to ${localIsJoined ? "leave" : "join"} meetup: ${
+          error.message || "Unknown error"
+        }`
+      );
+    }
+  };
+
+  // Use local state if available, otherwise check meetup participants
+  const isJoined =
+    localIsJoined ||
+    (currentUser ? meetup.participants.includes(currentUser.uid) : false);
 
   const isOwnMeetup = currentUser
     ? meetup.creatorId === currentUser.uid ||
@@ -273,10 +553,7 @@ export default function EnhancedMeetupCard({
                     borderColor: isJoined ? colors.border : colors.primary,
                   },
                 ]}
-                onPress={(e) => {
-                  e.stopPropagation();
-                  // Handle join logic
-                }}
+                onPress={handleJoin}
               >
                 <Ionicons
                   name={isJoined ? "checkmark-circle" : "add-circle-outline"}

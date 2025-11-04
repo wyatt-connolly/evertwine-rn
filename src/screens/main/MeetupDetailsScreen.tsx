@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -55,6 +56,23 @@ export default function MeetupDetailsScreen({
         meetup.creatorRef === currentUser.uid
       : false;
 
+  // Update isJoined state when meetup participants or currentUser changes
+  useEffect(() => {
+    if (meetup && currentUser) {
+      const userIsParticipant = meetup.participants.includes(currentUser.uid);
+      console.log("🔄 [MeetupDetailsScreen] Updating isJoined state:", {
+        meetupId: meetup.id,
+        userId: currentUser.uid,
+        participants: meetup.participants,
+        userIsParticipant,
+        currentIsJoined: isJoined,
+      });
+      setIsJoined(userIsParticipant);
+    } else if (!currentUser) {
+      setIsJoined(false);
+    }
+  }, [meetup?.participants?.join(","), meetup?.id, currentUser?.uid]);
+
   useEffect(() => {
     const fetchMeetupData = async () => {
       try {
@@ -100,6 +118,24 @@ export default function MeetupDetailsScreen({
           } else {
             setParticipants([]);
           }
+
+          // Update isJoined based on participants
+          if (currentUser && meetupData.participants) {
+            const userIsParticipant = meetupData.participants.includes(
+              currentUser.uid
+            );
+            console.log(
+              "🔄 [MeetupDetailsScreen] Setting isJoined from meetupData:",
+              {
+                meetupId: meetupData.id,
+                userId: currentUser.uid,
+                participants: meetupData.participants,
+                userIsParticipant,
+              }
+            );
+            setIsJoined(userIsParticipant);
+          }
+
           return;
         }
 
@@ -160,6 +196,23 @@ export default function MeetupDetailsScreen({
           // No participants in the array, set empty array
           setParticipants([]);
         }
+
+        // Update isJoined based on fetched meetup participants
+        if (currentUser && fetchedMeetup.participants) {
+          const userIsParticipant = fetchedMeetup.participants.includes(
+            currentUser.uid
+          );
+          console.log(
+            "🔄 [MeetupDetailsScreen] Setting isJoined from fetched meetup:",
+            {
+              meetupId: fetchedMeetup.id,
+              userId: currentUser.uid,
+              participants: fetchedMeetup.participants,
+              userIsParticipant,
+            }
+          );
+          setIsJoined(userIsParticipant);
+        }
       } catch (error) {
         console.error("Error fetching meetup data:", error);
         Alert.alert("Error", "Failed to load meetup. Please try again.");
@@ -170,14 +223,140 @@ export default function MeetupDetailsScreen({
     };
 
     fetchMeetupData();
-  }, [meetupId, meetupData]);
+  }, [meetupId, meetupData, currentUser]);
+
+  // Refresh meetup data when screen comes into focus (in case it was updated elsewhere)
+  useFocusEffect(
+    useCallback(() => {
+      const refreshMeetupData = async () => {
+        if (!meetup) return;
+
+        console.log("🔄 [MeetupDetailsScreen] Refreshing meetup data on focus");
+        try {
+          const refreshedMeetup = await SupabaseDataService.getMeetup(
+            meetup.id
+          );
+          if (refreshedMeetup) {
+            setMeetup(refreshedMeetup);
+
+            // Update isJoined based on refreshed data
+            if (currentUser && refreshedMeetup.participants) {
+              const userIsParticipant = refreshedMeetup.participants.includes(
+                currentUser.uid
+              );
+              console.log(
+                "🔄 [MeetupDetailsScreen] Updated isJoined from refreshed meetup:",
+                {
+                  meetupId: refreshedMeetup.id,
+                  userId: currentUser.uid,
+                  participants: refreshedMeetup.participants,
+                  userIsParticipant,
+                }
+              );
+              setIsJoined(userIsParticipant);
+            }
+
+            // Refresh participants list
+            if (
+              refreshedMeetup.participants &&
+              refreshedMeetup.participants.length > 0
+            ) {
+              try {
+                const participantsData =
+                  await SupabaseDataService.getUsersByIds(
+                    refreshedMeetup.participants
+                  );
+                const otherParticipants = participantsData.filter(
+                  (p) => p.uid !== refreshedMeetup.creatorId
+                );
+                setParticipants(otherParticipants);
+              } catch (error) {
+                console.error("Error refreshing participants:", error);
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error refreshing meetup data:", error);
+        }
+      };
+
+      refreshMeetupData();
+    }, [meetup?.id, currentUser?.uid])
+  );
 
   const handleJoin = async () => {
-    if (!meetup) return;
+    if (!meetup || !currentUser) return;
+
+    console.log("🔄 [MeetupDetailsScreen] handleJoin called:", {
+      meetupId: meetup.id,
+      userId: currentUser.uid,
+      currentIsJoined: isJoined,
+    });
 
     if (isJoined) {
-      setIsJoined(false);
-      setSnackbarMessage("Left meetup");
+      console.log("➖ [MeetupDetailsScreen] Leaving meetup");
+      try {
+        const updatedMeetup = await DataService.removeUserFromMeetup(
+          meetup.id,
+          currentUser.uid
+        );
+        if (updatedMeetup) {
+          setMeetup(updatedMeetup);
+          setIsJoined(false);
+          setSnackbarMessage("Left meetup");
+          console.log("✅ [MeetupDetailsScreen] Successfully left meetup");
+
+          // Remove user from group chat
+          try {
+            await DataService.removeUserFromMeetupGroupChat(
+              meetup.id,
+              currentUser.uid
+            );
+            console.log(
+              "✅ [MeetupDetailsScreen] Successfully removed from group chat"
+            );
+          } catch (error) {
+            console.error(
+              "❌ [MeetupDetailsScreen] Error removing from group chat:",
+              error
+            );
+            // Don't fail the leave if group chat removal fails
+          }
+
+          // Refresh participants list
+          if (
+            updatedMeetup.participants &&
+            updatedMeetup.participants.length > 0
+          ) {
+            try {
+              const participantsData = await SupabaseDataService.getUsersByIds(
+                updatedMeetup.participants
+              );
+              const otherParticipants = participantsData.filter(
+                (p) => p.uid !== updatedMeetup.creatorId
+              );
+              setParticipants(otherParticipants);
+              console.log(
+                "✅ [MeetupDetailsScreen] Refreshed participants list after leave"
+              );
+            } catch (error) {
+              console.error(
+                "❌ [MeetupDetailsScreen] Error refreshing participants:",
+                error
+              );
+            }
+          } else {
+            setParticipants([]);
+          }
+        }
+      } catch (error: any) {
+        console.error("❌ [MeetupDetailsScreen] Error leaving meetup:", error);
+        Alert.alert(
+          "Error",
+          `Failed to leave meetup: ${error.message || "Unknown error"}`
+        );
+        return;
+      }
     } else {
       if (
         meetup.maxParticipants &&
@@ -189,45 +368,100 @@ export default function MeetupDetailsScreen({
         );
         return;
       }
-      setIsJoined(true);
 
-      // Create or join group chat for the meetup
-      if (currentUser) {
-        try {
-          // Check if group chat already exists
-          let groupChat = await DataService.findMeetupGroupChat(meetup.id);
+      console.log("➕ [MeetupDetailsScreen] Joining meetup");
+      try {
+        // Add user to meetup participants
+        const updatedMeetup = await DataService.addUserToMeetup(
+          meetup.id,
+          currentUser.uid
+        );
 
-          if (!groupChat) {
-            // Create new group chat with all current participants
-            const participants = [meetup.creatorId, currentUser.uid];
-            groupChat = await DataService.createMeetupGroupChat(
-              meetup.id,
-              meetup.title,
-              meetup.images?.[0] || "",
-              participants
+        if (updatedMeetup) {
+          setMeetup(updatedMeetup);
+          setIsJoined(true);
+          setSnackbarMessage("Joined meetup");
+          console.log("✅ [MeetupDetailsScreen] Successfully joined meetup");
+
+          // Create or join group chat for the meetup
+          try {
+            // Check if group chat already exists
+            let groupChat = await DataService.findMeetupGroupChat(meetup.id);
+
+            if (!groupChat) {
+              // Create new group chat with all current participants
+              const participants = [meetup.creatorId, currentUser.uid];
+              groupChat = await DataService.createMeetupGroupChat(
+                meetup.id,
+                meetup.title,
+                meetup.images?.[0] || "",
+                participants
+              );
+            } else {
+              // Add user to existing group chat
+              groupChat = await DataService.addUserToMeetupGroupChat(
+                meetup.id,
+                currentUser.uid
+              );
+            }
+
+            if (groupChat) {
+              console.log(
+                "✅ [MeetupDetailsScreen] Successfully joined meetup group chat:",
+                groupChat.id
+              );
+            }
+          } catch (error) {
+            console.error(
+              "❌ [MeetupDetailsScreen] Error creating/joining group chat:",
+              error
             );
-          } else {
-            // Add user to existing group chat
-            groupChat = await DataService.addUserToMeetupGroupChat(
-              meetup.id,
-              currentUser.uid
-            );
+            // Don't fail the join if group chat creation fails
           }
 
-          if (groupChat) {
-            console.log("Successfully joined meetup group chat:", groupChat.id);
+          // TODO: Send notification to meetup creator
+          if (meetup.creatorId !== currentUser.uid) {
+            console.log("TODO: Send notification to meetup creator");
           }
-        } catch (error) {
-          console.error("Error creating/joining group chat:", error);
+
+          // Refresh participants list
+          if (
+            updatedMeetup.participants &&
+            updatedMeetup.participants.length > 0
+          ) {
+            try {
+              const participantsData = await SupabaseDataService.getUsersByIds(
+                updatedMeetup.participants
+              );
+              const otherParticipants = participantsData.filter(
+                (p) => p.uid !== updatedMeetup.creatorId
+              );
+              setParticipants(otherParticipants);
+              console.log(
+                "✅ [MeetupDetailsScreen] Refreshed participants list after join"
+              );
+            } catch (error) {
+              console.error(
+                "❌ [MeetupDetailsScreen] Error refreshing participants:",
+                error
+              );
+            }
+          }
+        } else {
+          console.error(
+            "❌ [MeetupDetailsScreen] addUserToMeetup returned null"
+          );
+          Alert.alert("Error", "Failed to join meetup. Please try again.");
+          return;
         }
+      } catch (error: any) {
+        console.error("❌ [MeetupDetailsScreen] Error joining meetup:", error);
+        Alert.alert(
+          "Error",
+          `Failed to join meetup: ${error.message || "Unknown error"}`
+        );
+        return;
       }
-
-      // TODO: Send notification to meetup creator
-      if (currentUser && meetup.creatorId !== currentUser.uid) {
-        console.log("TODO: Send notification to meetup creator");
-      }
-
-      setSnackbarMessage("Joined meetup");
     }
 
     setShowSnackbar(true);

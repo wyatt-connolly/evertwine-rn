@@ -13,6 +13,8 @@ import {
   ActivityIndicator,
   Modal,
   Animated,
+  Pressable,
+  ScrollView,
 } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { LinearGradient } from "expo-linear-gradient";
@@ -20,7 +22,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
-import { Message, MessageRoom, User } from "../../types";
+import { Message, MessageRoom, User, Meetup } from "../../types";
 import { DataService } from "../../services/DataService";
 import { SupabaseDataService } from "../../services/SupabaseDataService";
 import { NotificationService } from "../../services/NotificationService";
@@ -61,6 +63,9 @@ export default function MessageDetailsScreen({
   const [isBlocking, setIsBlocking] = useState(false);
   const [isReporting, setIsReporting] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+  const [showParticipantsModal, setShowParticipantsModal] = useState(false);
+  const [participantsList, setParticipantsList] = useState<User[]>([]);
+  const [meetup, setMeetup] = useState<Meetup | null>(null);
 
   // Animation values
   const menuScale = useRef(new Animated.Value(0)).current;
@@ -98,6 +103,19 @@ export default function MessageDetailsScreen({
         usersMap[user.uid] = user;
       });
       setUsers(usersMap);
+      setParticipantsList(participantUsers);
+
+      // Load meetup data if this is a meetup chat
+      if (roomData.type === "meetup" && roomData.meetupRef) {
+        // Extract meetup ID (handle both "meetups/{id}" and "{id}" formats)
+        const meetupId = roomData.meetupRef.replace(/^meetups\//, "");
+        try {
+          const meetupData = await SupabaseDataService.getMeetup(meetupId);
+          setMeetup(meetupData);
+        } catch (error) {
+          console.error("Error loading meetup:", error);
+        }
+      }
     } catch (error) {
       Alert.alert("Error", "Failed to load messages");
     } finally {
@@ -125,7 +143,6 @@ export default function MessageDetailsScreen({
       unsubscribe();
     };
   }, [roomId]); // Only depend on roomId
-
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !currentUser || !room) return;
@@ -198,11 +215,15 @@ export default function MessageDetailsScreen({
     return users[senderId]?.profilePictures?.[0] || null;
   };
 
-  const handleDeleteMessage = async (messageId: string, messageText: string) => {
+  const handleDeleteMessage = async (
+    messageId: string,
+    messageText: string
+  ) => {
     console.log("DELETE BUTTON PRESSED: Message ID:", messageId);
-    const isCurrentUserMessage = messages.find(m => m.id === messageId)?.senderRef === currentUser?.uid;
+    const isCurrentUserMessage =
+      messages.find((m) => m.id === messageId)?.senderRef === currentUser?.uid;
     console.log("DELETE: Is current user message?", isCurrentUserMessage);
-    
+
     if (!isCurrentUserMessage) {
       Alert.alert("Error", "You can only delete your own messages");
       return;
@@ -219,17 +240,22 @@ export default function MessageDetailsScreen({
           onPress: async () => {
             try {
               console.log("DELETE: Attempting to delete message:", messageId);
-              
+
               // Optimistically remove from UI
-              setMessages(prevMessages => {
-                console.log("DELETE: Current messages count:", prevMessages.length);
-                const filtered = prevMessages.filter(msg => msg.id !== messageId);
+              setMessages((prevMessages) => {
+                console.log(
+                  "DELETE: Current messages count:",
+                  prevMessages.length
+                );
+                const filtered = prevMessages.filter(
+                  (msg) => msg.id !== messageId
+                );
                 console.log("DELETE: Updated messages count:", filtered.length);
                 return filtered;
               });
 
               await SupabaseDataService.deleteMessage(messageId);
-              
+
               console.log("DELETE: Successfully deleted message from database");
             } catch (error) {
               console.log("DELETE ERROR:", error);
@@ -372,13 +398,13 @@ export default function MessageDetailsScreen({
       const scale = progress.interpolate({
         inputRange: [0, 1],
         outputRange: [0.5, 1],
-        extrapolate: 'clamp',
+        extrapolate: "clamp",
       });
 
       const opacity = progress.interpolate({
         inputRange: [0, 0.5, 1],
         outputRange: [0, 0.5, 1],
-        extrapolate: 'clamp',
+        extrapolate: "clamp",
       });
 
       return (
@@ -408,27 +434,42 @@ export default function MessageDetailsScreen({
       >
         <TouchableOpacity
           activeOpacity={0.8}
-          onLongPress={() => isCurrentUser && !item.isDeleted && handleDeleteMessage(item.id, item.text)}
+          onLongPress={() =>
+            isCurrentUser &&
+            !item.isDeleted &&
+            handleDeleteMessage(item.id, item.text)
+          }
         >
           <View
             style={[
               styles.messageContainer,
-              isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage,
+              isCurrentUser
+                ? styles.currentUserMessage
+                : styles.otherUserMessage,
             ]}
           >
             {!isCurrentUser && (
               <View style={styles.messageHeader}>
                 {senderAvatar ? (
-                  <Image
-                    source={{ uri: senderAvatar }}
-                    style={styles.avatar}
-                  />
+                  <Image source={{ uri: senderAvatar }} style={styles.avatar} />
                 ) : (
-                  <View style={[styles.avatar, styles.avatarPlaceholder, { backgroundColor: colors.border }]}>
-                    <Ionicons name="person" size={16} color={colors.textTertiary} />
+                  <View
+                    style={[
+                      styles.avatar,
+                      styles.avatarPlaceholder,
+                      { backgroundColor: colors.border },
+                    ]}
+                  >
+                    <Ionicons
+                      name="person"
+                      size={16}
+                      color={colors.textTertiary}
+                    />
                   </View>
                 )}
-                <Text style={[styles.senderName, { color: colors.textSecondary }]}>
+                <Text
+                  style={[styles.senderName, { color: colors.textSecondary }]}
+                >
                   {senderName}
                 </Text>
               </View>
@@ -446,7 +487,10 @@ export default function MessageDetailsScreen({
               </LinearGradient>
             ) : (
               <View
-                style={[styles.messageBubble, { backgroundColor: colors.surface }]}
+                style={[
+                  styles.messageBubble,
+                  { backgroundColor: colors.surface },
+                ]}
               >
                 <Text style={[styles.messageText, { color: colors.text }]}>
                   {item.text}
@@ -465,6 +509,22 @@ export default function MessageDetailsScreen({
     );
   };
 
+  const handleOpenParticipants = async () => {
+    if (!room || !currentUser) return;
+
+    // Fetch fresh participant data
+    try {
+      const participantUsers = await DataService.getUsersByIds(
+        room.participants
+      );
+      setParticipantsList(participantUsers);
+      setShowParticipantsModal(true);
+    } catch (error) {
+      console.error("Error loading participants:", error);
+      Alert.alert("Error", "Failed to load participants");
+    }
+  };
+
   const renderHeader = () => {
     if (!room) return null;
 
@@ -474,9 +534,16 @@ export default function MessageDetailsScreen({
     const otherUser =
       otherParticipants.length > 0 ? users[otherParticipants[0]] : null;
 
+    const isGroupOrMeetup = room.type === "group" || room.type === "meetup";
+    const HeaderWrapper = isGroupOrMeetup ? TouchableOpacity : View;
+
     return (
       <View style={styles.headerContent}>
-        <View style={styles.headerInfo}>
+        <HeaderWrapper
+          style={styles.headerInfo}
+          onPress={isGroupOrMeetup ? handleOpenParticipants : undefined}
+          activeOpacity={isGroupOrMeetup ? 0.7 : 1}
+        >
           {otherUser && (
             <View style={styles.headerAvatarContainer}>
               {otherUser.profilePictures &&
@@ -516,7 +583,7 @@ export default function MessageDetailsScreen({
                 : `${room.participants.length} participants`}
             </Text>
           </View>
-        </View>
+        </HeaderWrapper>
 
         <TouchableOpacity
           ref={menuButtonRef}
@@ -590,6 +657,259 @@ export default function MessageDetailsScreen({
     ]).start(() => {
       setShowMenu(false);
     });
+  };
+
+  const renderMeetupInfoCard = () => {
+    if (!meetup || !room || room.type !== "meetup") return null;
+
+    const formatTime = (date: Date) => {
+      return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    };
+
+    const formatDate = (date: Date) => {
+      return date.toLocaleDateString([], {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      });
+    };
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.meetupInfoCard,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+        ]}
+        onPress={() => {
+          navigation.navigate("MeetupDetails", {
+            meetupId: meetup.id,
+            meetupData: meetup,
+          });
+        }}
+        activeOpacity={0.7}
+      >
+        {meetup.coverImage && (
+          <Image
+            source={{ uri: meetup.coverImage }}
+            style={styles.meetupInfoImage}
+            resizeMode="cover"
+          />
+        )}
+        <View style={styles.meetupInfoContent}>
+          <Text
+            style={[styles.meetupInfoTitle, { color: colors.text }]}
+            numberOfLines={1}
+          >
+            {meetup.title}
+          </Text>
+          <View style={styles.meetupInfoDetails}>
+            <View style={styles.meetupInfoRow}>
+              <Ionicons
+                name="calendar-outline"
+                size={14}
+                color={colors.textSecondary}
+              />
+              <Text
+                style={[styles.meetupInfoText, { color: colors.textSecondary }]}
+                numberOfLines={1}
+              >
+                {formatDate(meetup.time)} at {formatTime(meetup.time)}
+              </Text>
+            </View>
+            <View style={styles.meetupInfoRow}>
+              <Ionicons
+                name="location-outline"
+                size={14}
+                color={colors.textSecondary}
+              />
+              <Text
+                style={[styles.meetupInfoText, { color: colors.textSecondary }]}
+                numberOfLines={1}
+              >
+                {meetup.locationName || meetup.address}
+              </Text>
+            </View>
+          </View>
+        </View>
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color={colors.textSecondary}
+        />
+      </TouchableOpacity>
+    );
+  };
+
+  const renderParticipantsModal = () => {
+    if (!room || !currentUser) return null;
+
+    const isMeetupChat = room.type === "meetup";
+    const creatorId =
+      isMeetupChat && room.admins && room.admins.length > 0
+        ? room.admins[0]
+        : null;
+
+    const renderParticipant = (user: User) => {
+      const isCurrentUser = user.uid === currentUser?.uid;
+      const isCreator = isMeetupChat && user.uid === creatorId;
+
+      return (
+        <TouchableOpacity
+          key={user.uid}
+          style={[
+            styles.participantItem,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+            isCurrentUser && { opacity: 0.6 },
+          ]}
+          onPress={() => {
+            if (!isCurrentUser) {
+              navigation.navigate("UserProfileDetails", {
+                userId: user.uid,
+                userData: user,
+              });
+              setShowParticipantsModal(false);
+            }
+          }}
+          disabled={isCurrentUser}
+          activeOpacity={isCurrentUser ? 1 : 0.7}
+        >
+          <View style={styles.participantAvatarContainer}>
+            {user.profilePictures && user.profilePictures.length > 0 ? (
+              <Image
+                source={{ uri: user.profilePictures[0] }}
+                style={styles.participantAvatar}
+              />
+            ) : (
+              <View
+                style={[
+                  styles.participantAvatar,
+                  styles.participantAvatarPlaceholder,
+                  { backgroundColor: colors.border },
+                ]}
+              >
+                <Ionicons name="person" size={20} color={colors.textTertiary} />
+              </View>
+            )}
+          </View>
+          <View style={styles.participantInfo}>
+            <View style={styles.participantNameRow}>
+              <Text
+                style={[styles.participantName, { color: colors.text }]}
+                numberOfLines={1}
+              >
+                {user.displayName || "User"}
+              </Text>
+              {isCreator && (
+                <View
+                  style={[
+                    styles.participantBadge,
+                    { backgroundColor: colors.primary },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.participantBadgeText,
+                      { color: colors.onPrimary },
+                    ]}
+                  >
+                    Creator
+                  </Text>
+                </View>
+              )}
+              {isCurrentUser && (
+                <View
+                  style={[
+                    styles.participantBadge,
+                    { backgroundColor: colors.border },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.participantBadgeText,
+                      { color: colors.text },
+                    ]}
+                  >
+                    You
+                  </Text>
+                </View>
+              )}
+            </View>
+            {user.bio && (
+              <Text
+                style={[styles.participantBio, { color: colors.textSecondary }]}
+                numberOfLines={1}
+              >
+                {user.bio}
+              </Text>
+            )}
+          </View>
+        </TouchableOpacity>
+      );
+    };
+
+    return (
+      <Modal
+        visible={showParticipantsModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowParticipantsModal(false)}
+      >
+        <Pressable
+          style={styles.bottomSheetOverlay}
+          onPress={() => setShowParticipantsModal(false)}
+        >
+          <Pressable
+            style={[
+              styles.bottomSheetContainer,
+              { backgroundColor: colors.surface },
+            ]}
+            onPress={(e) => e.stopPropagation()}
+          >
+            {/* Handle bar */}
+            <View
+              style={[
+                styles.bottomSheetHandle,
+                { backgroundColor: colors.border },
+              ]}
+            />
+
+            {/* Header */}
+            <View
+              style={[
+                styles.participantsHeader,
+                { borderBottomColor: colors.border },
+              ]}
+            >
+              <Text style={[styles.participantsTitle, { color: colors.text }]}>
+                {room.type === "meetup"
+                  ? "Meetup Participants"
+                  : "Group Members"}
+              </Text>
+              <Text
+                style={[
+                  styles.participantsCount,
+                  { color: colors.textSecondary },
+                ]}
+              >
+                {participantsList.length}{" "}
+                {participantsList.length === 1 ? "person" : "people"}
+              </Text>
+            </View>
+
+            {/* Participants List */}
+            <ScrollView
+              style={styles.participantsList}
+              showsVerticalScrollIndicator={true}
+            >
+              {participantsList.map((user) => renderParticipant(user))}
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
+    );
   };
 
   const renderMenuModal = () => (
@@ -758,6 +1078,7 @@ export default function MessageDetailsScreen({
             style={styles.messagesList}
             contentContainerStyle={styles.messagesContent}
             inverted={true}
+            ListFooterComponent={renderMeetupInfoCard}
           />
         )}
 
@@ -809,6 +1130,7 @@ export default function MessageDetailsScreen({
       </KeyboardAvoidingView>
 
       {renderMenuModal()}
+      {renderParticipantsModal()}
     </SafeAreaView>
   );
 }
@@ -913,8 +1235,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   avatarPlaceholder: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   senderName: {
     fontSize: 12,
@@ -1055,5 +1377,137 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     marginTop: 4,
+  },
+  // Bottom Sheet Styles
+  bottomSheetOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  bottomSheetContainer: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 40,
+    maxHeight: "60%",
+    minHeight: 400,
+  },
+  bottomSheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: "center",
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  // Participants Modal Styles
+  participantsHeader: {
+    paddingHorizontal: 24,
+    paddingTop: 8,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+  },
+  participantsTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  participantsCount: {
+    fontSize: 16,
+  },
+  participantsList: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  participantItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+  },
+  participantAvatarContainer: {
+    marginRight: 12,
+  },
+  participantAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  participantAvatarPlaceholder: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  participantInfo: {
+    flex: 1,
+    minWidth: 0,
+  },
+  participantNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    marginBottom: 4,
+  },
+  participantName: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginRight: 8,
+  },
+  participantBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginLeft: 4,
+  },
+  participantBadgeText: {
+    fontSize: 11,
+    fontWeight: "600",
+    textTransform: "uppercase",
+  },
+  participantBio: {
+    fontSize: 14,
+  },
+  // Meetup Info Card Styles
+  meetupInfoCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  meetupInfoImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  meetupInfoContent: {
+    flex: 1,
+    minWidth: 0,
+  },
+  meetupInfoTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  meetupInfoDetails: {
+    gap: 6,
+  },
+  meetupInfoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  meetupInfoText: {
+    fontSize: 13,
+    flex: 1,
   },
 });

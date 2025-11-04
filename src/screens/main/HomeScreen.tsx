@@ -180,7 +180,7 @@ export default function HomeScreen() {
     return () => clearInterval(interval);
   }, []);
 
-  // Refresh data when screen comes into focus (only when needed)
+  // Refresh data when screen comes into focus (to catch updates from other screens)
   useFocusEffect(
     React.useCallback(() => {
       // Check if we need to refresh based on route params
@@ -189,7 +189,21 @@ export default function HomeScreen() {
         ?.routes?.find((route: any) => route.name === "Home");
       const shouldRefresh = (currentRoute?.params as any)?.refresh;
 
+      // Always refresh meetups when screen comes into focus (in case user joined/left from details screen)
+      // This ensures the cards show the correct join state
+      const refreshMeetups = async () => {
+        try {
+          console.log("🔄 [HomeScreen] Refreshing meetups on focus");
+          const meetupsData = await SupabaseDataService.getMeetups();
+          setAllMeetups(meetupsData || []);
+          console.log("✅ [HomeScreen] Meetups refreshed");
+        } catch (error) {
+          console.error("Error refreshing meetups:", error);
+        }
+      };
+
       if (shouldRefresh) {
+        // Full refresh if route param indicates it
         const refreshData = async () => {
           try {
             const [postsData, meetupsData, eventsData] = await Promise.all([
@@ -209,6 +223,9 @@ export default function HomeScreen() {
           }
         };
         refreshData();
+      } else {
+        // Otherwise just refresh meetups to catch join/leave changes
+        refreshMeetups();
       }
     }, [navigation])
   );
@@ -886,6 +903,17 @@ export default function HomeScreen() {
     }
   };
 
+  const handleMeetupJoinChange = (meetupId: string, updatedMeetup: Meetup) => {
+    console.log("🔄 [HomeScreen] Updating meetup after join/leave:", meetupId);
+    setAllMeetups((prevMeetups) => {
+      const updatedMeetups = prevMeetups.map((m) =>
+        m.id === meetupId ? updatedMeetup : m
+      );
+      console.log("✅ [HomeScreen] Updated meetups array");
+      return updatedMeetups;
+    });
+  };
+
   const handleMeetupInterested = (meetupId: string, isInterested: boolean) => {
     setInterestedMeetups((prev) => {
       const newSet = new Set(prev);
@@ -1157,6 +1185,7 @@ export default function HomeScreen() {
                       })
                   : undefined
               }
+              onJoinChange={handleMeetupJoinChange}
               onInterested={handleMeetupInterested}
               isInterested={interestedMeetups.has(recommendedMeetup.id)}
               matchesPreferences={recommendedMatchesPreferences}
@@ -1224,6 +1253,7 @@ export default function HomeScreen() {
             timeLabel={timeLabel}
             isUpcoming={isUpcoming}
             matchesPreferences={meetupMatchesPreferences}
+            onJoinChange={handleMeetupJoinChange}
           />
         );
 

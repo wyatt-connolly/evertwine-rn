@@ -276,6 +276,185 @@ export class SupabaseDataService {
     if (error) throw error;
   }
 
+  // ==================== MEETUP PARTICIPANT MANAGEMENT ====================
+  static async addUserToMeetup(
+    meetupId: string,
+    userId: string
+  ): Promise<Meetup | null> {
+    console.log(
+      "➕ [SupabaseDataService.addUserToMeetup] Starting - meetupId:",
+      meetupId,
+      "userId:",
+      userId
+    );
+
+    // Get current meetup
+    const meetup = await this.getMeetup(meetupId);
+    console.log(
+      "➕ [SupabaseDataService.addUserToMeetup] Fetched meetup:",
+      meetup ? "found" : "not found"
+    );
+
+    if (!meetup) {
+      console.error(
+        "❌ [SupabaseDataService.addUserToMeetup] Meetup not found"
+      );
+      throw new Error("Meetup not found");
+    }
+
+    console.log(
+      "➕ [SupabaseDataService.addUserToMeetup] Current participants:",
+      meetup.participants
+    );
+
+    // Check if user is already a participant
+    if (meetup.participants.includes(userId)) {
+      console.log(
+        "⚠️ [SupabaseDataService.addUserToMeetup] User already in participants"
+      );
+      return meetup; // Already joined
+    }
+
+    // Add user to participants
+    const updatedParticipants = [...meetup.participants, userId];
+    console.log(
+      "➕ [SupabaseDataService.addUserToMeetup] Updated participants:",
+      updatedParticipants
+    );
+
+    const updateData = {
+      participants: updatedParticipants,
+      current_participants: updatedParticipants.length,
+      updated_at: new Date().toISOString(),
+    };
+    console.log(
+      "➕ [SupabaseDataService.addUserToMeetup] Update data:",
+      updateData
+    );
+
+    const { data, error, count } = await supabase
+      .from("meetups")
+      .update(updateData)
+      .eq("id", meetupId)
+      .select()
+      .maybeSingle(); // Use maybeSingle instead of single to handle 0 rows
+
+    console.log("➕ [SupabaseDataService.addUserToMeetup] Update result:", {
+      data: data ? "found" : "not found",
+      error,
+      count,
+      rowsAffected: count || (data ? 1 : 0),
+    });
+
+    if (error) {
+      console.error("❌ [SupabaseDataService.addUserToMeetup] Error:", error);
+      throw error;
+    }
+
+    if (!data) {
+      console.error(
+        "❌ [SupabaseDataService.addUserToMeetup] No data returned - likely RLS policy issue"
+      );
+      throw new Error(
+        "Failed to update meetup. You may not have permission to join this meetup."
+      );
+    }
+
+    console.log(
+      "✅ [SupabaseDataService.addUserToMeetup] Successfully added user to meetup"
+    );
+    return this.mapMeetupFromDB(data);
+  }
+
+  static async removeUserFromMeetup(
+    meetupId: string,
+    userId: string
+  ): Promise<Meetup | null> {
+    console.log(
+      "➖ [SupabaseDataService.removeUserFromMeetup] Starting - meetupId:",
+      meetupId,
+      "userId:",
+      userId
+    );
+
+    // Get current meetup
+    const meetup = await this.getMeetup(meetupId);
+    console.log(
+      "➖ [SupabaseDataService.removeUserFromMeetup] Fetched meetup:",
+      meetup ? "found" : "not found"
+    );
+
+    if (!meetup) {
+      console.error(
+        "❌ [SupabaseDataService.removeUserFromMeetup] Meetup not found"
+      );
+      throw new Error("Meetup not found");
+    }
+
+    console.log(
+      "➖ [SupabaseDataService.removeUserFromMeetup] Current participants:",
+      meetup.participants
+    );
+
+    // Remove user from participants
+    const updatedParticipants = meetup.participants.filter(
+      (id) => id !== userId
+    );
+    console.log(
+      "➖ [SupabaseDataService.removeUserFromMeetup] Updated participants:",
+      updatedParticipants
+    );
+
+    const updateData = {
+      participants: updatedParticipants,
+      current_participants: updatedParticipants.length,
+      updated_at: new Date().toISOString(),
+    };
+    console.log(
+      "➖ [SupabaseDataService.removeUserFromMeetup] Update data:",
+      updateData
+    );
+
+    const { data, error, count } = await supabase
+      .from("meetups")
+      .update(updateData)
+      .eq("id", meetupId)
+      .select()
+      .maybeSingle(); // Use maybeSingle instead of single to handle 0 rows
+
+    console.log(
+      "➖ [SupabaseDataService.removeUserFromMeetup] Update result:",
+      {
+        data: data ? "found" : "not found",
+        error,
+        count,
+        rowsAffected: count || (data ? 1 : 0),
+      }
+    );
+
+    if (error) {
+      console.error(
+        "❌ [SupabaseDataService.removeUserFromMeetup] Error:",
+        error
+      );
+      throw error;
+    }
+
+    if (!data) {
+      console.error(
+        "❌ [SupabaseDataService.removeUserFromMeetup] No data returned - likely RLS policy issue"
+      );
+      throw new Error(
+        "Failed to update meetup. You may not have permission to leave this meetup."
+      );
+    }
+
+    console.log(
+      "✅ [SupabaseDataService.removeUserFromMeetup] Successfully removed user from meetup"
+    );
+    return this.mapMeetupFromDB(data);
+  }
+
   // ==================== HAPPY HOURS ====================
   static async getHappyHours(limit = 50): Promise<Event[]> {
     const { data, error } = await supabase
@@ -376,7 +555,9 @@ export class SupabaseDataService {
       })
     );
 
-    const mapped = roomsWithLastMessage.map((item) => this.mapMessageRoomFromDB(item));
+    const mapped = roomsWithLastMessage.map((item) =>
+      this.mapMessageRoomFromDB(item)
+    );
     return mapped;
   }
 
@@ -574,10 +755,7 @@ export class SupabaseDataService {
   }
 
   static async deleteMessage(id: string): Promise<void> {
-    const { error } = await supabase
-      .from("messages")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("messages").delete().eq("id", id);
     if (error) throw error;
   }
 
@@ -708,8 +886,8 @@ export class SupabaseDataService {
 
   // Helper to safely convert Supabase booleans (which can be strings)
   private static toBoolean(value: any): boolean {
-    if (typeof value === 'string') {
-      return value === 'true' || value === 't' || value === '1';
+    if (typeof value === "string") {
+      return value === "true" || value === "t" || value === "1";
     }
     return Boolean(value);
   }
@@ -748,16 +926,18 @@ export class SupabaseDataService {
       viewsThisWeek: data.views_this_week,
       averageViewDuration: data.average_view_duration,
       preferences: data.preferences,
-      notificationPreferences: this.mapNotificationPreferences(data.notification_preferences),
+      notificationPreferences: this.mapNotificationPreferences(
+        data.notification_preferences
+      ),
       createdTime: new Date(data.created_time),
       updatedTime: new Date(data.updated_time),
     };
-    
+
     return user;
   }
 
   private static mapNotificationPreferences(prefs: any): any {
-    if (!prefs || typeof prefs !== 'object') return prefs;
+    if (!prefs || typeof prefs !== "object") return prefs;
     const result: any = {};
     for (const key in prefs) {
       result[key] = this.toBoolean(prefs[key]);
@@ -907,9 +1087,9 @@ export class SupabaseDataService {
   }
 
   private static mapRequirements(reqs: any): any {
-    if (!reqs || typeof reqs !== 'object') return reqs;
+    if (!reqs || typeof reqs !== "object") return reqs;
     const result: any = { ...reqs };
-    if ('verificationRequired' in reqs) {
+    if ("verificationRequired" in reqs) {
       result.verificationRequired = this.toBoolean(reqs.verificationRequired);
     }
     return result;
@@ -1038,19 +1218,23 @@ export class SupabaseDataService {
   }
 
   private static mapEventFeatures(features: any): any {
-    if (!features || typeof features !== 'object') return features;
+    if (!features || typeof features !== "object") return features;
     return {
       hasQRCode: this.toBoolean(features.has_qr_code ?? features.hasQRCode),
       hasTickets: this.toBoolean(features.has_tickets ?? features.hasTickets),
       hasCoupons: this.toBoolean(features.has_coupons ?? features.hasCoupons),
-      allowsSharing: this.toBoolean(features.allows_sharing ?? features.allowsSharing),
-      requiresVerification: this.toBoolean(features.requires_verification ?? features.requiresVerification),
+      allowsSharing: this.toBoolean(
+        features.allows_sharing ?? features.allowsSharing
+      ),
+      requiresVerification: this.toBoolean(
+        features.requires_verification ?? features.requiresVerification
+      ),
     };
   }
 
   private static mapWhosGoing(whosGoing: any[]): any[] {
     if (!Array.isArray(whosGoing)) return [];
-    return whosGoing.map(person => ({
+    return whosGoing.map((person) => ({
       id: person.id,
       name: person.name,
       avatar: person.avatar,
@@ -1781,13 +1965,16 @@ export class SupabaseDataService {
     meetupImage: string,
     participants: string[]
   ): Promise<MessageRoom | null> {
+    // Strip "meetups/" prefix if present - meetup_ref is a UUID column
+    const cleanMeetupId = meetupId.replace(/^meetups\//, "");
+
     const roomData = {
       type: "meetup",
       participants: participants,
       admins: [participants[0]], // First participant is admin
       name: meetupTitle,
       avatar: meetupImage,
-      meetup_ref: `meetups/${meetupId}`,
+      meetup_ref: cleanMeetupId,
       // last_message: null, // Will be set when first message is sent - temporarily removed to test
       settings: {
         allow_invites: true,
@@ -1811,11 +1998,14 @@ export class SupabaseDataService {
   static async findMeetupGroupChat(
     meetupId: string
   ): Promise<MessageRoom | null> {
+    // Strip "meetups/" prefix if present - meetup_ref is a UUID column
+    const cleanMeetupId = meetupId.replace(/^meetups\//, "");
+
     const { data, error } = await supabase
       .from("message_rooms")
       .select("*")
       .eq("type", "meetup")
-      .eq("meetup_ref", `meetups/${meetupId}`)
+      .eq("meetup_ref", cleanMeetupId)
       .single();
 
     if (error) {
@@ -1831,8 +2021,11 @@ export class SupabaseDataService {
     meetupId: string,
     userId: string
   ): Promise<MessageRoom | null> {
+    // Strip "meetups/" prefix if present - meetup_ref is a UUID column
+    const cleanMeetupId = meetupId.replace(/^meetups\//, "");
+
     // First find the group chat
-    const groupChat = await this.findMeetupGroupChat(meetupId);
+    const groupChat = await this.findMeetupGroupChat(cleanMeetupId);
     if (!groupChat) {
       throw new Error("Meetup group chat not found");
     }
@@ -1840,6 +2033,43 @@ export class SupabaseDataService {
     // Add user to participants if not already present
     if (!groupChat.participants.includes(userId)) {
       const updatedParticipants = [...groupChat.participants, userId];
+
+      const { data, error } = await supabase
+        .from("message_rooms")
+        .update({
+          participants: updatedParticipants,
+          updated_time: new Date().toISOString(),
+        })
+        .eq("id", groupChat.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return this.mapMessageRoomFromDB(data);
+    }
+
+    return groupChat;
+  }
+
+  static async removeUserFromMeetupGroupChat(
+    meetupId: string,
+    userId: string
+  ): Promise<MessageRoom | null> {
+    // Strip "meetups/" prefix if present - meetup_ref is a UUID column
+    const cleanMeetupId = meetupId.replace(/^meetups\//, "");
+
+    // First find the group chat
+    const groupChat = await this.findMeetupGroupChat(cleanMeetupId);
+    if (!groupChat) {
+      // Group chat doesn't exist, which is fine if no one has joined yet
+      return null;
+    }
+
+    // Remove user from participants if present
+    if (groupChat.participants.includes(userId)) {
+      const updatedParticipants = groupChat.participants.filter(
+        (id) => id !== userId
+      );
 
       const { data, error } = await supabase
         .from("message_rooms")

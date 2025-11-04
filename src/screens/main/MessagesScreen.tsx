@@ -131,7 +131,10 @@ export default function MessagesScreen({ navigation }: any) {
               await SupabaseDataService.deleteMessageRoom(roomId);
               loadMessageRooms();
             } catch (error) {
-              Alert.alert("Error", "Failed to delete conversation. Please try again.");
+              Alert.alert(
+                "Error",
+                "Failed to delete conversation. Please try again."
+              );
             }
           },
         },
@@ -144,13 +147,13 @@ export default function MessagesScreen({ navigation }: any) {
       const scale = progress.interpolate({
         inputRange: [0, 1],
         outputRange: [0.5, 1],
-        extrapolate: 'clamp',
+        extrapolate: "clamp",
       });
 
       const opacity = progress.interpolate({
         inputRange: [0, 0.5, 1],
         outputRange: [0, 0.5, 1],
-        extrapolate: 'clamp',
+        extrapolate: "clamp",
       });
 
       return (
@@ -174,82 +177,100 @@ export default function MessagesScreen({ navigation }: any) {
           style={[styles.messageRoom, { backgroundColor: colors.surface }]}
           onPress={() => handleOpenMessage(room.id)}
         >
-      <View style={styles.avatarContainer}>
-        {room.avatar ? (
-          <Image source={{ uri: room.avatar }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatar, styles.avatarPlaceholder, { backgroundColor: colors.border }]}>
-            <Ionicons name="person" size={24} color={colors.textTertiary} />
+          <View style={styles.avatarContainer}>
+            {room.avatar ? (
+              <Image source={{ uri: room.avatar }} style={styles.avatar} />
+            ) : (
+              <View
+                style={[
+                  styles.avatar,
+                  styles.avatarPlaceholder,
+                  { backgroundColor: colors.border },
+                ]}
+              >
+                <Ionicons name="person" size={24} color={colors.textTertiary} />
+              </View>
+            )}
+            {room.type === "group" && (
+              <View
+                style={[
+                  styles.groupIndicator,
+                  { backgroundColor: colors.primary },
+                ]}
+              >
+                <Ionicons name="people" size={12} color={colors.onPrimary} />
+              </View>
+            )}
+            {room.type === "meetup" && (
+              <View
+                style={[
+                  styles.meetupIndicator,
+                  { backgroundColor: colors.secondary },
+                ]}
+              >
+                <Ionicons
+                  name="calendar"
+                  size={12}
+                  color={colors.onSecondary}
+                />
+              </View>
+            )}
           </View>
-        )}
-        {room.type === "group" && (
-          <View
-            style={[styles.groupIndicator, { backgroundColor: colors.primary }]}
-          >
-            <Ionicons name="people" size={12} color={colors.onPrimary} />
+
+          <View style={styles.messageContent}>
+            <View style={styles.messageHeader}>
+              <Text
+                style={[
+                  styles.roomName,
+                  { color: colors.text },
+                  !room.lastMessage?.isRead && { fontWeight: "700" },
+                ]}
+              >
+                {room.name}
+              </Text>
+              <Text
+                style={[styles.messageTime, { color: colors.textTertiary }]}
+              >
+                {room.lastMessage && formatTime(room.lastMessage.timestamp)}
+              </Text>
+            </View>
+
+            <View style={styles.messagePreview}>
+              {room.lastMessage?.messageType === "image" && (
+                <Ionicons name="image" size={16} color={colors.textSecondary} />
+              )}
+              <Text
+                style={[
+                  styles.lastMessage,
+                  { color: colors.textSecondary },
+                  !room.lastMessage?.isRead && {
+                    color: colors.text,
+                    fontWeight: "600",
+                  },
+                ]}
+                numberOfLines={1}
+              >
+                {room.lastMessage?.text ||
+                  (room.type === "meetup"
+                    ? "Group chat started"
+                    : room.type === "group"
+                    ? "Group chat started"
+                    : "Start a conversation")}
+              </Text>
+            </View>
+
+            {room.participants.length > 2 && (
+              <Text
+                style={[
+                  styles.participantCount,
+                  { color: colors.textTertiary },
+                ]}
+              >
+                {room.participants.length} participants
+              </Text>
+            )}
           </View>
-        )}
-        {room.type === "meetup" && (
-          <View
-            style={[
-              styles.meetupIndicator,
-              { backgroundColor: colors.secondary },
-            ]}
-          >
-            <Ionicons name="calendar" size={12} color={colors.onSecondary} />
-          </View>
-        )}
-      </View>
-
-      <View style={styles.messageContent}>
-        <View style={styles.messageHeader}>
-          <Text 
-            style={[
-              styles.roomName, 
-              { color: colors.text },
-              !room.lastMessage?.isRead && { fontWeight: "700" },
-            ]}
-          >
-            {room.name}
-          </Text>
-          <Text style={[styles.messageTime, { color: colors.textTertiary }]}>
-            {room.lastMessage && formatTime(room.lastMessage.timestamp)}
-          </Text>
-        </View>
-
-        <View style={styles.messagePreview}>
-          {room.lastMessage?.messageType === "image" && (
-            <Ionicons name="image" size={16} color={colors.textSecondary} />
-          )}
-          <Text
-            style={[
-              styles.lastMessage,
-              { color: colors.textSecondary },
-              !room.lastMessage?.isRead && {
-                color: colors.text,
-                fontWeight: "600",
-              },
-            ]}
-            numberOfLines={1}
-          >
-            {room.lastMessage?.text ||
-              (room.type === "meetup"
-                ? "Group chat started"
-                : room.type === "group"
-                ? "Group chat started"
-                : "Start a conversation")}
-          </Text>
-        </View>
-
-        {room.participants.length > 2 && (
-          <Text
-            style={[styles.participantCount, { color: colors.textTertiary }]}
-          >
-            {room.participants.length} participants
-          </Text>
-        )}
-      </View>
-    </TouchableOpacity>
+        </TouchableOpacity>
       </Swipeable>
     );
   };
@@ -403,8 +424,8 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
   avatarPlaceholder: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   groupIndicator: {
     position: "absolute",
