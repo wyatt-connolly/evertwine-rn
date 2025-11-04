@@ -130,19 +130,37 @@ export default function EnhancedMeetupCard({
             setLocalIsJoined(false);
 
             // Remove user from group chat
+            console.log("🚪 [EnhancedMeetupCard] Step 1: About to remove from group chat");
+            console.log("🚪 [EnhancedMeetupCard] Meetup ID:", meetup.id);
+            console.log("🚪 [EnhancedMeetupCard] User ID:", currentUser.uid);
+            console.log("🚪 [EnhancedMeetupCard] Current user auth state:", {
+              uid: currentUser.uid,
+              email: currentUser.email,
+            });
             try {
-              await DataService.removeUserFromMeetupGroupChat(
+              console.log("🚪 [EnhancedMeetupCard] Calling removeUserFromMeetupGroupChat...");
+              const groupChatResult = await DataService.removeUserFromMeetupGroupChat(
                 meetup.id,
                 currentUser.uid
               );
               console.log(
                 "✅ [EnhancedMeetupCard] Successfully removed from group chat"
               );
-            } catch (error) {
+              console.log("✅ [EnhancedMeetupCard] Group chat result:", groupChatResult ? {
+                id: groupChatResult.id,
+                type: groupChatResult.type,
+                participants: groupChatResult.participants,
+              } : "null");
+            } catch (error: any) {
               console.error(
                 "❌ [EnhancedMeetupCard] Error removing from group chat:",
                 error
               );
+              console.error("❌ [EnhancedMeetupCard] Error type:", typeof error);
+              console.error("❌ [EnhancedMeetupCard] Error code:", error?.code);
+              console.error("❌ [EnhancedMeetupCard] Error message:", error?.message);
+              console.error("❌ [EnhancedMeetupCard] Error details:", JSON.stringify(error, null, 2));
+              console.error("❌ [EnhancedMeetupCard] Error hint:", error?.hint);
               // Don't fail the leave if group chat removal fails
             }
 
