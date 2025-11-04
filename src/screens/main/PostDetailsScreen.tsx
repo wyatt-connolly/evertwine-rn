@@ -8,6 +8,7 @@ import {
   Dimensions,
   TextInput,
   SafeAreaView,
+  Share,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -36,20 +37,26 @@ export default function PostDetailsScreen({
 
   const isPostCreator = post.userId === currentUser?.uid;
 
-  console.log('📱 [PostDetails] Rendering with post:', post.id);
-  console.log('📱 [PostDetails] Current user:', currentUser?.uid);
-  console.log('📱 [PostDetails] Post comments count:', comments.length);
-  console.log('📱 [PostDetails] Is post creator:', isPostCreator);
+  console.log("📱 [PostDetails] Rendering with post:", post.id);
+  console.log("📱 [PostDetails] Current user:", currentUser?.uid);
+  console.log("📱 [PostDetails] Post comments count:", comments.length);
+  console.log("📱 [PostDetails] Is post creator:", isPostCreator);
 
   // Load comments when screen mounts
   useEffect(() => {
     const loadComments = async () => {
       try {
-        const loadedComments = await SupabaseDataService.getPostComments(post.id);
+        const loadedComments = await SupabaseDataService.getPostComments(
+          post.id
+        );
         setComments(loadedComments);
-        console.log('✅ [PostDetails] Loaded', loadedComments.length, 'comments');
+        console.log(
+          "✅ [PostDetails] Loaded",
+          loadedComments.length,
+          "comments"
+        );
       } catch (error) {
-        console.error('❌ [PostDetails] Error loading comments:', error);
+        console.error("❌ [PostDetails] Error loading comments:", error);
       }
     };
     loadComments();
@@ -69,33 +76,45 @@ export default function PostDetailsScreen({
   };
 
   const handleComment = async () => {
-    console.log('💬 [PostDetails] handleComment called');
-    console.log('💬 [PostDetails] commentText:', commentText);
-    console.log('💬 [PostDetails] currentUser:', currentUser?.uid);
-    
+    console.log("💬 [PostDetails] handleComment called");
+    console.log("💬 [PostDetails] commentText:", commentText);
+    console.log("💬 [PostDetails] currentUser:", currentUser?.uid);
+
     if (commentText.trim() && currentUser) {
       try {
-        console.log('✅ [PostDetails] Creating comment...');
+        console.log("✅ [PostDetails] Creating comment...");
         const comment = await SupabaseDataService.createComment({
           userId: currentUser.uid,
           message: commentText.trim(),
           postId: post.id,
         });
-        console.log('✅ [PostDetails] Comment created successfully:', comment.id);
+        console.log(
+          "✅ [PostDetails] Comment created successfully:",
+          comment.id
+        );
         setCommentText("");
         // Add the new comment to the list
         setComments((prev) => [...prev, comment]);
       } catch (error) {
-        console.error('❌ [PostDetails] Error creating comment:', error);
+        console.error("❌ [PostDetails] Error creating comment:", error);
       }
     } else {
-      console.log('⚠️ [PostDetails] Cannot create comment: missing text or user');
+      console.log(
+        "⚠️ [PostDetails] Cannot create comment: missing text or user"
+      );
     }
   };
 
-  const handleShare = () => {
-    // Here you would implement sharing functionality
-
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        title: `Check out this post on Evertwine`,
+        message: `"${post?.title || post?.message}"`,
+        url: `https://evertwine.app/post/${post?.id}`,
+      });
+    } catch (error) {
+      // User cancelled or error occurred
+    }
   };
 
   return (
@@ -153,7 +172,13 @@ export default function PostDetailsScreen({
             {post.userAvatar ? (
               <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
             ) : (
-              <View style={[styles.avatar, styles.placeholderAvatar, { backgroundColor: colors.border }]}>
+              <View
+                style={[
+                  styles.avatar,
+                  styles.placeholderAvatar,
+                  { backgroundColor: colors.border },
+                ]}
+              >
                 <Ionicons name="person" size={20} color={colors.textTertiary} />
               </View>
             )}
@@ -209,7 +234,7 @@ export default function PostDetailsScreen({
           {comments.map((comment: any) => {
             const isCommentCreator = comment.userId === post.userId;
             const isCurrentUser = comment.userId === currentUser?.uid;
-            
+
             return (
               <View key={comment.id} style={styles.comment}>
                 {comment.userAvatar ? (
@@ -218,8 +243,18 @@ export default function PostDetailsScreen({
                     style={styles.commentAvatar}
                   />
                 ) : (
-                  <View style={[styles.commentAvatar, styles.placeholderAvatar, { backgroundColor: colors.border }]}>
-                    <Ionicons name="person" size={16} color={colors.textTertiary} />
+                  <View
+                    style={[
+                      styles.commentAvatar,
+                      styles.placeholderAvatar,
+                      { backgroundColor: colors.border },
+                    ]}
+                  >
+                    <Ionicons
+                      name="person"
+                      size={16}
+                      color={colors.textTertiary}
+                    />
                   </View>
                 )}
                 <View style={styles.commentContent}>
@@ -236,15 +271,35 @@ export default function PostDetailsScreen({
                         {comment.userName}
                       </Text>
                       {isCommentCreator && (
-                        <View style={[styles.creatorBadge, { backgroundColor: colors.primary }]}>
-                          <Text style={[styles.creatorBadgeText, { color: colors.onPrimary }]}>
+                        <View
+                          style={[
+                            styles.creatorBadge,
+                            { backgroundColor: colors.primary },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.creatorBadgeText,
+                              { color: colors.onPrimary },
+                            ]}
+                          >
                             OP
                           </Text>
                         </View>
                       )}
                       {isCurrentUser && !isCommentCreator && (
-                        <View style={[styles.youBadge, { backgroundColor: colors.border }]}>
-                          <Text style={[styles.youBadgeText, { color: colors.textSecondary }]}>
+                        <View
+                          style={[
+                            styles.youBadge,
+                            { backgroundColor: colors.border },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.youBadgeText,
+                              { color: colors.textSecondary },
+                            ]}
+                          >
                             You
                           </Text>
                         </View>
@@ -285,7 +340,13 @@ export default function PostDetailsScreen({
               style={styles.commentInputAvatar}
             />
           ) : (
-            <View style={[styles.commentInputAvatar, styles.placeholderAvatar, { backgroundColor: colors.border }]}>
+            <View
+              style={[
+                styles.commentInputAvatar,
+                styles.placeholderAvatar,
+                { backgroundColor: colors.border },
+              ]}
+            >
               <Ionicons name="person" size={16} color={colors.textTertiary} />
             </View>
           )}
@@ -388,8 +449,8 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   placeholderAvatar: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   headerInfo: {
     flex: 1,
@@ -452,8 +513,8 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   commentHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     marginBottom: 4,
   },

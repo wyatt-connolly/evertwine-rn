@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   FlatList,
   Dimensions,
+  Share,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Image } from "expo-image";
@@ -57,7 +58,13 @@ export default function EnhancedPostCard({ post }: EnhancedPostCardProps) {
           {post.userAvatar ? (
             <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
           ) : (
-            <View style={[styles.avatar, styles.placeholderAvatar, { backgroundColor: colors.border }]}>
+            <View
+              style={[
+                styles.avatar,
+                styles.placeholderAvatar,
+                { backgroundColor: colors.border },
+              ]}
+            >
               <Ionicons name="person" size={20} color={colors.textTertiary} />
             </View>
           )}
@@ -69,7 +76,21 @@ export default function EnhancedPostCard({ post }: EnhancedPostCardProps) {
               {formatTime(post.createdAt)}
             </Text>
           </View>
-          <TouchableOpacity style={styles.shareButton}>
+          <TouchableOpacity
+            style={styles.shareButton}
+            onPress={async (e) => {
+              e.stopPropagation();
+              try {
+                await Share.share({
+                  title: `Check out this post on Evertwine`,
+                  message: `"${post?.title || post?.message}"`,
+                  url: `https://evertwine.app/post/${post?.id}`,
+                });
+              } catch (error) {
+                // User cancelled
+              }
+            }}
+          >
             <Ionicons
               name="share-outline"
               size={22}
@@ -146,8 +167,8 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   placeholderAvatar: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   headerInfo: {
     flex: 1,

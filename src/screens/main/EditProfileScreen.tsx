@@ -108,10 +108,7 @@ export default function EditProfileScreen() {
             pronouns: "they/them",
             bio: "",
             about: "",
-            profilePictures: [
-              user.photoURL ||
-                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-            ],
+            profilePictures: user.photoURL ? [user.photoURL] : [],
             standoutPhotoIndex: 0,
             location: { latitude: 0, longitude: 0 },
             locationName: "",

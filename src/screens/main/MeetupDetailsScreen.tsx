@@ -14,8 +14,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useFavoritesStore } from "../../hooks/useFavoritesStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
-import { getMockMeetups, getMockUsers } from "../../data/mockData";
+
 import Snackbar from "../../components/Snackbar";
+import ShareButton from "../../components/ShareButton";
 import { SupabaseDataService } from "../../services/SupabaseDataService";
 import { DataService } from "../../services/DataService";
 import { Meetup, User } from "../../types";
@@ -48,6 +49,12 @@ export default function MeetupDetailsScreen({
   const [participants, setParticipants] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const isOwnMeetup =
+    currentUser && meetup
+      ? meetup.creatorId === currentUser.uid ||
+        meetup.creatorRef === currentUser.uid
+      : false;
+
   useEffect(() => {
     const fetchMeetupData = async () => {
       try {
@@ -75,26 +82,16 @@ export default function MeetupDetailsScreen({
             }
           }
 
-          // Fetch participants from Supabase
+          // Fetch participants from Supabase using getUsersByIds for efficiency
           if (meetupData.participants && meetupData.participants.length > 0) {
             try {
-              const participantsData = await Promise.all(
-                meetupData.participants.map(async (participantId) => {
-                  try {
-                    return await SupabaseDataService.getUser(participantId);
-                  } catch (error) {
-                    console.error(
-                      `Error fetching participant ${participantId}:`,
-                      error
-                    );
-                    return null;
-                  }
-                })
+              const participantsData = await SupabaseDataService.getUsersByIds(
+                meetupData.participants
               );
-              // Filter out the creator from participants list
-              const otherParticipants = participantsData
-                .filter(Boolean)
-                .filter((p: any) => p.uid !== meetupData.creatorId) as User[];
+              // Filter out the creator from participants list since they're displayed separately
+              const otherParticipants = participantsData.filter(
+                (p) => p.uid !== meetupData.creatorId
+              );
               setParticipants(otherParticipants);
             } catch (error) {
               console.error("Error fetching participants:", error);
@@ -115,23 +112,9 @@ export default function MeetupDetailsScreen({
         );
 
         if (!fetchedMeetup) {
-          // Fallback to mock data
-          const mockMeetup = getMockMeetups().find(
-            (m) => m.id === cleanMeetupId
-          );
-          if (mockMeetup) {
-            setMeetup(mockMeetup);
-            const mockCreator = getMockUsers().find(
-              (u) => u.uid === mockMeetup.creatorId
-            );
-            if (mockCreator) {
-              setCreator(mockCreator);
-            }
-            const mockParticipants = getMockUsers().filter((u) =>
-              mockMeetup.participants?.includes(u.uid)
-            );
-            setParticipants(mockParticipants);
-          }
+          // Meetup not found in Supabase - show error and go back
+          Alert.alert("Error", "Meetup not found.");
+          navigation.goBack();
           return;
         }
 
@@ -148,52 +131,30 @@ export default function MeetupDetailsScreen({
             }
           } catch (error) {
             console.error("Error fetching creator:", error);
-            // Fallback to mock data
-            const mockCreator = getMockUsers().find(
-              (u) => u.uid === fetchedMeetup.creatorId
-            );
-            if (mockCreator) {
-              setCreator(mockCreator);
-            }
+            // Creator not found in Supabase - leave as null
+            setCreator(null);
           }
         }
 
-        // Fetch participants from Supabase
+        // Fetch participants from Supabase using getUsersByIds for efficiency
         // Note: participants array from meetup includes the creatorId
         if (
           fetchedMeetup.participants &&
           fetchedMeetup.participants.length > 0
         ) {
           try {
-            const participantsData = await Promise.all(
-              fetchedMeetup.participants.map(async (participantId) => {
-                try {
-                  return await SupabaseDataService.getUser(participantId);
-                } catch (error) {
-                  console.error(
-                    `Error fetching participant ${participantId}:`,
-                    error
-                  );
-                  // Fallback to mock data for this participant
-                  return getMockUsers().find((u) => u.uid === participantId);
-                }
-              })
+            const participantsData = await SupabaseDataService.getUsersByIds(
+              fetchedMeetup.participants
             );
             // Filter out the creator from participants list since they're displayed separately
             const otherParticipants = participantsData.filter(
-              (p): p is User =>
-                p !== null &&
-                p !== undefined &&
-                p.uid !== fetchedMeetup.creatorId
+              (p) => p.uid !== fetchedMeetup.creatorId
             );
             setParticipants(otherParticipants);
           } catch (error) {
             console.error("Error fetching participants:", error);
-            // Fallback to mock data
-            const mockParticipants = getMockUsers().filter((u) =>
-              fetchedMeetup.participants?.includes(u.uid)
-            );
-            setParticipants(mockParticipants);
+            // If error fetching participants, show empty list
+            setParticipants([]);
           }
         } else {
           // No participants in the array, set empty array
@@ -201,23 +162,8 @@ export default function MeetupDetailsScreen({
         }
       } catch (error) {
         console.error("Error fetching meetup data:", error);
-        // Fallback to mock data
-        const mockMeetup = getMockMeetups().find(
-          (m) => m.id === meetupId.replace(/^meetup-/, "")
-        );
-        if (mockMeetup) {
-          setMeetup(mockMeetup);
-          const mockCreator = getMockUsers().find(
-            (u) => u.uid === mockMeetup.creatorId
-          );
-          if (mockCreator) {
-            setCreator(mockCreator);
-          }
-          const mockParticipants = getMockUsers().filter((u) =>
-            mockMeetup.participants?.includes(u.uid)
-          );
-          setParticipants(mockParticipants);
-        }
+        Alert.alert("Error", "Failed to load meetup. Please try again.");
+        navigation.goBack();
       } finally {
         setLoading(false);
       }
@@ -303,11 +249,6 @@ export default function MeetupDetailsScreen({
     setShowSnackbar(true);
   };
 
-  const handleShare = () => {
-    // Implement share functionality
-    Alert.alert("Share", "Share functionality would be implemented here");
-  };
-
   const handleSnackbarAction = () => {
     setShowSnackbar(false);
     navigation.navigate("Favorites");
@@ -383,27 +324,32 @@ export default function MeetupDetailsScreen({
           Meetup Details
         </Text>
         <View style={styles.headerActions}>
-          <TouchableOpacity
-            onPress={handleLike}
-            style={styles.headerLikeButton}
-          >
-            <Ionicons
-              name={
-                meetup && isMeetupFavorite(meetup.id)
-                  ? "heart"
-                  : "heart-outline"
-              }
-              size={24}
-              color={
-                meetup && isMeetupFavorite(meetup.id)
-                  ? colors.error
-                  : colors.text
-              }
-            />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleShare} style={styles.shareButton}>
-            <Ionicons name="share-outline" size={24} color={colors.primary} />
-          </TouchableOpacity>
+          {!isOwnMeetup && (
+            <TouchableOpacity
+              onPress={handleLike}
+              style={styles.headerLikeButton}
+            >
+              <Ionicons
+                name={
+                  meetup && isMeetupFavorite(meetup.id)
+                    ? "heart"
+                    : "heart-outline"
+                }
+                size={24}
+                color={
+                  meetup && isMeetupFavorite(meetup.id)
+                    ? colors.error
+                    : colors.text
+                }
+              />
+            </TouchableOpacity>
+          )}
+          <ShareButton
+            type="meetup"
+            data={meetup}
+            variant="icon"
+            size="large"
+          />
         </View>
       </View>
 
@@ -516,18 +462,33 @@ export default function MeetupDetailsScreen({
                 }}
               >
                 <View style={styles.participantAvatarContainer}>
-                  <Image
-                    source={{
-                      uri:
-                        creator?.profilePictures?.[
+                  {creator?.profilePictures &&
+                  creator.profilePictures.length > 0 ? (
+                    <Image
+                      source={{
+                        uri: creator.profilePictures[
                           creator.standoutPhotoIndex !== undefined
                             ? creator.standoutPhotoIndex
                             : 0
-                        ] ||
-                        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-                    }}
-                    style={styles.participantAvatar}
-                  />
+                        ],
+                      }}
+                      style={styles.participantAvatar}
+                    />
+                  ) : (
+                    <View
+                      style={[
+                        styles.participantAvatar,
+                        { backgroundColor: colors.border },
+                        { justifyContent: "center", alignItems: "center" },
+                      ]}
+                    >
+                      <Ionicons
+                        name="person"
+                        size={20}
+                        color={colors.textTertiary}
+                      />
+                    </View>
+                  )}
                   <View
                     style={[
                       styles.crownContainer,
@@ -555,18 +516,33 @@ export default function MeetupDetailsScreen({
                     });
                   }}
                 >
-                  <Image
-                    source={{
-                      uri:
-                        participant?.profilePictures?.[
+                  {participant?.profilePictures &&
+                  participant.profilePictures.length > 0 ? (
+                    <Image
+                      source={{
+                        uri: participant.profilePictures[
                           participant.standoutPhotoIndex !== undefined
                             ? participant.standoutPhotoIndex
                             : 0
-                        ] ||
-                        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-                    }}
-                    style={styles.participantAvatar}
-                  />
+                        ],
+                      }}
+                      style={styles.participantAvatar}
+                    />
+                  ) : (
+                    <View
+                      style={[
+                        styles.participantAvatar,
+                        { backgroundColor: colors.border },
+                        { justifyContent: "center", alignItems: "center" },
+                      ]}
+                    >
+                      <Ionicons
+                        name="person"
+                        size={20}
+                        color={colors.textTertiary}
+                      />
+                    </View>
+                  )}
                   <Text
                     style={[styles.participantName, { color: colors.text }]}
                   >
@@ -585,19 +561,43 @@ export default function MeetupDetailsScreen({
           { backgroundColor: colors.surface, borderTopColor: colors.border },
         ]}
       >
-        <TouchableOpacity
-          style={[
-            styles.joinButton,
-            {
-              backgroundColor: isJoined ? colors.error : colors.primary,
-            },
-          ]}
-          onPress={handleJoin}
-        >
-          <Text style={[styles.joinButtonText, { color: colors.onPrimary }]}>
-            {isJoined ? "Leave Meetup" : "Join Meetup"}
-          </Text>
-        </TouchableOpacity>
+        {isOwnMeetup ? (
+          <TouchableOpacity
+            style={[
+              styles.joinButton,
+              {
+                backgroundColor: colors.primary,
+              },
+            ]}
+            onPress={() => {
+              navigation.navigate("EditMeetup", { meetupId: meetup?.id || "" });
+            }}
+          >
+            <Ionicons
+              name="create-outline"
+              size={20}
+              color={colors.onPrimary}
+              style={{ marginRight: 8 }}
+            />
+            <Text style={[styles.joinButtonText, { color: colors.onPrimary }]}>
+              Edit Meetup
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[
+              styles.joinButton,
+              {
+                backgroundColor: isJoined ? colors.error : colors.primary,
+              },
+            ]}
+            onPress={handleJoin}
+          >
+            <Text style={[styles.joinButtonText, { color: colors.onPrimary }]}>
+              {isJoined ? "Leave Meetup" : "Join Meetup"}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Snackbar */}
@@ -846,6 +846,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 12,
     alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
   },
   joinButtonText: {
     fontSize: 16,

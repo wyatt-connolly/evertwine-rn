@@ -10,10 +10,10 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../hooks/useThemeStore";
-import { Meetup, User } from "../types";
+import { Meetup, User, Post, Place } from "../types";
 
 interface ShareButtonProps {
-  type: "meetup" | "profile" | "app" | "event";
+  type: "meetup" | "profile" | "app" | "event" | "post" | "place";
   data?: Meetup | User | any;
   style?: ViewStyle;
   textStyle?: TextStyle;
@@ -47,8 +47,10 @@ export default function ShareButton({
               meetup?.locationName
             }\nTime: ${
               meetup?.time ? new Date(meetup.time).toLocaleDateString() : "TBD"
-            }\n\nDownload Evertwine to RSVP!`,
+            }`,
           url: `https://evertwine.app/meetup/${meetup?.id}`,
+          imageUrl:
+            meetup?.coverImage || "https://evertwine.app/og-image-meetup.png",
         };
 
       case "profile":
@@ -63,10 +65,11 @@ export default function ShareButton({
               user?.displayName
             }'s profile on Evertwine. They're into ${user?.hobbies
               ?.slice(0, 3)
-              .join(
-                ", "
-              )} and more!\n\nConnect with amazing people in your area. Download Evertwine!`,
+              .join(", ")} and more!`,
           url: `https://evertwine.app/profile/${user?.uid}`,
+          imageUrl:
+            user?.profilePictures?.[0] ||
+            "https://evertwine.app/og-image-profile.png",
         };
 
       case "event":
@@ -81,8 +84,36 @@ export default function ShareButton({
               event?.location
             }\nTime: ${
               event?.time ? new Date(event.time).toLocaleDateString() : "TBD"
-            }\n\nDownload Evertwine to join!`,
+            }`,
           url: `https://evertwine.app/event/${event?.id}`,
+          imageUrl:
+            event?.coverImage ||
+            event?.images?.[0] ||
+            "https://evertwine.app/og-image-event.png",
+        };
+
+      case "post":
+        const post = data as Post;
+        return {
+          title: `Check out this post on Evertwine`,
+          message: customMessage || `"${post?.title || post?.message}"`,
+          url: `https://evertwine.app/post/${post?.id}`,
+          imageUrl:
+            post?.images?.[0] || "https://evertwine.app/og-image-post.png",
+        };
+
+      case "place":
+        const place = data as any;
+        return {
+          title: `Check out ${place?.name || "this place"} on Evertwine`,
+          message:
+            customMessage ||
+            `I found this great place "${
+              place?.name
+            }" on Evertwine!\n\nLocation: ${place?.address || place?.location}`,
+          url: `https://evertwine.app/place/${place?.id}`,
+          imageUrl:
+            place?.images?.[0] || "https://evertwine.app/og-image-place.png",
         };
 
       case "app":
@@ -91,8 +122,9 @@ export default function ShareButton({
           title: "Join me on Evertwine!",
           message:
             customMessage ||
-            `Hey! I'm using Evertwine to meet amazing people and join cool meetups in our area. You should check it out! 🌟\n\nConnect with like-minded people, join events, and build meaningful relationships.\n\nDownload Evertwine now!`,
+            `Hey! I'm using Evertwine to meet amazing people and join cool meetups in our area. You should check it out! 🌟\n\nConnect with like-minded people, join events, and build meaningful relationships.`,
           url: "https://evertwine.app",
+          imageUrl: "https://evertwine.app/og-image-app.png",
         };
     }
   };
@@ -100,21 +132,24 @@ export default function ShareButton({
   const handleShare = async () => {
     try {
       const shareContent = getShareContent();
-      const result = await Share.share({
+
+      // For iOS/Android rich previews, we need to structure the content properly
+      const shareOptions: any = {
         title: shareContent.title,
-        message: `${shareContent.message}\n\n${shareContent.url}`,
-        url: shareContent.url,
-      });
+        message: shareContent.message,
+        url: shareContent.url, // iOS uses this for rich link previews
+      };
+
+      const result = await Share.share(shareOptions);
 
       if (result.action === Share.sharedAction) {
         if (result.activityType) {
-
+          // Shared via activity type
         } else {
-
+          // Shared successfully
         }
       }
     } catch (error) {
-
       Alert.alert("Error", "Unable to share at this time. Please try again.");
     }
   };

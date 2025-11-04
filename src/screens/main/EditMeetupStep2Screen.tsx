@@ -75,10 +75,15 @@ export default function EditMeetupStep2Screen({
   );
   const [showDurationModal, setShowDurationModal] = useState(false);
   const [showAgeRangeModal, setShowAgeRangeModal] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false);
 
   // Animation values for date picker
   const datePickerFadeAnim = useRef(new Animated.Value(0)).current;
   const datePickerSlideAnim = useRef(new Animated.Value(300)).current;
+
+  // Animation values for map modal
+  const mapModalFadeAnim = useRef(new Animated.Value(0)).current;
+  const mapModalSlideAnim = useRef(new Animated.Value(500)).current;
 
   const updateFormData = (field: string, value: any) => {
     const newData = { ...formData, [field]: value };
@@ -121,6 +126,43 @@ export default function EditMeetupStep2Screen({
       datePickerFadeAnim.setValue(0);
       datePickerSlideAnim.setValue(300);
     });
+
+  // Animation functions for map modal
+  const openMapModal = () => {
+    setShowMapModal(true);
+    Animated.parallel([
+      Animated.timing(mapModalFadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(mapModalSlideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const closeMapModal = () => {
+    Animated.parallel([
+      Animated.timing(mapModalFadeAnim, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(mapModalSlideAnim, {
+        toValue: 500,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowMapModal(false);
+      // Reset animation values for next time
+      mapModalFadeAnim.setValue(0);
+      mapModalSlideAnim.setValue(500);
+    });
+  };
 
   const formatDateTime = (date: Date) => {
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -436,7 +478,7 @@ export default function EditMeetupStep2Screen({
           <View style={styles.inputContainer}>
             <Text style={[styles.label, { color: colors.text }]}>Location</Text>
             <LocationSearchInput
-              value={formData.address}
+              value={formData.locationName || formData.address}
               onChangeText={(text) => {
                 // Batch all updates together when clearing
                 if (!text.trim()) {
@@ -450,16 +492,22 @@ export default function EditMeetupStep2Screen({
                   setFormData(newData);
                   onUpdate(newData);
                 } else {
-                  updateFormData("address", text);
+                  // Update locationName when user is typing
+                  updateFormData("locationName", text);
                 }
               }}
               onPlaceSelect={(place) => {
-                // Extract location name from place description (the main_text from structured_formatting)
-                const locationName = place.description.split(",")[0]; // Get first part before comma
-                updateFormData("address", place.address);
-                updateFormData("locationName", locationName);
-                updateFormData("latitude", place.latitude);
-                updateFormData("longitude", place.longitude);
+                // Use the description as locationName (it's already the place name from the API)
+                const locationName = place.description.split(",")[0]; // Get first part before comma for safety
+                const newData = {
+                  ...formData,
+                  locationName: locationName,
+                  address: place.address,
+                  latitude: place.latitude,
+                  longitude: place.longitude,
+                };
+                setFormData(newData);
+                onUpdate(newData);
               }}
               placeholder="Search for a location..."
               style={styles.locationSearchInput}
@@ -471,17 +519,7 @@ export default function EditMeetupStep2Screen({
                   { borderColor: colors.border },
                 ]}
                 activeOpacity={0.8}
-                onPress={() => {
-                  const selectedLocation = {
-                    latitude: formData.latitude,
-                    longitude: formData.longitude,
-                    name: formData.locationName,
-                    address: formData.address,
-                  };
-                  navigation.navigate("Map", {
-                    selectedLocation,
-                  });
-                }}
+                onPress={openMapModal}
               >
                 <View
                   style={[
@@ -617,6 +655,93 @@ export default function EditMeetupStep2Screen({
       {renderDatePickerModal()}
       {renderDurationModal()}
       {renderAgeRangeModal()}
+
+      {/* Map Modal */}
+      <Modal
+        visible={showMapModal}
+        transparent={true}
+        animationType="none"
+        onRequestClose={closeMapModal}
+      >
+        <Animated.View
+          style={[styles.modalOverlay, { opacity: mapModalFadeAnim }]}
+        >
+          <TouchableOpacity
+            style={StyleSheet.absoluteFillObject}
+            activeOpacity={1}
+            onPress={closeMapModal}
+          />
+          <Animated.View
+            style={[
+              styles.mapModal,
+              {
+                backgroundColor: colors.surface,
+                transform: [{ translateY: mapModalSlideAnim }],
+              },
+            ]}
+          >
+            <View
+              style={[styles.modalHeader, { borderBottomColor: colors.border }]}
+            >
+              <View style={styles.mapModalHeaderLeft}>
+                <Ionicons name="location" size={20} color={colors.primary} />
+                <Text style={[styles.modalTitle, { color: colors.text }]}>
+                  {formData.locationName || "Selected Location"}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={closeMapModal}>
+                <Ionicons name="close" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+            {formData.address && (
+              <View
+                style={[
+                  styles.mapModalAddressContainer,
+                  { borderBottomColor: colors.border },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.mapModalAddress,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  {formData.address}
+                </Text>
+              </View>
+            )}
+            <View style={styles.mapModalContent}>
+              <MapView
+                key={`map-modal-${formData.latitude}-${formData.longitude}`}
+                style={styles.mapModalMap}
+                initialRegion={{
+                  latitude: formData.latitude,
+                  longitude: formData.longitude,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }}
+                scrollEnabled={true}
+                zoomEnabled={true}
+                pitchEnabled={true}
+                rotateEnabled={true}
+                toolbarEnabled={false}
+                loadingEnabled={true}
+              >
+                <Marker
+                  key={`marker-modal-${formData.latitude}-${formData.longitude}`}
+                  coordinate={{
+                    latitude: formData.latitude,
+                    longitude: formData.longitude,
+                  }}
+                  title={formData.locationName}
+                  description={formData.address}
+                  pinColor="red"
+                />
+              </MapView>
+            </View>
+          </Animated.View>
+        </Animated.View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -772,6 +897,34 @@ const styles = StyleSheet.create({
   },
   mapPreview: {
     height: 120,
+    width: "100%",
+  },
+  mapModal: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: "80%",
+    height: "80%",
+  },
+  mapModalHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flex: 1,
+  },
+  mapModalAddressContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  mapModalAddress: {
+    fontSize: 14,
+  },
+  mapModalContent: {
+    flex: 1,
+    overflow: "hidden",
+  },
+  mapModalMap: {
+    flex: 1,
     width: "100%",
   },
 });

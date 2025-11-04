@@ -64,14 +64,31 @@ export default function ComposeMessageScreen({ navigation }: any) {
       style={[styles.userItem, { backgroundColor: colors.surface }]}
       onPress={() => handleUserSelect(item)}
     >
-      <Image
-        source={{
-          uri: item.profilePictures[
-            item.standoutPhotoIndex !== undefined ? item.standoutPhotoIndex : 0
-          ],
-        }}
-        style={styles.userAvatar}
-      />
+      {item.profilePictures && item.profilePictures.length > 0 ? (
+        <Image
+          source={{
+            uri: item.profilePictures[
+              item.standoutPhotoIndex !== undefined
+                ? item.standoutPhotoIndex
+                : 0
+            ],
+          }}
+          style={styles.userAvatar}
+        />
+      ) : (
+        <View
+          style={[
+            styles.userAvatar,
+            {
+              backgroundColor: colors.border,
+              justifyContent: "center",
+              alignItems: "center",
+            },
+          ]}
+        >
+          <Ionicons name="person" size={25} color={colors.textTertiary} />
+        </View>
+      )}
       <View style={styles.userInfo}>
         <Text style={[styles.userName, { color: colors.text }]}>
           {item.displayName}
@@ -89,14 +106,31 @@ export default function ComposeMessageScreen({ navigation }: any) {
       key={user.uid}
       style={[styles.selectedUserChip, { backgroundColor: colors.primary }]}
     >
-      <Image
-        source={{
-          uri: user.profilePictures[
-            user.standoutPhotoIndex !== undefined ? user.standoutPhotoIndex : 0
-          ],
-        }}
-        style={styles.selectedUserAvatar}
-      />
+      {user.profilePictures && user.profilePictures.length > 0 ? (
+        <Image
+          source={{
+            uri: user.profilePictures[
+              user.standoutPhotoIndex !== undefined
+                ? user.standoutPhotoIndex
+                : 0
+            ],
+          }}
+          style={styles.selectedUserAvatar}
+        />
+      ) : (
+        <View
+          style={[
+            styles.selectedUserAvatar,
+            {
+              backgroundColor: colors.onPrimary + "40",
+              justifyContent: "center",
+              alignItems: "center",
+            },
+          ]}
+        >
+          <Ionicons name="person" size={10} color={colors.onPrimary} />
+        </View>
+      )}
       <Text style={[styles.selectedUserName, { color: colors.onPrimary }]}>
         {user.displayName}
       </Text>

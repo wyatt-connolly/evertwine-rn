@@ -15,6 +15,7 @@ import { useThemeStore } from "../../hooks/useThemeStore";
 import { useFavoritesStore } from "../../hooks/useFavoritesStore";
 import { Event } from "../../types";
 import Snackbar from "../../components/Snackbar";
+import ShareButton from "../../components/ShareButton";
 
 const { width } = Dimensions.get("window");
 
@@ -133,10 +134,6 @@ export default function HappyHourDetailsScreen({
     }
   };
 
-  const handleShareEvent = () => {
-    Alert.alert("Share Happy Hour", "Share functionality coming soon!");
-  };
-
   const handleFavorite = () => {
     if (!event) return;
 
@@ -175,9 +172,7 @@ export default function HappyHourDetailsScreen({
         <Text style={[styles.headerTitle, { color: colors.text }]}>
           Happy Hour Deal
         </Text>
-        <TouchableOpacity onPress={handleShareEvent} style={styles.shareButton}>
-          <Ionicons name="share-outline" size={24} color={colors.primary} />
-        </TouchableOpacity>
+        <ShareButton type="event" data={event} variant="icon" size="large" />
       </View>
 
       <ScrollView

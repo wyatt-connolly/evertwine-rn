@@ -136,15 +136,34 @@ export default function AnimatedAvatar({
             overflow: "hidden",
           }}
         >
-          <Image
-            source={{ uri: user.profilePictures[0] }}
-            style={{
-              width: "100%",
-              height: "100%",
-              borderRadius: size / 2,
-            }}
-            contentFit="cover"
-          />
+          {user.profilePictures && user.profilePictures.length > 0 ? (
+            <Image
+              source={{ uri: user.profilePictures[0] }}
+              style={{
+                width: "100%",
+                height: "100%",
+                borderRadius: size / 2,
+              }}
+              contentFit="cover"
+            />
+          ) : (
+            <View
+              style={{
+                width: "100%",
+                height: "100%",
+                borderRadius: size / 2,
+                backgroundColor: colors.border,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Ionicons
+                name="person"
+                size={size * 0.5}
+                color={colors.textTertiary}
+              />
+            </View>
+          )}
         </View>
       </TouchableOpacity>
     </Animated.View>

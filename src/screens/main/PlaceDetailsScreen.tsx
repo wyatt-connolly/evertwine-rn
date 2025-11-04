@@ -16,6 +16,7 @@ import { useFavoritesStore } from "../../hooks/useFavoritesStore";
 import { Place, PlaceReview } from "../../types";
 import { getMockPlaces, getMockPlaceReviews } from "../../data/mockData";
 import Snackbar from "../../components/Snackbar";
+import ShareButton from "../../components/ShareButton";
 
 const { width } = Dimensions.get("window");
 
@@ -52,7 +53,6 @@ export default function PlaceDetailsScreen({
 
   // If no place is found, show error or go back
   if (!place) {
-
     return (
       <SafeAreaView
         style={[styles.container, { backgroundColor: colors.background }]}
@@ -105,10 +105,6 @@ export default function PlaceDetailsScreen({
   const handleSnackbarAction = () => {
     setShowSnackbar(false);
     navigation.navigate("Favorites");
-  };
-
-  const handleShare = () => {
-    Alert.alert("Share", "Share functionality coming soon!");
   };
 
   const handleGetDirections = () => {
@@ -200,15 +196,7 @@ export default function PlaceDetailsScreen({
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[styles.actionButton, { backgroundColor: colors.surface }]}
-        onPress={handleShare}
-      >
-        <Ionicons name="share-outline" size={20} color={colors.primary} />
-        <Text style={[styles.actionButtonText, { color: colors.primary }]}>
-          Share
-        </Text>
-      </TouchableOpacity>
+      <ShareButton type="place" data={place} variant="icon" size="small" />
 
       <TouchableOpacity
         style={[styles.actionButton, { backgroundColor: colors.surface }]}

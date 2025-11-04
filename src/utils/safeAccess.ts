@@ -81,9 +81,7 @@ export function createSafeUser(user: any): any {
   return {
     uid: user?.uid || "",
     displayName: user?.displayName || "User",
-    profilePictures: user?.profilePictures || [
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-    ],
+    profilePictures: user?.profilePictures || [],
     standoutPhotoIndex: user?.standoutPhotoIndex || 0,
     bio: user?.bio || "",
     age: user?.age || 25,

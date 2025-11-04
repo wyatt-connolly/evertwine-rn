@@ -1135,6 +1135,11 @@ export default function HomeScreen() {
         const recommendedMeetup = item.data as Meetup;
         const recommendedMatchesPreferences =
           matchesUserPreferences(recommendedMeetup);
+        const isOwnRecommendedMeetup = currentUser
+          ? recommendedMeetup.creatorId === currentUser.uid ||
+            recommendedMeetup.creatorRef === currentUser.uid
+          : false;
+
         return (
           <View style={styles.recommendedMeetupWrapper}>
             <EnhancedMeetupCard
@@ -1143,6 +1148,14 @@ export default function HomeScreen() {
                 navigation.navigate("MeetupDetails", {
                   meetupId: recommendedMeetup.id,
                 })
+              }
+              onEdit={
+                isOwnRecommendedMeetup
+                  ? () =>
+                      navigation.navigate("EditMeetup", {
+                        meetupId: recommendedMeetup.id,
+                      })
+                  : undefined
               }
               onInterested={handleMeetupInterested}
               isInterested={interestedMeetups.has(recommendedMeetup.id)}
@@ -1186,6 +1199,11 @@ export default function HomeScreen() {
           meetup.time.getTime() - new Date().getTime() < 24 * 60 * 60 * 1000;
         const meetupMatchesPreferences = matchesUserPreferences(meetup);
 
+        const isOwnMeetup = currentUser
+          ? meetup.creatorId === currentUser.uid ||
+            meetup.creatorRef === currentUser.uid
+          : false;
+
         return (
           <EnhancedMeetupCard
             meetup={meetup}
@@ -1194,6 +1212,12 @@ export default function HomeScreen() {
                 meetupId: meetup.id,
                 meetupData: meetup,
               })
+            }
+            onEdit={
+              isOwnMeetup
+                ? () =>
+                    navigation.navigate("EditMeetup", { meetupId: meetup.id })
+                : undefined
             }
             onInterested={handleMeetupInterested}
             isInterested={interestedMeetups.has(meetup.id)}

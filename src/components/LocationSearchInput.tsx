@@ -318,7 +318,7 @@ export default function LocationSearchInput({
   };
 
   // Get place details and coordinates
-  const getPlaceDetails = async (placeId: string) => {
+  const getPlaceDetails = async (placeId: string, place?: Place) => {
     // Check if API key is configured
     if (
       !GOOGLE_PLACES_API_KEY ||
@@ -334,7 +334,7 @@ export default function LocationSearchInput({
     try {
       setIsLoading(true);
       const response = await fetch(
-        `${GOOGLE_PLACES_ENDPOINTS.DETAILS}?place_id=${placeId}&fields=geometry,formatted_address&key=${GOOGLE_PLACES_API_KEY}`
+        `${GOOGLE_PLACES_ENDPOINTS.DETAILS}?place_id=${placeId}&fields=geometry,formatted_address,name&key=${GOOGLE_PLACES_API_KEY}`
       );
 
       if (!response.ok) {
@@ -344,12 +344,22 @@ export default function LocationSearchInput({
       const data = await response.json();
 
       if (data.status === "OK" && data.result) {
-        const { geometry, formatted_address } = data.result;
+        const { geometry, formatted_address, name } = data.result;
         const { lat, lng } = geometry.location;
+
+        // Use the place name from details API, or fall back to structured_formatting.main_text, or description
+        const placeName =
+          name ||
+          place?.structured_formatting?.main_text ||
+          place?.description ||
+          formatted_address.split(",")[0];
+
+        // Update the input text to show the full place name
+        onChangeText(placeName);
 
         onPlaceSelect({
           place_id: placeId,
-          description: value,
+          description: placeName,
           latitude: lat,
           longitude: lng,
           address: formatted_address,
@@ -397,11 +407,9 @@ export default function LocationSearchInput({
     setHasSearched(false);
     setNoResults(false);
 
-    // Update the input text
-    onChangeText(place.description);
-
-    // Get place details
-    getPlaceDetails(place.place_id);
+    // Get place details - this will call onPlaceSelect with the full details
+    // and the parent component should update the input value via onChangeText
+    getPlaceDetails(place.place_id, place);
   };
 
   // Clear suggestions when input loses focus

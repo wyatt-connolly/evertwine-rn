@@ -9,6 +9,7 @@ import {
   Image,
   Alert,
   Dimensions,
+  Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "../../hooks/useAuthStore";
@@ -24,7 +25,7 @@ const { width } = Dimensions.get("window");
 
 export default function ProfileScreen({ navigation, route }: any) {
   const { user, logout, updateUserProfile } = useAuthStore();
-  const { colors } = useThemeStore();
+  const { colors, isDarkMode, toggleTheme } = useThemeStore();
   const [loading, setLoading] = useState(false);
   const [profileUserData, setProfileUserData] = useState<User | null>(null);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
@@ -61,10 +62,7 @@ export default function ProfileScreen({ navigation, route }: any) {
               pronouns: "they/them",
               bio: "",
               about: "",
-              profilePictures: [
-                user.photoURL ||
-                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-              ],
+              profilePictures: user.photoURL ? [user.photoURL] : [],
               standoutPhotoIndex: 0,
               location: { latitude: 0, longitude: 0 },
               locationName: "",
@@ -250,6 +248,12 @@ export default function ProfileScreen({ navigation, route }: any) {
         ]}
       >
         <Text style={[styles.title, { color: colors.text }]}>Profile</Text>
+        <Switch
+          value={isDarkMode}
+          onValueChange={toggleTheme}
+          trackColor={{ false: colors.border, true: colors.primary }}
+          thumbColor={colors.surface}
+        />
       </View>
 
       <ScrollView

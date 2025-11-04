@@ -15,6 +15,7 @@ import { useThemeStore } from "../../hooks/useThemeStore";
 import { useFavoritesStore } from "../../hooks/useFavoritesStore";
 import { Event } from "../../types";
 import Snackbar from "../../components/Snackbar";
+import ShareButton from "../../components/ShareButton";
 
 const { width } = Dimensions.get("window");
 
@@ -133,10 +134,6 @@ export default function EventDetailsScreen({
     }
   };
 
-  const handleShareEvent = () => {
-    Alert.alert("Share Event", "Share functionality coming soon!");
-  };
-
   const handleContactOrganizer = () => {
     Alert.alert("Contact Organizer", "Message functionality coming soon!");
   };
@@ -177,9 +174,7 @@ export default function EventDetailsScreen({
         <Text style={[styles.headerTitle, { color: colors.text }]}>
           Event Details
         </Text>
-        <TouchableOpacity onPress={handleShareEvent} style={styles.shareButton}>
-          <Ionicons name="share-outline" size={24} color={colors.primary} />
-        </TouchableOpacity>
+        <ShareButton type="event" data={event} variant="icon" size="large" />
       </View>
 
       <ScrollView

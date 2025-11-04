@@ -247,10 +247,25 @@ export default function FollowingScreen() {
           }
           activeOpacity={0.7}
         >
-          <Image
-            source={{ uri: user.profilePictures[0] }}
-            style={styles.userAvatar}
-          />
+          {user.profilePictures && user.profilePictures.length > 0 ? (
+            <Image
+              source={{ uri: user.profilePictures[0] }}
+              style={styles.userAvatar}
+            />
+          ) : (
+            <View
+              style={[
+                styles.userAvatar,
+                {
+                  backgroundColor: colors.border,
+                  justifyContent: "center",
+                  alignItems: "center",
+                },
+              ]}
+            >
+              <Ionicons name="person" size={20} color={colors.textTertiary} />
+            </View>
+          )}
           <View style={styles.userHeaderInfo}>
             <View style={styles.userHeaderNameRow}>
               <Text style={[styles.userName, { color: colors.text }]}>

@@ -187,16 +187,32 @@ export default function ActivityFeedScreen({ navigation }: any) {
     >
       <View style={styles.activityContent}>
         <View style={styles.activityHeader}>
-          <Image
-            source={{
-              uri: activity.user.profilePictures[
-                activity.user.standoutPhotoIndex !== undefined
-                  ? activity.user.standoutPhotoIndex
-                  : 0
-              ],
-            }}
-            style={styles.userAvatar}
-          />
+          {activity.user.profilePictures &&
+          activity.user.profilePictures.length > 0 ? (
+            <Image
+              source={{
+                uri: activity.user.profilePictures[
+                  activity.user.standoutPhotoIndex !== undefined
+                    ? activity.user.standoutPhotoIndex
+                    : 0
+                ],
+              }}
+              style={styles.userAvatar}
+            />
+          ) : (
+            <View
+              style={[
+                styles.userAvatar,
+                {
+                  backgroundColor: colors.border,
+                  justifyContent: "center",
+                  alignItems: "center",
+                },
+              ]}
+            >
+              <Ionicons name="person" size={25} color={colors.textTertiary} />
+            </View>
+          )}
           <View style={styles.activityInfo}>
             <Text style={[styles.userName, { color: colors.text }]}>
               {activity.user.displayName}

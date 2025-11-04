@@ -28,13 +28,6 @@ export default function FeaturedMemberCard({
 }: FeaturedMemberCardProps) {
   const { colors } = useThemeStore();
 
-  const getProfileImage = () => {
-    if (user.profilePictures && user.profilePictures.length > 0) {
-      return user.profilePictures[0];
-    }
-    return "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop";
-  };
-
   const getDisplayInterests = () => {
     if (!user.interests || user.interests.length === 0) return [];
     return user.interests.slice(0, 2);
@@ -64,11 +57,30 @@ export default function FeaturedMemberCard({
           isCenter ? styles.centerImageContainer : styles.sideImageContainer,
         ]}
       >
-        <Image
-          source={{ uri: getProfileImage() }}
-          style={styles.profileImage}
-          resizeMode="cover"
-        />
+        {user.profilePictures && user.profilePictures.length > 0 ? (
+          <Image
+            source={{ uri: user.profilePictures[0] }}
+            style={styles.profileImage}
+            resizeMode="cover"
+          />
+        ) : (
+          <View
+            style={[
+              styles.profileImage,
+              {
+                backgroundColor: colors.border,
+                justifyContent: "center",
+                alignItems: "center",
+              },
+            ]}
+          >
+            <Ionicons
+              name="person"
+              size={isCenter ? 60 : 40}
+              color={colors.textTertiary}
+            />
+          </View>
+        )}
         {user.isVerified === "verified" && isCenter && (
           <View
             style={[styles.verifiedBadge, { backgroundColor: colors.primary }]}

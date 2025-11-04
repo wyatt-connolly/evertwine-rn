@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { Meetup } from "../types";
 import { useThemeStore } from "../hooks/useThemeStore";
@@ -37,6 +38,7 @@ export default function EnhancedMeetupCard({
 }: EnhancedMeetupCardProps) {
   const { colors } = useThemeStore();
   const { user: currentUser } = useAuthStore();
+  const navigation = useNavigation<any>();
   const [localInterested, setLocalInterested] = useState(isInterested);
 
   const formatTime = (date: Date) => {
@@ -56,6 +58,11 @@ export default function EnhancedMeetupCard({
 
   const isJoined = currentUser
     ? meetup.participants.includes(currentUser.uid)
+    : false;
+
+  const isOwnMeetup = currentUser
+    ? meetup.creatorId === currentUser.uid ||
+      meetup.creatorRef === currentUser.uid
     : false;
 
   return (
@@ -153,21 +160,6 @@ export default function EnhancedMeetupCard({
               size="small"
               style={styles.shareButton}
             />
-            {showEditButton && (
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={(e) => {
-                  e.stopPropagation();
-                  onEdit?.();
-                }}
-              >
-                <Ionicons
-                  name="create-outline"
-                  size={16}
-                  color={colors.primary}
-                />
-              </TouchableOpacity>
-            )}
           </View>
         </View>
 
@@ -194,73 +186,117 @@ export default function EnhancedMeetupCard({
         {customActionButton ? (
           <View style={styles.customActionContainer}>{customActionButton}</View>
         ) : !hideActionButtons ? (
-          <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={[
-                styles.actionButton,
-                styles.interestedButton,
-                {
-                  backgroundColor: localInterested
-                    ? colors.primary + "15"
-                    : colors.background,
-                  borderColor: localInterested ? colors.primary : colors.border,
-                },
-              ]}
-              onPress={handleInterestedToggle}
-            >
-              <Ionicons
-                name={localInterested ? "star" : "star-outline"}
-                size={16}
-                color={localInterested ? colors.primary : colors.textSecondary}
-              />
-              <Text
+          isOwnMeetup ? (
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
                 style={[
-                  styles.actionButtonText,
+                  styles.actionButton,
+                  styles.editActionButton,
                   {
-                    color: localInterested
+                    backgroundColor: colors.primary,
+                    borderColor: colors.primary,
+                  },
+                ]}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  if (onEdit) {
+                    onEdit();
+                  } else if (isOwnMeetup) {
+                    navigation.navigate("EditMeetup", { meetupId: meetup.id });
+                  }
+                }}
+              >
+                <Ionicons
+                  name="create-outline"
+                  size={16}
+                  color={colors.onPrimary}
+                />
+                <Text
+                  style={[
+                    styles.actionButtonText,
+                    {
+                      color: colors.onPrimary,
+                      fontWeight: "600",
+                    },
+                  ]}
+                >
+                  Edit Meetup
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                style={[
+                  styles.actionButton,
+                  styles.interestedButton,
+                  {
+                    backgroundColor: localInterested
+                      ? colors.primary + "15"
+                      : colors.background,
+                    borderColor: localInterested
                       ? colors.primary
-                      : colors.textSecondary,
+                      : colors.border,
                   },
                 ]}
+                onPress={handleInterestedToggle}
               >
-                {localInterested ? "Interested" : "Interested?"}
-              </Text>
-            </TouchableOpacity>
+                <Ionicons
+                  name={localInterested ? "star" : "star-outline"}
+                  size={16}
+                  color={
+                    localInterested ? colors.primary : colors.textSecondary
+                  }
+                />
+                <Text
+                  style={[
+                    styles.actionButtonText,
+                    {
+                      color: localInterested
+                        ? colors.primary
+                        : colors.textSecondary,
+                    },
+                  ]}
+                >
+                  {localInterested ? "Interested" : "Interested?"}
+                </Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[
-                styles.actionButton,
-                styles.joinButton,
-                {
-                  backgroundColor: isJoined
-                    ? colors.background
-                    : colors.primary,
-                  borderColor: isJoined ? colors.border : colors.primary,
-                },
-              ]}
-              onPress={(e) => {
-                e.stopPropagation();
-                // Handle join logic
-              }}
-            >
-              <Ionicons
-                name={isJoined ? "checkmark-circle" : "add-circle-outline"}
-                size={16}
-                color={isJoined ? colors.primary : colors.onPrimary}
-              />
-              <Text
+              <TouchableOpacity
                 style={[
-                  styles.actionButtonText,
+                  styles.actionButton,
+                  styles.joinButton,
                   {
-                    color: isJoined ? colors.primary : colors.onPrimary,
-                    fontWeight: "600",
+                    backgroundColor: isJoined
+                      ? colors.background
+                      : colors.primary,
+                    borderColor: isJoined ? colors.border : colors.primary,
                   },
                 ]}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  // Handle join logic
+                }}
               >
-                {isJoined ? "Joined" : "Join"}
-              </Text>
-            </TouchableOpacity>
-          </View>
+                <Ionicons
+                  name={isJoined ? "checkmark-circle" : "add-circle-outline"}
+                  size={16}
+                  color={isJoined ? colors.primary : colors.onPrimary}
+                />
+                <Text
+                  style={[
+                    styles.actionButtonText,
+                    {
+                      color: isJoined ? colors.primary : colors.onPrimary,
+                      fontWeight: "600",
+                    },
+                  ]}
+                >
+                  {isJoined ? "Joined" : "Join"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )
         ) : null}
       </View>
     </TouchableOpacity>
@@ -407,6 +443,7 @@ const styles = StyleSheet.create({
   },
   interestedButton: {},
   joinButton: {},
+  editActionButton: {},
   actionButtonText: {
     fontSize: 14,
     fontWeight: "500",

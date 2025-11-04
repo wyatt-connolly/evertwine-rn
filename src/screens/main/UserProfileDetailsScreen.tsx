@@ -14,6 +14,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { User } from "../../types";
+import ShareButton from "../../components/ShareButton";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -35,9 +36,7 @@ export default function UserProfileDetailsScreen({
     if (user.profilePictures && user.profilePictures.length > 0) {
       return user.profilePictures;
     }
-    return [
-      "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop",
-    ];
+    return [];
   };
 
   const handleMessage = () => {
@@ -50,13 +49,25 @@ export default function UserProfileDetailsScreen({
     // TODO: Implement like functionality
   };
 
-  const handleShare = () => {
-    Alert.alert("Share", `Share ${user.displayName}'s profile`);
-    // TODO: Implement share functionality
-  };
-
   const renderImageCarousel = () => {
     const images = getProfileImages();
+
+    if (images.length === 0) {
+      return (
+        <View
+          style={[
+            styles.imageCarousel,
+            {
+              backgroundColor: colors.border,
+              justifyContent: "center",
+              alignItems: "center",
+            },
+          ]}
+        >
+          <Ionicons name="person" size={80} color={colors.textTertiary} />
+        </View>
+      );
+    }
 
     return (
       <View style={styles.imageCarousel}>
@@ -263,15 +274,13 @@ export default function UserProfileDetailsScreen({
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[styles.actionButton, { backgroundColor: colors.border }]}
-        onPress={handleShare}
-      >
-        <Ionicons name="share-outline" size={20} color={colors.text} />
-        <Text style={[styles.actionButtonText, { color: colors.text }]}>
-          Share
-        </Text>
-      </TouchableOpacity>
+      <ShareButton
+        type="profile"
+        data={user}
+        variant="text"
+        size="small"
+        style={{ flex: 1 }}
+      />
     </View>
   );
 
