@@ -42,7 +42,11 @@ export default function UserProfileScreen({
 }: UserProfileScreenProps) {
   const { colors } = useThemeStore();
   const { user: currentUser } = useAuthStore();
-  const { userData, hideHeader = false } = route.params;
+  const { userId, userData: initialUserData, hideHeader = false } = route.params;
+
+  // Load user data if only userId is provided
+  const [userData, setUserData] = useState<any>(initialUserData);
+  const [isLoadingUser, setIsLoadingUser] = useState(!initialUserData && !!userId);
 
   // Menu state
   const [showMenu, setShowMenu] = useState(false);
@@ -54,6 +58,27 @@ export default function UserProfileScreen({
   const menuScale = useRef(new Animated.Value(0)).current;
   const menuOpacity = useRef(new Animated.Value(0)).current;
   const menuButtonRef = useRef<View>(null);
+
+  // Load user data if only userId is provided
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!userId || initialUserData) return; // Already have userData or no userId
+
+      try {
+        setIsLoadingUser(true);
+        const result = await DataService.getUser(userId);
+        if (result.user) {
+          setUserData(result.user);
+        }
+      } catch (error) {
+        console.error("Error loading user data:", error);
+      } finally {
+        setIsLoadingUser(false);
+      }
+    };
+
+    loadUserData();
+  }, [userId, initialUserData]);
 
   // Track profile view
   useEffect(() => {
@@ -89,6 +114,13 @@ export default function UserProfileScreen({
       setIsBlocked(isUserBlocked);
     } catch {}
   };
+
+  // Update blocked state when userData changes
+  useEffect(() => {
+    if (userData?.uid) {
+      checkIfBlocked();
+    }
+  }, [userData?.uid]);
 
   const refreshBlockedState = async () => {
     await checkIfBlocked();
@@ -333,13 +365,27 @@ export default function UserProfileScreen({
         </View>
       )}
 
-      <ScrollView
-        style={[styles.content, { backgroundColor: colors.background }]}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Hero Section */}
-        <View style={[styles.heroSection, { backgroundColor: colors.surface }]}>
+      {isLoadingUser ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+            Loading profile...
+          </Text>
+        </View>
+      ) : !userData ? (
+        <View style={styles.loadingContainer}>
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+            User not found
+          </Text>
+        </View>
+      ) : (
+        <ScrollView
+          style={[styles.content, { backgroundColor: colors.background }]}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Hero Section */}
+          <View style={[styles.heroSection, { backgroundColor: colors.surface }]}>
           {/* Photo Gallery - Show only first image */}
           {userData?.profilePictures && userData.profilePictures.length > 0 ? (
             <View style={styles.photoGalleryContainer}>
@@ -794,7 +840,8 @@ export default function UserProfileScreen({
             );
           })()}
         </View>
-      </ScrollView>
+        </ScrollView>
+      )}
 
       {/* Menu Modal */}
       <Modal
@@ -962,7 +1009,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 100,
+    paddingBottom: 20,
   },
   // Photo Gallery Styles
   photoGalleryContainer: {
@@ -1402,5 +1449,15 @@ const styles = StyleSheet.create({
   },
   lastMenuItem: {
     borderBottomWidth: 0,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
   },
 });

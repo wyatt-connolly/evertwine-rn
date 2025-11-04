@@ -7,7 +7,9 @@ import {
   TextInput,
   FlatList,
   Dimensions,
+  ScrollView,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { Post } from "../types";
@@ -26,6 +28,7 @@ interface PostCardProps {
 export default function PostCard({ post, onLike, onComment }: PostCardProps) {
   const { colors } = useThemeStore();
   const { user } = useAuthStore();
+  const navigation = useNavigation<any>();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
 
@@ -77,13 +80,22 @@ export default function PostCard({ post, onLike, onComment }: PostCardProps) {
 
       {/* Header */}
       <View style={styles.header}>
-        {post.userAvatar ? (
-          <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatar, styles.placeholderAvatar, { backgroundColor: colors.border }]}>
-            <Ionicons name="person" size={20} color={colors.textTertiary} />
-          </View>
-        )}
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("UserProfile", {
+              userId: post.userId,
+            });
+          }}
+          activeOpacity={0.7}
+        >
+          {post.userAvatar ? (
+            <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
+          ) : (
+            <View style={[styles.avatar, styles.placeholderAvatar, { backgroundColor: colors.border }]}>
+              <Ionicons name="person" size={20} color={colors.textTertiary} />
+            </View>
+          )}
+        </TouchableOpacity>
         <View style={styles.headerInfo}>
           <Text style={[styles.userName, { color: colors.text }]}>
             {post.userName}

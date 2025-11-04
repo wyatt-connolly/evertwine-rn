@@ -169,19 +169,28 @@ export default function PostDetailsScreen({
 
           {/* Post Header */}
           <View style={styles.postHeader}>
-            {post.userAvatar ? (
-              <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
-            ) : (
-              <View
-                style={[
-                  styles.avatar,
-                  styles.placeholderAvatar,
-                  { backgroundColor: colors.border },
-                ]}
-              >
-                <Ionicons name="person" size={20} color={colors.textTertiary} />
-              </View>
-            )}
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate("UserProfile", {
+                  userId: post.userId,
+                });
+              }}
+              activeOpacity={0.7}
+            >
+              {post.userAvatar ? (
+                <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
+              ) : (
+                <View
+                  style={[
+                    styles.avatar,
+                    styles.placeholderAvatar,
+                    { backgroundColor: colors.border },
+                  ]}
+                >
+                  <Ionicons name="person" size={20} color={colors.textTertiary} />
+                </View>
+              )}
+            </TouchableOpacity>
             <View style={styles.headerInfo}>
               <Text style={[styles.userName, { color: colors.text }]}>
                 {post.userName}
@@ -237,26 +246,35 @@ export default function PostDetailsScreen({
 
             return (
               <View key={comment.id} style={styles.comment}>
-                {comment.userAvatar ? (
-                  <Image
-                    source={{ uri: comment.userAvatar }}
-                    style={styles.commentAvatar}
-                  />
-                ) : (
-                  <View
-                    style={[
-                      styles.commentAvatar,
-                      styles.placeholderAvatar,
-                      { backgroundColor: colors.border },
-                    ]}
-                  >
-                    <Ionicons
-                      name="person"
-                      size={16}
-                      color={colors.textTertiary}
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate("UserProfile", {
+                      userId: comment.userId,
+                    });
+                  }}
+                  activeOpacity={0.7}
+                >
+                  {comment.userAvatar ? (
+                    <Image
+                      source={{ uri: comment.userAvatar }}
+                      style={styles.commentAvatar}
                     />
-                  </View>
-                )}
+                  ) : (
+                    <View
+                      style={[
+                        styles.commentAvatar,
+                        styles.placeholderAvatar,
+                        { backgroundColor: colors.border },
+                      ]}
+                    >
+                      <Ionicons
+                        name="person"
+                        size={16}
+                        color={colors.textTertiary}
+                      />
+                    </View>
+                  )}
+                </TouchableOpacity>
                 <View style={styles.commentContent}>
                   <View
                     style={[

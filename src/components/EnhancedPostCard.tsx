@@ -55,19 +55,29 @@ export default function EnhancedPostCard({ post }: EnhancedPostCardProps) {
       >
         {/* Header */}
         <View style={styles.header}>
-          {post.userAvatar ? (
-            <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
-          ) : (
-            <View
-              style={[
-                styles.avatar,
-                styles.placeholderAvatar,
-                { backgroundColor: colors.border },
-              ]}
-            >
-              <Ionicons name="person" size={20} color={colors.textTertiary} />
-            </View>
-          )}
+          <TouchableOpacity
+            onPress={(e) => {
+              e.stopPropagation();
+              navigation.navigate("UserProfile", {
+                userId: post.userId,
+              });
+            }}
+            activeOpacity={0.7}
+          >
+            {post.userAvatar ? (
+              <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
+            ) : (
+              <View
+                style={[
+                  styles.avatar,
+                  styles.placeholderAvatar,
+                  { backgroundColor: colors.border },
+                ]}
+              >
+                <Ionicons name="person" size={20} color={colors.textTertiary} />
+              </View>
+            )}
+          </TouchableOpacity>
           <View style={styles.headerInfo}>
             <Text style={[styles.userName, { color: colors.text }]}>
               {post.userName}
