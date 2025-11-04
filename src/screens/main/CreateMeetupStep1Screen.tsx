@@ -77,7 +77,7 @@ interface CreateMeetupStep1ScreenProps {
   route: {
     params: {
       formData?: any;
-      onUpdate: (data: any) => void;
+      onUpdate?: (data: any) => void;
     };
   };
 }
@@ -116,9 +116,18 @@ export default function CreateMeetupStep1Screen({
   }, [formData.activity]);
 
   const updateFormData = (field: string, value: string) => {
-    const newData = { ...formData, [field]: value };
-    setFormData(newData);
-    onUpdate(newData);
+    // Special handling for description field
+    if (field === "description") {
+      // Limit consecutive line breaks to maximum of 2 (one extra line)
+      const limitedText = value.replace(/\n{3,}/g, "\n\n");
+      const newData = { ...formData, [field]: limitedText };
+      setFormData(newData);
+      onUpdate?.(newData);
+    } else {
+      const newData = { ...formData, [field]: value };
+      setFormData(newData);
+      onUpdate?.(newData);
+    }
   };
 
   // Animation functions
@@ -434,12 +443,34 @@ export default function CreateMeetupStep1Screen({
       >
         <View style={styles.content}>
           {renderInput("Title *", "title", "Enter meetup title")}
-          {renderInput(
-            "Description *",
-            "description",
-            "Describe your meetup",
-            true
-          )}
+          
+          {/* Description Input with character limit */}
+          <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: colors.text }]}>Description *</Text>
+            <TextInput
+              style={[
+                styles.input,
+                styles.multilineInput,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.text,
+                },
+              ]}
+              placeholder="Describe your meetup"
+              placeholderTextColor={colors.textSecondary}
+              value={formData.description}
+              onChangeText={(text) => updateFormData("description", text)}
+              multiline
+              numberOfLines={4}
+              maxLength={500}
+            />
+            <Text
+              style={[styles.characterCount, { color: colors.textTertiary }]}
+            >
+              {formData.description.length}/500
+            </Text>
+          </View>
 
           {/* Activity Selection */}
           <View style={styles.inputContainer}>
@@ -588,6 +619,11 @@ const styles = StyleSheet.create({
   multilineInput: {
     height: 100,
     textAlignVertical: "top",
+  },
+  characterCount: {
+    fontSize: 12,
+    textAlign: "right",
+    marginTop: 4,
   },
   selector: {
     borderWidth: 1,

@@ -22,7 +22,7 @@ interface CreateMeetupStep4ScreenProps {
   route: {
     params: {
       formData: any;
-      onUpdate: (data: any) => void;
+      onUpdate?: (data: any) => void;
     };
   };
 }

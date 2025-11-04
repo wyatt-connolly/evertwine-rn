@@ -332,11 +332,6 @@ export class SupabaseDataService {
       .order("updated_time", { ascending: false });
     if (error) throw error;
 
-    console.log(
-      "getMessageRooms: Raw data from database:",
-      JSON.stringify(data, null, 2)
-    );
-
     // Fetch last message for each room
     const roomsWithLastMessage = await Promise.all(
       data.map(async (room) => {
@@ -382,10 +377,6 @@ export class SupabaseDataService {
     );
 
     const mapped = roomsWithLastMessage.map((item) => this.mapMessageRoomFromDB(item));
-    console.log(
-      "getMessageRooms: Mapped data with last messages:",
-      JSON.stringify(mapped, null, 2)
-    );
     return mapped;
   }
 
@@ -484,47 +475,20 @@ export class SupabaseDataService {
 
     if (error) throw error;
 
-    // Update the last message in the message room
-    if (data.message_room_ref) {
-      console.log("Message sent for room:", data.message_room_ref);
-      // Last message will be fetched dynamically from messages table
-    } else {
-      console.log("No message_room_ref found in sent message data:", data);
-    }
-
     return this.mapMessageFromDB(data);
   }
 
   static async updateMessageRoomLastMessage(roomId: string, lastMessage: any) {
-    console.log(
-      "Updating last message for room:",
-      roomId,
-      "with message:",
-      lastMessage
-    );
+    const { data, error } = await supabase
+      .from("message_rooms")
+      .update({
+        last_message: lastMessage,
+        updated_time: new Date().toISOString(),
+      })
+      .eq("id", roomId)
+      .select();
 
-    try {
-      const { data, error } = await supabase
-        .from("message_rooms")
-        .update({
-          last_message: lastMessage,
-          updated_time: new Date().toISOString(),
-        })
-        .eq("id", roomId)
-        .select();
-
-      if (error) {
-        console.error("Error updating last message:", error);
-        console.error("Error details:", JSON.stringify(error, null, 2));
-        throw error;
-      }
-
-      console.log("Successfully updated last message for room:", roomId);
-      console.log("Updated room data:", JSON.stringify(data, null, 2));
-    } catch (err) {
-      console.error("Exception in updateMessageRoomLastMessage:", err);
-      throw err;
-    }
+    if (error) throw error;
   }
 
   static async getMessageRoom(roomId: string): Promise<MessageRoom | null> {
@@ -538,6 +502,24 @@ export class SupabaseDataService {
     if (!data) return null;
 
     return this.mapMessageRoomFromDB(data);
+  }
+
+  static async deleteMessageRoom(roomId: string): Promise<void> {
+    // First delete all messages in the room
+    const { error: messagesError } = await supabase
+      .from("messages")
+      .delete()
+      .eq("message_room_ref", roomId);
+
+    if (messagesError) throw messagesError;
+
+    // Then delete the room itself
+    const { error: roomError } = await supabase
+      .from("message_rooms")
+      .delete()
+      .eq("id", roomId);
+
+    if (roomError) throw roomError;
   }
 
   static async getUsersByIds(userIds: string[]): Promise<User[]> {
@@ -589,6 +571,14 @@ export class SupabaseDataService {
       .single();
     if (error) throw error;
     return this.mapMessageFromDB(data);
+  }
+
+  static async deleteMessage(id: string): Promise<void> {
+    const { error } = await supabase
+      .from("messages")
+      .delete()
+      .eq("id", id);
+    if (error) throw error;
   }
 
   // ==================== NOTIFICATIONS ====================
@@ -1870,8 +1860,6 @@ export class SupabaseDataService {
 
   // ==================== DATABASE SCHEMA TEST ====================
   static async testDatabaseSchema() {
-    console.log("Testing database schema...");
-
     // Try to get the table schema
     const { data, error } = await supabase
       .from("message_rooms")
@@ -1882,11 +1870,6 @@ export class SupabaseDataService {
       console.error("Error querying message_rooms table:", error);
       return;
     }
-
-    console.log(
-      "message_rooms table schema sample:",
-      JSON.stringify(data, null, 2)
-    );
   }
 
   // ==================== REAL-TIME LISTENERS ====================

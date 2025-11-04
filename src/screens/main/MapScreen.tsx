@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -375,7 +376,7 @@ const getHappyHourEvents = (): Event[] => [
   },
 ];
 
-export default function MapScreen({ navigation }: any) {
+export default function MapScreen({ navigation, route }: any) {
   const { colors } = useThemeStore();
   const [selectedFilter, setSelectedFilter] = useState<
     "all" | "meetups" | "happy_hours"
@@ -390,11 +391,165 @@ export default function MapScreen({ navigation }: any) {
   const [happyHours, setHappyHours] = useState<Event[]>([]);
   const [creatorCache, setCreatorCache] = useState<Map<string, any>>(new Map());
   const [selectedCreator, setSelectedCreator] = useState<any>(null);
+  const [selectedLocation, setSelectedLocation] = useState<{
+    latitude: number;
+    longitude: number;
+    name?: string;
+    address?: string;
+  } | null>(route.params?.selectedLocation || null);
+  const [mapReady, setMapReady] = useState(false);
+  const mapRef = useRef<MapView>(null);
+  const prevLocationRef = useRef<string | null>(null);
+
+  // Create a unique key from location for comparison
+  const getLocationKey = (
+    location: {
+      latitude: number;
+      longitude: number;
+      name?: string;
+      address?: string;
+    } | null
+  ): string | null => {
+    if (!location) return null;
+    return `${location.latitude},${location.longitude}`;
+  };
+
+  console.log("🗺️ MapScreen rendered");
+  console.log(
+    "📍 route.params?.selectedLocation:",
+    route.params?.selectedLocation
+  );
+  console.log("📍 selectedLocation state:", selectedLocation);
 
   // Load data from Supabase or fallback to mock data
   useEffect(() => {
     loadMapData();
   }, [currentLocation, selectedFilter]);
+
+  // Update selectedLocation when route params change (using useEffect)
+  useEffect(() => {
+    const newLocation = route.params?.selectedLocation;
+    const newLocationKey = getLocationKey(newLocation || null);
+
+    console.log("🔄 useEffect: route params changed");
+    console.log("📍 New location from route.params:", newLocation);
+    console.log("📍 Previous location key:", prevLocationRef.current);
+    console.log("📍 New location key:", newLocationKey);
+
+    // Always update if location key changed (or if we're going from null to a location or vice versa)
+    if (newLocationKey !== prevLocationRef.current) {
+      if (newLocationKey !== null) {
+        console.log("📍 Setting selectedLocation to:", newLocation);
+        setSelectedLocation(newLocation || null);
+        prevLocationRef.current = newLocationKey;
+      } else {
+        console.log("📍 Clearing selectedLocation");
+        setSelectedLocation(null);
+        prevLocationRef.current = null;
+      }
+    } else {
+      console.log("📍 Location unchanged, skipping update");
+    }
+  }, [
+    route.params?.selectedLocation?.latitude,
+    route.params?.selectedLocation?.longitude,
+    route.params?.selectedLocation?.name,
+    route.params?.selectedLocation?.address,
+  ]);
+
+  // Initialize prevLocationRef on mount
+  useEffect(() => {
+    const initialLocation = route.params?.selectedLocation;
+    const initialKey = getLocationKey(initialLocation || null);
+    console.log("🚀 Component mounted with initial location:", initialLocation);
+    console.log("🚀 Initial location key:", initialKey);
+    if (initialKey) {
+      prevLocationRef.current = initialKey;
+      // Also set the selectedLocation state if we have an initial location
+      if (initialLocation && !selectedLocation) {
+        setSelectedLocation(initialLocation);
+      }
+    }
+  }, []);
+
+  // Also update when screen comes into focus (handles navigation to same screen)
+  useFocusEffect(
+    useCallback(() => {
+      const newLocation = route.params?.selectedLocation;
+      const newLocationKey = getLocationKey(newLocation || null);
+
+      console.log("👁️ useFocusEffect: Screen focused");
+      console.log("📍 New location from route.params:", newLocation);
+      console.log("📍 New location key:", newLocationKey);
+      console.log("📍 Previous location key:", prevLocationRef.current);
+
+      // Always check if location changed when screen comes into focus
+      if (newLocationKey !== prevLocationRef.current) {
+        if (newLocationKey !== null && newLocation) {
+          console.log(
+            "📍 Setting selectedLocation in useFocusEffect:",
+            newLocation
+          );
+          setSelectedLocation(newLocation);
+          prevLocationRef.current = newLocationKey;
+        } else {
+          console.log("📍 Clearing selectedLocation in useFocusEffect");
+          setSelectedLocation(null);
+          prevLocationRef.current = null;
+        }
+      }
+    }, [
+      route.params?.selectedLocation?.latitude,
+      route.params?.selectedLocation?.longitude,
+      route.params?.selectedLocation?.name,
+      route.params?.selectedLocation?.address,
+    ])
+  );
+
+  // Handle map ready callback
+  const handleMapReady = useCallback(() => {
+    console.log("🗺️ Map is ready, mapRef.current:", !!mapRef.current);
+    setMapReady(true);
+  }, []);
+
+  // Animate to selected location when provided and map is ready
+  useEffect(() => {
+    if (selectedLocation && mapRef.current && mapReady) {
+      console.log("🎯 Animating map to selected location:", selectedLocation);
+      console.log(
+        "🎯 Coordinates:",
+        selectedLocation.latitude,
+        selectedLocation.longitude
+      );
+
+      // Use a small timeout to ensure map is fully rendered
+      const timeoutId = setTimeout(() => {
+        if (mapRef.current && selectedLocation) {
+          console.log("🎯 Calling animateToRegion");
+          mapRef.current.animateToRegion(
+            {
+              latitude: selectedLocation.latitude,
+              longitude: selectedLocation.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            },
+            1000
+          );
+        }
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      console.log(
+        "⚠️ Cannot animate map - selectedLocation:",
+        selectedLocation,
+        "mapRef.current:",
+        !!mapRef.current,
+        "mapReady:",
+        mapReady
+      );
+    }
+  }, [selectedLocation, mapReady]);
 
   const loadMapData = async () => {
     try {
@@ -549,8 +704,18 @@ export default function MapScreen({ navigation }: any) {
 
   const renderMap = () => {
     try {
-      // Get initial region based on current location or default
+      // Get initial region based on selected location, current location, or default
       const getInitialRegion = () => {
+        // Priority 1: Selected location (from route params)
+        if (selectedLocation) {
+          return {
+            latitude: selectedLocation.latitude,
+            longitude: selectedLocation.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          };
+        }
+        // Priority 2: Current location
         if (currentLocation) {
           return {
             latitude: currentLocation.coords.latitude,
@@ -571,18 +736,36 @@ export default function MapScreen({ navigation }: any) {
       return (
         <View style={styles.mapContainer}>
           <MapView
+            ref={mapRef}
             style={styles.map}
             initialRegion={getInitialRegion()}
             showsUserLocation={false}
             showsMyLocationButton={true}
             showsCompass={true}
             showsScale={true}
+            onMapReady={handleMapReady}
           >
             {/* Show markers */}
             {true && (
               <>
-                {/* Meetup Markers */}
-                {selectedFilter !== "happy_hours" &&
+                {/* Selected Location Marker (from route params) */}
+                {selectedLocation && (
+                  <Marker
+                    key={`selected-${selectedLocation.latitude}-${selectedLocation.longitude}`}
+                    coordinate={{
+                      latitude: selectedLocation.latitude,
+                      longitude: selectedLocation.longitude,
+                    }}
+                    title={selectedLocation.name || "Selected Location"}
+                    description={selectedLocation.address || ""}
+                    pinColor={colors.primary}
+                    tracksViewChanges={false}
+                  />
+                )}
+
+                {/* Meetup Markers - Only show if no selected location */}
+                {!selectedLocation &&
+                  selectedFilter !== "happy_hours" &&
                   meetups.map((meetup) => (
                     <Marker
                       key={meetup.id}
@@ -598,8 +781,9 @@ export default function MapScreen({ navigation }: any) {
                     />
                   ))}
 
-                {/* Happy Hour Event Markers */}
-                {selectedFilter !== "meetups" &&
+                {/* Happy Hour Event Markers - Only show if no selected location */}
+                {!selectedLocation &&
+                  selectedFilter !== "meetups" &&
                   happyHours.map((event) => (
                     <Marker
                       key={event.id}
@@ -735,12 +919,14 @@ export default function MapScreen({ navigation }: any) {
         <View style={{ width: 24 }} />
       </View>
 
-      {/* Filter Buttons */}
-      <View style={styles.filterContainer}>
-        {renderFilterButton("all", "All", "grid-outline")}
-        {renderFilterButton("meetups", "Meetups", "people-outline")}
-        {renderFilterButton("happy_hours", "Happy Hours", "wine-outline")}
-      </View>
+      {/* Filter Buttons - Only show if no selected location */}
+      {!selectedLocation && (
+        <View style={styles.filterContainer}>
+          {renderFilterButton("all", "All", "grid-outline")}
+          {renderFilterButton("meetups", "Meetups", "people-outline")}
+          {renderFilterButton("happy_hours", "Happy Hours", "wine-outline")}
+        </View>
+      )}
 
       {/* Map */}
       {renderMap()}
@@ -1076,38 +1262,47 @@ export default function MapScreen({ navigation }: any) {
         </Pressable>
       </Modal>
 
-      {/* Bottom Info */}
-      <View style={[styles.bottomInfo, { backgroundColor: colors.surface }]}>
-        <View style={styles.legend}>
-          <View style={styles.legendItem}>
-            <View
-              style={[
-                styles.legendMarker,
-                { backgroundColor: colors.accentTertiary },
-              ]}
-            />
-            <Text style={[styles.legendText, { color: colors.textSecondary }]}>
-              Meetups ({meetups.length})
-            </Text>
+      {/* Bottom Info - Only show if no selected location */}
+      {!selectedLocation && (
+        <View style={[styles.bottomInfo, { backgroundColor: colors.surface }]}>
+          <View style={styles.legend}>
+            <View style={styles.legendItem}>
+              <View
+                style={[
+                  styles.legendMarker,
+                  { backgroundColor: colors.accentTertiary },
+                ]}
+              />
+              <Text
+                style={[styles.legendText, { color: colors.textSecondary }]}
+              >
+                Meetups ({meetups.length})
+              </Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View
+                style={[
+                  styles.legendMarker,
+                  { backgroundColor: colors.accentQuaternary },
+                ]}
+              />
+              <Text
+                style={[styles.legendText, { color: colors.textSecondary }]}
+              >
+                Happy Hours ({happyHours.length})
+              </Text>
+            </View>
           </View>
-          <View style={styles.legendItem}>
-            <View
-              style={[
-                styles.legendMarker,
-                { backgroundColor: colors.accentQuaternary },
-              ]}
-            />
-            <Text style={[styles.legendText, { color: colors.textSecondary }]}>
-              Happy Hours ({happyHours.length})
-            </Text>
-          </View>
+          <TouchableOpacity
+            style={[
+              styles.myLocationButton,
+              { backgroundColor: colors.primary },
+            ]}
+          >
+            <Ionicons name="locate" size={20} color={colors.onPrimary} />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={[styles.myLocationButton, { backgroundColor: colors.primary }]}
-        >
-          <Ionicons name="locate" size={20} color={colors.onPrimary} />
-        </TouchableOpacity>
-      </View>
+      )}
     </SafeAreaView>
   );
 }

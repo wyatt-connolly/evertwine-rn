@@ -16,7 +16,7 @@ interface CreateMeetupConfirmationScreenProps {
   route: {
     params: {
       formData: any;
-      onUpdate: (data: any) => void;
+      onUpdate?: (data: any) => void;
     };
   };
 }

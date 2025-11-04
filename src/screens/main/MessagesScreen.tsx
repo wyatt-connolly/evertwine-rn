@@ -7,9 +7,12 @@ import {
   Image,
   FlatList,
   RefreshControl,
+  Alert,
+  Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
+import { Swipeable } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { useAuthStore } from "../../hooks/useAuthStore";
@@ -41,7 +44,6 @@ export default function MessagesScreen({ navigation }: any) {
       await SupabaseDataService.testDatabaseSchema();
 
       const rooms = await SupabaseDataService.getMessageRooms(currentUser.uid);
-      console.log("MessagesScreen: Loaded message rooms:", rooms);
       setMessageRooms(rooms);
     } catch (error) {
       console.error("Error loading message rooms:", error);
@@ -58,7 +60,6 @@ export default function MessagesScreen({ navigation }: any) {
   // Refresh message rooms when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
-      console.log("MessagesScreen: Screen focused, refreshing message rooms");
       loadMessageRooms();
     }, [currentUser?.uid])
   );
@@ -77,7 +78,6 @@ export default function MessagesScreen({ navigation }: any) {
     const unsubscribe = DataService.setupMessageRoomsListener(
       currentUser.uid,
       (rooms) => {
-        console.log("MessagesScreen: Received updated message rooms:", rooms);
         setMessageRooms(rooms);
       }
     );
@@ -117,16 +117,63 @@ export default function MessagesScreen({ navigation }: any) {
     setIsLoading(false);
   };
 
-  const renderMessageRoom = ({ item: room }: { item: MessageRoom }) => (
-    <TouchableOpacity
-      style={[styles.messageRoom, { backgroundColor: colors.surface }]}
-      onPress={() => handleOpenMessage(room.id)}
-    >
-      {/* Unread dot on the left */}
-      {room.lastMessage && !room.lastMessage.isRead && (
-        <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />
-      )}
+  const handleDeleteRoom = async (roomId: string, roomName: string) => {
+    Alert.alert(
+      "Delete Conversation",
+      `Are you sure you want to delete "${roomName}"? This will remove all messages in this conversation.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await SupabaseDataService.deleteMessageRoom(roomId);
+              loadMessageRooms();
+            } catch (error) {
+              Alert.alert("Error", "Failed to delete conversation. Please try again.");
+            }
+          },
+        },
+      ]
+    );
+  };
 
+  const renderMessageRoom = ({ item: room }: { item: MessageRoom }) => {
+    const renderRightActions = (progress: Animated.AnimatedInterpolation) => {
+      const scale = progress.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0.5, 1],
+        extrapolate: 'clamp',
+      });
+
+      const opacity = progress.interpolate({
+        inputRange: [0, 0.5, 1],
+        outputRange: [0, 0.5, 1],
+        extrapolate: 'clamp',
+      });
+
+      return (
+        <View style={styles.swipeDeleteContainer}>
+          <TouchableOpacity
+            style={styles.swipeDeleteButton}
+            onPress={() => handleDeleteRoom(room.id, room.name)}
+          >
+            <Animated.View style={{ transform: [{ scale }], opacity }}>
+              <Ionicons name="trash" size={24} color="white" />
+              <Text style={styles.swipeDeleteText}>Delete</Text>
+            </Animated.View>
+          </TouchableOpacity>
+        </View>
+      );
+    };
+
+    return (
+      <Swipeable renderRightActions={renderRightActions} overshootRight={false}>
+        <TouchableOpacity
+          style={[styles.messageRoom, { backgroundColor: colors.surface }]}
+          onPress={() => handleOpenMessage(room.id)}
+        >
       <View style={styles.avatarContainer}>
         {room.avatar ? (
           <Image source={{ uri: room.avatar }} style={styles.avatar} />
@@ -156,7 +203,13 @@ export default function MessagesScreen({ navigation }: any) {
 
       <View style={styles.messageContent}>
         <View style={styles.messageHeader}>
-          <Text style={[styles.roomName, { color: colors.text }]}>
+          <Text 
+            style={[
+              styles.roomName, 
+              { color: colors.text },
+              !room.lastMessage?.isRead && { fontWeight: "700" },
+            ]}
+          >
             {room.name}
           </Text>
           <Text style={[styles.messageTime, { color: colors.textTertiary }]}>
@@ -197,7 +250,9 @@ export default function MessagesScreen({ navigation }: any) {
         )}
       </View>
     </TouchableOpacity>
-  );
+      </Swipeable>
+    );
+  };
 
   return (
     <SafeAreaView
@@ -401,13 +456,6 @@ const styles = StyleSheet.create({
   participantCount: {
     fontSize: 12,
   },
-  unreadDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 8,
-    alignSelf: "center",
-  },
   emptyState: {
     flex: 1,
     alignItems: "center",
@@ -426,5 +474,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
     lineHeight: 20,
+  },
+  swipeDeleteContainer: {
+    justifyContent: "center",
+    alignItems: "flex-end",
+    paddingRight: 16,
+  },
+  swipeDeleteButton: {
+    width: 70,
+    height: 60,
+    backgroundColor: "#ef4444",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 12,
+    alignSelf: "center",
+  },
+  swipeDeleteText: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 4,
   },
 });

@@ -20,7 +20,7 @@ interface EditMeetupStep4ScreenProps {
     params: {
       meetupId: string;
       formData: any;
-      onUpdate: (data: any) => void;
+      onUpdate?: (data: any) => void;
     };
   };
 }

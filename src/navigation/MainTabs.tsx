@@ -96,24 +96,24 @@ export type MainStackParamList = {
   UserProfile: { userId: string; userData?: any };
   AllHappyHourEvents: undefined;
   AllMeetups: undefined;
-  CreateMeetupStep1: { formData?: any; onUpdate: (data: any) => void };
-  CreateMeetupStep2: { formData: any; onUpdate: (data: any) => void };
-  CreateMeetupStep4: { formData: any; onUpdate: (data: any) => void };
-  CreateMeetupConfirmation: { formData: any; onUpdate: (data: any) => void };
+  CreateMeetupStep1: { formData?: any; onUpdate?: (data: any) => void };
+  CreateMeetupStep2: { formData: any; onUpdate?: (data: any) => void };
+  CreateMeetupStep4: { formData: any; onUpdate?: (data: any) => void };
+  CreateMeetupConfirmation: { formData: any; onUpdate?: (data: any) => void };
   EditMeetupStep1: {
     meetupId: string;
     formData?: any;
-    onUpdate: (data: any) => void;
+    onUpdate?: (data: any) => void;
   };
   EditMeetupStep2: {
     meetupId: string;
     formData: any;
-    onUpdate: (data: any) => void;
+    onUpdate?: (data: any) => void;
   };
   EditMeetupStep4: {
     meetupId: string;
     formData: any;
-    onUpdate: (data: any) => void;
+    onUpdate?: (data: any) => void;
   };
   CreatePost: undefined;
   NotificationsList: undefined;

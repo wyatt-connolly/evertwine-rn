@@ -14,6 +14,7 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import MapView, { Marker } from "react-native-maps";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import LocationSearchInput from "../../components/LocationSearchInput";
 
@@ -43,7 +44,7 @@ interface EditMeetupStep2ScreenProps {
     params: {
       meetupId: string;
       formData: any;
-      onUpdate: (data: any) => void;
+      onUpdate?: (data: any) => void;
     };
   };
 }
@@ -82,7 +83,7 @@ export default function EditMeetupStep2Screen({
   const updateFormData = (field: string, value: any) => {
     const newData = { ...formData, [field]: value };
     setFormData(newData);
-    onUpdate(newData);
+    onUpdate?.(newData);
   };
 
   // Animation functions for date picker
@@ -402,9 +403,27 @@ export default function EditMeetupStep2Screen({
             <Text style={[styles.label, { color: colors.text }]}>Location</Text>
             <LocationSearchInput
               value={formData.address}
-              onChangeText={(text) => updateFormData("address", text)}
+              onChangeText={(text) => {
+                // Batch all updates together when clearing
+                if (!text.trim()) {
+                  const newData = {
+                    ...formData,
+                    address: "",
+                    locationName: "",
+                    latitude: null,
+                    longitude: null,
+                  };
+                  setFormData(newData);
+                  onUpdate(newData);
+                } else {
+                  updateFormData("address", text);
+                }
+              }}
               onPlaceSelect={(place) => {
+                // Extract location name from place description (the main_text from structured_formatting)
+                const locationName = place.description.split(",")[0]; // Get first part before comma
                 updateFormData("address", place.address);
+                updateFormData("locationName", locationName);
                 updateFormData("latitude", place.latitude);
                 updateFormData("longitude", place.longitude);
               }}
@@ -412,47 +431,75 @@ export default function EditMeetupStep2Screen({
               style={styles.locationSearchInput}
             />
             {formData.latitude && formData.longitude && (
-              <>
-                <Text
+              <TouchableOpacity
+                style={[
+                  styles.mapPreviewContainer,
+                  { borderColor: colors.border },
+                ]}
+                activeOpacity={0.8}
+                onPress={() => {
+                  const selectedLocation = {
+                    latitude: formData.latitude,
+                    longitude: formData.longitude,
+                    name: formData.locationName,
+                    address: formData.address,
+                  };
+                  navigation.navigate("Map", {
+                    selectedLocation,
+                  });
+                }}
+              >
+                <View
                   style={[
-                    styles.coordinatesText,
-                    { color: colors.textSecondary },
+                    styles.mapPreviewHeader,
+                    { borderBottomColor: colors.border },
                   ]}
                 >
-                  📍 {formData.latitude.toFixed(6)},{" "}
-                  {formData.longitude.toFixed(6)}
-                </Text>
-                <TouchableOpacity
-                  style={[
-                    styles.viewMapButton,
-                    { backgroundColor: colors.primary },
-                  ]}
-                  onPress={() => {
-                    navigation.navigate("Map", {
-                      selectedLocation: {
-                        latitude: formData.latitude,
-                        longitude: formData.longitude,
-                        name: formData.locationName,
-                        address: formData.address,
-                      },
-                    });
-                  }}
-                >
+                  <View style={styles.mapPreviewHeaderLeft}>
+                    <Ionicons
+                      name="location"
+                      size={16}
+                      color={colors.primary}
+                    />
+                    <Text
+                      style={[styles.mapPreviewLabel, { color: colors.text }]}
+                    >
+                      {formData.locationName || "Selected Location"}
+                    </Text>
+                  </View>
                   <Ionicons
-                    name="map-outline"
-                    size={20}
-                    color={colors.onPrimary}
+                    name="expand-outline"
+                    size={18}
+                    color={colors.textSecondary}
                   />
-                  <Text
-                    style={[
-                      styles.viewMapButtonText,
-                      { color: colors.onPrimary },
-                    ]}
-                  >
-                    View on Map
-                  </Text>
-                </TouchableOpacity>
-              </>
+                </View>
+                <MapView
+                  key={`map-${formData.latitude}-${formData.longitude}`}
+                  style={styles.mapPreview}
+                  initialRegion={{
+                    latitude: formData.latitude,
+                    longitude: formData.longitude,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                  }}
+                  scrollEnabled={false}
+                  zoomEnabled={false}
+                  pitchEnabled={false}
+                  rotateEnabled={false}
+                  toolbarEnabled={false}
+                  loadingEnabled={true}
+                >
+                  <Marker
+                    key={`marker-${formData.latitude}-${formData.longitude}`}
+                    coordinate={{
+                      latitude: formData.latitude,
+                      longitude: formData.longitude,
+                    }}
+                    title={formData.locationName}
+                    description={formData.address}
+                  />
+                </MapView>
+              </TouchableOpacity>
             )}
           </View>
 
@@ -640,18 +687,34 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontStyle: "italic",
   },
-  viewMapButton: {
+  mapPreviewContainer: {
+    marginTop: 12,
+    borderRadius: 8,
+    overflow: "hidden",
+    borderWidth: 1,
+    backgroundColor: "transparent",
+  },
+  mapPreviewHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+  },
+  mapPreviewHeaderLeft: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginTop: 8,
     gap: 8,
+    flex: 1,
   },
-  viewMapButtonText: {
-    fontSize: 16,
+  mapPreviewLabel: {
+    fontSize: 14,
     fontWeight: "600",
+    flex: 1,
+  },
+  mapPreview: {
+    height: 120,
+    width: "100%",
   },
 });

@@ -1265,6 +1265,7 @@ export default function EditProfileScreen() {
 
               <ScrollView
                 style={styles.interestsScrollContainer}
+                contentContainerStyle={styles.interestsScrollContent}
                 showsVerticalScrollIndicator={false}
               >
                 <View style={styles.interestsGrid}>
@@ -1789,6 +1790,9 @@ const styles = StyleSheet.create({
   },
   interestsScrollContainer: {
     maxHeight: 400,
+  },
+  interestsScrollContent: {
+    paddingBottom: 80,
   },
   interestsGrid: {
     flexDirection: "row",

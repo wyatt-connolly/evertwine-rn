@@ -14,6 +14,7 @@ import {
   Modal,
   Animated,
 } from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -198,7 +199,9 @@ export default function MessageDetailsScreen({
   };
 
   const handleDeleteMessage = async (messageId: string, messageText: string) => {
+    console.log("DELETE BUTTON PRESSED: Message ID:", messageId);
     const isCurrentUserMessage = messages.find(m => m.id === messageId)?.senderRef === currentUser?.uid;
+    console.log("DELETE: Is current user message?", isCurrentUserMessage);
     
     if (!isCurrentUserMessage) {
       Alert.alert("Error", "You can only delete your own messages");
@@ -215,15 +218,24 @@ export default function MessageDetailsScreen({
           style: "destructive",
           onPress: async () => {
             try {
-              await SupabaseDataService.updateMessage(messageId, {
-                isDeleted: true,
-                text: "[Message deleted]",
-              } as Partial<Message>);
+              console.log("DELETE: Attempting to delete message:", messageId);
               
-              // Refresh messages
+              // Optimistically remove from UI
+              setMessages(prevMessages => {
+                console.log("DELETE: Current messages count:", prevMessages.length);
+                const filtered = prevMessages.filter(msg => msg.id !== messageId);
+                console.log("DELETE: Updated messages count:", filtered.length);
+                return filtered;
+              });
+
+              await SupabaseDataService.deleteMessage(messageId);
+              
+              console.log("DELETE: Successfully deleted message from database");
+            } catch (error) {
+              console.log("DELETE ERROR:", error);
+              // Revert on error
               const updatedMessages = await DataService.getMessages(roomId);
               setMessages(updatedMessages);
-            } catch (error) {
               Alert.alert("Error", "Failed to delete message");
             }
           },
@@ -354,62 +366,102 @@ export default function MessageDetailsScreen({
     const senderName = getSenderName(item.senderRef);
     const senderAvatar = getSenderAvatar(item.senderRef);
 
-    return (
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onLongPress={() => isCurrentUser && !item.isDeleted && handleDeleteMessage(item.id, item.text)}
-      >
-        <View
-          style={[
-            styles.messageContainer,
-            isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage,
-          ]}
-        >
-          {!isCurrentUser && (
-            <View style={styles.messageHeader}>
-              {senderAvatar ? (
-                <Image
-                  source={{ uri: senderAvatar }}
-                  style={styles.avatar}
-                />
-              ) : (
-                <View style={[styles.avatar, styles.avatarPlaceholder, { backgroundColor: colors.border }]}>
-                  <Ionicons name="person" size={16} color={colors.textTertiary} />
-                </View>
-              )}
-              <Text style={[styles.senderName, { color: colors.textSecondary }]}>
-                {senderName}
-              </Text>
-            </View>
-          )}
-          {isCurrentUser ? (
-            <LinearGradient
-              colors={[colors.primary, colors.primaryVariant]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={[styles.messageBubble, styles.gradientBubble]}
-            >
-              <Text style={[styles.messageText, { color: colors.onPrimary }]}>
-                {item.isDeleted ? "[Message deleted]" : item.text}
-              </Text>
-            </LinearGradient>
-          ) : (
-            <View
-              style={[styles.messageBubble, { backgroundColor: colors.surface }]}
-            >
-              <Text style={[styles.messageText, { color: colors.text }]}>
-                {item.text}
-              </Text>
-            </View>
-          )}
-          <Text style={[styles.timestamp, { color: colors.textTertiary }]}>
-            {new Date(item.createdTime).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </Text>
+    const renderRightActions = (progress: Animated.AnimatedInterpolation) => {
+      if (!isCurrentUser || item.isDeleted) return null;
+
+      const scale = progress.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0.5, 1],
+        extrapolate: 'clamp',
+      });
+
+      const opacity = progress.interpolate({
+        inputRange: [0, 0.5, 1],
+        outputRange: [0, 0.5, 1],
+        extrapolate: 'clamp',
+      });
+
+      return (
+        <View style={styles.swipeDeleteContainer}>
+          <TouchableOpacity
+            style={styles.swipeDeleteButton}
+            activeOpacity={0.7}
+            onPress={() => {
+              console.log("DELETE BUTTON TAPPED in renderRightActions");
+              handleDeleteMessage(item.id, item.text);
+            }}
+          >
+            <Animated.View style={{ transform: [{ scale }], opacity }}>
+              <Ionicons name="trash" size={24} color="white" />
+              <Text style={styles.swipeDeleteText}>Delete</Text>
+            </Animated.View>
+          </TouchableOpacity>
         </View>
-      </TouchableOpacity>
+      );
+    };
+
+    return (
+      <Swipeable
+        renderRightActions={renderRightActions}
+        overshootRight={false}
+        enabled={isCurrentUser && !item.isDeleted}
+      >
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onLongPress={() => isCurrentUser && !item.isDeleted && handleDeleteMessage(item.id, item.text)}
+        >
+          <View
+            style={[
+              styles.messageContainer,
+              isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage,
+            ]}
+          >
+            {!isCurrentUser && (
+              <View style={styles.messageHeader}>
+                {senderAvatar ? (
+                  <Image
+                    source={{ uri: senderAvatar }}
+                    style={styles.avatar}
+                  />
+                ) : (
+                  <View style={[styles.avatar, styles.avatarPlaceholder, { backgroundColor: colors.border }]}>
+                    <Ionicons name="person" size={16} color={colors.textTertiary} />
+                  </View>
+                )}
+                <Text style={[styles.senderName, { color: colors.textSecondary }]}>
+                  {senderName}
+                </Text>
+              </View>
+            )}
+            {isCurrentUser ? (
+              <LinearGradient
+                colors={[colors.primary, colors.primaryVariant]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.messageBubble, styles.gradientBubble]}
+              >
+                <Text style={[styles.messageText, { color: colors.onPrimary }]}>
+                  {item.isDeleted ? "[Message deleted]" : item.text}
+                </Text>
+              </LinearGradient>
+            ) : (
+              <View
+                style={[styles.messageBubble, { backgroundColor: colors.surface }]}
+              >
+                <Text style={[styles.messageText, { color: colors.text }]}>
+                  {item.text}
+                </Text>
+              </View>
+            )}
+            <Text style={[styles.timestamp, { color: colors.textTertiary }]}>
+              {new Date(item.createdTime).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </Swipeable>
     );
   };
 
@@ -700,7 +752,7 @@ export default function MessageDetailsScreen({
         ) : (
           <FlatList
             ref={flatListRef}
-            data={[...messages].reverse()}
+            data={messages}
             keyExtractor={(item) => item.id}
             renderItem={renderMessage}
             style={styles.messagesList}
@@ -983,5 +1035,25 @@ const styles = StyleSheet.create({
   },
   lastMenuItem: {
     borderBottomWidth: 0,
+  },
+  swipeDeleteContainer: {
+    justifyContent: "center",
+    alignItems: "flex-end",
+    paddingRight: 16,
+    flex: 1,
+  },
+  swipeDeleteButton: {
+    width: 70,
+    backgroundColor: "#ef4444",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 12,
+    paddingVertical: 20,
+  },
+  swipeDeleteText: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 4,
   },
 });
