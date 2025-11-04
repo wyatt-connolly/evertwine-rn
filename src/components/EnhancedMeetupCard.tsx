@@ -68,11 +68,18 @@ export default function EnhancedMeetupCard({
           currentLocalState: localIsJoined,
         }
       );
-      setLocalIsJoined(userIsParticipant);
+      // Always sync to meetup prop - this is the source of truth
+      if (localIsJoined !== userIsParticipant) {
+        console.log("🔄 [EnhancedMeetupCard] Updating localIsJoined:", {
+          from: localIsJoined,
+          to: userIsParticipant,
+        });
+        setLocalIsJoined(userIsParticipant);
+      }
     } else {
       setLocalIsJoined(false);
     }
-  }, [meetup.participants?.join(","), meetup.id, currentUser?.uid]);
+  }, [meetup.participants?.length, meetup.participants?.join(","), meetup.id, currentUser?.uid]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -335,10 +342,11 @@ export default function EnhancedMeetupCard({
     }
   };
 
-  // Use local state if available, otherwise check meetup participants
-  const isJoined =
-    localIsJoined ||
-    (currentUser ? meetup.participants.includes(currentUser.uid) : false);
+  // Use meetup participants as source of truth, sync with local state
+  // This ensures UI reflects actual database state
+  const isJoined = currentUser
+    ? meetup.participants.includes(currentUser.uid)
+    : false;
 
   const isOwnMeetup = currentUser
     ? meetup.creatorId === currentUser.uid ||

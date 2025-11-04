@@ -234,30 +234,51 @@ export default function MessageDetailsScreen({
           text: "Delete",
           style: "destructive",
           onPress: async () => {
+            console.log("🗑️ [MessageDetailsScreen] DELETE BUTTON PRESSED in alert");
+            console.log("🗑️ [MessageDetailsScreen] Delete confirmed - starting message deletion");
+            console.log("🗑️ [MessageDetailsScreen] Message ID to delete:", messageId);
+            console.log("🗑️ [MessageDetailsScreen] Room ID:", roomId);
+            console.log("🗑️ [MessageDetailsScreen] Room type:", room?.type);
+            console.log("🗑️ [MessageDetailsScreen] Room meetupRef:", room?.meetupRef);
+            
             try {
-              console.log("DELETE: Attempting to delete message:", messageId);
+              console.log("🗑️ [MessageDetailsScreen] Step 1: Optimistically removing from UI...");
 
               // Optimistically remove from UI
               setMessages((prevMessages) => {
                 console.log(
-                  "DELETE: Current messages count:",
+                  "🗑️ [MessageDetailsScreen] DELETE: Current messages count:",
                   prevMessages.length
                 );
                 const filtered = prevMessages.filter(
                   (msg) => msg.id !== messageId
                 );
-                console.log("DELETE: Updated messages count:", filtered.length);
+                console.log("🗑️ [MessageDetailsScreen] DELETE: Updated messages count:", filtered.length);
                 return filtered;
               });
 
+              console.log("🗑️ [MessageDetailsScreen] Step 2: Deleting message from database...");
               await SupabaseDataService.deleteMessage(messageId);
 
-              console.log("DELETE: Successfully deleted message from database");
-            } catch (error) {
-              console.log("DELETE ERROR:", error);
+              console.log("✅ [MessageDetailsScreen] DELETE: Successfully deleted message from database");
+              
+              // Note: Deleting a message doesn't remove you from the meetup
+              // Only leaving the group chat does that
+              console.log("ℹ️ [MessageDetailsScreen] Message deleted. Note: This does NOT remove you from the meetup.");
+              console.log("ℹ️ [MessageDetailsScreen] To leave the meetup, use the 'Leave Group Chat' option from the menu.");
+            } catch (error: any) {
+              console.error("❌ [MessageDetailsScreen] DELETE ERROR:", error);
+              console.error("❌ [MessageDetailsScreen] Error type:", typeof error);
+              console.error("❌ [MessageDetailsScreen] Error code:", error?.code);
+              console.error("❌ [MessageDetailsScreen] Error message:", error?.message);
+              console.error("❌ [MessageDetailsScreen] Error details:", JSON.stringify(error, null, 2));
+              
               // Revert on error
+              console.log("🔄 [MessageDetailsScreen] Reverting UI changes...");
               const updatedMessages = await DataService.getMessages(roomId);
               setMessages(updatedMessages);
+              console.log("🔄 [MessageDetailsScreen] UI reverted");
+              
               Alert.alert("Error", "Failed to delete message");
             }
           },
@@ -381,6 +402,156 @@ export default function MessageDetailsScreen({
     } finally {
       setIsReporting(false);
     }
+  };
+
+  const handleLeaveGroup = async () => {
+    console.log("🚪 [MessageDetailsScreen] handleLeaveGroup called");
+    setShowMenu(false);
+
+    if (!room || !currentUser) {
+      console.error("❌ [MessageDetailsScreen] Missing room or currentUser:", {
+        hasRoom: !!room,
+        hasCurrentUser: !!currentUser,
+      });
+      return;
+    }
+
+    console.log("🚪 [MessageDetailsScreen] Room details:", {
+      roomId: room.id,
+      roomType: room.type,
+      meetupRef: room.meetupRef,
+      participants: room.participants,
+      currentUserId: currentUser.uid,
+    });
+
+    const isMeetupChat = room.type === "meetup";
+    const chatType = isMeetupChat ? "meetup" : "group";
+
+    console.log("🚪 [MessageDetailsScreen] Chat type determined:", {
+      isMeetupChat,
+      chatType,
+      hasMeetupRef: !!room.meetupRef,
+    });
+
+    Alert.alert(
+      "Leave " + (isMeetupChat ? "Meetup Chat" : "Group Chat"),
+      `Are you sure you want to leave this ${chatType} chat?${
+        isMeetupChat
+          ? "\n\nYou will also be removed from the meetup and will no longer be a participant."
+          : ""
+      }`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Leave",
+          style: "destructive",
+          onPress: async () => {
+            console.log("🚪 [MessageDetailsScreen] User confirmed leaving group");
+            setIsLeaving(true);
+            try {
+              // Remove from message room
+              console.log("🚪 [MessageDetailsScreen] Step 1: Removing from message room...");
+              console.log("🚪 [MessageDetailsScreen] Message room ID:", room.id);
+              console.log("🚪 [MessageDetailsScreen] User ID:", currentUser.uid);
+              
+              await DataService.removeUserFromMessageRoom(room.id, currentUser.uid);
+              console.log("✅ [MessageDetailsScreen] Successfully removed from message room");
+
+              // Note: removeUserFromMessageRoom should handle meetup removal automatically
+              // But we also call it here explicitly to ensure it happens
+              if (isMeetupChat && room.meetupRef) {
+                console.log("🚪 [MessageDetailsScreen] Step 2: Ensuring removal from meetup...");
+                console.log("🚪 [MessageDetailsScreen] Original meetupRef:", room.meetupRef);
+                
+                try {
+                  // Extract meetup ID (handle both "meetups/{id}" and "{id}" formats)
+                  const meetupId = room.meetupRef.replace(/^meetups\//, "");
+                  console.log("🚪 [MessageDetailsScreen] Extracted meetupId:", meetupId);
+                  console.log("🚪 [MessageDetailsScreen] Calling removeUserFromMeetup with:", {
+                    meetupId,
+                    userId: currentUser.uid,
+                  });
+                  
+                  // Wait a moment for the trigger to potentially run first
+                  await new Promise(resolve => setTimeout(resolve, 100));
+                  
+                  const updatedMeetup = await DataService.removeUserFromMeetup(meetupId, currentUser.uid);
+                  
+                  if (updatedMeetup) {
+                    console.log("✅ [MessageDetailsScreen] Successfully removed from meetup");
+                    console.log("✅ [MessageDetailsScreen] Updated meetup participants:", updatedMeetup.participants);
+                    console.log("✅ [MessageDetailsScreen] User should be removed from:", currentUser.uid);
+                    console.log("✅ [MessageDetailsScreen] User still in participants?", updatedMeetup.participants.includes(currentUser.uid));
+                    
+                    if (updatedMeetup.participants.includes(currentUser.uid)) {
+                      console.error("❌ [MessageDetailsScreen] WARNING: User is still in participants after removal!");
+                      // Try once more
+                      const retryMeetup = await DataService.removeUserFromMeetup(meetupId, currentUser.uid);
+                      if (retryMeetup) {
+                        console.log("🔄 [MessageDetailsScreen] Retry result - User still in?", retryMeetup.participants.includes(currentUser.uid));
+                      }
+                    }
+                  } else {
+                    console.error("❌ [MessageDetailsScreen] removeUserFromMeetup returned null");
+                    console.error("❌ [MessageDetailsScreen] This might indicate an RLS policy issue");
+                    Alert.alert(
+                      "Warning",
+                      "You've left the chat, but there was an issue removing you from the meetup. Please try leaving the meetup from the meetup details page."
+                    );
+                  }
+                } catch (error: any) {
+                  console.error("❌ [MessageDetailsScreen] Error removing from meetup:", error);
+                  console.error("❌ [MessageDetailsScreen] Error type:", typeof error);
+                  console.error("❌ [MessageDetailsScreen] Error code:", error?.code);
+                  console.error("❌ [MessageDetailsScreen] Error message:", error?.message);
+                  console.error("❌ [MessageDetailsScreen] Error details:", JSON.stringify(error, null, 2));
+                  
+                  // Check if it's an RLS policy error
+                  if (error?.code === "42501" || error?.message?.includes("permission") || error?.message?.includes("policy")) {
+                    console.error("❌ [MessageDetailsScreen] This appears to be an RLS policy error!");
+                    console.error("❌ [MessageDetailsScreen] Make sure you've run the RLS SQL files in Supabase");
+                  }
+                  
+                  // Show error to user
+                  Alert.alert(
+                    "Warning",
+                    `You've left the chat, but there was an error removing you from the meetup: ${error?.message || "Unknown error"}. Please try leaving the meetup from the meetup details page.`
+                  );
+                }
+              } else {
+                console.log("ℹ️ [MessageDetailsScreen] Not a meetup chat or no meetupRef:", {
+                  isMeetupChat,
+                  hasMeetupRef: !!room.meetupRef,
+                });
+              }
+
+              console.log("🚪 [MessageDetailsScreen] Showing success alert");
+              Alert.alert(
+                "Left " + (isMeetupChat ? "Meetup Chat" : "Group Chat"),
+                `You've left the ${chatType} chat.${isMeetupChat ? " You've also been removed from the meetup." : ""}`,
+                [{ text: "OK", onPress: () => {
+                  console.log("🚪 [MessageDetailsScreen] User clicked OK, navigating back");
+                  navigation.goBack();
+                }}]
+              );
+            } catch (error: any) {
+              console.error("❌ [MessageDetailsScreen] Error leaving group:", error);
+              console.error("❌ [MessageDetailsScreen] Error type:", typeof error);
+              console.error("❌ [MessageDetailsScreen] Error code:", error?.code);
+              console.error("❌ [MessageDetailsScreen] Error message:", error?.message);
+              console.error("❌ [MessageDetailsScreen] Error details:", JSON.stringify(error, null, 2));
+              Alert.alert(
+                "Error",
+                `Failed to leave ${chatType} chat. Please try again.`
+              );
+            } finally {
+              console.log("🚪 [MessageDetailsScreen] Setting isLeaving to false");
+              setIsLeaving(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const renderMessage = ({ item }: { item: Message }) => {
@@ -748,63 +919,104 @@ export default function MessageDetailsScreen({
               },
             ]}
           >
-            <TouchableOpacity
-              style={[
-                styles.menuItem,
-                {
-                  borderBottomColor: colors.border,
-                  backgroundColor: isBlocking
-                    ? colors.background
-                    : "transparent",
-                },
-              ]}
-              onPress={handleBlockUser}
-              disabled={isBlocking}
-              activeOpacity={0.7}
-            >
-              <View style={styles.menuIconContainer}>
-                <Ionicons name="ban-outline" size={20} color="#EF4444" />
-              </View>
-              <Text style={[styles.menuText, { color: "#EF4444" }]}>
-                {isBlocking ? "Blocking..." : "Block User"}
-              </Text>
-              {isBlocking && (
-                <ActivityIndicator
-                  size="small"
-                  color="#EF4444"
-                  style={styles.menuLoader}
-                />
-              )}
-            </TouchableOpacity>
+            {/* Show Leave Group for group/meetup chats */}
+            {(room?.type === "group" || room?.type === "meetup") && (
+              <TouchableOpacity
+                style={[
+                  styles.menuItem,
+                  {
+                    borderBottomColor: colors.border,
+                    backgroundColor: isLeaving
+                      ? colors.background
+                      : "transparent",
+                  },
+                ]}
+                onPress={handleLeaveGroup}
+                disabled={isLeaving}
+                activeOpacity={0.7}
+              >
+                <View style={styles.menuIconContainer}>
+                  <Ionicons name="exit-outline" size={20} color="#EF4444" />
+                </View>
+                <Text style={[styles.menuText, { color: "#EF4444" }]}>
+                  {isLeaving
+                    ? "Leaving..."
+                    : room?.type === "meetup"
+                    ? "Leave Meetup Chat"
+                    : "Leave Group Chat"}
+                </Text>
+                {isLeaving && (
+                  <ActivityIndicator
+                    size="small"
+                    color="#EF4444"
+                    style={styles.menuLoader}
+                  />
+                )}
+              </TouchableOpacity>
+            )}
 
-            <TouchableOpacity
-              style={[
-                styles.menuItem,
-                styles.lastMenuItem,
-                {
-                  backgroundColor: isReporting
-                    ? colors.background
-                    : "transparent",
-                },
-              ]}
-              onPress={handleReportConversation}
-              disabled={isReporting}
-              activeOpacity={0.7}
-            >
-              <View style={styles.menuIconContainer}>
-                <Ionicons name="flag-outline" size={20} color="#EF4444" />
-              </View>
-              <Text style={[styles.menuText, { color: "#EF4444" }]}>
-                {isReporting ? "Reporting..." : "Report Conversation"}
-              </Text>
-              {isReporting && (
-                <ActivityIndicator
-                  size="small"
-                  color="#EF4444"
-                  style={styles.menuLoader}
-                />
-              )}
-            </TouchableOpacity>
+            {/* Show Block User and Report for direct messages */}
+            {room?.type === "direct" && (
+              <>
+                <TouchableOpacity
+                  style={[
+                    styles.menuItem,
+                    {
+                      borderBottomColor: colors.border,
+                      backgroundColor: isBlocking
+                        ? colors.background
+                        : "transparent",
+                    },
+                  ]}
+                  onPress={handleBlockUser}
+                  disabled={isBlocking}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.menuIconContainer}>
+                    <Ionicons name="ban-outline" size={20} color="#EF4444" />
+                  </View>
+                  <Text style={[styles.menuText, { color: "#EF4444" }]}>
+                    {isBlocking ? "Blocking..." : "Block User"}
+                  </Text>
+                  {isBlocking && (
+                    <ActivityIndicator
+                      size="small"
+                      color="#EF4444"
+                      style={styles.menuLoader}
+                    />
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.menuItem,
+                    styles.lastMenuItem,
+                    {
+                      backgroundColor: isReporting
+                        ? colors.background
+                        : "transparent",
+                    },
+                  ]}
+                  onPress={handleReportConversation}
+                  disabled={isReporting}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.menuIconContainer}>
+                    <Ionicons name="flag-outline" size={20} color="#EF4444" />
+                  </View>
+                  <Text style={[styles.menuText, { color: "#EF4444" }]}>
+                    {isReporting ? "Reporting..." : "Report Conversation"}
+                  </Text>
+                  {isReporting && (
+                    <ActivityIndicator
+                      size="small"
+                      color="#EF4444"
+                      style={styles.menuLoader}
+                    />
+                  )}
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </Animated.View>
       </TouchableOpacity>

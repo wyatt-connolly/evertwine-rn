@@ -511,6 +511,74 @@ export class DataService {
     }
   }
 
+  static async removeUserFromMeetupGroupChat(
+    meetupId: string,
+    userId: string
+  ): Promise<MessageRoom | null> {
+    try {
+      return await SupabaseDataService.removeUserFromMeetupGroupChat(
+        meetupId,
+        userId
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async removeUserFromMessageRoom(
+    roomId: string,
+    userId: string
+  ): Promise<MessageRoom | null> {
+    console.log("🚪 [DataService.removeUserFromMessageRoom] Called with:", {
+      roomId,
+      userId,
+    });
+    try {
+      const result = await SupabaseDataService.removeUserFromMessageRoom(roomId, userId);
+      console.log("✅ [DataService.removeUserFromMessageRoom] Success. Result:", result ? "found" : "null");
+      if (result) {
+        console.log("✅ [DataService.removeUserFromMessageRoom] Updated participants:", result.participants);
+      }
+      return result;
+    } catch (error) {
+      console.error("❌ [DataService.removeUserFromMessageRoom] Error:", error);
+      throw error;
+    }
+  }
+
+  static async addUserToMeetup(
+    meetupId: string,
+    userId: string
+  ): Promise<Meetup | null> {
+    try {
+      return await SupabaseDataService.addUserToMeetup(meetupId, userId);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async removeUserFromMeetup(
+    meetupId: string,
+    userId: string
+  ): Promise<Meetup | null> {
+    console.log("🚪 [DataService.removeUserFromMeetup] Called with:", {
+      meetupId,
+      userId,
+    });
+    try {
+      const result = await SupabaseDataService.removeUserFromMeetup(meetupId, userId);
+      console.log("✅ [DataService.removeUserFromMeetup] Success. Result:", result ? "found" : "null");
+      if (result) {
+        console.log("✅ [DataService.removeUserFromMeetup] Updated participants:", result.participants);
+        console.log("✅ [DataService.removeUserFromMeetup] User still in participants?", result.participants.includes(userId));
+      }
+      return result;
+    } catch (error) {
+      console.error("❌ [DataService.removeUserFromMeetup] Error:", error);
+      throw error;
+    }
+  }
+
   static setupMessageRoomsListener(
     userId: string,
     callback: (rooms: MessageRoom[]) => void
