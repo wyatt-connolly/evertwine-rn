@@ -27,12 +27,12 @@ interface PostCardProps {
 
 export default function PostCard({ post, onLike, onComment }: PostCardProps) {
   const { colors } = useThemeStore();
-  const { user } = useAuthStore();
+  const { user: currentUser } = useAuthStore();
   const navigation = useNavigation<any>();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
 
-  const isLiked = user ? post.likes.includes(user.uid) : false;
+  const isLiked = currentUser ? post.likes.includes(currentUser.uid) : false;
 
   const formatTime = (date: Date) => {
     const now = new Date();
@@ -82,11 +82,16 @@ export default function PostCard({ post, onLike, onComment }: PostCardProps) {
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => {
+            // Don't navigate if clicking on own avatar
+            if (currentUser?.uid && post.userId === currentUser.uid) {
+              return;
+            }
             navigation.navigate("UserProfile", {
               userId: post.userId,
             });
           }}
-          activeOpacity={0.7}
+          activeOpacity={currentUser?.uid === post.userId ? 1 : 0.7}
+          disabled={currentUser?.uid === post.userId}
         >
           {post.userAvatar ? (
             <Image source={{ uri: post.userAvatar }} style={styles.avatar} />

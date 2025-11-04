@@ -27,7 +27,6 @@ export default function MessagesScreen({ navigation }: any) {
   const { user: currentUser } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState<"all" | "groups">("all");
   const [messageRooms, setMessageRooms] = useState<MessageRoom[]>([]);
 
   // Load message rooms from Supabase
@@ -87,12 +86,6 @@ export default function MessagesScreen({ navigation }: any) {
     };
   }, [currentUser?.uid]);
 
-  const filteredRooms = messageRooms.filter((room) => {
-    if (activeTab === "groups") {
-      return room.type === "group";
-    }
-    return true; // "all" tab
-  });
 
   const formatTime = (date: Date) => {
     const now = new Date();
@@ -370,46 +363,12 @@ export default function MessagesScreen({ navigation }: any) {
         <Text style={[styles.title, { color: colors.text }]}>Messages</Text>
       </View>
 
-      {/* Tab Navigation */}
-      <View
-        style={[
-          styles.tabContainer,
-          {
-            backgroundColor: colors.surface,
-            borderBottomColor: colors.border,
-          },
-        ]}
-      >
-        {(["all", "groups"] as const).map((tab) => (
-          <TouchableOpacity
-            key={tab}
-            style={[
-              styles.tab,
-              activeTab === tab && { backgroundColor: colors.primary },
-            ]}
-            onPress={() => setActiveTab(tab)}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                {
-                  color:
-                    activeTab === tab ? colors.onPrimary : colors.textSecondary,
-                },
-              ]}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
       {/* Message Rooms List */}
       {isLoading ? (
         <LoadingState style={{ margin: 20 }} />
       ) : (
         <FlatList
-          data={filteredRooms}
+          data={messageRooms}
           renderItem={renderMessageRoom}
           keyExtractor={(item) => item.id}
           style={styles.messageList}
@@ -456,25 +415,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-  },
-  tabContainer: {
-    flexDirection: "row",
-    marginHorizontal: 16,
-    marginTop: 24,
-    marginBottom: 16,
-    borderRadius: 16,
-    padding: 4,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: "600",
   },
   messageList: {
     flex: 1,

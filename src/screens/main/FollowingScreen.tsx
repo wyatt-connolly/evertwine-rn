@@ -242,10 +242,16 @@ export default function FollowingScreen() {
       >
         <TouchableOpacity
           style={styles.userHeaderLeft}
-          onPress={() =>
-            navigation.navigate("UserProfile", { userId: user.uid })
-          }
+          onPress={() => {
+            // Don't navigate if clicking on own avatar
+            const currentUser = useAuthStore.getState().user;
+            if (currentUser?.uid && user.uid === currentUser.uid) {
+              return;
+            }
+            navigation.navigate("UserProfile", { userId: user.uid });
+          }}
           activeOpacity={0.7}
+          disabled={useAuthStore.getState().user?.uid === user.uid}
         >
           {user.profilePictures && user.profilePictures.length > 0 ? (
             <Image

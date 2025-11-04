@@ -171,11 +171,16 @@ export default function PostDetailsScreen({
           <View style={styles.postHeader}>
             <TouchableOpacity
               onPress={() => {
+                // Don't navigate if clicking on own avatar
+                if (currentUser?.uid && post.userId === currentUser.uid) {
+                  return;
+                }
                 navigation.navigate("UserProfile", {
                   userId: post.userId,
                 });
               }}
-              activeOpacity={0.7}
+              activeOpacity={currentUser?.uid === post.userId ? 1 : 0.7}
+              disabled={currentUser?.uid === post.userId}
             >
               {post.userAvatar ? (
                 <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
@@ -248,11 +253,16 @@ export default function PostDetailsScreen({
               <View key={comment.id} style={styles.comment}>
                 <TouchableOpacity
                   onPress={() => {
+                    // Don't navigate if clicking on own avatar
+                    if (currentUser?.uid && comment.userId === currentUser.uid) {
+                      return;
+                    }
                     navigation.navigate("UserProfile", {
                       userId: comment.userId,
                     });
                   }}
-                  activeOpacity={0.7}
+                  activeOpacity={currentUser?.uid === comment.userId ? 1 : 0.7}
+                  disabled={currentUser?.uid === comment.userId}
                 >
                   {comment.userAvatar ? (
                     <Image

@@ -689,11 +689,17 @@ export default function MeetupDetailsScreen({
               <TouchableOpacity
                 style={styles.participantItem}
                 onPress={() => {
+                  // Don't navigate if clicking on own avatar
+                  if (currentUser?.uid && creator.uid === currentUser.uid) {
+                    return;
+                  }
                   navigation.navigate("UserProfile", {
                     userId: creator.uid,
                     userData: creator,
                   });
                 }}
+                activeOpacity={currentUser?.uid === creator.uid ? 1 : 0.7}
+                disabled={currentUser?.uid === creator.uid}
               >
                 <View style={styles.participantAvatarContainer}>
                   {creator?.profilePictures &&
@@ -744,11 +750,17 @@ export default function MeetupDetailsScreen({
                   key={participant.uid}
                   style={styles.participantItem}
                   onPress={() => {
+                    // Don't navigate if clicking on own avatar
+                    if (currentUser?.uid && participant.uid === currentUser.uid) {
+                      return;
+                    }
                     navigation.navigate("UserProfile", {
                       userId: participant.uid,
                       userData: participant,
                     });
                   }}
+                  activeOpacity={currentUser?.uid === participant.uid ? 1 : 0.7}
+                  disabled={currentUser?.uid === participant.uid}
                 >
                   {participant?.profilePictures &&
                   participant.profilePictures.length > 0 ? (

@@ -12,6 +12,7 @@ import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { Post } from "../types";
 import { useThemeStore } from "../hooks/useThemeStore";
+import { useAuthStore } from "../hooks/useAuthStore";
 import { normalizePostMessage } from "../utils/postTextNormalizer";
 
 const { width } = Dimensions.get("window");
@@ -22,6 +23,7 @@ interface EnhancedPostCardProps {
 
 export default function EnhancedPostCard({ post }: EnhancedPostCardProps) {
   const { colors } = useThemeStore();
+  const { user: currentUser } = useAuthStore();
   const navigation = useNavigation<any>();
 
   const formatTime = (date: Date) => {
@@ -58,11 +60,16 @@ export default function EnhancedPostCard({ post }: EnhancedPostCardProps) {
           <TouchableOpacity
             onPress={(e) => {
               e.stopPropagation();
+              // Don't navigate if clicking on own avatar
+              if (currentUser?.uid && post.userId === currentUser.uid) {
+                return;
+              }
               navigation.navigate("UserProfile", {
                 userId: post.userId,
               });
             }}
-            activeOpacity={0.7}
+            activeOpacity={currentUser?.uid === post.userId ? 1 : 0.7}
+            disabled={currentUser?.uid === post.userId}
           >
             {post.userAvatar ? (
               <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
