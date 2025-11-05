@@ -257,15 +257,27 @@ export default function MessageDetailsScreen({
           text: "Delete",
           style: "destructive",
           onPress: async () => {
-            console.log("🗑️ [MessageDetailsScreen] DELETE BUTTON PRESSED in alert");
-            console.log("🗑️ [MessageDetailsScreen] Delete confirmed - starting message deletion");
-            console.log("🗑️ [MessageDetailsScreen] Message ID to delete:", messageId);
+            console.log(
+              "🗑️ [MessageDetailsScreen] DELETE BUTTON PRESSED in alert"
+            );
+            console.log(
+              "🗑️ [MessageDetailsScreen] Delete confirmed - starting message deletion"
+            );
+            console.log(
+              "🗑️ [MessageDetailsScreen] Message ID to delete:",
+              messageId
+            );
             console.log("🗑️ [MessageDetailsScreen] Room ID:", roomId);
             console.log("🗑️ [MessageDetailsScreen] Room type:", room?.type);
-            console.log("🗑️ [MessageDetailsScreen] Room meetupRef:", room?.meetupRef);
-            
+            console.log(
+              "🗑️ [MessageDetailsScreen] Room meetupRef:",
+              room?.meetupRef
+            );
+
             try {
-              console.log("🗑️ [MessageDetailsScreen] Step 1: Optimistically removing from UI...");
+              console.log(
+                "🗑️ [MessageDetailsScreen] Step 1: Optimistically removing from UI..."
+              );
 
               // Optimistically remove from UI
               setMessages((prevMessages) => {
@@ -276,32 +288,55 @@ export default function MessageDetailsScreen({
                 const filtered = prevMessages.filter(
                   (msg) => msg.id !== messageId
                 );
-                console.log("🗑️ [MessageDetailsScreen] DELETE: Updated messages count:", filtered.length);
+                console.log(
+                  "🗑️ [MessageDetailsScreen] DELETE: Updated messages count:",
+                  filtered.length
+                );
                 return filtered;
               });
 
-              console.log("🗑️ [MessageDetailsScreen] Step 2: Deleting message from database...");
+              console.log(
+                "🗑️ [MessageDetailsScreen] Step 2: Deleting message from database..."
+              );
               await SupabaseDataService.deleteMessage(messageId);
 
-              console.log("✅ [MessageDetailsScreen] DELETE: Successfully deleted message from database");
-              
+              console.log(
+                "✅ [MessageDetailsScreen] DELETE: Successfully deleted message from database"
+              );
+
               // Note: Deleting a message doesn't remove you from the meetup
               // Only leaving the group chat does that
-              console.log("ℹ️ [MessageDetailsScreen] Message deleted. Note: This does NOT remove you from the meetup.");
-              console.log("ℹ️ [MessageDetailsScreen] To leave the meetup, use the 'Leave Group Chat' option from the menu.");
+              console.log(
+                "ℹ️ [MessageDetailsScreen] Message deleted. Note: This does NOT remove you from the meetup."
+              );
+              console.log(
+                "ℹ️ [MessageDetailsScreen] To leave the meetup, use the 'Leave Group Chat' option from the menu."
+              );
             } catch (error: any) {
               console.error("❌ [MessageDetailsScreen] DELETE ERROR:", error);
-              console.error("❌ [MessageDetailsScreen] Error type:", typeof error);
-              console.error("❌ [MessageDetailsScreen] Error code:", error?.code);
-              console.error("❌ [MessageDetailsScreen] Error message:", error?.message);
-              console.error("❌ [MessageDetailsScreen] Error details:", JSON.stringify(error, null, 2));
-              
+              console.error(
+                "❌ [MessageDetailsScreen] Error type:",
+                typeof error
+              );
+              console.error(
+                "❌ [MessageDetailsScreen] Error code:",
+                error?.code
+              );
+              console.error(
+                "❌ [MessageDetailsScreen] Error message:",
+                error?.message
+              );
+              console.error(
+                "❌ [MessageDetailsScreen] Error details:",
+                JSON.stringify(error, null, 2)
+              );
+
               // Revert on error
               console.log("🔄 [MessageDetailsScreen] Reverting UI changes...");
               const updatedMessages = await DataService.getMessages(roomId);
               setMessages(updatedMessages);
               console.log("🔄 [MessageDetailsScreen] UI reverted");
-              
+
               Alert.alert("Error", "Failed to delete message");
             }
           },
@@ -469,106 +504,215 @@ export default function MessageDetailsScreen({
           text: "Leave",
           style: "destructive",
           onPress: async () => {
-            console.log("🚪 [MessageDetailsScreen] User confirmed leaving group");
+            console.log(
+              "🚪 [MessageDetailsScreen] User confirmed leaving group"
+            );
             setIsLeaving(true);
             try {
               // Remove from message room
-              console.log("🚪 [MessageDetailsScreen] Step 1: Removing from message room...");
-              console.log("🚪 [MessageDetailsScreen] Message room ID:", room.id);
-              console.log("🚪 [MessageDetailsScreen] User ID:", currentUser.uid);
-              
-              await DataService.removeUserFromMessageRoom(room.id, currentUser.uid);
-              console.log("✅ [MessageDetailsScreen] Successfully removed from message room");
+              console.log(
+                "🚪 [MessageDetailsScreen] Step 1: Removing from message room..."
+              );
+              console.log(
+                "🚪 [MessageDetailsScreen] Message room ID:",
+                room.id
+              );
+              console.log(
+                "🚪 [MessageDetailsScreen] User ID:",
+                currentUser.uid
+              );
+
+              await DataService.removeUserFromMessageRoom(
+                room.id,
+                currentUser.uid
+              );
+              console.log(
+                "✅ [MessageDetailsScreen] Successfully removed from message room"
+              );
 
               // Note: removeUserFromMessageRoom should handle meetup removal automatically
               // But we also call it here explicitly to ensure it happens
               if (isMeetupChat && room.meetupRef) {
-                console.log("🚪 [MessageDetailsScreen] Step 2: Ensuring removal from meetup...");
-                console.log("🚪 [MessageDetailsScreen] Original meetupRef:", room.meetupRef);
-                
+                console.log(
+                  "🚪 [MessageDetailsScreen] Step 2: Ensuring removal from meetup..."
+                );
+                console.log(
+                  "🚪 [MessageDetailsScreen] Original meetupRef:",
+                  room.meetupRef
+                );
+
                 try {
                   // Extract meetup ID (handle both "meetups/{id}" and "{id}" formats)
                   const meetupId = room.meetupRef.replace(/^meetups\//, "");
-                  console.log("🚪 [MessageDetailsScreen] Extracted meetupId:", meetupId);
-                  console.log("🚪 [MessageDetailsScreen] Calling removeUserFromMeetup with:", {
-                    meetupId,
-                    userId: currentUser.uid,
-                  });
-                  
+                  console.log(
+                    "🚪 [MessageDetailsScreen] Extracted meetupId:",
+                    meetupId
+                  );
+                  console.log(
+                    "🚪 [MessageDetailsScreen] Calling removeUserFromMeetup with:",
+                    {
+                      meetupId,
+                      userId: currentUser.uid,
+                    }
+                  );
+
                   // Wait a moment for the trigger to potentially run first
-                  await new Promise(resolve => setTimeout(resolve, 100));
-                  
-                  const updatedMeetup = await DataService.removeUserFromMeetup(meetupId, currentUser.uid);
-                  
+                  await new Promise((resolve) => setTimeout(resolve, 100));
+
+                  const updatedMeetup = await DataService.removeUserFromMeetup(
+                    meetupId,
+                    currentUser.uid
+                  );
+
                   if (updatedMeetup) {
-                    console.log("✅ [MessageDetailsScreen] Successfully removed from meetup");
-                    console.log("✅ [MessageDetailsScreen] Updated meetup participants:", updatedMeetup.participants);
-                    console.log("✅ [MessageDetailsScreen] User should be removed from:", currentUser.uid);
-                    console.log("✅ [MessageDetailsScreen] User still in participants?", updatedMeetup.participants.includes(currentUser.uid));
-                    
+                    console.log(
+                      "✅ [MessageDetailsScreen] Successfully removed from meetup"
+                    );
+                    console.log(
+                      "✅ [MessageDetailsScreen] Updated meetup participants:",
+                      updatedMeetup.participants
+                    );
+                    console.log(
+                      "✅ [MessageDetailsScreen] User should be removed from:",
+                      currentUser.uid
+                    );
+                    console.log(
+                      "✅ [MessageDetailsScreen] User still in participants?",
+                      updatedMeetup.participants.includes(currentUser.uid)
+                    );
+
                     if (updatedMeetup.participants.includes(currentUser.uid)) {
-                      console.error("❌ [MessageDetailsScreen] WARNING: User is still in participants after removal!");
+                      console.error(
+                        "❌ [MessageDetailsScreen] WARNING: User is still in participants after removal!"
+                      );
                       // Try once more
-                      const retryMeetup = await DataService.removeUserFromMeetup(meetupId, currentUser.uid);
+                      const retryMeetup =
+                        await DataService.removeUserFromMeetup(
+                          meetupId,
+                          currentUser.uid
+                        );
                       if (retryMeetup) {
-                        console.log("🔄 [MessageDetailsScreen] Retry result - User still in?", retryMeetup.participants.includes(currentUser.uid));
+                        console.log(
+                          "🔄 [MessageDetailsScreen] Retry result - User still in?",
+                          retryMeetup.participants.includes(currentUser.uid)
+                        );
                       }
                     }
                   } else {
-                    console.error("❌ [MessageDetailsScreen] removeUserFromMeetup returned null");
-                    console.error("❌ [MessageDetailsScreen] This might indicate an RLS policy issue");
+                    console.error(
+                      "❌ [MessageDetailsScreen] removeUserFromMeetup returned null"
+                    );
+                    console.error(
+                      "❌ [MessageDetailsScreen] This might indicate an RLS policy issue"
+                    );
                     Alert.alert(
                       "Warning",
                       "You've left the chat, but there was an issue removing you from the meetup. Please try leaving the meetup from the meetup details page."
                     );
                   }
                 } catch (error: any) {
-                  console.error("❌ [MessageDetailsScreen] Error removing from meetup:", error);
-                  console.error("❌ [MessageDetailsScreen] Error type:", typeof error);
-                  console.error("❌ [MessageDetailsScreen] Error code:", error?.code);
-                  console.error("❌ [MessageDetailsScreen] Error message:", error?.message);
-                  console.error("❌ [MessageDetailsScreen] Error details:", JSON.stringify(error, null, 2));
-                  
+                  console.error(
+                    "❌ [MessageDetailsScreen] Error removing from meetup:",
+                    error
+                  );
+                  console.error(
+                    "❌ [MessageDetailsScreen] Error type:",
+                    typeof error
+                  );
+                  console.error(
+                    "❌ [MessageDetailsScreen] Error code:",
+                    error?.code
+                  );
+                  console.error(
+                    "❌ [MessageDetailsScreen] Error message:",
+                    error?.message
+                  );
+                  console.error(
+                    "❌ [MessageDetailsScreen] Error details:",
+                    JSON.stringify(error, null, 2)
+                  );
+
                   // Check if it's an RLS policy error
-                  if (error?.code === "42501" || error?.message?.includes("permission") || error?.message?.includes("policy")) {
-                    console.error("❌ [MessageDetailsScreen] This appears to be an RLS policy error!");
-                    console.error("❌ [MessageDetailsScreen] Make sure you've run the RLS SQL files in Supabase");
+                  if (
+                    error?.code === "42501" ||
+                    error?.message?.includes("permission") ||
+                    error?.message?.includes("policy")
+                  ) {
+                    console.error(
+                      "❌ [MessageDetailsScreen] This appears to be an RLS policy error!"
+                    );
+                    console.error(
+                      "❌ [MessageDetailsScreen] Make sure you've run the RLS SQL files in Supabase"
+                    );
                   }
-                  
+
                   // Show error to user
                   Alert.alert(
                     "Warning",
-                    `You've left the chat, but there was an error removing you from the meetup: ${error?.message || "Unknown error"}. Please try leaving the meetup from the meetup details page.`
+                    `You've left the chat, but there was an error removing you from the meetup: ${
+                      error?.message || "Unknown error"
+                    }. Please try leaving the meetup from the meetup details page.`
                   );
                 }
               } else {
-                console.log("ℹ️ [MessageDetailsScreen] Not a meetup chat or no meetupRef:", {
-                  isMeetupChat,
-                  hasMeetupRef: !!room.meetupRef,
-                });
+                console.log(
+                  "ℹ️ [MessageDetailsScreen] Not a meetup chat or no meetupRef:",
+                  {
+                    isMeetupChat,
+                    hasMeetupRef: !!room.meetupRef,
+                  }
+                );
               }
 
               console.log("🚪 [MessageDetailsScreen] Showing success alert");
               Alert.alert(
                 "Left " + (isMeetupChat ? "Meetup Chat" : "Group Chat"),
-                `You've left the ${chatType} chat.${isMeetupChat ? " You've also been removed from the meetup." : ""}`,
-                [{ text: "OK", onPress: () => {
-                  console.log("🚪 [MessageDetailsScreen] User clicked OK, navigating back");
-                  navigation.goBack();
-                }}]
+                `You've left the ${chatType} chat.${
+                  isMeetupChat
+                    ? " You've also been removed from the meetup."
+                    : ""
+                }`,
+                [
+                  {
+                    text: "OK",
+                    onPress: () => {
+                      console.log(
+                        "🚪 [MessageDetailsScreen] User clicked OK, navigating back"
+                      );
+                      navigation.goBack();
+                    },
+                  },
+                ]
               );
             } catch (error: any) {
-              console.error("❌ [MessageDetailsScreen] Error leaving group:", error);
-              console.error("❌ [MessageDetailsScreen] Error type:", typeof error);
-              console.error("❌ [MessageDetailsScreen] Error code:", error?.code);
-              console.error("❌ [MessageDetailsScreen] Error message:", error?.message);
-              console.error("❌ [MessageDetailsScreen] Error details:", JSON.stringify(error, null, 2));
+              console.error(
+                "❌ [MessageDetailsScreen] Error leaving group:",
+                error
+              );
+              console.error(
+                "❌ [MessageDetailsScreen] Error type:",
+                typeof error
+              );
+              console.error(
+                "❌ [MessageDetailsScreen] Error code:",
+                error?.code
+              );
+              console.error(
+                "❌ [MessageDetailsScreen] Error message:",
+                error?.message
+              );
+              console.error(
+                "❌ [MessageDetailsScreen] Error details:",
+                JSON.stringify(error, null, 2)
+              );
               Alert.alert(
                 "Error",
                 `Failed to leave ${chatType} chat. Please try again.`
               );
             } finally {
-              console.log("🚪 [MessageDetailsScreen] Setting isLeaving to false");
+              console.log(
+                "🚪 [MessageDetailsScreen] Setting isLeaving to false"
+              );
               setIsLeaving(false);
             }
           },
@@ -1110,9 +1254,7 @@ export default function MessageDetailsScreen({
           <View style={styles.messagesList}>
             <View style={styles.emptyMessagesContainer}>
               {renderMeetupInfoCard()}
-              <View style={styles.emptyStateWrapper}>
-                {renderEmptyState()}
-              </View>
+              <View style={styles.emptyStateWrapper}>{renderEmptyState()}</View>
             </View>
           </View>
         ) : (

@@ -322,18 +322,26 @@ export class SupabaseDataService {
     // Get current meetup
     const meetup = await this.getMeetup(meetupId);
     if (!meetup) {
-      console.error("❌ [SupabaseDataService.removeUserFromMeetup] Meetup not found");
+      console.error(
+        "❌ [SupabaseDataService.removeUserFromMeetup] Meetup not found"
+      );
       throw new Error("Meetup not found");
     }
 
-    console.log("🔄 [SupabaseDataService.removeUserFromMeetup] Current participants:", meetup.participants);
+    console.log(
+      "🔄 [SupabaseDataService.removeUserFromMeetup] Current participants:",
+      meetup.participants
+    );
 
     // Remove user from participants
     const updatedParticipants = meetup.participants.filter(
       (id) => id !== userId
     );
 
-    console.log("🔄 [SupabaseDataService.removeUserFromMeetup] Updated participants:", updatedParticipants);
+    console.log(
+      "🔄 [SupabaseDataService.removeUserFromMeetup] Updated participants:",
+      updatedParticipants
+    );
 
     const updateData = {
       participants: updatedParticipants,
@@ -341,7 +349,10 @@ export class SupabaseDataService {
       updated_at: new Date().toISOString(),
     };
 
-    console.log("🔄 [SupabaseDataService.removeUserFromMeetup] Update data:", updateData);
+    console.log(
+      "🔄 [SupabaseDataService.removeUserFromMeetup] Update data:",
+      updateData
+    );
 
     const { data, error } = await supabase
       .from("meetups")
@@ -351,7 +362,10 @@ export class SupabaseDataService {
       .single();
 
     if (error) {
-      console.error("❌ [SupabaseDataService.removeUserFromMeetup] Supabase error:", error);
+      console.error(
+        "❌ [SupabaseDataService.removeUserFromMeetup] Supabase error:",
+        error
+      );
       console.error("Error code:", error.code);
       console.error("Error message:", error.message);
       console.error("Error details:", error.details);
@@ -359,11 +373,17 @@ export class SupabaseDataService {
     }
 
     if (!data) {
-      console.error("❌ [SupabaseDataService.removeUserFromMeetup] No data returned - likely RLS issue");
-      throw new Error("Failed to update meetup. You may not have permission to leave this meetup.");
+      console.error(
+        "❌ [SupabaseDataService.removeUserFromMeetup] No data returned - likely RLS issue"
+      );
+      throw new Error(
+        "Failed to update meetup. You may not have permission to leave this meetup."
+      );
     }
 
-    console.log("✅ [SupabaseDataService.removeUserFromMeetup] Successfully updated meetup");
+    console.log(
+      "✅ [SupabaseDataService.removeUserFromMeetup] Successfully updated meetup"
+    );
     return this.mapMeetupFromDB(data);
   }
 
@@ -600,9 +620,12 @@ export class SupabaseDataService {
   }
 
   static async deleteMessageRoom(roomId: string): Promise<void> {
-    console.log("🗑️ [SupabaseDataService.deleteMessageRoom] Starting deletion:", {
-      roomId,
-    });
+    console.log(
+      "🗑️ [SupabaseDataService.deleteMessageRoom] Starting deletion:",
+      {
+        roomId,
+      }
+    );
 
     // Get room data first to check if it's a meetup chat
     const roomData = await this.getMessageRoom(roomId);
@@ -614,30 +637,44 @@ export class SupabaseDataService {
     });
 
     // First delete all messages in the room
-    console.log("🗑️ [SupabaseDataService.deleteMessageRoom] Step 1: Deleting all messages...");
+    console.log(
+      "🗑️ [SupabaseDataService.deleteMessageRoom] Step 1: Deleting all messages..."
+    );
     const { error: messagesError } = await supabase
       .from("messages")
       .delete()
       .eq("message_room_ref", roomId);
 
     if (messagesError) {
-      console.error("❌ [SupabaseDataService.deleteMessageRoom] Error deleting messages:", messagesError);
+      console.error(
+        "❌ [SupabaseDataService.deleteMessageRoom] Error deleting messages:",
+        messagesError
+      );
       throw messagesError;
     }
-    console.log("✅ [SupabaseDataService.deleteMessageRoom] All messages deleted");
+    console.log(
+      "✅ [SupabaseDataService.deleteMessageRoom] All messages deleted"
+    );
 
     // Then delete the room itself
-    console.log("🗑️ [SupabaseDataService.deleteMessageRoom] Step 2: Deleting message room...");
+    console.log(
+      "🗑️ [SupabaseDataService.deleteMessageRoom] Step 2: Deleting message room..."
+    );
     const { error: roomError } = await supabase
       .from("message_rooms")
       .delete()
       .eq("id", roomId);
 
     if (roomError) {
-      console.error("❌ [SupabaseDataService.deleteMessageRoom] Error deleting room:", roomError);
+      console.error(
+        "❌ [SupabaseDataService.deleteMessageRoom] Error deleting room:",
+        roomError
+      );
       throw roomError;
     }
-    console.log("✅ [SupabaseDataService.deleteMessageRoom] Message room deleted successfully");
+    console.log(
+      "✅ [SupabaseDataService.deleteMessageRoom] Message room deleted successfully"
+    );
   }
 
   static async getUsersByIds(userIds: string[]): Promise<User[]> {
@@ -1904,7 +1941,7 @@ export class SupabaseDataService {
   ): Promise<MessageRoom | null> {
     // Strip "meetups/" prefix if present - meetup_ref is a UUID column
     const cleanMeetupId = meetupId.replace(/^meetups\//, "");
-    
+
     const roomData = {
       type: "meetup",
       participants: participants,
@@ -1937,7 +1974,7 @@ export class SupabaseDataService {
   ): Promise<MessageRoom | null> {
     // Strip "meetups/" prefix if present - meetup_ref is a UUID column
     const cleanMeetupId = meetupId.replace(/^meetups\//, "");
-    
+
     const { data, error } = await supabase
       .from("message_rooms")
       .select("*")
@@ -1989,39 +2026,57 @@ export class SupabaseDataService {
     meetupId: string,
     userId: string
   ): Promise<MessageRoom | null> {
-    console.log("🚪 [SupabaseDataService.removeUserFromMeetupGroupChat] Starting:", {
-      meetupId,
-      userId,
-    });
-    
+    console.log(
+      "🚪 [SupabaseDataService.removeUserFromMeetupGroupChat] Starting:",
+      {
+        meetupId,
+        userId,
+      }
+    );
+
     // Strip "meetups/" prefix if present - meetup_ref is a UUID column
     const cleanMeetupId = meetupId.replace(/^meetups\//, "");
-    console.log("🚪 [SupabaseDataService.removeUserFromMeetupGroupChat] Clean meetup ID:", cleanMeetupId);
+    console.log(
+      "🚪 [SupabaseDataService.removeUserFromMeetupGroupChat] Clean meetup ID:",
+      cleanMeetupId
+    );
 
     // First find the group chat
-    console.log("🚪 [SupabaseDataService.removeUserFromMeetupGroupChat] Finding group chat...");
+    console.log(
+      "🚪 [SupabaseDataService.removeUserFromMeetupGroupChat] Finding group chat..."
+    );
     const groupChat = await this.findMeetupGroupChat(cleanMeetupId);
     if (!groupChat) {
-      console.log("ℹ️ [SupabaseDataService.removeUserFromMeetupGroupChat] Group chat doesn't exist");
+      console.log(
+        "ℹ️ [SupabaseDataService.removeUserFromMeetupGroupChat] Group chat doesn't exist"
+      );
       // Group chat doesn't exist, which is fine if no one has joined yet
       return null;
     }
 
-    console.log("🚪 [SupabaseDataService.removeUserFromMeetupGroupChat] Group chat found:", {
-      id: groupChat.id,
-      type: groupChat.type,
-      meetupRef: groupChat.meetupRef,
-      currentParticipants: groupChat.participants,
-      userInParticipants: groupChat.participants.includes(userId),
-    });
+    console.log(
+      "🚪 [SupabaseDataService.removeUserFromMeetupGroupChat] Group chat found:",
+      {
+        id: groupChat.id,
+        type: groupChat.type,
+        meetupRef: groupChat.meetupRef,
+        currentParticipants: groupChat.participants,
+        userInParticipants: groupChat.participants.includes(userId),
+      }
+    );
 
     // Check current auth user
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    console.log("🚪 [SupabaseDataService.removeUserFromMeetupGroupChat] Auth user:", {
-      id: authUser?.id,
-      email: authUser?.email,
-      matchesUserId: authUser?.id === userId,
-    });
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser();
+    console.log(
+      "🚪 [SupabaseDataService.removeUserFromMeetupGroupChat] Auth user:",
+      {
+        id: authUser?.id,
+        email: authUser?.email,
+        matchesUserId: authUser?.id === userId,
+      }
+    );
 
     // Remove user from participants if present
     if (groupChat.participants.includes(userId)) {
@@ -2029,32 +2084,62 @@ export class SupabaseDataService {
         (id) => id !== userId
       );
 
-      console.log("🚪 [SupabaseDataService.removeUserFromMeetupGroupChat] Updated participants:", updatedParticipants);
-      console.log("🚪 [SupabaseDataService.removeUserFromMeetupGroupChat] Room ID to update:", groupChat.id);
-      console.log("🚪 [SupabaseDataService.removeUserFromMeetupGroupChat] Using database function to bypass RLS");
+      console.log(
+        "🚪 [SupabaseDataService.removeUserFromMeetupGroupChat] Updated participants:",
+        updatedParticipants
+      );
+      console.log(
+        "🚪 [SupabaseDataService.removeUserFromMeetupGroupChat] Room ID to update:",
+        groupChat.id
+      );
+      console.log(
+        "🚪 [SupabaseDataService.removeUserFromMeetupGroupChat] Using database function to bypass RLS"
+      );
 
       // Use database function to remove user - this bypasses RLS by using SECURITY DEFINER
-      const { data: success, error } = await supabase.rpc("remove_user_from_message_room", {
-        room_id: groupChat.id,
-        user_id_to_remove: userId,
-      });
+      const { data: success, error } = await supabase.rpc(
+        "remove_user_from_message_room",
+        {
+          room_id: groupChat.id,
+          user_id_to_remove: userId,
+        }
+      );
 
       if (error) {
-        console.error("❌ [SupabaseDataService.removeUserFromMeetupGroupChat] Database function error:", error);
-        console.error("❌ [SupabaseDataService.removeUserFromMeetupGroupChat] Error code:", error.code);
-        console.error("❌ [SupabaseDataService.removeUserFromMeetupGroupChat] Error message:", error.message);
-        console.error("❌ [SupabaseDataService.removeUserFromMeetupGroupChat] Error details:", error.details);
-        console.error("❌ [SupabaseDataService.removeUserFromMeetupGroupChat] Error hint:", error.hint);
+        console.error(
+          "❌ [SupabaseDataService.removeUserFromMeetupGroupChat] Database function error:",
+          error
+        );
+        console.error(
+          "❌ [SupabaseDataService.removeUserFromMeetupGroupChat] Error code:",
+          error.code
+        );
+        console.error(
+          "❌ [SupabaseDataService.removeUserFromMeetupGroupChat] Error message:",
+          error.message
+        );
+        console.error(
+          "❌ [SupabaseDataService.removeUserFromMeetupGroupChat] Error details:",
+          error.details
+        );
+        console.error(
+          "❌ [SupabaseDataService.removeUserFromMeetupGroupChat] Error hint:",
+          error.hint
+        );
         throw error;
       }
 
       if (!success) {
-        console.log("ℹ️ [SupabaseDataService.removeUserFromMeetupGroupChat] User was not in participants (already removed)");
+        console.log(
+          "ℹ️ [SupabaseDataService.removeUserFromMeetupGroupChat] User was not in participants (already removed)"
+        );
         return groupChat;
       }
-      
-      console.log("✅ [SupabaseDataService.removeUserFromMeetupGroupChat] Successfully removed user via database function");
-      
+
+      console.log(
+        "✅ [SupabaseDataService.removeUserFromMeetupGroupChat] Successfully removed user via database function"
+      );
+
       // Construct return value from existing data since we can't read the row back after removing user
       // (SELECT RLS policy requires user to be in participants, which they're not anymore)
       const updatedRoom = {
@@ -2065,7 +2150,9 @@ export class SupabaseDataService {
       return updatedRoom;
     }
 
-    console.log("ℹ️ [SupabaseDataService.removeUserFromMeetupGroupChat] User not in participants");
+    console.log(
+      "ℹ️ [SupabaseDataService.removeUserFromMeetupGroupChat] User not in participants"
+    );
     return groupChat;
   }
 
@@ -2073,10 +2160,13 @@ export class SupabaseDataService {
     roomId: string,
     userId: string
   ): Promise<MessageRoom | null> {
-    console.log("🚪 [SupabaseDataService.removeUserFromMessageRoom] Starting:", {
-      roomId,
-      userId,
-    });
+    console.log(
+      "🚪 [SupabaseDataService.removeUserFromMessageRoom] Starting:",
+      {
+        roomId,
+        userId,
+      }
+    );
 
     // Get the message room
     const { data: roomData, error: fetchError } = await supabase
@@ -2086,20 +2176,28 @@ export class SupabaseDataService {
       .single();
 
     if (fetchError) {
-      console.error("❌ [SupabaseDataService.removeUserFromMessageRoom] Fetch error:", fetchError);
+      console.error(
+        "❌ [SupabaseDataService.removeUserFromMessageRoom] Fetch error:",
+        fetchError
+      );
       throw fetchError;
     }
     if (!roomData) {
-      console.error("❌ [SupabaseDataService.removeUserFromMessageRoom] Room not found");
+      console.error(
+        "❌ [SupabaseDataService.removeUserFromMessageRoom] Room not found"
+      );
       return null;
     }
 
-    console.log("🚪 [SupabaseDataService.removeUserFromMessageRoom] Room found:", {
-      roomId: roomData.id,
-      type: roomData.type,
-      currentParticipants: roomData.participants,
-      userInParticipants: roomData.participants.includes(userId),
-    });
+    console.log(
+      "🚪 [SupabaseDataService.removeUserFromMessageRoom] Room found:",
+      {
+        roomId: roomData.id,
+        type: roomData.type,
+        currentParticipants: roomData.participants,
+        userInParticipants: roomData.participants.includes(userId),
+      }
+    );
 
     // Remove user from participants if present
     if (roomData.participants.includes(userId)) {
@@ -2107,85 +2205,162 @@ export class SupabaseDataService {
         (id) => id !== userId
       );
 
-      console.log("🚪 [SupabaseDataService.removeUserFromMessageRoom] Updated participants:", updatedParticipants);
-      console.log("🚪 [SupabaseDataService.removeUserFromMessageRoom] Using database function to bypass RLS");
+      console.log(
+        "🚪 [SupabaseDataService.removeUserFromMessageRoom] Updated participants:",
+        updatedParticipants
+      );
+      console.log(
+        "🚪 [SupabaseDataService.removeUserFromMessageRoom] Using database function to bypass RLS"
+      );
 
       // Use database function to remove user - this bypasses RLS by using SECURITY DEFINER
-      const { data: success, error } = await supabase.rpc("remove_user_from_message_room", {
-        room_id: roomId,
-        user_id_to_remove: userId,
-      });
+      const { data: success, error } = await supabase.rpc(
+        "remove_user_from_message_room",
+        {
+          room_id: roomId,
+          user_id_to_remove: userId,
+        }
+      );
 
       if (error) {
-        console.error("❌ [SupabaseDataService.removeUserFromMessageRoom] Database function error:", error);
+        console.error(
+          "❌ [SupabaseDataService.removeUserFromMessageRoom] Database function error:",
+          error
+        );
         console.error("Error code:", error.code);
         console.error("Error message:", error.message);
         throw error;
       }
 
       if (!success) {
-        console.log("ℹ️ [SupabaseDataService.removeUserFromMessageRoom] User was not in participants (already removed)");
+        console.log(
+          "ℹ️ [SupabaseDataService.removeUserFromMessageRoom] User was not in participants (already removed)"
+        );
         // User wasn't in participants, return existing room
         return this.mapMessageRoomFromDB(roomData);
       }
 
-      console.log("✅ [SupabaseDataService.removeUserFromMessageRoom] Successfully removed user via database function");
-      
+      console.log(
+        "✅ [SupabaseDataService.removeUserFromMessageRoom] Successfully removed user via database function"
+      );
+
       // Map the room data first, then update it with the new participants
       const mappedRoom = this.mapMessageRoomFromDB(roomData);
-      
+
       // If this is a meetup chat, also remove from meetup (as backup to trigger)
       if (roomData.type === "meetup" && roomData.meetup_ref) {
-        console.log("🚪 [SupabaseDataService.removeUserFromMessageRoom] Meetup chat detected, ensuring user is removed from meetup");
-        console.log("🚪 [SupabaseDataService.removeUserFromMessageRoom] Meetup ref:", roomData.meetup_ref);
-        console.log("🚪 [SupabaseDataService.removeUserFromMessageRoom] User being removed:", userId);
-        
+        console.log(
+          "🚪 [SupabaseDataService.removeUserFromMessageRoom] Meetup chat detected, ensuring user is removed from meetup"
+        );
+        console.log(
+          "🚪 [SupabaseDataService.removeUserFromMessageRoom] Meetup ref:",
+          roomData.meetup_ref
+        );
+        console.log(
+          "🚪 [SupabaseDataService.removeUserFromMessageRoom] User being removed:",
+          userId
+        );
+
         try {
           // Extract meetup ID (handle both "meetups/{id}" and "{id}" formats)
-          const meetupId = String(roomData.meetup_ref).replace(/^meetups\//, "");
-          console.log("🚪 [SupabaseDataService.removeUserFromMessageRoom] Extracted meetupId:", meetupId);
-          
+          const meetupId = String(roomData.meetup_ref).replace(
+            /^meetups\//,
+            ""
+          );
+          console.log(
+            "🚪 [SupabaseDataService.removeUserFromMessageRoom] Extracted meetupId:",
+            meetupId
+          );
+
           // Try to remove from meetup (this will be handled by trigger too, but we do it here for immediate consistency)
           try {
-            console.log("🚪 [SupabaseDataService.removeUserFromMessageRoom] Calling removeUserFromMeetup...");
-            const updatedMeetup = await this.removeUserFromMeetup(meetupId, userId);
+            console.log(
+              "🚪 [SupabaseDataService.removeUserFromMessageRoom] Calling removeUserFromMeetup..."
+            );
+            const updatedMeetup = await this.removeUserFromMeetup(
+              meetupId,
+              userId
+            );
             if (updatedMeetup) {
-              console.log("✅ [SupabaseDataService.removeUserFromMessageRoom] Successfully removed from meetup in same call");
-              console.log("✅ [SupabaseDataService.removeUserFromMessageRoom] Updated meetup participants:", updatedMeetup.participants);
-              console.log("✅ [SupabaseDataService.removeUserFromMessageRoom] User still in participants?", updatedMeetup.participants.includes(userId));
+              console.log(
+                "✅ [SupabaseDataService.removeUserFromMessageRoom] Successfully removed from meetup in same call"
+              );
+              console.log(
+                "✅ [SupabaseDataService.removeUserFromMessageRoom] Updated meetup participants:",
+                updatedMeetup.participants
+              );
+              console.log(
+                "✅ [SupabaseDataService.removeUserFromMessageRoom] User still in participants?",
+                updatedMeetup.participants.includes(userId)
+              );
             } else {
-              console.error("❌ [SupabaseDataService.removeUserFromMessageRoom] removeUserFromMeetup returned null");
+              console.error(
+                "❌ [SupabaseDataService.removeUserFromMessageRoom] removeUserFromMeetup returned null"
+              );
             }
           } catch (meetupError: any) {
-            console.error("❌ [SupabaseDataService.removeUserFromMessageRoom] Meetup removal failed:", meetupError);
-            console.error("❌ [SupabaseDataService.removeUserFromMessageRoom] Error code:", meetupError?.code);
-            console.error("❌ [SupabaseDataService.removeUserFromMessageRoom] Error message:", meetupError?.message);
-            console.error("❌ [SupabaseDataService.removeUserFromMessageRoom] Error details:", JSON.stringify(meetupError, null, 2));
-            console.log("ℹ️ [SupabaseDataService.removeUserFromMessageRoom] Trigger may handle it, but checking meetup directly...");
-            
+            console.error(
+              "❌ [SupabaseDataService.removeUserFromMessageRoom] Meetup removal failed:",
+              meetupError
+            );
+            console.error(
+              "❌ [SupabaseDataService.removeUserFromMessageRoom] Error code:",
+              meetupError?.code
+            );
+            console.error(
+              "❌ [SupabaseDataService.removeUserFromMessageRoom] Error message:",
+              meetupError?.message
+            );
+            console.error(
+              "❌ [SupabaseDataService.removeUserFromMessageRoom] Error details:",
+              JSON.stringify(meetupError, null, 2)
+            );
+            console.log(
+              "ℹ️ [SupabaseDataService.removeUserFromMessageRoom] Trigger may handle it, but checking meetup directly..."
+            );
+
             // Try to verify if user was actually removed by checking the meetup
             try {
               const meetupCheck = await this.getMeetup(meetupId);
               if (meetupCheck) {
-                const userStillInMeetup = meetupCheck.participants.includes(userId);
-                console.log("🔍 [SupabaseDataService.removeUserFromMessageRoom] Meetup check - User still in meetup?", userStillInMeetup);
-                console.log("🔍 [SupabaseDataService.removeUserFromMessageRoom] Meetup participants:", meetupCheck.participants);
+                const userStillInMeetup =
+                  meetupCheck.participants.includes(userId);
+                console.log(
+                  "🔍 [SupabaseDataService.removeUserFromMessageRoom] Meetup check - User still in meetup?",
+                  userStillInMeetup
+                );
+                console.log(
+                  "🔍 [SupabaseDataService.removeUserFromMessageRoom] Meetup participants:",
+                  meetupCheck.participants
+                );
               }
             } catch (checkError) {
-              console.error("❌ [SupabaseDataService.removeUserFromMessageRoom] Could not verify meetup state:", checkError);
+              console.error(
+                "❌ [SupabaseDataService.removeUserFromMessageRoom] Could not verify meetup state:",
+                checkError
+              );
             }
           }
         } catch (error: any) {
-          console.error("❌ [SupabaseDataService.removeUserFromMessageRoom] Error processing meetup removal:", error);
-          console.error("❌ [SupabaseDataService.removeUserFromMessageRoom] Error details:", JSON.stringify(error, null, 2));
+          console.error(
+            "❌ [SupabaseDataService.removeUserFromMessageRoom] Error processing meetup removal:",
+            error
+          );
+          console.error(
+            "❌ [SupabaseDataService.removeUserFromMessageRoom] Error details:",
+            JSON.stringify(error, null, 2)
+          );
         }
       } else {
-        console.log("ℹ️ [SupabaseDataService.removeUserFromMessageRoom] Not a meetup chat:", {
-          type: roomData.type,
-          hasMeetupRef: !!roomData.meetup_ref,
-        });
+        console.log(
+          "ℹ️ [SupabaseDataService.removeUserFromMessageRoom] Not a meetup chat:",
+          {
+            type: roomData.type,
+            hasMeetupRef: !!roomData.meetup_ref,
+          }
+        );
       }
-      
+
       // Construct return value from existing data since we can't read the row back after removing user
       // (SELECT RLS policy requires user to be in participants, which they're not anymore)
       return {
@@ -2195,7 +2370,9 @@ export class SupabaseDataService {
       };
     }
 
-    console.log("ℹ️ [SupabaseDataService.removeUserFromMessageRoom] User not in participants, returning existing room");
+    console.log(
+      "ℹ️ [SupabaseDataService.removeUserFromMessageRoom] User not in participants, returning existing room"
+    );
     return this.mapMessageRoomFromDB(roomData);
   }
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
@@ -10,8 +10,11 @@ import {
   Alert,
   Dimensions,
   Switch,
+  Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import { useAuthStore } from "../../hooks/useAuthStore";
 import { useThemeStore } from "../../hooks/useThemeStore";
 import { Ionicons } from "@expo/vector-icons";
@@ -30,6 +33,10 @@ export default function ProfileScreen({ navigation, route }: any) {
   const [profileUserData, setProfileUserData] = useState<User | null>(null);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   // Get user data from navigation params or use current user
   const profileUserId = route?.params?.userId || user?.uid || "user1";
@@ -123,6 +130,17 @@ export default function ProfileScreen({ navigation, route }: any) {
     loadProfileData();
   }, [profileUserId, route?.params?.userData, user]);
 
+  // Fade in animation on load
+  useEffect(() => {
+    if (!isLoading && profileUserData) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isLoading, profileUserData]);
+
   // Reload profile data when screen comes into focus (e.g., after editing)
   useFocusEffect(
     React.useCallback(() => {
@@ -145,6 +163,23 @@ export default function ProfileScreen({ navigation, route }: any) {
       }
     }, [profileUserId, isViewingOtherProfile])
   );
+
+  // Handle press animations
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.95,
+      useNativeDriver: true,
+      friction: 8,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      friction: 8,
+    }).start();
+  };
 
   const handleEditProfile = () => {
     navigation.navigate("EditProfile");
@@ -206,12 +241,19 @@ export default function ProfileScreen({ navigation, route }: any) {
     navigation.navigate("HelpSupport");
   };
 
+  // Gradient colors for background
+  const gradientColors = isDarkMode
+    ? ["#1a1a2e", "#16213e", "#0f3460", "#533483"]
+    : ["#667eea", "#764ba2", "#f093fb", "#4facfe"];
+
   // Show loading state
   if (isLoading) {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <LinearGradient
+          colors={gradientColors}
+          style={StyleSheet.absoluteFillObject}
+        />
         <View style={styles.loadingContainer}>
           {/* Loading without text */}
         </View>
@@ -222,9 +264,11 @@ export default function ProfileScreen({ navigation, route }: any) {
   // Show empty state if no profile data
   if (!profileUserData) {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <LinearGradient
+          colors={gradientColors}
+          style={StyleSheet.absoluteFillObject}
+        />
         <View style={styles.loadingContainer}>
           <Text style={[styles.loadingText, { color: colors.text }]}>
             Profile not found
@@ -235,209 +279,281 @@ export default function ProfileScreen({ navigation, route }: any) {
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.background,
-            borderBottomColor: colors.border,
-          },
-        ]}
-      >
-        <Text style={[styles.title, { color: colors.text }]}>Profile</Text>
-        <Switch
-          value={isDarkMode}
-          onValueChange={toggleTheme}
-          trackColor={{ false: colors.border, true: colors.primary }}
-          thumbColor={colors.surface}
-        />
-      </View>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <LinearGradient
+        colors={gradientColors}
+        style={StyleSheet.absoluteFillObject}
+      />
+
+      {/* Header with glass effect */}
+      <BlurView intensity={25} tint={isDarkMode ? "dark" : "light"} style={styles.headerBlur}>
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: "#FFFFFF", textShadowColor: "rgba(0, 0, 0, 0.3)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }]}>Profile</Text>
+          <Switch
+            value={isDarkMode}
+            onValueChange={toggleTheme}
+            trackColor={{ false: colors.border, true: colors.primary }}
+            thumbColor={colors.surface}
+          />
+        </View>
+      </BlurView>
 
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
       >
-        {/* Profile Header */}
-        <View
-          style={[styles.profileHeader, { backgroundColor: colors.surface }]}
+        {/* Profile Header with Glass Effect */}
+        <Animated.View
+          style={[
+            { opacity: fadeAnim },
+            { transform: [{ scale: scaleAnim }] },
+          ]}
         >
-          <TouchableOpacity
-            onPress={isViewingOtherProfile ? undefined : handleChangePhoto}
-            style={styles.photoContainer}
+          <BlurView
+            intensity={25}
+            tint={isDarkMode ? "dark" : "light"}
+            style={styles.profileHeaderGlass}
           >
-            {profileUserData?.profilePictures?.[0] ? (
-              <Image
-                source={{
-                  uri: profileUserData.profilePictures[0],
-                }}
-                style={styles.profilePhoto}
-              />
-            ) : (
-              <View
-                style={[
-                  styles.profilePhotoPlaceholder,
-                  { backgroundColor: colors.surfaceVariant },
-                ]}
+            <View style={styles.profileHeader}>
+              <TouchableOpacity
+                onPress={isViewingOtherProfile ? undefined : handleChangePhoto}
+                style={styles.photoContainer}
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}
               >
-                <Ionicons
-                  name="person"
-                  size={40}
-                  color={colors.textSecondary}
-                />
-              </View>
-            )}
+                {profileUserData?.profilePictures?.[0] ? (
+                  <Image
+                    source={{
+                      uri: profileUserData.profilePictures[0],
+                    }}
+                    style={styles.profilePhoto}
+                  />
+                ) : (
+                  <View
+                    style={[
+                      styles.profilePhotoPlaceholder,
+                      { backgroundColor: colors.surfaceVariant + "40" },
+                    ]}
+                  >
+                    <Ionicons
+                      name="person"
+                      size={40}
+                      color={colors.textSecondary}
+                    />
+                  </View>
+                )}
 
-            {/* Verification Badge */}
-            <View
-              style={[
-                styles.verificationBadge,
-                { backgroundColor: colors.primary },
-              ]}
-            >
-              <Ionicons name="checkmark" size={16} color={colors.onPrimary} />
-            </View>
-          </TouchableOpacity>
-
-          <View style={styles.profileInfo}>
-            <Text style={[styles.name, { color: colors.text }]}>
-              {profileUserData?.name || profileUserData?.displayName || "User"}
-            </Text>
-            {profileUserData?.locationName && (
-              <Text style={[styles.location, { color: colors.textSecondary }]}>
-                📍 {profileUserData.locationName}
-              </Text>
-            )}
-
-            {/* Level and Points */}
-            {userStats && (
-              <View style={styles.levelContainer}>
-                <View
-                  style={[
-                    styles.levelBadge,
-                    { backgroundColor: colors.primary },
-                  ]}
+                {/* Verification Badge with Glass Effect */}
+                <BlurView
+                  intensity={20}
+                  tint={isDarkMode ? "dark" : "light"}
+                  style={styles.verificationBadgeGlass}
                 >
-                  <Text style={[styles.levelText, { color: colors.onPrimary }]}>
-                    Level {userStats.level}
-                  </Text>
-                </View>
-                <View style={styles.statsTextContainer}>
-                  <Text
-                    style={[styles.pointsText, { color: colors.textSecondary }]}
+                  <View
+                    style={[
+                      styles.verificationBadge,
+                      { backgroundColor: colors.primary + "80" },
+                    ]}
                   >
-                    {userStats.points.toLocaleString()} points
-                  </Text>
-                  <Text
-                    style={[styles.streakText, { color: colors.textSecondary }]}
-                  >
-                    {userStats.streak} day streak
-                  </Text>
-                </View>
-              </View>
-            )}
-          </View>
-        </View>
+                    <Ionicons name="checkmark" size={16} color={colors.onPrimary} />
+                  </View>
+                </BlurView>
+              </TouchableOpacity>
 
-        {/* Menu Items */}
-        <View
-          style={[styles.menuContainer, { backgroundColor: colors.surface }]}
-        >
-          {!isViewingOtherProfile && (
-            <TouchableOpacity
-              style={[styles.menuItem, { borderBottomColor: colors.border }]}
-              onPress={handleEditProfile}
-            >
-              <View
-                style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}
+              <View style={styles.profileInfo}>
+                <Text style={[styles.name, { color: "#FFFFFF", textShadowColor: "rgba(0, 0, 0, 0.3)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }]}>
+                  {profileUserData?.name || profileUserData?.displayName || "User"}
+                </Text>
+                {profileUserData?.locationName && (
+                  <Text style={[styles.location, { color: "#FFFFFF", opacity: 0.9, textShadowColor: "rgba(0, 0, 0, 0.2)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 }]}>
+                    📍 {profileUserData.locationName}
+                  </Text>
+                )}
+
+                {/* Level and Points with Glass Effect */}
+                {userStats && (
+                  <View style={styles.levelContainer}>
+                    <BlurView
+                      intensity={20}
+                      tint={isDarkMode ? "dark" : "light"}
+                      style={styles.levelBadgeGlass}
+                    >
+                      <View
+                        style={[
+                          styles.levelBadge,
+                          { backgroundColor: colors.primary + "80" },
+                        ]}
+                      >
+                        <Text style={[styles.levelText, { color: colors.onPrimary }]}>
+                          Level {userStats.level}
+                        </Text>
+                      </View>
+                    </BlurView>
+                    <View style={styles.statsTextContainer}>
+                      <Text
+                        style={[styles.pointsText, { color: "#FFFFFF", opacity: 0.9, textShadowColor: "rgba(0, 0, 0, 0.2)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 }]}
+                      >
+                        {userStats.points.toLocaleString()} points
+                      </Text>
+                      <Text
+                        style={[styles.streakText, { color: "#FFFFFF", opacity: 0.85, textShadowColor: "rgba(0, 0, 0, 0.2)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 }]}
+                      >
+                        {userStats.streak} day streak
+                      </Text>
+                    </View>
+                  </View>
+                )}
+              </View>
+            </View>
+          </BlurView>
+        </Animated.View>
+
+        {/* Menu Items with Glass Effect */}
+        <Animated.View style={{ opacity: fadeAnim }}>
+          <BlurView
+            intensity={25}
+            tint={isDarkMode ? "dark" : "light"}
+            style={styles.menuContainerGlass}
+          >
+            <View style={styles.menuContainer}>
+              {!isViewingOtherProfile && (
+                <TouchableOpacity
+                  style={[styles.menuItem, { borderBottomColor: "rgba(255, 255, 255, 0.1)" }]}
+                  onPress={handleEditProfile}
+                  onPressIn={handlePressIn}
+                  onPressOut={handlePressOut}
+                >
+                  <BlurView
+                    intensity={15}
+                    tint={isDarkMode ? "dark" : "light"}
+                    style={styles.iconContainerGlass}
+                  >
+                    <View
+                      style={[styles.iconContainer, { backgroundColor: "#8B5CF6" + "80" }]}
+                    >
+                      <Ionicons name="create-outline" size={20} color="#FFFFFF" />
+                    </View>
+                  </BlurView>
+                  <Text style={[styles.menuText, { color: "#FFFFFF", textShadowColor: "rgba(0, 0, 0, 0.3)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 }]}>
+                    Edit Profile
+                  </Text>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color={colors.textTertiary}
+                  />
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity
+                style={[styles.menuItem, { borderBottomColor: "rgba(255, 255, 255, 0.1)" }]}
+                onPress={handleNotifications}
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}
               >
-                <Ionicons name="create-outline" size={20} color="#FFFFFF" />
-              </View>
-              <Text style={[styles.menuText, { color: colors.text }]}>
-                Edit Profile
+                <BlurView
+                  intensity={15}
+                  tint={isDarkMode ? "dark" : "light"}
+                  style={styles.iconContainerGlass}
+                >
+                  <View
+                    style={[styles.iconContainer, { backgroundColor: "#3B82F6" + "80" }]}
+                  >
+                    <Ionicons
+                      name="notifications-outline"
+                      size={20}
+                      color="#FFFFFF"
+                    />
+                  </View>
+                </BlurView>
+                <Text style={[styles.menuText, { color: "#FFFFFF", textShadowColor: "rgba(0, 0, 0, 0.3)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 }]}>
+                  Notifications
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={20}
+                  color={colors.textTertiary}
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.menuItem, { borderBottomColor: "rgba(255, 255, 255, 0.1)" }]}
+                onPress={handlePrivacy}
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}
+              >
+                <BlurView
+                  intensity={15}
+                  tint={isDarkMode ? "dark" : "light"}
+                  style={styles.iconContainerGlass}
+                >
+                  <View
+                    style={[styles.iconContainer, { backgroundColor: "#14B8A6" + "80" }]}
+                  >
+                    <Ionicons name="shield-outline" size={20} color="#FFFFFF" />
+                  </View>
+                </BlurView>
+                <Text style={[styles.menuText, { color: "#FFFFFF", textShadowColor: "rgba(0, 0, 0, 0.3)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 }]}>
+                  Privacy & Security
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={20}
+                  color={colors.textTertiary}
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={handleHelp}
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}
+              >
+                <BlurView
+                  intensity={15}
+                  tint={isDarkMode ? "dark" : "light"}
+                  style={styles.iconContainerGlass}
+                >
+                  <View
+                    style={[styles.iconContainer, { backgroundColor: "#06B6D4" + "80" }]}
+                  >
+                    <Ionicons name="help-circle-outline" size={20} color="#FFFFFF" />
+                  </View>
+                </BlurView>
+                <Text style={[styles.menuText, { color: "#FFFFFF", textShadowColor: "rgba(0, 0, 0, 0.3)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 }]}>
+                  Help & Support
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={20}
+                  color={colors.textTertiary}
+                />
+              </TouchableOpacity>
+            </View>
+          </BlurView>
+        </Animated.View>
+
+        {/* Logout Button with Glass Effect */}
+        <Animated.View style={{ opacity: fadeAnim }}>
+          <BlurView
+            intensity={25}
+            tint={isDarkMode ? "dark" : "light"}
+            style={styles.logoutButtonGlass}
+          >
+            <TouchableOpacity
+              style={[styles.logoutButton, { backgroundColor: colors.error + "80" }]}
+              onPress={logout}
+              onPressIn={handlePressIn}
+              onPressOut={handlePressOut}
+            >
+              <Ionicons name="log-out-outline" size={24} color={colors.onPrimary} />
+              <Text style={[styles.logoutButtonText, { color: colors.onPrimary }]}>
+                Logout
               </Text>
-              <Ionicons
-                name="chevron-forward"
-                size={20}
-                color={colors.textTertiary}
-              />
             </TouchableOpacity>
-          )}
-
-          <TouchableOpacity
-            style={[styles.menuItem, { borderBottomColor: colors.border }]}
-            onPress={handleNotifications}
-          >
-            <View
-              style={[styles.iconContainer, { backgroundColor: "#3B82F6" }]}
-            >
-              <Ionicons
-                name="notifications-outline"
-                size={20}
-                color="#FFFFFF"
-              />
-            </View>
-            <Text style={[styles.menuText, { color: colors.text }]}>
-              Notifications
-            </Text>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.textTertiary}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.menuItem, { borderBottomColor: colors.border }]}
-            onPress={handlePrivacy}
-          >
-            <View
-              style={[styles.iconContainer, { backgroundColor: "#14B8A6" }]}
-            >
-              <Ionicons name="shield-outline" size={20} color="#FFFFFF" />
-            </View>
-            <Text style={[styles.menuText, { color: colors.text }]}>
-              Privacy & Security
-            </Text>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.textTertiary}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.menuItem, { borderBottomColor: colors.border }]}
-            onPress={handleHelp}
-          >
-            <View
-              style={[styles.iconContainer, { backgroundColor: "#06B6D4" }]}
-            >
-              <Ionicons name="help-circle-outline" size={20} color="#FFFFFF" />
-            </View>
-            <Text style={[styles.menuText, { color: colors.text }]}>
-              Help & Support
-            </Text>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.textTertiary}
-            />
-          </TouchableOpacity>
-        </View>
-
-        {/* Logout */}
-        <TouchableOpacity
-          style={[styles.logoutButton, { backgroundColor: colors.error }]}
-          onPress={logout}
-        >
-          <Ionicons name="log-out-outline" size={24} color={colors.onPrimary} />
-          <Text style={[styles.logoutButtonText, { color: colors.onPrimary }]}>
-            Logout
-          </Text>
-        </TouchableOpacity>
+          </BlurView>
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -447,13 +563,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  headerBlur: {
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255, 255, 255, 0.1)",
+    overflow: "hidden",
+  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderBottomWidth: 1,
   },
   title: {
     fontSize: 24,
@@ -466,11 +586,25 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
   },
+  profileHeaderGlass: {
+    borderRadius: 20,
+    marginBottom: 20,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
+  },
   profileHeader: {
     padding: 20,
-    borderRadius: 12,
-    marginBottom: 20,
     alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
   },
   photoContainer: {
     position: "relative",
@@ -480,6 +614,8 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
+    borderWidth: 3,
+    borderColor: "rgba(255, 255, 255, 0.3)",
   },
   profilePhotoPlaceholder: {
     width: 100,
@@ -487,6 +623,8 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 3,
+    borderColor: "rgba(255, 255, 255, 0.3)",
   },
   photoEditBadge: {
     position: "absolute",
@@ -520,9 +658,23 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 12,
   },
-  menuContainer: {
-    borderRadius: 12,
+  menuContainerGlass: {
+    borderRadius: 20,
     marginBottom: 20,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  menuContainer: {
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
   },
   menuItem: {
     flexDirection: "row",
@@ -536,49 +688,74 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 16,
   },
+  iconContainerGlass: {
+    borderRadius: 8,
+    overflow: "hidden",
+    marginRight: 12,
+  },
   iconContainer: {
     width: 32,
     height: 32,
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 12,
+  },
+  logoutButtonGlass: {
+    borderRadius: 20,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
   },
   logoutButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 16,
-    borderRadius: 12,
   },
   logoutButtonText: {
     fontSize: 16,
     fontWeight: "600",
     marginLeft: 8,
   },
-  // Gamification Styles
-  verificationBadge: {
+  // Gamification Styles with Glass Effect
+  verificationBadgeGlass: {
     position: "absolute",
     top: -5,
     right: -5,
+    borderRadius: 12,
+    overflow: "hidden",
+    borderWidth: 2,
+    borderColor: "rgba(255, 255, 255, 0.5)",
+  },
+  verificationBadge: {
     width: 24,
     height: 24,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 2,
-    borderColor: "white",
   },
   levelContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: 8,
   },
+  levelBadgeGlass: {
+    borderRadius: 12,
+    overflow: "hidden",
+    marginRight: 8,
+  },
   levelBadge: {
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
-    marginRight: 8,
   },
   levelText: {
     fontSize: 12,

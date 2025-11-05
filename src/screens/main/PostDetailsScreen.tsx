@@ -183,7 +183,10 @@ export default function PostDetailsScreen({
               disabled={currentUser?.uid === post.userId}
             >
               {post.userAvatar ? (
-                <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
+                <Image
+                  source={{ uri: post.userAvatar }}
+                  style={styles.avatar}
+                />
               ) : (
                 <View
                   style={[
@@ -192,7 +195,11 @@ export default function PostDetailsScreen({
                     { backgroundColor: colors.border },
                   ]}
                 >
-                  <Ionicons name="person" size={20} color={colors.textTertiary} />
+                  <Ionicons
+                    name="person"
+                    size={20}
+                    color={colors.textTertiary}
+                  />
                 </View>
               )}
             </TouchableOpacity>
@@ -254,7 +261,10 @@ export default function PostDetailsScreen({
                 <TouchableOpacity
                   onPress={() => {
                     // Don't navigate if clicking on own avatar
-                    if (currentUser?.uid && comment.userId === currentUser.uid) {
+                    if (
+                      currentUser?.uid &&
+                      comment.userId === currentUser.uid
+                    ) {
                       return;
                     }
                     navigation.navigate("UserProfile", {

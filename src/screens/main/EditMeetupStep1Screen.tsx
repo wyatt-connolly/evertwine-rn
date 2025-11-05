@@ -477,10 +477,12 @@ export default function EditMeetupStep1Screen({
       >
         <View style={styles.content}>
           {renderInput("Title *", "title", "Enter meetup title")}
-          
+
           {/* Description Input with character limit */}
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: colors.text }]}>Description *</Text>
+            <Text style={[styles.label, { color: colors.text }]}>
+              Description *
+            </Text>
             <TextInput
               style={[
                 styles.input,

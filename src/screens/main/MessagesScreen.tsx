@@ -86,7 +86,6 @@ export default function MessagesScreen({ navigation }: any) {
     };
   }, [currentUser?.uid]);
 
-
   const formatTime = (date: Date) => {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
@@ -146,63 +145,113 @@ export default function MessagesScreen({ navigation }: any) {
           style: "destructive",
           onPress: async () => {
             console.log("🗑️ [MessagesScreen] User confirmed delete in alert");
-            console.log("🗑️ [MessagesScreen] Delete button pressed - starting deletion process");
-            
+            console.log(
+              "🗑️ [MessagesScreen] Delete button pressed - starting deletion process"
+            );
+
             try {
               // If it's a meetup chat, remove from meetup first
               if (isMeetupChat && roomData?.meetupRef && currentUser?.uid) {
-                console.log("🗑️ [MessagesScreen] Step 1: Removing from meetup...");
-                console.log("🗑️ [MessagesScreen] Meetup ref:", roomData.meetupRef);
-                
+                console.log(
+                  "🗑️ [MessagesScreen] Step 1: Removing from meetup..."
+                );
+                console.log(
+                  "🗑️ [MessagesScreen] Meetup ref:",
+                  roomData.meetupRef
+                );
+
                 try {
                   // Extract meetup ID (handle both "meetups/{id}" and "{id}" formats)
                   const meetupId = roomData.meetupRef.replace(/^meetups\//, "");
-                  console.log("🗑️ [MessagesScreen] Extracted meetupId:", meetupId);
-                  console.log("🗑️ [MessagesScreen] Calling removeUserFromMeetup with:", {
+                  console.log(
+                    "🗑️ [MessagesScreen] Extracted meetupId:",
+                    meetupId
+                  );
+                  console.log(
+                    "🗑️ [MessagesScreen] Calling removeUserFromMeetup with:",
+                    {
+                      meetupId,
+                      userId: currentUser.uid,
+                    }
+                  );
+
+                  const updatedMeetup = await DataService.removeUserFromMeetup(
                     meetupId,
-                    userId: currentUser.uid,
-                  });
-                  
-                  const updatedMeetup = await DataService.removeUserFromMeetup(meetupId, currentUser.uid);
-                  
+                    currentUser.uid
+                  );
+
                   if (updatedMeetup) {
-                    console.log("✅ [MessagesScreen] Successfully removed from meetup");
-                    console.log("✅ [MessagesScreen] Updated meetup participants:", updatedMeetup.participants);
-                    console.log("✅ [MessagesScreen] User still in participants?", updatedMeetup.participants.includes(currentUser.uid));
+                    console.log(
+                      "✅ [MessagesScreen] Successfully removed from meetup"
+                    );
+                    console.log(
+                      "✅ [MessagesScreen] Updated meetup participants:",
+                      updatedMeetup.participants
+                    );
+                    console.log(
+                      "✅ [MessagesScreen] User still in participants?",
+                      updatedMeetup.participants.includes(currentUser.uid)
+                    );
                   } else {
-                    console.error("❌ [MessagesScreen] removeUserFromMeetup returned null");
+                    console.error(
+                      "❌ [MessagesScreen] removeUserFromMeetup returned null"
+                    );
                   }
                 } catch (meetupError: any) {
-                  console.error("❌ [MessagesScreen] Error removing from meetup:", meetupError);
-                  console.error("❌ [MessagesScreen] Error code:", meetupError?.code);
-                  console.error("❌ [MessagesScreen] Error message:", meetupError?.message);
+                  console.error(
+                    "❌ [MessagesScreen] Error removing from meetup:",
+                    meetupError
+                  );
+                  console.error(
+                    "❌ [MessagesScreen] Error code:",
+                    meetupError?.code
+                  );
+                  console.error(
+                    "❌ [MessagesScreen] Error message:",
+                    meetupError?.message
+                  );
                   // Continue with room deletion even if meetup removal fails
                 }
               } else {
-                console.log("ℹ️ [MessagesScreen] Not a meetup chat or missing data:", {
-                  isMeetupChat,
-                  hasMeetupRef: !!roomData?.meetupRef,
-                  hasCurrentUser: !!currentUser,
-                });
+                console.log(
+                  "ℹ️ [MessagesScreen] Not a meetup chat or missing data:",
+                  {
+                    isMeetupChat,
+                    hasMeetupRef: !!roomData?.meetupRef,
+                    hasCurrentUser: !!currentUser,
+                  }
+                );
               }
 
-              console.log("🗑️ [MessagesScreen] Step 2: Deleting message room...");
+              console.log(
+                "🗑️ [MessagesScreen] Step 2: Deleting message room..."
+              );
               console.log("🗑️ [MessagesScreen] Room ID to delete:", roomId);
-              
+
               await SupabaseDataService.deleteMessageRoom(roomId);
-              
-              console.log("✅ [MessagesScreen] Successfully deleted message room");
-              
-              console.log("🗑️ [MessagesScreen] Step 3: Reloading message rooms...");
+
+              console.log(
+                "✅ [MessagesScreen] Successfully deleted message room"
+              );
+
+              console.log(
+                "🗑️ [MessagesScreen] Step 3: Reloading message rooms..."
+              );
               loadMessageRooms();
               console.log("✅ [MessagesScreen] Message rooms reloaded");
             } catch (error: any) {
               console.error("❌ [MessagesScreen] Error deleting room:", error);
               console.error("❌ [MessagesScreen] Error type:", typeof error);
               console.error("❌ [MessagesScreen] Error code:", error?.code);
-              console.error("❌ [MessagesScreen] Error message:", error?.message);
-              console.error("❌ [MessagesScreen] Error details:", JSON.stringify(error, null, 2));
-              
+              console.error(
+                "❌ [MessagesScreen] Error message:",
+                error?.message
+              );
+              console.error(
+                "❌ [MessagesScreen] Error details:",
+                JSON.stringify(error, null, 2)
+              );
+
               Alert.alert(
                 "Error",
                 "Failed to delete conversation. Please try again."

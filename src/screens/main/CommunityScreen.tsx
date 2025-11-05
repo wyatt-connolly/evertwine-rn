@@ -256,7 +256,9 @@ export default function CommunityScreen({ navigation }: any) {
       {/* Page Counter */}
       {standoutUsers.length > 1 && (
         <View style={styles.pageCounterContainer}>
-          <Text style={[styles.pageCounterText, { color: colors.textSecondary }]}>
+          <Text
+            style={[styles.pageCounterText, { color: colors.textSecondary }]}
+          >
             {currentIndex + 1} of {standoutUsers.length}
           </Text>
         </View>
