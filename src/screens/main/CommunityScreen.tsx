@@ -253,6 +253,15 @@ export default function CommunityScreen({ navigation }: any) {
         <View style={styles.headerRight} />
       </View>
 
+      {/* Page Counter */}
+      {standoutUsers.length > 1 && (
+        <View style={styles.pageCounterContainer}>
+          <Text style={[styles.pageCounterText, { color: colors.textSecondary }]}>
+            {currentIndex + 1} of {standoutUsers.length}
+          </Text>
+        </View>
+      )}
+
       {/* User Carousel */}
       <View style={styles.carouselContainer}>
         <FlatList
@@ -297,8 +306,8 @@ export default function CommunityScreen({ navigation }: any) {
               >
                 <Ionicons
                   name="chevron-back"
-                  size={24}
-                  color={currentIndex === 0 ? colors.textTertiary : colors.text}
+                  size={28}
+                  color={currentIndex === 0 ? colors.textTertiary : "#FFFFFF"}
                 />
               </Animated.View>
             </TouchableOpacity>
@@ -329,16 +338,38 @@ export default function CommunityScreen({ navigation }: any) {
               >
                 <Ionicons
                   name="chevron-forward"
-                  size={24}
+                  size={28}
                   color={
                     currentIndex === standoutUsers.length - 1
                       ? colors.textTertiary
-                      : colors.text
+                      : "#FFFFFF"
                   }
                 />
               </Animated.View>
             </TouchableOpacity>
           </>
+        )}
+
+        {/* Pagination Dots */}
+        {standoutUsers.length > 1 && (
+          <View style={styles.paginationContainer}>
+            {standoutUsers.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.paginationDot,
+                  {
+                    backgroundColor:
+                      index === currentIndex
+                        ? colors.primary
+                        : colors.textTertiary + "40",
+                    width: index === currentIndex ? 24 : 8,
+                    opacity: index === currentIndex ? 1 : 0.5,
+                  },
+                ]}
+              />
+            ))}
+          </View>
         )}
       </View>
     </SafeAreaView>
@@ -390,19 +421,21 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: "50%",
     transform: [{ translateY: -20 }],
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1000,
     marginTop: 100, // Adjust to center with the profile card content
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 10,
+    borderWidth: 2,
+    borderColor: "rgba(255, 255, 255, 0.2)",
   },
   leftIndicator: {
     left: 20,
@@ -452,5 +485,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 16,
     textAlign: "center",
+  },
+  pageCounterContainer: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    alignItems: "center",
+  },
+  pageCounterText: {
+    fontSize: 13,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+  },
+  paginationContainer: {
+    position: "absolute",
+    bottom: 20,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+    zIndex: 100,
+    paddingVertical: 12,
+  },
+  paginationDot: {
+    height: 8,
+    borderRadius: 4,
+    transition: "all 0.3s ease",
   },
 });

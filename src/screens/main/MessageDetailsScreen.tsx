@@ -131,7 +131,15 @@ export default function MessageDetailsScreen({
     const unsubscribe = DataService.setupMessageListener(
       roomId,
       (newMessages) => {
-        setMessages(newMessages);
+        setMessages((prevMessages) => {
+          // Scroll if new messages were added
+          if (newMessages.length > prevMessages.length) {
+            setTimeout(() => {
+              flatListRef.current?.scrollToEnd({ animated: true });
+            }, 100);
+          }
+          return newMessages;
+        });
       }
     );
 
@@ -139,6 +147,17 @@ export default function MessageDetailsScreen({
       unsubscribe();
     };
   }, [roomId]); // Only depend on roomId
+
+  // Scroll to bottom on initial load
+  useEffect(() => {
+    if (messages.length > 0 && !isLoading) {
+      // Scroll to bottom after initial load
+      const timer = setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: false });
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]); // Only trigger after initial load completes
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !currentUser || !room) return;
@@ -190,6 +209,10 @@ export default function MessageDetailsScreen({
       try {
         const updatedMessages = await DataService.getMessages(roomId);
         setMessages(updatedMessages);
+        // Scroll to bottom to show the new message
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 200);
       } catch (error) {}
     } catch (error) {
       Alert.alert("Error", "Failed to send message");
@@ -1100,8 +1123,15 @@ export default function MessageDetailsScreen({
             renderItem={renderMessage}
             style={styles.messagesList}
             contentContainerStyle={styles.messagesContent}
-            inverted={true}
-            ListFooterComponent={renderMeetupInfoCard}
+            ListHeaderComponent={renderMeetupInfoCard}
+            onContentSizeChange={() => {
+              // Scroll to bottom when content size changes (new messages added)
+              if (messages.length > 0) {
+                setTimeout(() => {
+                  flatListRef.current?.scrollToEnd({ animated: true });
+                }, 100);
+              }
+            }}
           />
         )}
 

@@ -556,6 +556,8 @@ export class SupabaseDataService {
       .order("created_time", { ascending: true })
       .limit(limit);
     if (error) throw error;
+    // Order ascending (oldest first) for standard FlatList display
+    // Newest messages will be at the end of the array
     return data.map((item) => this.mapMessageFromDB(item));
   }
 
