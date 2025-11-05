@@ -36,11 +36,26 @@ export default function EventCard({
         {
           backgroundColor: colors.surface,
           borderColor: colors.border,
+          borderTopColor: colors.warning,
+          borderTopWidth: 4,
         },
         style,
       ]}
       onPress={onPress}
     >
+      {/* Content Type Banner */}
+      <View
+        style={[
+          styles.typeBanner,
+          { backgroundColor: colors.warning },
+        ]}
+      >
+        <Ionicons name="wine" size={12} color="#FFFFFF" />
+        <Text style={[styles.typeBannerText, { color: "#FFFFFF" }]}>
+          HAPPY HOUR
+        </Text>
+      </View>
+
       {/* Happy Hour Icon Badge */}
       <View
         style={[
@@ -303,6 +318,20 @@ const styles = StyleSheet.create({
   customActionContainer: {
     alignItems: "center",
     marginTop: 12,
+  },
+  typeBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    gap: 6,
+  },
+  typeBannerText: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1,
+    textTransform: "uppercase",
   },
   preferenceMatchBadge: {
     position: "absolute",

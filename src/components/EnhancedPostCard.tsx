@@ -52,9 +52,24 @@ export default function EnhancedPostCard({ post }: EnhancedPostCardProps) {
           {
             backgroundColor: colors.surface,
             borderColor: colors.border,
+            borderTopColor: colors.primary,
+            borderTopWidth: 4,
           },
         ]}
       >
+        {/* Content Type Banner */}
+        <View
+          style={[
+            styles.typeBanner,
+            { backgroundColor: colors.primary },
+          ]}
+        >
+          <Ionicons name="newspaper" size={12} color={colors.onPrimary} />
+          <Text style={[styles.typeBannerText, { color: colors.onPrimary }]}>
+            POST
+          </Text>
+        </View>
+
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
@@ -241,5 +256,19 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: 14,
     fontWeight: "500",
+  },
+  typeBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    gap: 6,
+  },
+  typeBannerText: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1,
+    textTransform: "uppercase",
   },
 });

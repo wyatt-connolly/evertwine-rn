@@ -378,32 +378,25 @@ export default function EnhancedMeetupCard({
         {
           backgroundColor: colors.surface,
           borderColor: colors.border,
+          borderTopColor: colors.success,
+          borderTopWidth: 4,
         },
         style,
       ]}
       onPress={onPress}
     >
-      {/* Meetup Icon Badge */}
+      {/* Content Type Banner */}
       <View
         style={[
-          styles.meetupIconBadge,
-          { backgroundColor: colors.accentTertiary + "40" },
+          styles.typeBanner,
+          { backgroundColor: colors.success },
         ]}
       >
-        <Ionicons name="people" size={16} color={colors.accentTertiary} />
+        <Ionicons name="people" size={12} color="#FFFFFF" />
+        <Text style={[styles.typeBannerText, { color: "#FFFFFF" }]}>
+          MEETUP
+        </Text>
       </View>
-
-      {/* Preference Match Indicator */}
-      {matchesPreferences && (
-        <View
-          style={[
-            styles.preferenceMatchBadge,
-            { backgroundColor: colors.accent + "20" },
-          ]}
-        >
-          <Ionicons name="sparkles" size={12} color={colors.accent} />
-        </View>
-      )}
 
       {meetup.coverImage && (
         <Image source={{ uri: meetup.coverImage }} style={styles.meetupImage} />
@@ -750,6 +743,20 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: 14,
     fontWeight: "500",
+  },
+  typeBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    gap: 6,
+  },
+  typeBannerText: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1,
+    textTransform: "uppercase",
   },
   preferenceMatchBadge: {
     position: "absolute",

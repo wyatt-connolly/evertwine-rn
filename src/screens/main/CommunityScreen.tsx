@@ -158,9 +158,7 @@ export default function CommunityScreen({ navigation }: any) {
         edges={["top"]}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
-          </TouchableOpacity>
+          <View style={styles.headerLeft} />
           <View style={styles.headerCenter}>
             <Text style={[styles.headerTitle, { color: colors.text }]}>
               Standouts
@@ -187,9 +185,7 @@ export default function CommunityScreen({ navigation }: any) {
         edges={["top"]}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
-          </TouchableOpacity>
+          <View style={styles.headerLeft} />
           <View style={styles.headerCenter}>
             <Text style={[styles.headerTitle, { color: colors.text }]}>
               Standouts
@@ -216,9 +212,7 @@ export default function CommunityScreen({ navigation }: any) {
         edges={["top"]}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
-          </TouchableOpacity>
+          <View style={styles.headerLeft} />
           <View style={styles.headerCenter}>
             <Text style={[styles.headerTitle, { color: colors.text }]}>
               Standouts
@@ -245,9 +239,7 @@ export default function CommunityScreen({ navigation }: any) {
     >
       {/* Header with Description */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
+        <View style={styles.headerLeft} />
         <View style={styles.headerCenter}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>
             Standouts
@@ -365,6 +357,9 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderBottomWidth: 1,
     borderBottomColor: "rgba(255, 255, 255, 0.1)",
+  },
+  headerLeft: {
+    width: 24,
   },
   headerCenter: {
     flex: 1,
